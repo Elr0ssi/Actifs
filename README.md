@@ -5,14 +5,14 @@ Hub personnel gratuit pour organiser tâches & projets, listes de courses partag
 ## Stack
 
 - Next.js 14 (App Router, Server Actions) + TypeScript + Tailwind CSS
-- Supabase (Postgres, Auth, RLS) — schéma dédié `actifs`
+- Supabase (Postgres, Auth, RLS) — **projet Supabase dédié** (`actifs` / `kqmckpauxlujowqmheso`), entièrement séparé de tes autres projets Supabase
 - Hébergement code : GitHub — déploiement recommandé : **Vercel** (connecté au repo GitHub, gratuit, gère le SSR/Server Actions de Next.js). GitHub Pages ne peut pas héberger ce site car il nécessite un serveur (auth, actions serveur) — seul le code source vit sur GitHub.
 
 ## Démarrer en local
 
 ```bash
 npm install
-cp .env.local.example .env.local   # déjà rempli avec le projet Supabase du foyer
+cp .env.local.example .env.local   # déjà rempli avec le projet Supabase dédié à Actifs
 npm run dev
 ```
 
@@ -26,7 +26,7 @@ npm run dev
 
 ## Base de données
 
-Le schéma Postgres `actifs` contient toutes les tables (foyers, profils, projets, tâches, listes, recettes, routines, finances…), avec Row Level Security : chaque foyer ne voit que ses propres données. Un déclencheur crée automatiquement un foyer à l'inscription ; la fonction `join_household(code)` permet de rejoindre le foyer d'un·e partenaire via un code d'invitation (visible dans Paramètres).
+Projet Supabase 100% dédié à Actifs (aucune table partagée avec tes autres projets). Le schéma `public` contient toutes les tables (foyers, profils, projets, tâches, listes, recettes, routines, finances…), avec Row Level Security : chaque foyer ne voit que ses propres données. Un déclencheur crée automatiquement un foyer à l'inscription ; la fonction `join_household(code)` permet de rejoindre le foyer d'un·e partenaire via un code d'invitation (visible dans Paramètres).
 
 ## Fonctionnalités
 
