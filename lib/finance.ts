@@ -60,3 +60,40 @@ export function sumOccurrencesInRange(items: RangeChargeLike[], rangeStartISO: s
   breakdown.sort((a, b) => a.date.localeCompare(b.date));
   return { total, breakdown };
 }
+
+/** Sums recurring amounts per calendar month (YYYY-MM) for the next `monthsAhead` months. */
+export function monthlyTotals(items: RangeChargeLike[], monthsAhead: number, fromISO: string) {
+  const from = new Date(fromISO);
+  const start = new Date(from.getFullYear(), from.getMonth(), 1);
+  const end = new Date(from.getFullYear(), from.getMonth() + monthsAhead, 0);
+  const startISO = start.toISOString().slice(0, 10);
+  const endISO = end.toISOString().slice(0, 10);
+
+  const totalsByMonth = new Map<string, number>();
+  for (const item of items) {
+    for (const date of projectOccurrences(item.next_date, item.frequency, startISO, endISO)) {
+      const key = date.slice(0, 7);
+      totalsByMonth.set(key, (totalsByMonth.get(key) ?? 0) + Number(item.amount));
+    }
+  }
+
+  const months: { key: string; label: string; total: number }[] = [];
+  for (let i = 0; i < monthsAhead; i++) {
+    const d = new Date(from.getFullYear(), from.getMonth() + i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    months.push({ key, label: d.toLocaleDateString("fr-FR", { month: "short" }), total: totalsByMonth.get(key) ?? 0 });
+  }
+  return months;
+}
+
+/** Groups recurring items by category, summing their monthly-equivalent amount. */
+export function groupByCategory(items: (RangeChargeLike & { category?: string | null })[]) {
+  const totals = new Map<string, number>();
+  for (const item of items) {
+    const key = item.category?.trim() || "Autre";
+    totals.set(key, (totals.get(key) ?? 0) + monthlyEquivalent(Number(item.amount), item.frequency));
+  }
+  return [...totals.entries()]
+    .map(([label, value]) => ({ label, value }))
+    .sort((a, b) => b.value - a.value);
+}

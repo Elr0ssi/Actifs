@@ -18,10 +18,11 @@ export async function createCharge(formData: FormData) {
   const amount = Number(formData.get("amount") || 0);
   const frequency = String(formData.get("frequency") || "monthly") as ChargeFrequency;
   const nextDate = String(formData.get("next_date") || "");
+  const category = String(formData.get("category") || "Autre").trim() || "Autre";
   if (!name || !amount || !nextDate) return;
   const { supabase, householdId, userId } = await ctx();
   if (!householdId) return;
-  await supabase.from("recurring_charges").insert({ household_id: householdId, name, amount, frequency, next_date: nextDate, created_by: userId });
+  await supabase.from("recurring_charges").insert({ household_id: householdId, name, amount, frequency, next_date: nextDate, category, created_by: userId });
   revalidatePath("/app/finance");
   revalidatePath("/app/calendar");
   revalidatePath("/app");

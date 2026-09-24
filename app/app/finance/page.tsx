@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
 import { formatEUR, todayISO } from "@/lib/utils";
 import type { RecurringCharge, Income, Investment } from "@/lib/types";
-import { projectOccurrences, monthlyEquivalent } from "@/lib/finance";
+import { projectOccurrences, monthlyEquivalent, monthlyTotals, groupByCategory } from "@/lib/finance";
+import { DonutChart } from "@/components/app/charts/donut-chart";
+import { MonthlyBarChart } from "@/components/app/charts/monthly-bar-chart";
+import { BalanceAreaChart } from "@/components/app/charts/balance-area-chart";
 import {
   createCharge,
   deleteCharge,
@@ -57,6 +60,17 @@ export default async function FinancePage() {
   const monthlyIncomes = (incomes ?? []).filter((i) => i.recurring).reduce((s, i) => s + monthlyEquivalent(Number(i.amount), i.frequency), 0);
   const totalInvested = (investments ?? []).reduce((s, i) => s + Number(i.amount_invested), 0);
 
+  const categoryBreakdown = groupByCategory(charges ?? []);
+
+  const incomesRangeLike = (incomes ?? [])
+    .filter((i) => i.status !== "received")
+    .map((i) => ({ id: i.id, name: i.name, amount: Number(i.amount), next_date: i.expected_date, frequency: i.recurring ? i.frequency : ("once" as const) }));
+  const expenseByMonth = monthlyTotals(charges ?? [], 6, today);
+  const incomeByMonth = monthlyTotals(incomesRangeLike, 6, today);
+  const sixMonths = expenseByMonth.map((m, i) => ({ label: m.label, expense: m.total, income: incomeByMonth[i]?.total ?? 0 }));
+
+  const balancePoints = flowWithBalance.map((f) => ({ date: f.date, balance: f.balance }));
+
   return (
     <div className="space-y-8">
       <div>
@@ -81,6 +95,22 @@ export default async function FinancePage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="card p-6">
+          <h2 className="mb-4 font-semibold text-slate-900">Répartition des charges</h2>
+          <DonutChart items={categoryBreakdown} />
+        </section>
+        <section className="card p-6">
+          <h2 className="mb-4 font-semibold text-slate-900">Revenus vs charges (6 prochains mois)</h2>
+          <MonthlyBarChart months={sixMonths} />
+        </section>
+      </div>
+
+      <section className="card p-6">
+        <h2 className="mb-4 font-semibold text-slate-900">Solde cumulé projeté (60 jours)</h2>
+        <BalanceAreaChart points={balancePoints} />
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="card p-6">
           <h2 className="mb-4 font-semibold text-slate-900">Charges récurrentes</h2>
           <form action={createCharge} className="mb-4 space-y-2">
             <input name="name" placeholder="Ex. Loyer" className="input" required />
@@ -93,7 +123,10 @@ export default async function FinancePage() {
                 <option value="once">Ponctuel</option>
               </select>
             </div>
-            <input name="next_date" type="date" className="input" required />
+            <div className="flex gap-2">
+              <input name="category" placeholder="Catégorie (ex. Logement)" className="input flex-1" />
+              <input name="next_date" type="date" className="input flex-1" required />
+            </div>
             <button className="btn-primary w-full">Ajouter</button>
           </form>
           <ul className="space-y-2">
@@ -101,7 +134,7 @@ export default async function FinancePage() {
               <li key={c.id} className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2 text-sm">
                 <span>
                   <span className="font-medium text-slate-800">{c.name}</span>
-                  <span className="ml-2 text-xs text-slate-400">{c.next_date} · {c.frequency}</span>
+                  <span className="ml-2 text-xs text-slate-400">{c.category} · {c.next_date} · {c.frequency}</span>
                 </span>
                 <span className="flex items-center gap-3">
                   <span className="font-semibold text-rose-600">{formatEUR(Number(c.amount))}</span>

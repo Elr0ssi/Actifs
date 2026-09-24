@@ -117,6 +117,7 @@ export interface RecurringCharge {
   name: string;
   amount: number;
   category_id: string | null;
+  category: string;
   frequency: ChargeFrequency;
   next_date: string;
   active: boolean;
@@ -131,6 +132,7 @@ export interface Income {
   expected_date: string;
   recurring: boolean;
   frequency: ChargeFrequency;
+  category: string;
   status: string;
   created_at: string;
 }

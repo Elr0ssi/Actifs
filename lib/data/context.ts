@@ -1,7 +1,15 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Household, Profile } from "@/lib/types";
 
-export async function getAppContext() {
+type ProfileWithHousehold = Profile & { household: Household | null };
+
+/**
+ * Cached per request: layout + page (+ any nested component) all call this,
+ * but React's cache() dedupes it to a single auth+DB round trip per request
+ * instead of one per caller.
+ */
+export const getAppContext = cache(async () => {
   const supabase = createClient();
   const {
     data: { user },
@@ -11,19 +19,14 @@ export async function getAppContext() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("*")
+    .select("*, household:households(*)")
     .eq("id", user.id)
-    .single<Profile>();
+    .single<ProfileWithHousehold>();
 
-  let household: Household | null = null;
-  if (profile?.household_id) {
-    const { data } = await supabase
-      .from("households")
-      .select("*")
-      .eq("id", profile.household_id)
-      .single<Household>();
-    household = data ?? null;
-  }
-
-  return { user, profile: profile ?? null, household, supabase };
-}
+  return {
+    user,
+    profile: profile as Profile | null,
+    household: profile?.household ?? null,
+    supabase,
+  };
+});
