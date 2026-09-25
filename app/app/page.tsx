@@ -3,16 +3,20 @@ import { getAppContext } from "@/lib/data/context";
 import { formatEUR, todayISO } from "@/lib/utils";
 import type { Task, Routine, RoutineLog, RecurringCharge, Income } from "@/lib/types";
 import { ToggleCheckbox } from "@/components/app/toggle-checkbox";
+import { WeekAhead } from "@/components/app/week-ahead";
 import { toggleTaskStatus, toggleRoutineLog, quickAddTask } from "@/app/app/actions";
 import { monthlyEquivalent } from "@/lib/finance";
 
 export default async function DashboardPage() {
   const ctx = await getAppContext();
   if (!ctx) return null;
-  const { supabase, profile } = ctx;
+  const { supabase, profile, household } = ctx;
   const householdId = profile?.household_id;
   const today = todayISO();
   const weekday = new Date().getDay();
+  const weekEnd = new Date();
+  weekEnd.setDate(weekEnd.getDate() + 6);
+  const weekEndISO = weekEnd.toISOString().slice(0, 10);
 
   const [{ data: tasks }, { data: routines }, { data: logs }, { data: charges }, { data: incomes }] = await Promise.all([
     supabase
@@ -46,8 +50,10 @@ export default async function DashboardPage() {
   );
   const logByRoutine = new Map((logs ?? []).map((l) => [l.routine_id, l]));
 
-  const upcomingCharges = (charges ?? []).filter((c) => c.next_date >= today).slice(0, 5);
-  const upcomingIncomes = (incomes ?? []).filter((i) => i.expected_date >= today && i.status !== "received").slice(0, 4);
+  const chargesRangeLike = (charges ?? []).map((c) => ({ id: c.id, name: c.name, amount: Number(c.amount), next_date: c.next_date, frequency: c.frequency }));
+  const incomesRangeLike = (incomes ?? [])
+    .filter((i) => i.status !== "received")
+    .map((i) => ({ id: i.id, name: i.name, amount: Number(i.amount), next_date: i.expected_date, frequency: i.recurring ? i.frequency : ("once" as const) }));
 
   const monthlyExpenses = (charges ?? []).reduce((sum, c) => sum + monthlyEquivalent(Number(c.amount), c.frequency), 0);
   const monthlyIncomes = (incomes ?? [])
@@ -119,44 +125,18 @@ export default async function DashboardPage() {
         </section>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="card p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-semibold text-slate-900">Prochaines charges</h2>
-            <Link href="/app/finance" className="text-sm font-medium text-brand-600">Finance</Link>
-          </div>
-          <ul className="space-y-3">
-            {upcomingCharges.length === 0 && <p className="text-sm text-slate-400">Aucune charge programmée.</p>}
-            {upcomingCharges.map((c) => (
-              <li key={c.id} className="flex items-center justify-between text-sm">
-                <span className="text-slate-700">{c.name}</span>
-                <span className="flex items-center gap-3">
-                  <span className="text-xs text-slate-400">{c.next_date}</span>
-                  <span className="font-semibold text-rose-600">{formatEUR(Number(c.amount))}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="card p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-semibold text-slate-900">Revenus à venir</h2>
-            <Link href="/app/finance" className="text-sm font-medium text-brand-600">Finance</Link>
-          </div>
-          <ul className="space-y-3">
-            {upcomingIncomes.length === 0 && <p className="text-sm text-slate-400">Aucun revenu programmé.</p>}
-            {upcomingIncomes.map((i) => (
-              <li key={i.id} className="flex items-center justify-between text-sm">
-                <span className="text-slate-700">{i.name}</span>
-                <span className="flex items-center gap-3">
-                  <span className="text-xs text-slate-400">{i.expected_date}</span>
-                  <span className="font-semibold text-emerald-600">{formatEUR(Number(i.amount))}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
+      <div>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-semibold text-slate-900">Cette semaine</h2>
+          <Link href="/app/finance" className="text-sm font-medium text-brand-600">Voir toute la finance</Link>
+        </div>
+        <WeekAhead
+          currentBalance={Number(household?.current_balance ?? 0)}
+          charges={chargesRangeLike}
+          incomes={incomesRangeLike}
+          todayISO={today}
+          weekEndISO={weekEndISO}
+        />
       </div>
     </div>
   );

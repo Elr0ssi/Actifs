@@ -6,6 +6,7 @@ import { projectOccurrences, monthlyEquivalent, monthlyTotals, groupByCategory }
 import { DonutChart } from "@/components/app/charts/donut-chart";
 import { MonthlyBarChart } from "@/components/app/charts/monthly-bar-chart";
 import { BalanceAreaChart } from "@/components/app/charts/balance-area-chart";
+import { WeekAhead } from "@/components/app/week-ahead";
 import {
   createCharge,
   deleteCharge,
@@ -21,8 +22,9 @@ export const metadata: Metadata = { title: "Finance" };
 export default async function FinancePage() {
   const ctx = await getAppContext();
   if (!ctx) return null;
-  const { supabase, profile } = ctx;
+  const { supabase, profile, household } = ctx;
   const householdId = profile?.household_id ?? "";
+  const currentBalance = Number(household?.current_balance ?? 0);
 
   const [{ data: charges }, { data: incomes }, { data: investments }] = await Promise.all([
     supabase.from("recurring_charges").select("*").eq("household_id", householdId).eq("active", true).order("next_date").returns<RecurringCharge[]>(),
@@ -34,6 +36,9 @@ export default async function FinancePage() {
   const horizon = new Date();
   horizon.setDate(horizon.getDate() + 60);
   const horizonISO = horizon.toISOString().slice(0, 10);
+  const weekEnd = new Date();
+  weekEnd.setDate(weekEnd.getDate() + 6);
+  const weekEndISO = weekEnd.toISOString().slice(0, 10);
 
   type FlowRow = { date: string; label: string; amount: number; kind: "expense" | "income" };
   const flow: FlowRow[] = [];
@@ -50,7 +55,7 @@ export default async function FinancePage() {
     }
   }
   flow.sort((a, b) => a.date.localeCompare(b.date));
-  let running = 0;
+  let running = currentBalance;
   const flowWithBalance = flow.map((f) => {
     running += f.amount;
     return { ...f, balance: running };
@@ -77,6 +82,14 @@ export default async function FinancePage() {
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Finance</h1>
         <p className="mt-1 text-sm text-slate-500">Budget, échéances, investissements et flux en direct.</p>
       </div>
+
+      <WeekAhead
+        currentBalance={currentBalance}
+        charges={charges ?? []}
+        incomes={incomesRangeLike}
+        todayISO={today}
+        weekEndISO={weekEndISO}
+      />
 
       <div className="grid gap-6 sm:grid-cols-3">
         <div className="card p-5">

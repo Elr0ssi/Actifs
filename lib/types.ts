@@ -173,4 +173,5 @@ export interface Household {
   id: string;
   name: string;
   invite_code: string;
+  current_balance: number;
 }

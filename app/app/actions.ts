@@ -57,3 +57,18 @@ export async function quickAddTask(formData: FormData) {
   revalidatePath("/app");
   revalidatePath("/app/tasks");
 }
+
+export async function updateBalance(formData: FormData) {
+  const balance = Number(formData.get("current_balance"));
+  if (Number.isNaN(balance)) return;
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: profile } = await supabase.from("profiles").select("household_id").eq("id", user?.id).single();
+  if (!profile?.household_id) return;
+
+  await supabase.from("households").update({ current_balance: balance }).eq("id", profile.household_id);
+  revalidatePath("/app");
+  revalidatePath("/app/finance");
+}
