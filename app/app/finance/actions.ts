@@ -129,29 +129,6 @@ export async function deleteBalanceEntry(date: string) {
   refresh();
 }
 
-export async function createVariableBudget(formData: FormData) {
-  const name = String(formData.get("name") || "").trim();
-  const amount = Number(formData.get("planned_amount") || 0);
-  if (!name || !amount) return;
-  const { supabase, householdId } = await ctx();
-  if (!householdId) return;
-  await supabase.from("variable_budgets").insert({ household_id: householdId, name, planned_amount: amount });
-  refresh();
-}
-
-export async function updateVariableBudget(id: string, formData: FormData) {
-  const amount = Number(formData.get("planned_amount") || 0);
-  const { supabase } = await ctx();
-  await supabase.from("variable_budgets").update({ planned_amount: amount }).eq("id", id);
-  refresh();
-}
-
-export async function deleteVariableBudget(id: string) {
-  const { supabase } = await ctx();
-  await supabase.from("variable_budgets").delete().eq("id", id);
-  refresh();
-}
-
 export async function updateSavingsConfig(formData: FormData) {
   const mode = String(formData.get("savings_mode") || "fixed");
   const value = Number(formData.get("savings_value") || 0);

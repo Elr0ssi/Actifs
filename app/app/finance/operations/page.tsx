@@ -1,17 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { loadFinanceData } from "@/lib/data/finance";
-import { KIND_LABEL, type OpKind } from "@/lib/finance-engine";
+import { CATEGORIES, KIND_LABEL, monthlyAmount, type OpKind } from "@/lib/finance-engine";
 import { formatEUR, todayISO } from "@/lib/utils";
 import { OperationRow } from "@/components/app/finance/operation-row";
 import { NewOperationButton } from "@/components/app/finance/operation-form";
-import {
-  createVariableBudget,
-  deleteVariableBudget,
-  updateBalanceAnchor,
-  updateSavingsConfig,
-  updateVariableBudget,
-} from "@/app/app/finance/actions";
+import { updateBalanceAnchor, updateSavingsConfig } from "@/app/app/finance/actions";
 
 export const metadata: Metadata = { title: "Gérer les opérations" };
 
@@ -20,7 +14,7 @@ const ORDER: OpKind[] = ["fixed", "income", "variable", "savings"];
 export default async function OperationsPage() {
   const data = await loadFinanceData();
   if (!data) return null;
-  const { ops, anchor, budgets, savingsRule } = data;
+  const { ops, anchor, savingsRule } = data;
   const today = todayISO();
 
   return (
@@ -34,7 +28,7 @@ export default async function OperationsPage() {
         <NewOperationButton defaultDate={today} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <form action={updateBalanceAnchor} className="card space-y-2 p-5">
           <p className="label">Solde bancaire réel aujourd'hui</p>
           <input name="current_balance" type="number" step="0.01" defaultValue={anchor.balance} className="input text-lg font-bold" />
@@ -54,40 +48,40 @@ export default async function OperationsPage() {
           <button className="btn-secondary w-full">Enregistrer</button>
         </form>
 
-        <div className="card p-5">
-          <p className="label mb-2">Budget variable planifié / mois</p>
-          <ul className="space-y-1.5">
-            {budgets.map((b) => (
-              <li key={b.id} className="flex items-center gap-2 text-sm">
-                <span className="flex-1 truncate text-slate-700">{b.name}</span>
-                <form action={updateVariableBudget.bind(null, b.id)} className="flex items-center gap-1">
-                  <input name="planned_amount" type="number" step="0.01" defaultValue={b.amount} className="input w-24 py-1 text-xs" />
-                  <button className="text-xs text-brand-600">✓</button>
-                </form>
-                <form action={deleteVariableBudget.bind(null, b.id)}>
-                  <button className="text-xs text-slate-300 hover:text-rose-600">✕</button>
-                </form>
-              </li>
-            ))}
-          </ul>
-          <form action={createVariableBudget} className="mt-3 flex gap-1.5">
-            <input name="name" placeholder="Courses, Sorties…" className="input py-1.5 text-xs" required />
-            <input name="planned_amount" type="number" step="0.01" placeholder="€" className="input w-20 py-1.5 text-xs" required />
-            <button className="btn-secondary px-2 py-1.5 text-xs">+</button>
-          </form>
-          <p className="mt-2 text-right text-xs text-slate-400">Total : {formatEUR(budgets.reduce((s, b) => s + b.amount, 0))}</p>
-        </div>
       </div>
 
       {ORDER.map((kind) => {
         const list = ops.filter((o) => o.kind === kind);
+        const order = CATEGORIES[kind];
+        const groups = [...new Set(list.map((o) => o.category))].sort((x, y) => {
+          const ix = order.indexOf(x), iy = order.indexOf(y);
+          return (ix < 0 ? 99 : ix) - (iy < 0 ? 99 : iy) || x.localeCompare(y);
+        });
+        const monthly = list.filter((o) => o.active).reduce((s, o) => s + monthlyAmount(o), 0);
         return (
           <section key={kind} className="card p-5">
-            <h2 className="mb-3 font-semibold text-slate-900">{KIND_LABEL[kind]} <span className="text-sm font-normal text-slate-400">({list.length})</span></h2>
+            <div className="mb-3 flex items-baseline justify-between">
+              <h2 className="font-semibold text-slate-900">{KIND_LABEL[kind]} <span className="text-sm font-normal text-slate-400">({list.length})</span></h2>
+              {monthly > 0 && <span className="text-sm text-slate-500">≈ {formatEUR(monthly)} / mois</span>}
+            </div>
             {list.length === 0 && <p className="text-sm text-slate-400">Aucune opération.</p>}
-            <ul className="space-y-2">
-              {list.map((op) => <OperationRow key={`${op.table}-${op.id}`} op={op} today={today} />)}
-            </ul>
+            <div className="space-y-4">
+              {groups.map((cat) => {
+                const items = list.filter((o) => o.category === cat);
+                const sub = items.filter((o) => o.active).reduce((s, o) => s + monthlyAmount(o), 0);
+                return (
+                  <div key={cat}>
+                    <div className="mb-1.5 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      <span>{cat}</span>
+                      {sub > 0 && <span className="normal-case">≈ {formatEUR(sub)} / mois</span>}
+                    </div>
+                    <ul className="space-y-2">
+                      {items.map((op) => <OperationRow key={`${op.table}-${op.id}`} op={op} today={today} />)}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
           </section>
         );
       })}

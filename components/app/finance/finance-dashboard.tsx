@@ -9,6 +9,8 @@ import {
   getDailyBalances,
   getMonthlyBudget,
   getDateSituation,
+  getSkippedOccurrences,
+  type OpKind,
   diffDays,
   KIND_LABEL,
   KIND_STYLE,
@@ -22,7 +24,7 @@ import {
 import { formatEUR, MONTHS_FR, cx } from "@/lib/utils";
 import { DonutChart } from "@/components/app/charts/donut-chart";
 import { NewOperationButton } from "@/components/app/finance/operation-form";
-import { skipOccurrence, deleteOperation, updateBalanceAnchor } from "@/app/app/finance/actions";
+import { skipOccurrence, restoreOccurrence, deleteOperation, updateBalanceAnchor } from "@/app/app/finance/actions";
 
 type View = "month" | "week" | "year";
 const DOW = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
@@ -51,7 +53,6 @@ function tooltip(o: Occurrence) {
 export function FinanceDashboard({
   ops,
   anchor,
-  budgets,
   savingsRule,
   today,
   snapshots,
@@ -59,7 +60,6 @@ export function FinanceDashboard({
 }: {
   ops: FinOp[];
   anchor: BalanceAnchor;
-  budgets: { name: string; amount: number }[];
   savingsRule: { mode: "fixed" | "percent"; value: number };
   today: string;
   snapshots: Record<string, number[]>;
@@ -72,7 +72,7 @@ export function FinanceDashboard({
   const monthKey = `${y}-${String(m + 1).padStart(2, "0")}`;
   const { start: mStart, end: mEnd } = monthBounds(y, m);
 
-  const budget = useMemo(() => getMonthlyBudget(ops, anchor, y, m, budgets, savingsRule), [ops, anchor, y, m, budgets, savingsRule]);
+  const budget = useMemo(() => getMonthlyBudget(ops, anchor, y, m, savingsRule), [ops, anchor, y, m, savingsRule]);
 
   const select = (d: string) => {
     setSelected(d);
@@ -92,6 +92,12 @@ export function FinanceDashboard({
     for (const o of expand(ops, gridStart, gridEnd)) map.set(o.date, [...(map.get(o.date) ?? []), o]);
     return map;
   }, [ops, gridStart, gridEnd]);
+  const skippedByDate = useMemo(() => {
+    const map = new Map<string, Occurrence[]>();
+    for (const o of getSkippedOccurrences(ops, gridStart, gridEnd)) map.set(o.date, [...(map.get(o.date) ?? []), o]);
+    return map;
+  }, [ops, gridStart, gridEnd]);
+  const [picked, setPicked] = useState<OpKind | null>(null);
   const days: string[] = [];
   for (let d = gridStart; d <= gridEnd; d = addDays(d, 1)) days.push(d);
 
@@ -122,7 +128,8 @@ export function FinanceDashboard({
         </div>
       </div>
 
-      <SummaryCards budget={budget} days={monthBounds(y, m).days} anchor={anchor} today={today} />
+      <SummaryCards budget={budget} days={monthBounds(y, m).days} anchor={anchor} today={today} picked={picked} onPick={(k) => setPicked(k === picked ? null : k)} />
+      {picked && <KindDetail kind={picked} ops={ops} y={y} m={m} onClose={() => setPicked(null)} />}
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-6">
@@ -172,6 +179,11 @@ export function FinanceDashboard({
                         </span>
                       ))}
                       {occ.length > max && <span className="text-[10px] text-slate-400">+{occ.length - max} autre(s)</span>}
+                      {(skippedByDate.get(d) ?? []).map((o, i) => (
+                        <span key={`s${i}`} title={`${o.op.name} — occurrence ignorée`} className="w-full truncate rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-400 line-through">
+                          {formatEUR(o.op.amount)} {o.op.name}
+                        </span>
+                      ))}
                     </button>
                   );
                 })}
@@ -192,23 +204,28 @@ export function FinanceDashboard({
   );
 }
 
-function SummaryCards({ budget, days, anchor, today }: { budget: ReturnType<typeof getMonthlyBudget>; days: number; anchor: BalanceAnchor; today: string }) {
+function SummaryCards({ budget, days, anchor, today, picked, onPick }: { budget: ReturnType<typeof getMonthlyBudget>; days: number; anchor: BalanceAnchor; today: string; picked: OpKind | null; onPick: (k: OpKind) => void }) {
   const pct = (n: number) => (budget.income > 0 ? `${Math.round((n / budget.income) * 100)} %` : "—");
   const stats = [
-    { label: "Revenus", value: budget.income, sub: `${budget.incomeCount} prévu(s)`, color: "text-emerald-600", dot: "bg-emerald-500" },
-    { label: "Charges fixes", value: budget.fixed, sub: `${pct(budget.fixed)} des revenus`, color: "text-rose-600", dot: "bg-rose-500" },
-    { label: "Budget variable", value: budget.variable, sub: `${pct(budget.variable)} des revenus`, color: "text-amber-600", dot: "bg-amber-500" },
-    { label: "Épargne / invest.", value: budget.savings, sub: `${pct(budget.savings)} des revenus`, color: "text-violet-600", dot: "bg-violet-500" },
+    { kind: "income" as OpKind, label: "Revenus", value: budget.income, sub: `${budget.incomeCount} prévu(s)`, color: "text-emerald-600", dot: "bg-emerald-500" },
+    { kind: "fixed" as OpKind, label: "Charges fixes", value: budget.fixed, sub: `${pct(budget.fixed)} des revenus`, color: "text-rose-600", dot: "bg-rose-500" },
+    { kind: "variable" as OpKind, label: "Budget variable", value: budget.variable, sub: `${pct(budget.variable)} des revenus`, color: "text-amber-600", dot: "bg-amber-500" },
+    { kind: "savings" as OpKind, label: "Épargne / invest.", value: budget.savings, sub: `${pct(budget.savings)} des revenus`, color: "text-violet-600", dot: "bg-violet-500" },
   ];
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr]">
-      <div className="card grid grid-cols-2 gap-4 p-4 sm:grid-cols-4 md:col-span-2 xl:col-span-1">
+      <div className="card grid grid-cols-2 gap-1 p-2 sm:grid-cols-4 md:col-span-2 xl:col-span-1">
         {stats.map((s) => (
-          <div key={s.label} className="min-w-0">
+          <button
+            key={s.label}
+            onClick={() => onPick(s.kind)}
+            title="Voir le détail"
+            className={cx("min-w-0 rounded-xl p-2 text-left transition hover:bg-slate-50", picked === s.kind && "bg-slate-100 ring-1 ring-slate-200")}
+          >
             <p className="flex items-center gap-1.5 truncate text-xs text-slate-500"><span className={cx("h-2 w-2 rounded-full", s.dot)} />{s.label}</p>
             <p className={cx("mt-0.5 text-lg font-bold", s.color)}>{formatEUR(s.value)}</p>
             <p className="truncate text-[11px] text-slate-400">{s.sub}</p>
-          </div>
+          </button>
         ))}
       </div>
       <div className="card flex items-center justify-between gap-3 border-emerald-200 bg-emerald-50/60 p-4">
@@ -233,6 +250,63 @@ function SummaryCards({ budget, days, anchor, today }: { budget: ReturnType<type
         <p className="text-[11px] text-slate-500">Dernier : <b>{formatEUR(anchor.balance)}</b> au {fmtShort(anchor.date)}</p>
       </form>
     </div>
+  );
+}
+
+function KindDetail({ kind, ops, y, m, onClose }: { kind: OpKind; ops: FinOp[]; y: number; m: number; onClose: () => void }) {
+  const { start, end } = monthBounds(y, m);
+  const occ = useMemo(() => expand(ops.filter((o) => o.kind === kind), start, end), [ops, kind, start, end]);
+  const skipped = useMemo(() => getSkippedOccurrences(ops.filter((o) => o.kind === kind), start, end), [ops, kind, start, end]);
+  const [pending, run] = useTransition();
+  const cats = [...new Set(occ.map((o) => o.op.category || "Autre"))];
+  const total = occ.reduce((s, o) => s + o.op.amount, 0);
+
+  return (
+    <section className={cx("card p-5", pending && "opacity-70")}>
+      <div className="mb-4 flex items-center justify-between">
+        <p className="font-semibold text-slate-900">
+          <span className={cx("mr-2 inline-block h-2.5 w-2.5 rounded-full", KIND_STYLE[kind].dot)} />
+          {KIND_LABEL[kind]} — {MONTHS_FR[m]} {y} <span className={cx("ml-2", KIND_STYLE[kind].text)}>{formatEUR(total)}</span>
+        </p>
+        <button onClick={onClose} className="text-sm text-slate-400 hover:text-slate-700">Fermer ✕</button>
+      </div>
+      {occ.length === 0 && <p className="text-sm text-slate-400">Aucune opération ce mois-ci.</p>}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {cats.map((cat) => {
+          const items = occ.filter((o) => (o.op.category || "Autre") === cat);
+          return (
+            <div key={cat} className="rounded-xl border border-slate-100 p-3">
+              <div className="mb-2 flex justify-between text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <span>{cat}</span>
+                <span className={KIND_STYLE[kind].text}>{formatEUR(items.reduce((s, o) => s + o.op.amount, 0))}</span>
+              </div>
+              <OccList items={items} />
+            </div>
+          );
+        })}
+      </div>
+      {skipped.length > 0 && (
+        <div className="mt-4 border-t border-slate-100 pt-3">
+          <p className="mb-1.5 text-xs font-semibold text-slate-400">Occurrences ignorées</p>
+          <SkippedList items={skipped} onRestore={(o) => run(() => restoreOccurrence(o.op.table, o.op.id, o.date))} />
+        </div>
+      )}
+    </section>
+  );
+}
+
+function SkippedList({ items, onRestore }: { items: Occurrence[]; onRestore: (o: Occurrence) => void }) {
+  return (
+    <ul className="space-y-1">
+      {items.map((o, i) => (
+        <li key={i} className="flex items-center gap-2 text-sm text-slate-400">
+          <span className="w-12 shrink-0 text-[11px]">{fmtShort(o.date)}</span>
+          <span className="min-w-0 flex-1 truncate line-through">{o.op.name}</span>
+          <span className="shrink-0 line-through">{formatEUR(o.op.amount)}</span>
+          <button onClick={() => onRestore(o)} className="shrink-0 text-[11px] font-medium text-brand-600 hover:underline">Rétablir</button>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -265,6 +339,11 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
   const [pending, start] = useTransition();
   const skip = (o: Occurrence) => start(() => skipOccurrence(o.op.table, o.op.id, o.date));
   const del = (o: Occurrence) => start(() => deleteOperation(o.op.table, o.op.id));
+  const skipped = useMemo(() => {
+    const d = new Date(toMs(date));
+    const { start: from, end: to } = monthBounds(d.getUTCFullYear(), d.getUTCMonth());
+    return getSkippedOccurrences(ops, from, to);
+  }, [ops, date]);
 
   return (
     <aside className={cx("card space-y-5 p-5", pending && "opacity-70")}>
@@ -313,6 +392,13 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
           </div>
         )}
       </div>
+
+      {skipped.length > 0 && (
+        <div>
+          <p className="mb-2 text-sm font-semibold text-slate-400">Ignorées ce mois</p>
+          <SkippedList items={skipped} onRestore={(o) => start(() => restoreOccurrence(o.op.table, o.op.id, o.date))} />
+        </div>
+      )}
     </aside>
   );
 }

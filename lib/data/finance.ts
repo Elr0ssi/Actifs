@@ -8,10 +8,9 @@ export async function loadFinanceData() {
   const { supabase, profile, household } = ctx;
   const householdId = profile?.household_id ?? "";
 
-  const [{ data: charges }, { data: incomes }, { data: budgets }, { data: snapshots }, { data: entries }] = await Promise.all([
+  const [{ data: charges }, { data: incomes }, { data: snapshots }, { data: entries }] = await Promise.all([
     supabase.from("recurring_charges").select("*").eq("household_id", householdId).order("next_date"),
     supabase.from("incomes").select("*").eq("household_id", householdId).order("expected_date"),
-    supabase.from("variable_budgets").select("*").eq("household_id", householdId).order("created_at"),
     supabase.from("forecast_snapshots").select("month, balances").eq("household_id", householdId),
     supabase.from("balance_entries").select("entry_date, balance").eq("household_id", householdId).order("entry_date"),
   ]);
@@ -27,7 +26,6 @@ export async function loadFinanceData() {
     householdId,
     ops,
     anchor,
-    budgets: (budgets ?? []).map((b) => ({ id: b.id as string, name: b.name as string, amount: Number(b.planned_amount) })),
     savingsRule: { mode: (household?.savings_mode ?? "fixed") as "fixed" | "percent", value: Number(household?.savings_value ?? 0) },
     realBalances: (entries ?? []).map((e) => ({ date: e.entry_date as string, balance: Number(e.balance) })),
     snapshots: Object.fromEntries((snapshots ?? []).map((s) => [s.month as string, s.balances as number[]])),

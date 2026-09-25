@@ -116,6 +116,18 @@ export function occurrencesOf(op: FinOp, from: string, to: string): string[] {
   return out.filter((d) => !skipped.has(d)).sort();
 }
 
+/** Occurrences the user chose to ignore — kept visible (struck through) so they can be restored. */
+export function getSkippedOccurrences(ops: FinOp[], from: string, to: string): Occurrence[] {
+  const out: Occurrence[] = [];
+  for (const op of ops) {
+    if (!op.skipped.length) continue;
+    for (const date of occurrencesOf({ ...op, skipped: [] }, from, to)) {
+      if (op.skipped.includes(date)) out.push({ date, op, signed: signOf(op) * op.amount });
+    }
+  }
+  return out.sort((a, b) => a.date.localeCompare(b.date));
+}
+
 export function expand(ops: FinOp[], from: string, to: string): Occurrence[] {
   const out: Occurrence[] = [];
   for (const op of ops) for (const date of occurrencesOf(op, from, to)) out.push({ date, op, signed: signOf(op) * op.amount });
@@ -214,6 +226,7 @@ export interface MonthlyBudget {
   endBalance: number;
   resteAVivre: number;
   variableByCategory: { label: string; value: number }[];
+  occurrences: Occurrence[];
 }
 
 export function getMonthlyBudget(
@@ -221,7 +234,6 @@ export function getMonthlyBudget(
   anchor: BalanceAnchor,
   year: number,
   month: number,
-  plannedVariable: { name: string; amount: number }[],
   savingsRule: { mode: "fixed" | "percent"; value: number }
 ): MonthlyBudget {
   const { start, end } = monthBounds(year, month);
@@ -229,17 +241,14 @@ export function getMonthlyBudget(
   const total = (k: OpKind) => occ.filter((o) => o.op.kind === k).reduce((s, o) => s + o.op.amount, 0);
   const income = total("income");
   const fixed = total("fixed");
-  const scheduledVariable = total("variable");
-  const plannedTotal = plannedVariable.reduce((s, b) => s + b.amount, 0);
-  const variable = Math.max(plannedTotal, scheduledVariable);
+  const variable = total("variable");
   const savingsOps = total("savings");
   const ruleAmount = savingsRule.mode === "percent" ? (income * savingsRule.value) / 100 : savingsRule.value;
   const savings = savingsOps > 0 ? savingsOps : ruleAmount;
   const startBalance = getBalanceAtDate(ops, anchor, addDays(start, -1));
 
   const byCat = new Map<string, number>();
-  if (plannedTotal > 0) for (const b of plannedVariable) byCat.set(b.name, (byCat.get(b.name) ?? 0) + b.amount);
-  else for (const o of occ.filter((o) => o.op.kind === "variable")) byCat.set(o.op.category || "Autre", (byCat.get(o.op.category || "Autre") ?? 0) + o.op.amount);
+  for (const o of occ.filter((o) => o.op.kind === "variable")) byCat.set(o.op.category || "Autre", (byCat.get(o.op.category || "Autre") ?? 0) + o.op.amount);
 
   return {
     income,
@@ -250,6 +259,7 @@ export function getMonthlyBudget(
     startBalance,
     endBalance: getBalanceAtDate(ops, anchor, end),
     resteAVivre: startBalance + income - fixed - variable - savings,
+    occurrences: occ,
     variableByCategory: [...byCat.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value),
   };
 }
@@ -314,6 +324,18 @@ export function describeRecurrence(op: FinOp) {
     return `${every}, le ${days.join(" et ")}`;
   }
   return every;
+}
+
+/** Approximate monthly weight of an operation (for subtotals in lists). */
+export function monthlyAmount(op: FinOp) {
+  const every = Math.max(1, op.interval || 1);
+  switch (op.frequency) {
+    case "daily": return (op.amount * 30.4) / every;
+    case "weekly": return (op.amount * 4.33 * Math.max(1, op.weekdays.length)) / every;
+    case "monthly": return (op.amount * Math.max(1, op.monthDays.length)) / every;
+    case "yearly": return op.amount / 12 / every;
+    default: return 0;
+  }
 }
 
 export const CATEGORIES: Record<OpKind, string[]> = {
