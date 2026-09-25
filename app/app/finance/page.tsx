@@ -1,274 +1,200 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
-import { formatEUR, todayISO } from "@/lib/utils";
-import type { RecurringCharge, Income, Investment } from "@/lib/types";
-import { projectOccurrences, monthlyEquivalent, monthlyTotals, groupByCategory } from "@/lib/finance";
-import { DonutChart } from "@/components/app/charts/donut-chart";
-import { MonthlyBarChart } from "@/components/app/charts/monthly-bar-chart";
-import { BalanceAreaChart } from "@/components/app/charts/balance-area-chart";
-import { WeekAhead } from "@/components/app/week-ahead";
+import { todayISO, MONTHS_FR } from "@/lib/utils";
+import type { RecurringCharge, Income, Investment, VariableBudget, Transaction } from "@/lib/types";
 import {
-  createCharge,
-  deleteCharge,
-  createIncome,
-  deleteIncome,
-  markIncomeReceived,
-  createInvestment,
-  deleteInvestment,
-} from "@/app/app/finance/actions";
+  monthlyEquivalent,
+  getSavingsAmount,
+  daysInMonthCount,
+  getWeeksOfMonth,
+  getWeekendsOfMonth,
+  computePeriodAvailable,
+  getNextIncomeAfter,
+  sumOccurrencesInRange,
+  type RangeChargeLike,
+} from "@/lib/finance";
+import { FinanceSummaryCards } from "@/components/app/finance/summary-cards";
+import { ForecastBalanceChart } from "@/components/app/finance/forecast-chart";
+import { AvailableByPeriod } from "@/components/app/finance/available-by-period";
+import { VariableBudgetsSection } from "@/components/app/finance/variable-budgets";
+import { RecurringCharges } from "@/components/app/finance/recurring-charges";
+import { RecurringIncomes } from "@/components/app/finance/recurring-incomes";
+import { SavingsSection } from "@/components/app/finance/savings-section";
+import { UpcomingMovements } from "@/components/app/finance/upcoming-movements";
+import { AddOperationModal } from "@/components/app/finance/add-operation-modal";
+import { updateBalance } from "@/app/app/actions";
 
-export const metadata: Metadata = { title: "Finance" };
+export const metadata: Metadata = { title: "Finances" };
 
-export default async function FinancePage() {
+function shiftMonth(iso: string, delta: number) {
+  const [y, m] = iso.split("-").map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+export default async function FinancePage({ searchParams }: { searchParams: { month?: string } }) {
   const ctx = await getAppContext();
   if (!ctx) return null;
   const { supabase, profile, household } = ctx;
   const householdId = profile?.household_id ?? "";
   const currentBalance = Number(household?.current_balance ?? 0);
+  const savingsMode = household?.savings_mode ?? "fixed";
+  const savingsValue = Number(household?.savings_value ?? 0);
 
-  const [{ data: charges }, { data: incomes }, { data: investments }] = await Promise.all([
+  const now = new Date();
+  const monthISO = searchParams.month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const [year, monthNum] = monthISO.split("-").map(Number);
+  const month = monthNum - 1;
+  const monthStart = new Date(year, month, 1);
+  const monthEnd = new Date(year, month + 1, 0);
+  const monthStartISO = monthStart.toISOString().slice(0, 10);
+  const monthEndISO = monthEnd.toISOString().slice(0, 10);
+  const today = todayISO();
+  const days = daysInMonthCount(year, month);
+
+  const [{ data: charges }, { data: incomes }, { data: investments }, { data: budgets }, { data: transactions }] = await Promise.all([
     supabase.from("recurring_charges").select("*").eq("household_id", householdId).eq("active", true).order("next_date").returns<RecurringCharge[]>(),
-    supabase.from("incomes").select("*").eq("household_id", householdId).order("expected_date").returns<Income[]>(),
+    supabase.from("incomes").select("*").eq("household_id", householdId).eq("active", true).order("expected_date").returns<Income[]>(),
     supabase.from("investments").select("*").eq("household_id", householdId).order("invested_date", { ascending: false }).returns<Investment[]>(),
+    supabase.from("variable_budgets").select("*").eq("household_id", householdId).order("position").returns<VariableBudget[]>(),
+    supabase
+      .from("transactions")
+      .select("*")
+      .eq("household_id", householdId)
+      .gte("txn_date", monthStartISO)
+      .lte("txn_date", monthEndISO)
+      .returns<Transaction[]>(),
   ]);
 
-  const today = todayISO();
-  const horizon = new Date();
-  horizon.setDate(horizon.getDate() + 60);
-  const horizonISO = horizon.toISOString().slice(0, 10);
-  const weekEnd = new Date();
-  weekEnd.setDate(weekEnd.getDate() + 6);
-  const weekEndISO = weekEnd.toISOString().slice(0, 10);
+  const chargesList = charges ?? [];
+  const incomesList = incomes ?? [];
+  const incomesRangeLike: RangeChargeLike[] = incomesList.map((i) => ({
+    id: i.id,
+    name: i.name,
+    amount: Number(i.amount),
+    next_date: i.expected_date,
+    frequency: i.recurring ? i.frequency : "once",
+  }));
 
-  type FlowRow = { date: string; label: string; amount: number; kind: "expense" | "income" };
-  const flow: FlowRow[] = [];
-  for (const c of charges ?? []) {
-    for (const d of projectOccurrences(c.next_date, c.frequency, today, horizonISO)) {
-      flow.push({ date: d, label: c.name, amount: -Number(c.amount), kind: "expense" });
-    }
-  }
-  for (const i of incomes ?? []) {
-    if (i.status === "received") continue;
-    const freq = i.recurring ? i.frequency : "once";
-    for (const d of projectOccurrences(i.expected_date, freq, today, horizonISO)) {
-      flow.push({ date: d, label: i.name, amount: Number(i.amount), kind: "income" });
-    }
-  }
-  flow.sort((a, b) => a.date.localeCompare(b.date));
+  const monthlyIncome = incomesList.filter((i) => i.recurring).reduce((s, i) => s + monthlyEquivalent(Number(i.amount), i.frequency), 0);
+  const monthlyFixedCharges = chargesList.reduce((s, c) => s + monthlyEquivalent(Number(c.amount), c.frequency), 0);
+  const variableBudgetTotal = (budgets ?? []).reduce((s, b) => s + Number(b.planned_amount), 0);
+  const savingsAmount = getSavingsAmount(savingsMode, savingsValue, monthlyIncome);
+  const resteAVivre = monthlyIncome - monthlyFixedCharges - variableBudgetTotal - savingsAmount;
+
+  const dailyVariableRate = variableBudgetTotal / days;
+  const dailySavingsRate = savingsAmount / days;
+
+  // Forecast: day-by-day balance across the selected month, anchored at the household's current balance.
+  const points: { date: string; balance: number }[] = [];
   let running = currentBalance;
-  const flowWithBalance = flow.map((f) => {
-    running += f.amount;
-    return { ...f, balance: running };
-  });
+  for (let d = 1; d <= days; d++) {
+    const dateISO = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const dayExpense = sumOccurrencesInRange(chargesList, dateISO, dateISO).total;
+    const dayIncome = sumOccurrencesInRange(incomesRangeLike, dateISO, dateISO).total;
+    running += dayIncome - dayExpense;
+    points.push({ date: dateISO, balance: running });
+  }
+  const chargeEvents = sumOccurrencesInRange(chargesList, monthStartISO, monthEndISO).breakdown.map((b) => ({ date: b.date, label: b.name, amount: -b.amount }));
+  const incomeEvents = sumOccurrencesInRange(incomesRangeLike, monthStartISO, monthEndISO).breakdown.map((b) => ({ date: b.date, label: b.name, amount: b.amount }));
+  const events = [...chargeEvents, ...incomeEvents];
 
-  const monthlyExpenses = (charges ?? []).reduce((s, c) => s + monthlyEquivalent(Number(c.amount), c.frequency), 0);
-  const monthlyIncomes = (incomes ?? []).filter((i) => i.recurring).reduce((s, i) => s + monthlyEquivalent(Number(i.amount), i.frequency), 0);
-  const totalInvested = (investments ?? []).reduce((s, i) => s + Number(i.amount_invested), 0);
+  const weeks = getWeeksOfMonth(year, month).map((w) => ({
+    ...computePeriodAvailable(w, chargesList, incomesRangeLike, dailyVariableRate, dailySavingsRate),
+    label: `${w.label} (${w.days}j)`,
+  }));
+  const weekends = getWeekendsOfMonth(year, month).map((w) => ({
+    ...computePeriodAvailable(w, chargesList, incomesRangeLike, dailyVariableRate, dailySavingsRate),
+    label: w.label,
+  }));
+  const monthCard = {
+    ...computePeriodAvailable({ startISO: monthStartISO, endISO: monthEndISO, label: "Mois", days }, chargesList, incomesRangeLike, dailyVariableRate, dailySavingsRate),
+    label: `${MONTHS_FR[month]} ${year}`,
+  };
 
-  const categoryBreakdown = groupByCategory(charges ?? []);
+  const nextIncomeRaw = getNextIncomeAfter(incomesRangeLike, today);
+  let nextIncome = null;
+  if (nextIncomeRaw) {
+    const untilISO = new Date(new Date(`${nextIncomeRaw.date}T00:00:00`).getTime() - 86_400_000).toISOString().slice(0, 10);
+    const daysUntil = Math.max(1, Math.round((new Date(`${nextIncomeRaw.date}T00:00:00`).getTime() - new Date(`${today}T00:00:00`).getTime()) / 86_400_000));
+    const chargesUntil = sumOccurrencesInRange(chargesList, today, untilISO).total;
+    const available = currentBalance - chargesUntil - dailyVariableRate * daysUntil - dailySavingsRate * daysUntil;
+    nextIncome = { ...nextIncomeRaw, days: daysUntil, available, perDay: available / daysUntil };
+  }
 
-  const incomesRangeLike = (incomes ?? [])
-    .filter((i) => i.status !== "received")
-    .map((i) => ({ id: i.id, name: i.name, amount: Number(i.amount), next_date: i.expected_date, frequency: i.recurring ? i.frequency : ("once" as const) }));
-  const expenseByMonth = monthlyTotals(charges ?? [], 6, today);
-  const incomeByMonth = monthlyTotals(incomesRangeLike, 6, today);
-  const sixMonths = expenseByMonth.map((m, i) => ({ label: m.label, expense: m.total, income: incomeByMonth[i]?.total ?? 0 }));
+  const spentByBudget = new Map<string, number>();
+  for (const t of transactions ?? []) {
+    if (t.variable_budget_id && t.kind === "expense") {
+      spentByBudget.set(t.variable_budget_id, (spentByBudget.get(t.variable_budget_id) ?? 0) + Number(t.amount));
+    }
+  }
 
-  const balancePoints = flowWithBalance.map((f) => ({ date: f.date, balance: f.balance }));
+  const horizon = new Date();
+  horizon.setDate(horizon.getDate() + 30);
+  const horizonISO = horizon.toISOString().slice(0, 10);
+  const upcoming = [
+    ...sumOccurrencesInRange(chargesList, today, horizonISO).breakdown.map((b) => ({ date: b.date, label: b.name, amount: b.amount, kind: "expense" as const })),
+    ...sumOccurrencesInRange(incomesRangeLike, today, horizonISO).breakdown.map((b) => ({ date: b.date, label: b.name, amount: b.amount, kind: "income" as const })),
+  ].sort((a, b) => a.date.localeCompare(b.date));
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Finance</h1>
-        <p className="mt-1 text-sm text-slate-500">Budget, échéances, investissements et flux en direct.</p>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Finances</h1>
+          <p className="mt-1 text-sm text-slate-500">Vue d'ensemble de votre situation et de votre reste à vivre.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <form action={updateBalance} className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2 py-1">
+            <span className="text-xs text-slate-400">Solde</span>
+            <input name="current_balance" type="number" step="0.01" defaultValue={currentBalance} className="w-20 border-0 p-0 text-sm font-semibold focus:ring-0" />
+            <button className="text-xs text-brand-600">✓</button>
+          </form>
+          <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-1 py-1">
+            <Link href={`/app/finance?month=${shiftMonth(monthISO, -1)}`} className="rounded-lg px-2 py-1 text-sm hover:bg-slate-50">‹</Link>
+            <span className="px-2 text-sm font-medium text-slate-700">{MONTHS_FR[month]} {year}</span>
+            <Link href={`/app/finance?month=${shiftMonth(monthISO, 1)}`} className="rounded-lg px-2 py-1 text-sm hover:bg-slate-50">›</Link>
+          </div>
+          <AddOperationModal budgets={budgets ?? []} />
+        </div>
       </div>
 
-      <WeekAhead
-        currentBalance={currentBalance}
-        charges={charges ?? []}
-        incomes={incomesRangeLike}
-        todayISO={today}
-        weekEndISO={weekEndISO}
+      <FinanceSummaryCards
+        income={monthlyIncome}
+        fixedCharges={monthlyFixedCharges}
+        variableBudget={variableBudgetTotal}
+        savings={savingsAmount}
+        resteAVivre={resteAVivre}
+        daysInMonth={days}
       />
 
-      <div className="grid gap-6 sm:grid-cols-3">
-        <div className="card p-5">
-          <p className="label">Charges fixes / mois</p>
-          <p className="mt-2 text-2xl font-bold text-rose-600">{formatEUR(monthlyExpenses)}</p>
-        </div>
-        <div className="card p-5">
-          <p className="label">Revenus fixes / mois</p>
-          <p className="mt-2 text-2xl font-bold text-emerald-600">{formatEUR(monthlyIncomes)}</p>
-        </div>
-        <div className="card p-5">
-          <p className="label">Total investi</p>
-          <p className="mt-2 text-2xl font-bold text-brand-600">{formatEUR(totalInvested)}</p>
+      <section className="card p-6">
+        <h2 className="font-semibold text-slate-900">Solde prévisionnel</h2>
+        <p className="mb-2 text-sm text-slate-500">Évolution de votre solde en tenant compte de tous les mouvements prévus.</p>
+        <ForecastBalanceChart points={points} events={events} monthLabel={`${MONTHS_FR[month]} ${year}`} />
+      </section>
+
+      <AvailableByPeriod weeks={weeks} weekends={weekends} month={monthCard} nextIncome={nextIncome} />
+
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+        <VariableBudgetsSection budgets={budgets ?? []} spentByBudget={spentByBudget} />
+        <div className="space-y-6">
+          <RecurringCharges charges={chargesList} />
+          <RecurringIncomes incomes={incomesList} />
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="card p-6">
-          <h2 className="mb-4 font-semibold text-slate-900">Répartition des charges</h2>
-          <DonutChart items={categoryBreakdown} />
-        </section>
-        <section className="card p-6">
-          <h2 className="mb-4 font-semibold text-slate-900">Revenus vs charges (6 prochains mois)</h2>
-          <MonthlyBarChart months={sixMonths} />
-        </section>
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+        <SavingsSection mode={savingsMode} value={savingsValue} computedAmount={savingsAmount} investments={investments ?? []} />
+        <UpcomingMovements items={upcoming} />
       </div>
-
-      <section className="card p-6">
-        <h2 className="mb-4 font-semibold text-slate-900">Solde cumulé projeté (60 jours)</h2>
-        <BalanceAreaChart points={balancePoints} />
-      </section>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="card p-6">
-          <h2 className="mb-4 font-semibold text-slate-900">Charges récurrentes</h2>
-          <form action={createCharge} className="mb-4 space-y-2">
-            <input name="name" placeholder="Ex. Loyer" className="input" required />
-            <div className="flex gap-2">
-              <input name="amount" type="number" step="0.01" placeholder="Montant €" className="input" required />
-              <select name="frequency" className="input" defaultValue="monthly">
-                <option value="monthly">Mensuel</option>
-                <option value="yearly">Annuel</option>
-                <option value="weekly">Hebdo</option>
-                <option value="once">Ponctuel</option>
-              </select>
-            </div>
-            <div className="flex gap-2">
-              <input name="category" placeholder="Catégorie (ex. Logement)" className="input flex-1" />
-              <input name="next_date" type="date" className="input flex-1" required />
-            </div>
-            <button className="btn-primary w-full">Ajouter</button>
-          </form>
-          <ul className="space-y-2">
-            {(charges ?? []).map((c) => (
-              <li key={c.id} className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2 text-sm">
-                <span>
-                  <span className="font-medium text-slate-800">{c.name}</span>
-                  <span className="ml-2 text-xs text-slate-400">{c.category} · {c.next_date} · {c.frequency}</span>
-                </span>
-                <span className="flex items-center gap-3">
-                  <span className="font-semibold text-rose-600">{formatEUR(Number(c.amount))}</span>
-                  <form action={deleteCharge.bind(null, c.id)}>
-                    <button className="text-xs text-slate-300 hover:text-rose-600">✕</button>
-                  </form>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="card p-6">
-          <h2 className="mb-4 font-semibold text-slate-900">Revenus programmés</h2>
-          <form action={createIncome} className="mb-4 space-y-2">
-            <input name="name" placeholder="Ex. Salaire" className="input" required />
-            <div className="flex gap-2">
-              <input name="amount" type="number" step="0.01" placeholder="Montant €" className="input" required />
-              <input name="expected_date" type="date" className="input" required />
-            </div>
-            <div className="flex items-center gap-2">
-              <select name="frequency" className="input flex-1" defaultValue="monthly">
-                <option value="monthly">Mensuel</option>
-                <option value="yearly">Annuel</option>
-                <option value="weekly">Hebdo</option>
-                <option value="once">Ponctuel</option>
-              </select>
-              <label className="flex items-center gap-1.5 text-xs text-slate-500">
-                <input type="checkbox" name="recurring" className="h-4 w-4 rounded border-slate-300" /> Récurrent
-              </label>
-            </div>
-            <button className="btn-primary w-full">Ajouter</button>
-          </form>
-          <ul className="space-y-2">
-            {(incomes ?? []).map((i) => (
-              <li key={i.id} className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2 text-sm">
-                <span>
-                  <span className="font-medium text-slate-800">{i.name}</span>
-                  <span className="ml-2 text-xs text-slate-400">{i.expected_date} {i.status === "received" && "· reçu"}</span>
-                </span>
-                <span className="flex items-center gap-3">
-                  <span className="font-semibold text-emerald-600">{formatEUR(Number(i.amount))}</span>
-                  {i.status !== "received" && (
-                    <form action={markIncomeReceived.bind(null, i.id)}>
-                      <button className="text-xs text-slate-400 hover:text-emerald-600">✓</button>
-                    </form>
-                  )}
-                  <form action={deleteIncome.bind(null, i.id)}>
-                    <button className="text-xs text-slate-300 hover:text-rose-600">✕</button>
-                  </form>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
-
-      <section className="card p-6">
-        <h2 className="mb-4 font-semibold text-slate-900">Investissements</h2>
-        <form action={createInvestment} className="mb-4 grid gap-2 sm:grid-cols-2">
-          <input name="project_name" placeholder="Projet (ex. Boîte X)" className="input" required />
-          <input name="amount_invested" type="number" step="0.01" placeholder="Montant investi €" className="input" required />
-          <input name="invested_date" type="date" className="input" required />
-          <input name="expected_return" type="number" step="0.01" placeholder="Retour attendu € (optionnel)" className="input" />
-          <input name="expected_return_date" type="date" className="input" />
-          <input name="notes" placeholder="Notes" className="input" />
-          <button className="btn-primary sm:col-span-2">Ajouter l'investissement</button>
-        </form>
-        <ul className="space-y-2">
-          {(investments ?? []).map((inv) => (
-            <li key={inv.id} className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2 text-sm">
-              <span>
-                <span className="font-medium text-slate-800">{inv.project_name}</span>
-                <span className="ml-2 text-xs text-slate-400">
-                  investi le {inv.invested_date}
-                  {inv.expected_return_date && ` · retour attendu ${inv.expected_return_date}`}
-                </span>
-              </span>
-              <span className="flex items-center gap-3">
-                <span className="font-semibold text-brand-600">{formatEUR(Number(inv.amount_invested))}</span>
-                <form action={deleteInvestment.bind(null, inv.id)}>
-                  <button className="text-xs text-slate-300 hover:text-rose-600">✕</button>
-                </form>
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="card p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-semibold text-slate-900">Flux en direct (60 prochains jours)</h2>
-          <span className="text-xs text-slate-400">Solde cumulé</span>
-        </div>
-        <div className="max-h-96 overflow-y-auto">
-          <table className="w-full text-sm">
-            <tbody>
-              {flowWithBalance.length === 0 && (
-                <tr><td className="py-4 text-slate-400">Aucune échéance à venir.</td></tr>
-              )}
-              {flowWithBalance.map((f, idx) => (
-                <tr key={idx} className="border-b border-slate-50 last:border-0">
-                  <td className="py-2 text-xs text-slate-400">{f.date}</td>
-                  <td className="py-2 text-slate-700">{f.label}</td>
-                  <td className={`py-2 text-right font-medium ${f.kind === "income" ? "text-emerald-600" : "text-rose-600"}`}>
-                    {f.amount > 0 ? "+" : ""}{formatEUR(f.amount)}
-                  </td>
-                  <td className={`py-2 pl-6 text-right font-semibold ${f.balance >= 0 ? "text-slate-700" : "text-rose-700"}`}>{formatEUR(f.balance)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
 
       <section className="card p-6">
         <h2 className="font-semibold text-slate-900">Connexion bancaire</h2>
         <p className="mt-2 max-w-xl text-sm text-slate-500">
           La synchronisation automatique avec ta carte bancaire nécessite un partenaire agréé (Open Banking, type
-          Powens ou Bridge) et sa propre configuration sécurisée. La base est prête à l'accueillir — en attendant,
-          renseigne tes charges et revenus manuellement ci-dessus.
+          Powens ou Bridge). En attendant, renseigne tes opérations manuellement ci-dessus.
         </p>
         <button disabled className="btn-secondary mt-4 opacity-50">Connecter ma carte (bientôt)</button>
       </section>

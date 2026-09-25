@@ -1,4 +1,4 @@
-import type { ChargeFrequency } from "@/lib/types";
+import type { ChargeFrequency, SavingsMode } from "@/lib/types";
 
 export function monthlyEquivalent(amount: number, frequency: string) {
   if (frequency === "yearly") return amount / 12;
@@ -96,4 +96,116 @@ export function groupByCategory(items: (RangeChargeLike & { category?: string | 
   return [...totals.entries()]
     .map(([label, value]) => ({ label, value }))
     .sort((a, b) => b.value - a.value);
+}
+
+export function getSavingsAmount(mode: SavingsMode, value: number, monthlyIncome: number) {
+  return mode === "percent" ? (monthlyIncome * value) / 100 : value;
+}
+
+function iso(d: Date) {
+  return d.toISOString().slice(0, 10);
+}
+
+export function daysInMonthCount(year: number, month: number) {
+  return new Date(year, month + 1, 0).getDate();
+}
+
+export interface PeriodRange {
+  startISO: string;
+  endISO: string;
+  label: string;
+  days: number;
+}
+
+/** Monday-anchored weeks covering the given month (clipped to the month's bounds). */
+export function getWeeksOfMonth(year: number, month: number): PeriodRange[] {
+  const monthStart = new Date(year, month, 1);
+  const monthEnd = new Date(year, month + 1, 0);
+  const weeks: PeriodRange[] = [];
+  let cursor = new Date(monthStart);
+  while (cursor <= monthEnd) {
+    const weekday = cursor.getDay() === 0 ? 7 : cursor.getDay(); // Mon=1..Sun=7
+    const weekEndCandidate = new Date(cursor);
+    weekEndCandidate.setDate(cursor.getDate() + (7 - weekday));
+    const weekEnd = weekEndCandidate > monthEnd ? monthEnd : weekEndCandidate;
+    const days = Math.round((weekEnd.getTime() - cursor.getTime()) / 86_400_000) + 1;
+    weeks.push({
+      startISO: iso(cursor),
+      endISO: iso(weekEnd),
+      label: `${cursor.getDate()} – ${weekEnd.getDate()} ${weekEnd.toLocaleDateString("fr-FR", { month: "short" })}`,
+      days,
+    });
+    cursor = new Date(weekEnd);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return weeks;
+}
+
+/** Every Saturday–Sunday pair overlapping the given month. */
+export function getWeekendsOfMonth(year: number, month: number): PeriodRange[] {
+  const monthStart = new Date(year, month, 1);
+  const monthEnd = new Date(year, month + 1, 0);
+  const weekends: PeriodRange[] = [];
+  const cursor = new Date(monthStart);
+  while (cursor <= monthEnd) {
+    if (cursor.getDay() === 6) {
+      const sunday = new Date(cursor);
+      sunday.setDate(cursor.getDate() + 1);
+      const end = sunday > monthEnd ? monthEnd : sunday;
+      const days = Math.round((end.getTime() - cursor.getTime()) / 86_400_000) + 1;
+      weekends.push({
+        startISO: iso(cursor),
+        endISO: iso(end),
+        label: `${cursor.getDate()} – ${end.getDate()} ${end.toLocaleDateString("fr-FR", { month: "short" })}`,
+        days,
+      });
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return weekends;
+}
+
+export interface PeriodAvailable {
+  income: number;
+  expense: number;
+  variable: number;
+  savings: number;
+  available: number;
+  perDay: number;
+}
+
+/** Disponible for a date range: real income/charges in that window, minus a prorated
+ * slice of the monthly variable-budget and savings pools (days-in-range / days-in-month). */
+export function computePeriodAvailable(
+  range: PeriodRange,
+  charges: RangeChargeLike[],
+  incomes: RangeChargeLike[],
+  dailyVariableRate: number,
+  dailySavingsRate: number
+): PeriodAvailable {
+  const income = sumOccurrencesInRange(incomes, range.startISO, range.endISO).total;
+  const expense = sumOccurrencesInRange(charges, range.startISO, range.endISO).total;
+  const variable = dailyVariableRate * range.days;
+  const savings = dailySavingsRate * range.days;
+  const available = income - expense - variable - savings;
+  return { income, expense, variable, savings, available, perDay: available / range.days };
+}
+
+/** Earliest income occurrence strictly after `fromISO`, searched up to a year out. */
+export function getNextIncomeAfter(incomes: RangeChargeLike[], fromISO: string) {
+  const from = new Date(fromISO);
+  const horizon = new Date(from);
+  horizon.setFullYear(horizon.getFullYear() + 1);
+  const horizonISO = iso(horizon);
+  const next = new Date(from);
+  next.setDate(next.getDate() + 1);
+
+  let best: { date: string; name: string; amount: number } | null = null;
+  for (const item of incomes) {
+    const [first] = sumOccurrencesInRange([item], iso(next), horizonISO).breakdown;
+    if (first && (!best || first.date < best.date)) {
+      best = { date: first.date, name: first.name, amount: first.amount };
+    }
+  }
+  return best;
 }

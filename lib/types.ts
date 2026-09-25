@@ -134,6 +134,7 @@ export interface Income {
   frequency: ChargeFrequency;
   category: string;
   status: string;
+  active: boolean;
   created_at: string;
 }
 
@@ -158,9 +159,22 @@ export interface Transaction {
   kind: FinanceKind;
   txn_date: string;
   category_id: string | null;
+  variable_budget_id: string | null;
   source: string;
   created_at: string;
 }
+
+export interface VariableBudget {
+  id: string;
+  household_id: string;
+  name: string;
+  planned_amount: number;
+  icon: string | null;
+  position: number;
+  created_at: string;
+}
+
+export type SavingsMode = "fixed" | "percent";
 
 export interface Profile {
   id: string;
@@ -174,4 +188,6 @@ export interface Household {
   name: string;
   invite_code: string;
   current_balance: number;
+  savings_mode: SavingsMode;
+  savings_value: number;
 }
