@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getSessionUser } from "@/lib/supabase/server";
 import { todayISO } from "@/lib/utils";
 
 export async function toggleTaskStatus(taskId: string, done: boolean) {
@@ -18,7 +18,7 @@ export async function toggleRoutineLog(routineId: string, date: string, done: bo
   const supabase = createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getSessionUser(supabase);
 
   if (done) {
     await supabase
@@ -42,7 +42,7 @@ export async function quickAddTask(formData: FormData) {
   const supabase = createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getSessionUser(supabase);
   const { data: profile } = await supabase.from("profiles").select("household_id").eq("id", user?.id).single();
   if (!profile?.household_id) return;
 
@@ -64,7 +64,7 @@ export async function updateBalance(formData: FormData) {
   const supabase = createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getSessionUser(supabase);
   const { data: profile } = await supabase.from("profiles").select("household_id").eq("id", user?.id).single();
   if (!profile?.household_id) return;
 

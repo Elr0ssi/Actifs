@@ -2,14 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getSessionUser } from "@/lib/supabase/server";
 import type { ListType } from "@/lib/types";
 
 async function ctx() {
   const supabase = createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getSessionUser(supabase);
   const { data: profile } = await supabase.from("profiles").select("household_id").eq("id", user?.id).single();
   return { supabase, householdId: profile?.household_id as string | undefined, userId: user?.id };
 }

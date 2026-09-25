@@ -1,13 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getSessionUser } from "@/lib/supabase/server";
 
 async function ctx() {
   const supabase = createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getSessionUser(supabase);
   const { data: profile } = await supabase.from("profiles").select("household_id").eq("id", user?.id).single();
   return { supabase, householdId: profile?.household_id as string | undefined, userId: user?.id };
 }

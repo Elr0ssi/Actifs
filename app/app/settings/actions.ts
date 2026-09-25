@@ -1,14 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getSessionUser } from "@/lib/supabase/server";
 
 export async function updateProfile(formData: FormData) {
   const displayName = String(formData.get("display_name") || "").trim();
   const supabase = createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getSessionUser(supabase);
   if (!user || !displayName) return;
   await supabase.from("profiles").update({ display_name: displayName }).eq("id", user.id);
   revalidatePath("/app/settings");
@@ -19,7 +19,7 @@ export async function updateHouseholdName(formData: FormData) {
   const name = String(formData.get("household_name") || "").trim();
   if (!name) return;
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await getSessionUser(supabase);
   const { data: profile } = await supabase.from("profiles").select("household_id").eq("id", user?.id).single();
   if (!profile?.household_id) return;
   await supabase.from("households").update({ name }).eq("id", profile.household_id);

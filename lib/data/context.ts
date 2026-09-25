@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getSessionUser } from "@/lib/supabase/server";
 import type { Household, Profile } from "@/lib/types";
 
 type ProfileWithHousehold = Profile & { household: Household | null };
@@ -13,7 +13,7 @@ export const getAppContext = cache(async () => {
   const supabase = createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getSessionUser(supabase);
 
   if (!user) return null;
 
