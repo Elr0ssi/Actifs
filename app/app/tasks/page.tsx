@@ -65,7 +65,7 @@ export default async function TasksPage() {
                   <div className="flex-1">
                     <ToggleCheckbox
                       initialChecked={t.status === "done"}
-                      onToggle={(checked) => toggleTaskStatus(t.id, checked)}
+                      onToggle={toggleTaskStatus.bind(null, t.id)}
                       label={t.title}
                       sublabel={t.due_date ?? undefined}
                     />

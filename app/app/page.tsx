@@ -90,7 +90,7 @@ export default async function DashboardPage() {
               <ToggleCheckbox
                 key={t.id}
                 initialChecked={t.status === "done"}
-                onToggle={(checked) => toggleTaskStatus(t.id, checked)}
+                onToggle={toggleTaskStatus.bind(null, t.id)}
                 label={t.title}
                 sublabel={t.priority === "high" ? "Priorité haute" : t.due_date ? `Échéance ${t.due_date}` : undefined}
               />
@@ -109,7 +109,7 @@ export default async function DashboardPage() {
               <ToggleCheckbox
                 key={r.id}
                 initialChecked={!!logByRoutine.get(r.id)?.done}
-                onToggle={(checked) => toggleRoutineLog(r.id, today, checked)}
+                onToggle={toggleRoutineLog.bind(null, r.id, today)}
                 label={r.title}
                 sublabel={r.category ?? undefined}
                 strikeThrough={false}
