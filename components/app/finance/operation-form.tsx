@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createOperation, updateOperation } from "@/app/app/finance/actions";
-import type { FinOp, OpKind, OpFrequency } from "@/lib/finance-engine";
+import { CATEGORIES, type FinOp, type OpKind, type OpFrequency } from "@/lib/finance-engine";
 import { cx } from "@/lib/utils";
 
 const KINDS: { v: OpKind; l: string }[] = [
@@ -26,6 +26,7 @@ export function OperationForm({ op, defaultDate, onDone }: { op?: FinOp; default
   const [freq, setFreq] = useState<OpFrequency>(op?.frequency ?? "monthly");
   const [pending, setPending] = useState(false);
   const unit = FREQS.find((f) => f.v === freq)?.unit;
+  const categories = op && op.kind === kind && !CATEGORIES[kind].includes(op.category) ? [op.category, ...CATEGORIES[kind]] : CATEGORIES[kind];
 
   return (
     <form
@@ -52,22 +53,49 @@ export function OperationForm({ op, defaultDate, onDone }: { op?: FinOp; default
         ))}
       </div>
 
-      <input name="name" defaultValue={op?.name} placeholder="Nom (ex. Loyer, Salaire, PEA…)" className="input" required />
+      <input name="name" defaultValue={op?.name} placeholder="Nom (ex. Loyer, Netflix, Salaire…)" className="input" required />
       <div className="grid grid-cols-2 gap-2">
-        <input name="amount" type="number" step="0.01" min="0" defaultValue={op?.amount} placeholder="Montant €" className="input" required />
-        <input name="start" type="date" defaultValue={op?.start ?? defaultDate} className="input" required />
-        <input name="category" defaultValue={op?.category} placeholder="Catégorie" className="input" />
-        <input name="account" defaultValue={op?.account ?? ""} placeholder="Compte (optionnel)" className="input" />
+        <label className="text-xs text-slate-500">
+          Montant
+          <input name="amount" type="number" step="0.01" min="0" defaultValue={op?.amount} placeholder="€" className="input mt-1" required />
+        </label>
+        <label className="text-xs text-slate-500">
+          Catégorie
+          <select key={kind} name="category" defaultValue={categories.includes(op?.category ?? "") ? op?.category : categories[0]} className="input mt-1">
+            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </label>
+        <label className="col-span-2 text-xs text-slate-500">
+          Compte (optionnel)
+          <input name="account" list="finance-accounts" defaultValue={op?.account ?? ""} placeholder="Ex. Compte courant, Compte joint…" className="input mt-1" />
+          <datalist id="finance-accounts">
+            <option value="Compte courant" />
+            <option value="Compte joint" />
+            <option value="Livret A" />
+          </datalist>
+        </label>
       </div>
 
       <div className="rounded-xl border border-slate-100 p-3">
-        <p className="label mb-2">Récurrence</p>
+        <p className="label mb-2">Date & récurrence</p>
         <input type="hidden" name="frequency" value={freq} />
         <select value={freq} onChange={(e) => setFreq(e.target.value as OpFrequency)} className="input">
           {FREQS.map((f) => (
             <option key={f.v} value={f.v}>{f.l}</option>
           ))}
         </select>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <label className="text-xs text-slate-500">
+            {freq === "once" ? "Date" : "Date de début"}
+            <input name="start" type="date" defaultValue={op?.start ?? defaultDate} className="input mt-1" required />
+          </label>
+          {freq !== "once" && (
+            <label className="text-xs text-slate-500">
+              Date de fin <span className="text-slate-400">(optionnelle)</span>
+              <input name="end_date" type="date" defaultValue={op?.end ?? ""} className="input mt-1" />
+            </label>
+          )}
+        </div>
         {freq !== "once" && (
           <div className="mt-2 space-y-2">
             <label className="flex items-center gap-2 text-sm text-slate-600">
@@ -86,9 +114,6 @@ export function OperationForm({ op, defaultDate, onDone }: { op?: FinOp; default
             {freq === "monthly" && (
               <input name="month_days" defaultValue={op?.monthDays.join(", ")} placeholder="Jour(s) du mois, ex. 5 ou 15, 30 (vide = date de début)" className="input" />
             )}
-            <label className="flex items-center gap-2 text-sm text-slate-600">
-              Fin <input name="end_date" type="date" defaultValue={op?.end ?? ""} className="input py-1" /> <span className="text-xs text-slate-400">(optionnel)</span>
-            </label>
           </div>
         )}
       </div>

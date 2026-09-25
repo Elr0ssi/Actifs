@@ -26,11 +26,11 @@ export default function SignupPage({ searchParams }: { searchParams: { error?: s
         </div>
         <div>
           <label className="label" htmlFor="email">Email</label>
-          <input className="input mt-1.5" id="email" name="email" type="email" required placeholder="toi@exemple.com" />
+          <input className="input mt-1.5" id="email" name="email" type="email" autoComplete="email" required placeholder="toi@exemple.com" />
         </div>
         <div>
           <label className="label" htmlFor="password">Mot de passe</label>
-          <input className="input mt-1.5" id="password" name="password" type="password" required minLength={6} placeholder="6 caractères min." />
+          <input className="input mt-1.5" id="password" name="password" type="password" autoComplete="new-password" required minLength={6} placeholder="6 caractères min." />
         </div>
         <button type="submit" className="btn-primary w-full py-2.5">Créer mon espace</button>
       </form>

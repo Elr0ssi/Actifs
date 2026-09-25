@@ -8,9 +8,8 @@ import {
   expand,
   getDailyBalances,
   getMonthlyBudget,
-  getOperationsForDate,
-  getRemainingBudgetAtDate,
-  getUpcomingOperations,
+  getDateSituation,
+  diffDays,
   KIND_LABEL,
   KIND_STYLE,
   monthBounds,
@@ -23,7 +22,7 @@ import {
 import { formatEUR, MONTHS_FR, cx } from "@/lib/utils";
 import { DonutChart } from "@/components/app/charts/donut-chart";
 import { NewOperationButton } from "@/components/app/finance/operation-form";
-import { skipOccurrence, deleteOperation } from "@/app/app/finance/actions";
+import { skipOccurrence, deleteOperation, updateBalanceAnchor } from "@/app/app/finance/actions";
 
 type View = "month" | "week" | "year";
 const DOW = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
@@ -56,6 +55,7 @@ export function FinanceDashboard({
   savingsRule,
   today,
   snapshots,
+  realBalances,
 }: {
   ops: FinOp[];
   anchor: BalanceAnchor;
@@ -63,6 +63,7 @@ export function FinanceDashboard({
   savingsRule: { mode: "fixed" | "percent"; value: number };
   today: string;
   snapshots: Record<string, number[]>;
+  realBalances: { date: string; balance: number }[];
 }) {
   const [view, setView] = useState<View>("month");
   const [selected, setSelected] = useState(today);
@@ -123,7 +124,7 @@ export function FinanceDashboard({
 
       <SummaryCards budget={budget} days={monthBounds(y, m).days} />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
         <section className="card p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-3">
@@ -181,115 +182,123 @@ export function FinanceDashboard({
         <DayPanel ops={ops} anchor={anchor} date={selected} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
+      <div className="grid gap-6 xl:grid-cols-[1fr_1.4fr]">
         <BudgetBreakdown budget={budget} />
-        <ForecastVsActual ops={ops} anchor={anchor} y={y} m={m} today={today} snapshot={snapshots[monthKey]} />
+        <ForecastVsActual ops={ops} anchor={anchor} y={y} m={m} today={today} snapshot={snapshots[monthKey]} realBalances={realBalances} />
       </div>
     </div>
   );
 }
 
 function SummaryCards({ budget, days }: { budget: ReturnType<typeof getMonthlyBudget>; days: number }) {
-  const pct = (n: number) => (budget.income > 0 ? `${Math.round((n / budget.income) * 100)} % des revenus` : "—");
-  const cards = [
-    { label: "Revenus", value: budget.income, sub: `${budget.incomeCount} revenu(s) planifié(s)`, color: "text-emerald-600", icon: "↑", bg: "bg-emerald-50" },
-    { label: "Charges fixes", value: budget.fixed, sub: pct(budget.fixed), color: "text-rose-600", icon: "🏠", bg: "bg-rose-50" },
-    { label: "Budget variable", value: budget.variable, sub: pct(budget.variable), color: "text-amber-600", icon: "🛒", bg: "bg-amber-50" },
-    { label: "Épargne / Invest.", value: budget.savings, sub: pct(budget.savings), color: "text-violet-600", icon: "🌱", bg: "bg-violet-50" },
-    { label: "Solde début de mois", value: budget.startBalance, sub: "Report du mois précédent", color: "text-brand-700", icon: "📅", bg: "bg-brand-50" },
+  const pct = (n: number) => (budget.income > 0 ? `${Math.round((n / budget.income) * 100)} %` : "—");
+  const stats = [
+    { label: "Revenus", value: budget.income, sub: `${budget.incomeCount} prévu(s)`, color: "text-emerald-600", dot: "bg-emerald-500" },
+    { label: "Charges fixes", value: budget.fixed, sub: `${pct(budget.fixed)} des revenus`, color: "text-rose-600", dot: "bg-rose-500" },
+    { label: "Budget variable", value: budget.variable, sub: `${pct(budget.variable)} des revenus`, color: "text-amber-600", dot: "bg-amber-500" },
+    { label: "Épargne / invest.", value: budget.savings, sub: `${pct(budget.savings)} des revenus`, color: "text-violet-600", dot: "bg-violet-500" },
   ];
   return (
-    <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
-      {cards.map((c) => (
-        <div key={c.label} className="card flex items-start gap-3 p-4">
-          <span className={cx("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm", c.bg, c.color)}>{c.icon}</span>
-          <div className="min-w-0">
-            <p className="truncate text-xs text-slate-500">{c.label}</p>
-            <p className={cx("text-lg font-bold", c.color)}>{formatEUR(c.value)}</p>
-            <p className="truncate text-[11px] text-slate-400">{c.sub}</p>
+    <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+      <div className="card grid grid-cols-2 gap-4 p-4 sm:grid-cols-4">
+        {stats.map((s) => (
+          <div key={s.label} className="min-w-0">
+            <p className="flex items-center gap-1.5 truncate text-xs text-slate-500"><span className={cx("h-2 w-2 rounded-full", s.dot)} />{s.label}</p>
+            <p className={cx("mt-0.5 text-lg font-bold", s.color)}>{formatEUR(s.value)}</p>
+            <p className="truncate text-[11px] text-slate-400">{s.sub}</p>
           </div>
-        </div>
-      ))}
-      <div className="card flex items-start gap-3 border-emerald-200 bg-emerald-50/60 p-4">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-sm">💰</span>
+        ))}
+      </div>
+      <div className="card flex items-center justify-between gap-3 border-emerald-200 bg-emerald-50/60 p-4">
         <div className="min-w-0">
-          <p className="truncate text-xs font-medium text-emerald-800">Reste à vivre estimé</p>
+          <p className="text-xs text-slate-500">Solde début de mois</p>
+          <p className="text-lg font-bold text-slate-800">{formatEUR(budget.startBalance)}</p>
+        </div>
+        <span className="text-slate-300">→</span>
+        <div className="min-w-0 text-right">
+          <p className="text-xs font-medium text-emerald-800">Reste à vivre estimé</p>
           <p className={cx("text-lg font-bold", budget.resteAVivre >= 0 ? "text-emerald-700" : "text-rose-600")}>{formatEUR(budget.resteAVivre)}</p>
-          <p className="truncate text-[11px] text-emerald-700/70">≈ {formatEUR(budget.resteAVivre / days)}/jour</p>
+          <p className="text-[11px] text-emerald-700/70">≈ {formatEUR(budget.resteAVivre / days)}/jour</p>
         </div>
       </div>
     </div>
   );
 }
 
+function OccList({ items, onSkip, onDelete }: { items: Occurrence[]; onSkip?: (o: Occurrence) => void; onDelete?: (o: Occurrence) => void }) {
+  return (
+    <ul className="space-y-1.5">
+      {items.map((o, i) => (
+        <li key={i} className="group flex items-center gap-2 text-sm" title={tooltip(o)}>
+          <span className="w-12 shrink-0 text-[11px] text-slate-400">{fmtShort(o.date)}</span>
+          <span className={cx("h-2 w-2 shrink-0 rounded-full", KIND_STYLE[o.op.kind].dot)} />
+          <span className="min-w-0 flex-1 truncate text-slate-700">{o.op.name}</span>
+          {(onSkip || onDelete) && (
+            <button
+              onClick={() => (o.op.frequency !== "once" ? onSkip?.(o) : onDelete?.(o))}
+              className="hidden text-[11px] text-slate-400 hover:text-rose-600 group-hover:inline"
+              title={o.op.frequency !== "once" ? "Ignorer cette occurrence" : "Supprimer"}
+            >
+              ✕
+            </button>
+          )}
+          <span className={cx("shrink-0 font-semibold", KIND_STYLE[o.op.kind].text)}>{o.signed > 0 ? "+" : "-"}{formatEUR(o.op.amount)}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; date: string }) {
-  const rav = useMemo(() => getRemainingBudgetAtDate(ops, anchor, date), [ops, anchor, date]);
-  const dayOps = useMemo(() => getOperationsForDate(ops, date), [ops, date]);
-  const upcoming = useMemo(() => getUpcomingOperations(ops, date, 6), [ops, date]);
+  const s = useMemo(() => getDateSituation(ops, anchor, date), [ops, anchor, date]);
   const [pending, start] = useTransition();
-  const total = dayOps.reduce((s, o) => s + o.signed, 0);
+  const skip = (o: Occurrence) => start(() => skipOccurrence(o.op.table, o.op.id, o.date));
+  const del = (o: Occurrence) => start(() => deleteOperation(o.op.table, o.op.id));
 
   return (
-    <aside className="card space-y-5 p-5">
-      <p className="font-semibold capitalize text-slate-900">{fmtLong(date)}</p>
+    <aside className={cx("card space-y-5 p-5", pending && "opacity-70")}>
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-semibold capitalize text-slate-900">{fmtLong(date)}</p>
+        <NewOperationButton defaultDate={date} label="+ Ajouter" className="shrink-0 text-xs font-medium text-brand-600" />
+      </div>
 
       <div className="rounded-2xl bg-brand-50 p-4">
-        <p className="text-xs font-medium text-brand-800">Reste à vivre jusqu'au {fmtShort(rav.until)}</p>
-        <p className={cx("mt-1 text-2xl font-bold", rav.available >= 0 ? "text-brand-700" : "text-rose-600")}>{formatEUR(rav.available)}</p>
-        <p className="text-xs text-brand-700/70">
-          Soit {formatEUR(rav.perDay)}/jour ({rav.days} jour{rav.days > 1 ? "s" : ""} restant{rav.days > 1 ? "s" : ""})
-        </p>
-        <p className="mt-2 border-t border-brand-100 pt-2 text-xs text-brand-800">Solde prévu ce jour : <b>{formatEUR(rav.balance)}</b></p>
+        <p className="text-xs font-medium text-brand-800">Reste à vivre au {fmtShort(s.monthEnd)}</p>
+        <p className={cx("mt-1 text-2xl font-bold", s.endBalance >= 0 ? "text-brand-700" : "text-rose-600")}>{formatEUR(s.endBalance)}</p>
+        <p className="text-xs text-brand-700/70">Après toutes les opérations à venir · ≈ {formatEUR(s.perDay)}/jour ({s.daysRemaining} j)</p>
+        <p className="mt-2 border-t border-brand-100 pt-2 text-xs text-brand-800">Solde prévu ce jour : <b>{formatEUR(s.balance)}</b></p>
       </div>
 
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-sm font-semibold text-slate-800">Opérations du jour</p>
-          <NewOperationButton defaultDate={date} label="+ Ajouter" className="text-xs font-medium text-brand-600" />
+          <p className="text-sm font-semibold text-slate-800">Opérations passées <span className="font-normal text-slate-400">(ce mois)</span></p>
         </div>
-        {dayOps.length === 0 && <p className="text-sm text-slate-400">Aucune opération.</p>}
-        <ul className={cx("space-y-2", pending && "opacity-60")}>
-          {dayOps.map((o, i) => (
-            <li key={i} className="group rounded-xl border border-slate-100 p-2.5">
-              <div className="flex items-center justify-between gap-2 text-sm">
-                <span className="min-w-0">
-                  <span className="block truncate font-medium text-slate-800">{o.op.name}</span>
-                  <span className="text-xs text-slate-400">{KIND_LABEL[o.op.kind]}</span>
-                </span>
-                <span className={cx("shrink-0 font-semibold", KIND_STYLE[o.op.kind].text)}>{o.signed > 0 ? "+" : "-"}{formatEUR(o.op.amount)}</span>
-              </div>
-              <div className="mt-1.5 hidden gap-3 text-[11px] group-hover:flex">
-                {o.op.frequency !== "once" ? (
-                  <button onClick={() => start(() => skipOccurrence(o.op.table, o.op.id, o.date))} className="text-slate-500 hover:text-rose-600">Ignorer cette occurrence</button>
-                ) : (
-                  <button onClick={() => start(() => deleteOperation(o.op.table, o.op.id))} className="text-slate-500 hover:text-rose-600">Supprimer</button>
-                )}
-                <Link href="/app/finance/operations" className="text-slate-500 hover:text-brand-600">Modifier</Link>
-              </div>
-            </li>
-          ))}
-        </ul>
-        {dayOps.length > 0 && (
-          <div className="mt-2 flex justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm font-semibold">
-            <span>Total du jour</span>
-            <span className={total >= 0 ? "text-emerald-600" : "text-rose-600"}>{total >= 0 ? "+" : ""}{formatEUR(total)}</span>
+        {s.past.length === 0 ? <p className="text-sm text-slate-400">Aucune.</p> : <OccList items={s.past} onSkip={skip} onDelete={del} />}
+        {s.past.length > 0 && (
+          <div className="mt-2 flex justify-between rounded-lg bg-slate-50 px-3 py-1.5 text-xs">
+            <span className="text-emerald-600">+{formatEUR(s.pastIn)}</span>
+            <span className="text-rose-600">-{formatEUR(s.pastOut)}</span>
           </div>
         )}
       </div>
 
       <div>
-        <p className="mb-2 text-sm font-semibold text-slate-800">À venir</p>
-        {upcoming.length === 0 && <p className="text-sm text-slate-400">Rien de prévu.</p>}
-        <ul className="space-y-2">
-          {upcoming.map((o, i) => (
-            <li key={i} className="flex items-center gap-3 text-sm" title={tooltip(o)}>
-              <span className="w-14 shrink-0 rounded-lg bg-slate-50 py-1 text-center text-[11px] text-slate-500">{fmtShort(o.date)}</span>
-              <span className={cx("h-2 w-2 shrink-0 rounded-full", KIND_STYLE[o.op.kind].dot)} />
-              <span className="min-w-0 flex-1 truncate text-slate-700">{o.op.name}</span>
-              <span className={cx("shrink-0 font-semibold", KIND_STYLE[o.op.kind].text)}>{o.signed > 0 ? "+" : "-"}{formatEUR(o.op.amount)}</span>
-            </li>
-          ))}
-        </ul>
+        <p className="mb-2 text-sm font-semibold text-slate-800">Opérations à venir <span className="font-normal text-slate-400">(jusqu'au {fmtShort(s.monthEnd)})</span></p>
+        {s.upcoming.length === 0 ? <p className="text-sm text-slate-400">Rien de prévu.</p> : <OccList items={s.upcoming} onSkip={skip} onDelete={del} />}
+        {(s.upcomingIn > 0 || s.upcomingOut > 0) && (
+          <div className="mt-2 space-y-1 rounded-lg bg-slate-50 px-3 py-2 text-xs">
+            <div className="flex justify-between"><span className="text-slate-500">Entrées à venir</span><span className="font-semibold text-emerald-600">+{formatEUR(s.upcomingIn)}</span></div>
+            <div className="flex justify-between"><span className="text-slate-500">Sorties à venir</span><span className="font-semibold text-rose-600">-{formatEUR(s.upcomingOut)}</span></div>
+            {s.outflowByAccount.length > 0 && (
+              <div className="border-t border-slate-200 pt-1">
+                <p className="mb-0.5 text-slate-400">À provisionner par compte</p>
+                {s.outflowByAccount.map((a) => (
+                  <div key={a.account} className="flex justify-between"><span className="text-slate-600">{a.account}</span><span className="font-semibold text-slate-800">{formatEUR(a.amount)}</span></div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </aside>
   );
@@ -298,39 +307,23 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
 function BudgetBreakdown({ budget }: { budget: ReturnType<typeof getMonthlyBudget> }) {
   const [mode, setMode] = useState<"global" | "variable">("global");
   const [picked, setPicked] = useState<string | null>(null);
-  const outflow = budget.fixed + budget.variable + budget.savings;
-  const resources = budget.startBalance + budget.income;
+  const spend = budget.fixed + budget.variable + budget.savings;
   const items =
     mode === "global"
       ? [
           { label: "Charges fixes", value: budget.fixed },
           { label: "Budget variable", value: budget.variable },
           { label: "Épargne / invest.", value: budget.savings },
-          { label: "Reste à vivre", value: Math.max(0, budget.resteAVivre) },
         ]
       : budget.variableByCategory;
   const total = items.reduce((s, i) => s + i.value, 0);
   const pickedItem = items.find((i) => i.label === picked);
-  const seg = (v: number) => `${resources > 0 ? Math.max(0, (v / resources) * 100) : 0}%`;
+  const seg = (v: number) => `${spend > 0 ? (v / spend) * 100 : 0}%`;
 
   return (
     <section className="card p-5">
-      <p className="font-semibold text-slate-900">Récapitulatif du mois</p>
-      <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
-        <div><p className="text-xs text-slate-500">Ressources</p><p className="font-bold text-slate-900">{formatEUR(resources)}</p><p className="text-[11px] text-slate-400">report + revenus</p></div>
-        <div><p className="text-xs text-slate-500">Dépenses</p><p className="font-bold text-rose-600">{formatEUR(budget.fixed + budget.variable)}</p><p className="text-[11px] text-slate-400">fixes + variables</p></div>
-        <div><p className="text-xs text-slate-500">Épargne</p><p className="font-bold text-violet-600">{formatEUR(budget.savings)}</p></div>
-      </div>
-      <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-slate-100">
-        <div className="bg-rose-400" style={{ width: seg(budget.fixed) }} />
-        <div className="bg-amber-400" style={{ width: seg(budget.variable) }} />
-        <div className="bg-violet-400" style={{ width: seg(budget.savings) }} />
-        <div className="bg-emerald-400" style={{ width: seg(Math.max(0, resources - outflow)) }} />
-      </div>
-      <p className="mt-1.5 text-right text-xs text-slate-500">Reste à vivre : <b className="text-slate-800">{formatEUR(budget.resteAVivre)}</b></p>
-
-      <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
-        <p className="text-sm font-semibold text-slate-800">Répartition du budget</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="font-semibold text-slate-900">Répartition du budget</p>
         <div className="flex rounded-lg bg-slate-100 p-0.5 text-[11px] font-medium">
           {(["global", "variable"] as const).map((v) => (
             <button key={v} onClick={() => { setMode(v); setPicked(null); }} className={cx("rounded-md px-2 py-1", mode === v ? "bg-white shadow-sm" : "text-slate-500")}>
@@ -339,7 +332,13 @@ function BudgetBreakdown({ budget }: { budget: ReturnType<typeof getMonthlyBudge
           ))}
         </div>
       </div>
-      <div className="mt-3">
+      <p className="mt-2 text-xs text-slate-500">Total dépensé / réservé : <b className="text-slate-800">{formatEUR(spend)}</b> {budget.income > 0 && `· ${Math.round((spend / budget.income) * 100)} % des revenus`}</p>
+      <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-slate-100">
+        <div className="bg-rose-400" style={{ width: seg(budget.fixed) }} />
+        <div className="bg-amber-400" style={{ width: seg(budget.variable) }} />
+        <div className="bg-violet-400" style={{ width: seg(budget.savings) }} />
+      </div>
+      <div className="mt-4">
         <DonutChart items={items} size={150} strokeWidth={22} centerCaption={mode === "global" ? "budget" : "variable"} selected={picked} onSelect={(l) => setPicked(l === picked ? null : l)} />
         {pickedItem && (
           <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
@@ -352,32 +351,50 @@ function BudgetBreakdown({ budget }: { budget: ReturnType<typeof getMonthlyBudge
   );
 }
 
-function ForecastVsActual({ ops, anchor, y, m, today, snapshot }: { ops: FinOp[]; anchor: BalanceAnchor; y: number; m: number; today: string; snapshot?: number[] }) {
+function ForecastVsActual({
+  ops,
+  anchor,
+  y,
+  m,
+  today,
+  snapshot,
+  realBalances,
+}: {
+  ops: FinOp[];
+  anchor: BalanceAnchor;
+  y: number;
+  m: number;
+  today: string;
+  snapshot?: number[];
+  realBalances: { date: string; balance: number }[];
+}) {
   const { start, end } = monthBounds(y, m);
   const current = useMemo(() => getDailyBalances(ops, anchor, start, end), [ops, anchor, start, end]);
   const forecast = current.map((p, i) => ({ date: p.date, value: snapshot?.[i] ?? p.balance }));
-  const actual = current.filter((p) => p.date <= today);
+  const realByDate = new Map(realBalances.filter((r) => r.date >= start && r.date <= end).map((r) => [r.date, r.balance]));
+  const realIdx = forecast.map((p, i) => (realByDate.has(p.date) ? i : -1)).filter((i) => i >= 0);
   const [hover, setHover] = useState<number | null>(null);
 
-  const W = 640, H = 220, PX = 44, PT = 16, PB = 26;
-  const all = [...forecast.map((p) => p.value), ...actual.map((p) => p.balance), 0];
+  const W = 640, H = 220, PX = 48, PT = 16, PB = 26;
+  const all = [...forecast.map((p) => p.value), ...realByDate.values(), 0];
   const min = Math.min(...all), max = Math.max(...all), span = max - min || 1;
   const x = (i: number) => PX + (i / Math.max(1, forecast.length - 1)) * (W - PX - 8);
   const yv = (v: number) => PT + (1 - (v - min) / span) * (H - PT - PB);
-  const path = (vals: number[]) => vals.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${yv(v).toFixed(1)}`).join(" ");
-  const lastIdx = actual.length - 1;
-  const gap = lastIdx >= 0 ? actual[lastIdx].balance - forecast[lastIdx].value : null;
-  const h = hover !== null ? { f: forecast[hover], a: actual[hover] } : null;
+  const forecastPath = forecast.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${yv(p.value).toFixed(1)}`).join(" ");
+  const realPath = realIdx.map((i, k) => `${k ? "L" : "M"}${x(i).toFixed(1)},${yv(realByDate.get(forecast[i].date)!).toFixed(1)}`).join(" ");
+  const lastReal = realIdx.length ? realIdx[realIdx.length - 1] : null;
+  const gap = lastReal !== null ? realByDate.get(forecast[lastReal].date)! - forecast[lastReal].value : null;
+  const hReal = hover !== null ? realByDate.get(forecast[hover].date) : undefined;
 
   return (
     <section className="card p-5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="font-semibold text-slate-900">Solde prévisionnel vs réel</p>
-          <p className="text-xs text-slate-500">Prévisionnel figé en début de mois, comparé à la réalité saisie.</p>
+          <p className="text-xs text-slate-500">Saisis ton solde bancaire réel pour le comparer au prévu.</p>
         </div>
-        <div className="flex items-center gap-3 text-xs text-slate-500">
-          <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 bg-brand-600" />Réel</span>
+        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-brand-600" />Réel</span>
           <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 border-t-2 border-dashed border-slate-400" />Prévisionnel</span>
           {gap !== null && (
             <span className={cx("rounded-full px-2 py-0.5 font-semibold", gap >= 0 ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700")}>
@@ -386,6 +403,14 @@ function ForecastVsActual({ ops, anchor, y, m, today, snapshot }: { ops: FinOp[]
           )}
         </div>
       </div>
+
+      <form action={updateBalanceAnchor} className="mt-3 flex flex-wrap items-center gap-2 rounded-xl bg-slate-50 p-2">
+        <span className="text-xs font-medium text-slate-600">Mon solde réel</span>
+        <input name="entry_date" type="date" defaultValue={today} className="input w-36 py-1 text-xs" />
+        <input name="current_balance" type="number" step="0.01" placeholder="€" className="input w-28 py-1 text-xs" required />
+        <button className="btn-primary px-3 py-1 text-xs">Enregistrer</button>
+      </form>
+
       <div className="relative mt-3">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full" onMouseLeave={() => setHover(null)}>
           {[0, 0.5, 1].map((f) => {
@@ -398,8 +423,10 @@ function ForecastVsActual({ ops, anchor, y, m, today, snapshot }: { ops: FinOp[]
             );
           })}
           {min < 0 && <line x1={PX} x2={W - 8} y1={yv(0)} y2={yv(0)} stroke="#fda4af" strokeDasharray="3 3" />}
-          <path d={path(forecast.map((p) => p.value))} fill="none" stroke="#94a3b8" strokeWidth={2} strokeDasharray="5 4" />
-          {actual.length > 0 && <path d={path(actual.map((p) => p.balance))} fill="none" stroke="#3a3ff0" strokeWidth={2.5} />}
+          <path d={forecastPath} fill="none" stroke="#94a3b8" strokeWidth={2} strokeDasharray="5 4" />
+          {realIdx.length > 1 && <path d={realPath} fill="none" stroke="#3a3ff0" strokeWidth={2.5} />}
+          {realIdx.map((i) => <circle key={i} cx={x(i)} cy={yv(realByDate.get(forecast[i].date)!)} r={4} fill="#3a3ff0" stroke="#fff" strokeWidth={1.5} />)}
+          {today >= start && today <= end && <line x1={x(diffDays(start, today))} x2={x(diffDays(start, today))} y1={PT} y2={H - PB} stroke="#c7d2fe" strokeDasharray="2 3" />}
           {forecast.map((p, i) =>
             i % 5 === 0 || i === forecast.length - 1 ? (
               <text key={p.date} x={x(i)} y={H - 6} textAnchor="middle" className="fill-slate-400 text-[10px]">{fmtShort(p.date)}</text>
@@ -408,7 +435,6 @@ function ForecastVsActual({ ops, anchor, y, m, today, snapshot }: { ops: FinOp[]
           {hover !== null && (
             <>
               <line x1={x(hover)} x2={x(hover)} y1={PT} y2={H - PB} stroke="#cbd5e1" />
-              {h?.a && <circle cx={x(hover)} cy={yv(h.a.balance)} r={4} fill="#3a3ff0" />}
               <circle cx={x(hover)} cy={yv(forecast[hover].value)} r={3.5} fill="#94a3b8" />
             </>
           )}
@@ -416,12 +442,16 @@ function ForecastVsActual({ ops, anchor, y, m, today, snapshot }: { ops: FinOp[]
             <rect key={p.date} x={x(i) - (W - PX) / forecast.length / 2} y={PT} width={(W - PX) / forecast.length} height={H - PT - PB} fill="transparent" onMouseEnter={() => setHover(i)} />
           ))}
         </svg>
-        {h && (
-          <div className="pointer-events-none absolute top-0 rounded-xl border border-slate-100 bg-white px-3 py-2 text-xs shadow-lg" style={{ left: `${Math.min(70, (x(hover!) / W) * 100)}%` }}>
-            <p className="font-semibold text-slate-800">{fmtShort(h.f.date)}</p>
-            {h.a && <p className="text-brand-700">Solde réel : {formatEUR(h.a.balance)}</p>}
-            <p className="text-slate-500">Prévisionnel : {formatEUR(h.f.value)}</p>
-            {h.a && <p className={h.a.balance - h.f.value >= 0 ? "text-emerald-600" : "text-rose-600"}>Écart : {h.a.balance - h.f.value >= 0 ? "+" : ""}{formatEUR(h.a.balance - h.f.value)}</p>}
+        {hover !== null && (
+          <div className="pointer-events-none absolute top-0 rounded-xl border border-slate-100 bg-white px-3 py-2 text-xs shadow-lg" style={{ left: `${Math.min(68, (x(hover) / W) * 100)}%` }}>
+            <p className="font-semibold text-slate-800">{fmtShort(forecast[hover].date)}</p>
+            {hReal !== undefined && <p className="text-brand-700">Solde réel : {formatEUR(hReal)}</p>}
+            <p className="text-slate-500">Prévisionnel : {formatEUR(forecast[hover].value)}</p>
+            {hReal !== undefined && (
+              <p className={hReal - forecast[hover].value >= 0 ? "text-emerald-600" : "text-rose-600"}>
+                Écart : {hReal - forecast[hover].value >= 0 ? "+" : ""}{formatEUR(hReal - forecast[hover].value)}
+              </p>
+            )}
           </div>
         )}
       </div>

@@ -34,17 +34,17 @@ export async function updateSession(request: NextRequest) {
   const isAppRoute = path.startsWith("/app");
   const isAuthRoute = path.startsWith("/login") || path.startsWith("/signup");
 
-  if (!user && isAppRoute) {
+  // Redirects must carry the refreshed session cookies, otherwise the session is lost.
+  const redirectTo = (pathname: string) => {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
-  }
+    url.pathname = pathname;
+    const redirect = NextResponse.redirect(url);
+    response.cookies.getAll().forEach((c) => redirect.cookies.set(c));
+    return redirect;
+  };
 
-  if (user && isAuthRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/app";
-    return NextResponse.redirect(url);
-  }
+  if (!user && isAppRoute) return redirectTo("/login");
+  if (user && isAuthRoute) return redirectTo("/app");
 
   return response;
 }

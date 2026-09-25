@@ -164,6 +164,46 @@ export function getRemainingBudgetAtDate(ops: FinOp[], anchor: BalanceAnchor, da
   return { balance, available, days, perDay: available / days, until, nextIncome: next };
 }
 
+/**
+ * Situation at a clicked date: operations already passed this month (included in the balance),
+ * operations still to come until month end, and the projected end-of-month balance ("reste à vivre")
+ * which anticipates every upcoming charge (rent, subscriptions…) instead of stopping at today's balance.
+ */
+export function getDateSituation(ops: FinOp[], anchor: BalanceAnchor, date: string, minUpcoming = 5) {
+  const d = new Date(toMs(date));
+  const { start, end } = monthBounds(d.getUTCFullYear(), d.getUTCMonth());
+  const past = expand(ops, start, date);
+  let upcoming = expand(ops, addDays(date, 1), end);
+  if (upcoming.length < minUpcoming) {
+    upcoming = [...upcoming, ...expand(ops, addDays(end, 1), addDays(end, 90)).slice(0, minUpcoming - upcoming.length)];
+  }
+  const untilEnd = upcoming.filter((o) => o.date <= end);
+  const balance = getBalanceAtDate(ops, anchor, date);
+  const endBalance = balance + sum(untilEnd);
+  const daysRemaining = Math.max(1, diffDays(date, end));
+
+  const byAccount = new Map<string, number>();
+  for (const o of untilEnd.filter((o) => o.signed < 0)) {
+    const key = o.op.account || "Compte principal";
+    byAccount.set(key, (byAccount.get(key) ?? 0) + o.op.amount);
+  }
+
+  return {
+    monthEnd: end,
+    balance,
+    endBalance,
+    perDay: endBalance / daysRemaining,
+    daysRemaining,
+    past,
+    pastIn: past.filter((o) => o.signed > 0).reduce((s, o) => s + o.signed, 0),
+    pastOut: -past.filter((o) => o.signed < 0).reduce((s, o) => s + o.signed, 0),
+    upcoming,
+    upcomingIn: untilEnd.filter((o) => o.signed > 0).reduce((s, o) => s + o.signed, 0),
+    upcomingOut: -untilEnd.filter((o) => o.signed < 0).reduce((s, o) => s + o.signed, 0),
+    outflowByAccount: [...byAccount.entries()].map(([account, amount]) => ({ account, amount })),
+  };
+}
+
 export interface MonthlyBudget {
   income: number;
   incomeCount: number;
@@ -275,6 +315,13 @@ export function describeRecurrence(op: FinOp) {
   }
   return every;
 }
+
+export const CATEGORIES: Record<OpKind, string[]> = {
+  fixed: ["Loyer", "Abonnement", "Électricité / Gaz", "Internet / Téléphone", "Assurance", "Crédit", "Transport", "Impôts", "Autre"],
+  variable: ["Alimentation / Courses", "Restaurants / Livraison", "Sorties & loisirs", "Habillement", "Transport", "Santé", "Maison", "Cadeaux", "Autre"],
+  income: ["Salaire", "Prime", "Freelance", "Aides / Allocations", "Remboursement", "Dividendes / Intérêts", "Autre"],
+  savings: ["Épargne", "Livret A", "PEA", "CTO", "Assurance-vie", "Crypto", "Autre"],
+};
 
 export const KIND_LABEL: Record<OpKind, string> = { income: "Revenu", fixed: "Charge fixe", variable: "Dépense variable", savings: "Épargne / invest." };
 export const KIND_STYLE: Record<OpKind, { chip: string; text: string; dot: string }> = {

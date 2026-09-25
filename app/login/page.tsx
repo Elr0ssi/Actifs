@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { login } from "@/app/(auth)/actions";
 import { AuthShell } from "@/components/marketing/auth-shell";
+import { RememberedEmailInput } from "@/components/marketing/remembered-email-input";
 
 export const metadata: Metadata = { title: "Connexion" };
 
@@ -22,11 +23,11 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
         )}
         <div>
           <label className="label" htmlFor="email">Email</label>
-          <input className="input mt-1.5" id="email" name="email" type="email" required placeholder="toi@exemple.com" />
+          <RememberedEmailInput />
         </div>
         <div>
           <label className="label" htmlFor="password">Mot de passe</label>
-          <input className="input mt-1.5" id="password" name="password" type="password" required minLength={6} placeholder="••••••••" />
+          <input className="input mt-1.5" id="password" name="password" type="password" autoComplete="current-password" required minLength={6} placeholder="••••••••" />
         </div>
         <button type="submit" className="btn-primary w-full py-2.5">Se connecter</button>
       </form>

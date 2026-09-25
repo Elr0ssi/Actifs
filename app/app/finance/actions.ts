@@ -100,15 +100,32 @@ export async function restoreOccurrence(table: OpTable, id: string, date: string
   await setSkipped(table, id, date, false);
 }
 
+/** Records a real bank balance at a date: feeds the "réel" curve and re-anchors the forecast on the latest entry. */
 export async function updateBalanceAnchor(formData: FormData) {
-  const balance = Number(formData.get("current_balance"));
-  if (Number.isNaN(balance)) return;
+  const raw = String(formData.get("current_balance") ?? "").replace(",", ".");
+  const balance = Number(raw);
+  if (raw === "" || Number.isNaN(balance)) return;
+  const date = String(formData.get("entry_date") || "") || new Date().toISOString().slice(0, 10);
   const { supabase, householdId } = await ctx();
   if (!householdId) return;
-  await supabase
-    .from("households")
-    .update({ current_balance: balance, balance_ref_date: new Date().toISOString().slice(0, 10) })
-    .eq("id", householdId);
+  await supabase.from("balance_entries").upsert({ household_id: householdId, entry_date: date, balance }, { onConflict: "household_id,entry_date" });
+  const { data: latest } = await supabase
+    .from("balance_entries")
+    .select("entry_date, balance")
+    .eq("household_id", householdId)
+    .order("entry_date", { ascending: false })
+    .limit(1)
+    .single();
+  if (latest) {
+    await supabase.from("households").update({ current_balance: latest.balance, balance_ref_date: latest.entry_date }).eq("id", householdId);
+  }
+  refresh();
+}
+
+export async function deleteBalanceEntry(date: string) {
+  const { supabase, householdId } = await ctx();
+  if (!householdId) return;
+  await supabase.from("balance_entries").delete().eq("household_id", householdId).eq("entry_date", date);
   refresh();
 }
 

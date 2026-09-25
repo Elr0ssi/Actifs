@@ -69,6 +69,9 @@ export async function updateBalance(formData: FormData) {
   if (!profile?.household_id) return;
 
   await supabase.from("households").update({ current_balance: balance, balance_ref_date: todayISO() }).eq("id", profile.household_id);
+  await supabase
+    .from("balance_entries")
+    .upsert({ household_id: profile.household_id, entry_date: todayISO(), balance }, { onConflict: "household_id,entry_date" });
   revalidatePath("/app");
   revalidatePath("/app/finance");
 }
