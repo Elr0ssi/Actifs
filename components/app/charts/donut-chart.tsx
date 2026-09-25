@@ -5,10 +5,16 @@ export function DonutChart({
   items,
   size = 180,
   strokeWidth = 26,
+  centerCaption = "/ mois",
+  selected,
+  onSelect,
 }: {
   items: { label: string; value: number }[];
   size?: number;
   strokeWidth?: number;
+  centerCaption?: string;
+  selected?: string | null;
+  onSelect?: (label: string) => void;
 }) {
   const total = items.reduce((s, i) => s + i.value, 0);
   const r = (size - strokeWidth) / 2;
@@ -55,6 +61,9 @@ export function DonutChart({
               strokeDasharray={s.dasharray}
               strokeDashoffset={s.dashoffset}
               strokeLinecap="butt"
+              opacity={selected && selected !== s.label ? 0.35 : 1}
+              onClick={onSelect ? () => onSelect(s.label) : undefined}
+              className={onSelect ? "cursor-pointer transition-opacity" : undefined}
             >
               <title>{`${s.label} — ${formatEUR(s.value)} (${s.pct.toFixed(0)}%)`}</title>
             </circle>
@@ -64,13 +73,17 @@ export function DonutChart({
           {formatEUR(total)}
         </text>
         <text x={cx} y={cy + 14} textAnchor="middle" className="fill-slate-400 text-[10px]">
-          / mois
+          {centerCaption}
         </text>
       </svg>
 
       <ul className="min-w-[160px] flex-1 space-y-1.5">
         {segments.map((s, i) => (
-          <li key={i} className="flex items-center justify-between gap-3 text-sm">
+          <li
+            key={i}
+            onClick={onSelect ? () => onSelect(s.label) : undefined}
+            className={`flex items-center justify-between gap-3 rounded-lg text-sm ${onSelect ? "cursor-pointer px-1 hover:bg-slate-50" : ""} ${selected === s.label ? "bg-slate-50" : ""}`}
+          >
             <span className="flex min-w-0 items-center gap-2">
               <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
               <span className="truncate text-slate-700">{s.label}</span>

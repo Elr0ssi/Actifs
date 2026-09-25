@@ -68,7 +68,7 @@ export async function updateBalance(formData: FormData) {
   const { data: profile } = await supabase.from("profiles").select("household_id").eq("id", user?.id).single();
   if (!profile?.household_id) return;
 
-  await supabase.from("households").update({ current_balance: balance }).eq("id", profile.household_id);
+  await supabase.from("households").update({ current_balance: balance, balance_ref_date: todayISO() }).eq("id", profile.household_id);
   revalidatePath("/app");
   revalidatePath("/app/finance");
 }
