@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { IngredientPicker } from "@/components/app/recipes/ingredient-picker";
 import { formatEUR, cx } from "@/lib/utils";
+import type { CatalogIngredient } from "@/lib/shopping";
 
 export interface ComposerRecipe {
   id: string;
@@ -28,12 +29,14 @@ export function ListComposer({
   recipes,
   catalog,
   recommendations,
+  prices,
   store,
 }: {
   action: (formData: FormData) => Promise<void>;
   recipes: ComposerRecipe[];
-  catalog: { id: string; name: string }[];
+  catalog: CatalogIngredient[];
   recommendations: string[];
+  prices: Record<string, number>;
   store: string | null;
 }) {
   const [counts, setCounts] = useState<Record<string, number>>({});
@@ -88,6 +91,8 @@ export function ListComposer({
           catalog={catalog}
           suggestions={recommendations}
           suggestionsLabel="Déjà pris lors de tes dernières courses"
+          prices={prices}
+          priceStore={store}
           placeholder="Ajouter un produit (lait, café, lessive…)"
         />
       </div>

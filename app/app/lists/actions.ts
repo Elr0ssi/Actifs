@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient, getSessionUser } from "@/lib/supabase/server";
 import { ensureIngredients, parsePicked } from "@/lib/data/ingredients";
+import { formatQty, lineCost, priceMap, type IngredientUnit } from "@/lib/shopping";
 
 async function ctx() {
   const supabase = createClient();
@@ -35,7 +36,7 @@ export async function createList(formData: FormData) {
       type: shopping ? "shopping" : "generic",
       category: shopping ? "Courses" : "Général",
       week_start: shopping ? String(formData.get("week_start") || "") || null : null,
-      store: shopping ? String(formData.get("store") || "").trim() || null : null,
+      store: shopping ? String(formData.get("store") || "") || null : null,
       created_by: userId,
     })
     .select("id")
@@ -44,69 +45,70 @@ export async function createList(formData: FormData) {
   if (data?.id) redirect(`/app/lists/${data.id}${shopping ? "?compose=1" : ""}`);
 }
 
-async function pricesFor(supabase: ReturnType<typeof createClient>, store: string | null, ingredientIds: string[]) {
-  if (!store || !ingredientIds.length) return new Map<string, number>();
-  const { data } = await supabase.from("ingredient_prices").select("ingredient_id, price").eq("store", store).in("ingredient_id", ingredientIds);
-  return new Map((data ?? []).map((p) => [p.ingredient_id as string, Number(p.price)]));
+async function storePrices(supabase: ReturnType<typeof createClient>, store: string | null) {
+  const { data } = await supabase.from("ingredient_prices").select("ingredient_id, store, price, household_id").eq("store", store ?? "");
+  return priceMap((data ?? []) as Parameters<typeof priceMap>[0], store);
 }
 
-/** Adds the chosen recipes (× servings count) and extra ingredients, merging duplicates with what the list already holds. */
+type Line = { key: string; label: string; ingredient_id: string | null; unit: IngredientUnit; qty: number | null; qtyUnit: string | null; sources: Set<string> };
+
+/** Adds chosen recipes (× count) and extras, merging same ingredient + unit and pricing each line for the list's store. */
 export async function composeList(listId: string, formData: FormData) {
   const recipes: { id: string; count: number }[] = JSON.parse(String(formData.get("recipes") || "[]"));
   const extras = parsePicked(formData.get("extras"));
   const { supabase, householdId } = await ctx();
   if (!householdId) return;
 
-  const [{ data: list }, { data: existing }, { data: recipeRows }, { data: catalog }] = await Promise.all([
-    supabase.from("lists").select("store").eq("id", listId).single(),
+  const { data: list } = await supabase.from("lists").select("store").eq("id", listId).single();
+  const store = list?.store ?? null;
+  const ids = await ensureIngredients(supabase, householdId, extras);
+
+  // New personal ingredients may come with a personal price for the current store.
+  const personalPrices = extras
+    .filter((e) => !e.id && e.price !== null && e.price !== undefined && store)
+    .map((e) => ({ household_id: householdId, ingredient_id: ids.get(e.name.trim().toLowerCase())!.id, store: store!, price: Number(e.price) }));
+  if (personalPrices.length) await supabase.from("ingredient_prices").upsert(personalPrices, { onConflict: "ingredient_id,store,household_id" });
+
+  const [{ data: existing }, { data: recipeRows }, prices] = await Promise.all([
     supabase.from("list_items").select("*").eq("list_id", listId),
     recipes.length
-      ? supabase.from("recipes").select("id, name, recipe_items(label, quantity, ingredient_id)").in("id", recipes.map((r) => r.id))
-      : Promise.resolve({ data: [] as { id: string; name: string; recipe_items: { label: string; quantity: string | null; ingredient_id: string | null }[] }[] }),
-    supabase.from("ingredients").select("id, name").eq("household_id", householdId),
+      ? supabase.from("recipes").select("id, name, recipe_items(label, qty, qty_unit, ingredient_id)").in("id", recipes.map((r) => r.id))
+      : Promise.resolve({ data: [] }),
+    storePrices(supabase, store),
   ]);
-  const catalogByName = new Map((catalog ?? []).map((c) => [c.name.toLowerCase(), c.id as string]));
+  const unitOf = new Map([...ids.values()].map((v) => [v.id, v.unit]));
 
-  type Line = { label: string; ingredient_id: string | null; quantity: string | null; count: number; sources: Set<string> };
   const lines = new Map<string, Line>();
-  const add = (label: string, ingredientId: string | null, quantity: string | null, count: number, source: string) => {
-    const key = label.trim().toLowerCase();
-    const line = lines.get(key) ?? { label: label.trim(), ingredient_id: ingredientId, quantity, count: 0, sources: new Set<string>() };
-    line.count += count;
-    line.ingredient_id ??= ingredientId;
+  const add = (label: string, ingredientId: string | null, qty: number | null, qtyUnit: string | null, count: number, source: string) => {
+    const key = `${ingredientId ?? label.trim().toLowerCase()}|${qtyUnit ?? ""}`;
+    const line = lines.get(key) ?? { key, label: label.trim(), ingredient_id: ingredientId, unit: unitOf.get(ingredientId ?? "") ?? "unit", qty: null, qtyUnit, sources: new Set<string>() };
+    line.qty = (line.qty ?? 0) + (qty && qty > 0 ? qty : 1) * count;
     line.sources.add(source);
     lines.set(key, line);
   };
-  for (const r of (recipeRows ?? []) as { id: string; name: string; recipe_items: { label: string; quantity: string | null; ingredient_id: string | null }[] }[]) {
+  type RecipeRow = { id: string; name: string; recipe_items: { label: string; qty: number | null; qty_unit: string | null; ingredient_id: string | null }[] };
+  for (const r of (recipeRows ?? []) as RecipeRow[]) {
     const count = Math.max(1, recipes.find((x) => x.id === r.id)?.count ?? 1);
-    for (const it of r.recipe_items) add(it.label, it.ingredient_id, it.quantity, count, r.name);
+    for (const it of r.recipe_items) add(it.label, it.ingredient_id, it.qty ? Number(it.qty) : null, it.qty_unit, count, r.name);
   }
-  for (const e of extras) add(e.name, e.id ?? catalogByName.get(e.name.trim().toLowerCase()) ?? null, e.quantity ?? null, 1, "Extra");
+  for (const e of extras) {
+    const found = ids.get(e.name.trim().toLowerCase());
+    add(e.name, found?.id ?? null, e.qty ?? null, e.qtyUnit ?? null, 1, "Extra");
+  }
 
-  const prices = await pricesFor(supabase, list?.store ?? null, [...lines.values()].map((l) => l.ingredient_id).filter(Boolean) as string[]);
-  const current = new Map((existing ?? []).map((i) => [String(i.label).toLowerCase(), i]));
   let position = existing?.length ?? 0;
-
-  for (const [key, line] of lines) {
-    const price = line.ingredient_id ? prices.get(line.ingredient_id) ?? null : null;
+  for (const line of lines.values()) {
     const source = [...line.sources].join(", ");
-    const found = current.get(key);
-    if (found) {
-      await supabase
-        .from("list_items")
-        .update({ count: (found.count ?? 1) + line.count, checked: false, price: price ?? found.price, source: [found.source, source].filter(Boolean).join(", ") })
-        .eq("id", found.id);
+    const match = (existing ?? []).find(
+      (i) => (i.ingredient_id ? i.ingredient_id === line.ingredient_id : String(i.label).toLowerCase() === line.label.toLowerCase()) && (i.qty_unit ?? null) === (line.qtyUnit ?? null)
+    );
+    const qty = (match?.qty ? Number(match.qty) : 0) + (line.qty ?? 0);
+    const price = line.ingredient_id ? lineCost(qty, line.qtyUnit, line.unit, prices.get(line.ingredient_id)) : null;
+    const row = { qty, qty_unit: line.qtyUnit, quantity: formatQty(qty, line.qtyUnit), price, count: 1 };
+    if (match) {
+      await supabase.from("list_items").update({ ...row, checked: false, source: [match.source, source].filter(Boolean).join(", ") }).eq("id", match.id);
     } else {
-      await supabase.from("list_items").insert({
-        list_id: listId,
-        label: line.label,
-        ingredient_id: line.ingredient_id,
-        quantity: line.quantity,
-        count: line.count,
-        price,
-        source,
-        position: position++,
-      });
+      await supabase.from("list_items").insert({ ...row, list_id: listId, label: line.label, ingredient_id: line.ingredient_id, source, position: position++ });
     }
   }
   revalidatePath(`/app/lists/${listId}`);
@@ -114,13 +116,18 @@ export async function composeList(listId: string, formData: FormData) {
 }
 
 export async function setListStore(listId: string, formData: FormData) {
-  const store = String(formData.get("store") || "").trim() || null;
+  const store = String(formData.get("store") || "") || null;
   const { supabase } = await ctx();
   await supabase.from("lists").update({ store }).eq("id", listId);
-  const { data: items } = await supabase.from("list_items").select("id, ingredient_id").eq("list_id", listId);
-  const prices = await pricesFor(supabase, store, (items ?? []).map((i) => i.ingredient_id).filter(Boolean) as string[]);
+  const [{ data: items }, prices, { data: units }] = await Promise.all([
+    supabase.from("list_items").select("id, ingredient_id, qty, qty_unit").eq("list_id", listId),
+    storePrices(supabase, store),
+    supabase.from("ingredients").select("id, unit"),
+  ]);
+  const unitOf = new Map((units ?? []).map((u) => [u.id as string, u.unit as IngredientUnit]));
   for (const it of items ?? []) {
-    await supabase.from("list_items").update({ price: it.ingredient_id ? prices.get(it.ingredient_id) ?? null : null }).eq("id", it.id);
+    const price = it.ingredient_id ? lineCost(it.qty ? Number(it.qty) : null, it.qty_unit, unitOf.get(it.ingredient_id) ?? "unit", prices.get(it.ingredient_id)) : null;
+    await supabase.from("list_items").update({ price }).eq("id", it.id);
   }
   revalidatePath(`/app/lists/${listId}`);
 }
@@ -132,11 +139,20 @@ export async function setListArchived(listId: string, archived: boolean) {
   revalidatePath(`/app/lists/${listId}`);
 }
 
-export async function createIngredients(formData: FormData) {
-  const names = parseBulkLines(String(formData.get("names") || "").replace(/,/g, "\n"));
+export async function createPersonalIngredient(formData: FormData) {
+  const name = String(formData.get("name") || "").trim();
+  const unit = (String(formData.get("unit") || "unit") === "kg" ? "kg" : "unit") as IngredientUnit;
+  const store = String(formData.get("store") || "");
+  const price = String(formData.get("price") ?? "").replace(",", ".").trim();
   const { supabase, householdId } = await ctx();
-  if (!householdId || !names.length) return;
-  await ensureIngredients(supabase, householdId, names);
+  if (!householdId || !name) return;
+  const ids = await ensureIngredients(supabase, householdId, [{ name, qtyUnit: unit === "kg" ? "g" : "u" }]);
+  const id = ids.get(name.toLowerCase())?.id;
+  if (id && store && price && !Number.isNaN(Number(price))) {
+    await supabase
+      .from("ingredient_prices")
+      .upsert({ household_id: householdId, ingredient_id: id, store, price: Number(price) }, { onConflict: "ingredient_id,store,household_id" });
+  }
   revalidatePath("/app/lists/ingredients");
 }
 
@@ -146,36 +162,18 @@ export async function deleteIngredient(id: string) {
   revalidatePath("/app/lists/ingredients");
 }
 
-export async function setIngredientPrice(ingredientId: string, store: string, formData: FormData) {
-  const raw = String(formData.get("price") ?? "").replace(",", ".").trim();
+/** Sets (or clears, with an empty value) the household's personal price, overriding the global one. */
+export async function setIngredientPrice(ingredientId: string, store: string, value: string) {
+  const raw = value.replace(",", ".").replace("€", "").trim();
   const { supabase, householdId } = await ctx();
   if (!householdId) return;
   if (raw === "") {
-    await supabase.from("ingredient_prices").delete().eq("ingredient_id", ingredientId).eq("store", store);
+    await supabase.from("ingredient_prices").delete().eq("ingredient_id", ingredientId).eq("store", store).eq("household_id", householdId);
   } else if (!Number.isNaN(Number(raw))) {
     await supabase
       .from("ingredient_prices")
-      .upsert({ household_id: householdId, ingredient_id: ingredientId, store, price: Number(raw) }, { onConflict: "ingredient_id,store" });
+      .upsert({ household_id: householdId, ingredient_id: ingredientId, store, price: Number(raw) }, { onConflict: "ingredient_id,store,household_id" });
   }
-  revalidatePath("/app/lists/ingredients");
-}
-
-/** Lines "Ingrédient ; Enseigne ; Prix" (or tab/comma separated) — creates missing ingredients too. */
-export async function importIngredientPrices(formData: FormData) {
-  const rows = String(formData.get("rows") || "")
-    .split("\n")
-    .map((l) => l.split(/[;\t]/).map((c) => c.trim()))
-    .filter((c) => c.length >= 3 && c[0] && c[1] && !Number.isNaN(Number(c[2].replace(",", ".").replace("€", ""))));
-  const { supabase, householdId } = await ctx();
-  if (!householdId || !rows.length) return;
-  const ids = await ensureIngredients(supabase, householdId, rows.map((r) => r[0]));
-  const unique = new Map(
-    rows.map((r) => {
-      const ingredient_id = ids.get(r[0].toLowerCase())!;
-      return [`${ingredient_id}|${r[1]}`, { household_id: householdId, ingredient_id, store: r[1], price: Number(r[2].replace(",", ".").replace("€", "")) }];
-    })
-  );
-  await supabase.from("ingredient_prices").upsert([...unique.values()], { onConflict: "ingredient_id,store" });
   revalidatePath("/app/lists/ingredients");
 }
 

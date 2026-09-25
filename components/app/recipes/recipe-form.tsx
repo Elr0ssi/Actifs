@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { createRecipe, updateRecipe } from "@/app/app/lists/recipes/actions";
 import type { Recipe, RecipeItem } from "@/lib/types";
 import { IngredientPicker } from "@/components/app/recipes/ingredient-picker";
+import type { CatalogIngredient, QtyUnit } from "@/lib/shopping";
 
 export const RECIPE_CATEGORIES = ["Rapide", "Healthy", "Gourmand", "Végétarien", "Petit-déjeuner", "Dessert", "Batch cooking", "Apéro", "Favoris"];
 
@@ -29,7 +30,7 @@ export function RecipeForm({
   recipe?: Recipe & { recipe_items: RecipeItem[] };
   householdId: string;
   categories: string[];
-  catalog: { id: string; name: string }[];
+  catalog: CatalogIngredient[];
   onDone?: () => void;
 }) {
   const [preview, setPreview] = useState<string | null>(recipe?.image_url ?? null);
@@ -123,9 +124,14 @@ export function RecipeForm({
             key={resetKey}
             name="ingredients"
             catalog={catalog}
-            initial={recipe?.recipe_items.map((i) => ({ id: i.ingredient_id, name: i.label, quantity: i.quantity ?? "" })) ?? []}
-            suggestions={catalog.map((c) => c.name)}
-            suggestionsLabel="Ingrédients déjà connus"
+            initial={
+              recipe?.recipe_items.map((i) => ({
+                id: i.ingredient_id,
+                name: i.label,
+                qty: i.qty ?? null,
+                qtyUnit: (i.qty_unit ?? "u") as QtyUnit,
+              })) ?? []
+            }
           />
         </div>
         {error && <p className="text-sm text-rose-600">{error}</p>}

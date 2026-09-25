@@ -5,6 +5,8 @@ import type { ListItem, ListRow, ItemLocation, Recipe, RecipeItem } from "@/lib/
 import { ListItemsChecklist } from "@/components/app/list-items-checklist";
 import { ListComposer } from "@/components/app/lists/list-composer";
 import { formatEUR } from "@/lib/utils";
+import { loadCatalog } from "@/lib/data/ingredients";
+import { STORES, lineCost, priceMap } from "@/lib/shopping";
 import {
   addListItem,
   bulkImportItems,
@@ -33,31 +35,31 @@ export default async function ListDetailPage({ params, searchParams }: { params:
   const isShopping = list.type === "shopping";
   const hh = list.household_id;
 
-  const [{ data: items }, { data: locations }, { data: recipes }, { data: catalog }, { data: prices }, { data: pastLists }] = await Promise.all([
+  const [{ data: items }, { data: locations }, { data: recipes }, { catalog, prices }, { data: pastLists }] = await Promise.all([
     supabase.from("list_items").select("*").eq("list_id", params.id).order("position").returns<ListItem[]>(),
     supabase.from("item_locations").select("*").eq("household_id", hh).returns<ItemLocation[]>(),
     isShopping
       ? supabase.from("recipes").select("*, recipe_items(*)").eq("household_id", hh).order("is_favorite", { ascending: false }).order("name")
       : Promise.resolve({ data: [] }),
-    isShopping ? supabase.from("ingredients").select("id, name").eq("household_id", hh).order("name") : Promise.resolve({ data: [] }),
-    isShopping ? supabase.from("ingredient_prices").select("ingredient_id, store, price").eq("household_id", hh) : Promise.resolve({ data: [] }),
+    isShopping ? loadCatalog(supabase) : Promise.resolve({ catalog: [], prices: [] }),
     isShopping
       ? supabase.from("lists").select("id, list_items(label)").eq("household_id", hh).eq("type", "shopping").neq("id", list.id).order("created_at", { ascending: false }).limit(8)
       : Promise.resolve({ data: [] }),
   ]);
 
-  const priceRows = (prices ?? []) as { ingredient_id: string; store: string; price: number }[];
-  const stores = [...new Set(priceRows.map((p) => p.store))].sort();
-  const priceAt = new Map(priceRows.filter((p) => p.store === list.store).map((p) => [p.ingredient_id, Number(p.price)]));
+  const priceAt = priceMap(prices, list.store);
+  const unitOf = new Map(catalog.map((c) => [c.id, c.unit]));
   const composerRecipes = ((recipes ?? []) as (Recipe & { recipe_items: RecipeItem[] })[]).map((r) => {
-    const known = r.recipe_items.filter((i) => i.ingredient_id && priceAt.has(i.ingredient_id));
+    const costs = r.recipe_items
+      .map((i) => (i.ingredient_id ? lineCost(i.qty, i.qty_unit, unitOf.get(i.ingredient_id) ?? "unit", priceAt.get(i.ingredient_id)) : null))
+      .filter((c): c is number => c !== null);
     return {
       id: r.id,
       name: r.name,
       category: r.category,
       image_url: r.image_url,
       itemCount: r.recipe_items.length,
-      estimate: known.length ? known.reduce((s, i) => s + (priceAt.get(i.ingredient_id!) ?? 0), 0) : null,
+      estimate: costs.length ? costs.reduce((s, c) => s + c, 0) : null,
     };
   });
   const recommendations = [
@@ -103,10 +105,12 @@ export default async function ListDetailPage({ params, searchParams }: { params:
           <form action={setListStore.bind(null, list.id)} className="card flex items-end gap-2 p-4">
             <label className="flex-1 text-xs text-slate-500">
               Enseigne
-              <input name="store" list="stores" defaultValue={list.store ?? ""} placeholder="Ex. Carrefour Créteil" className="input mt-1" />
-              <datalist id="stores">{stores.map((s) => <option key={s} value={s} />)}</datalist>
+              <select name="store" defaultValue={list.store ?? ""} className="input mt-1" required>
+                <option value="" disabled>Choisir…</option>
+                {STORES.map((st) => <option key={st} value={st}>{st}</option>)}
+              </select>
             </label>
-            <button className="btn-secondary">Appliquer les prix</button>
+            <button className="btn-secondary">Changer</button>
           </form>
           <div className="card flex items-center justify-between p-4">
             <div>
@@ -131,7 +135,8 @@ export default async function ListDetailPage({ params, searchParams }: { params:
             <ListComposer
               action={composeList.bind(null, list.id)}
               recipes={composerRecipes}
-              catalog={(catalog ?? []) as { id: string; name: string }[]}
+              catalog={catalog}
+              prices={Object.fromEntries(priceAt)}
               recommendations={recommendations}
               store={list.store}
             />

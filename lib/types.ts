@@ -52,6 +52,8 @@ export interface ListItem {
   ingredient_id: string | null;
   price: number | null;
   count: number;
+  qty: number | null;
+  qty_unit: string | null;
   source: string | null;
   created_at: string;
 }
@@ -94,6 +96,8 @@ export interface RecipeItem {
   ingredient_id: string | null;
   label: string;
   quantity: string | null;
+  qty: number | null;
+  qty_unit: string | null;
   note: string | null;
   position: number;
 }

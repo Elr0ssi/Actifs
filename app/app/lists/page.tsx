@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
 import type { ListRow, ItemLocation } from "@/lib/types";
 import { formatEUR } from "@/lib/utils";
+import { STORES } from "@/lib/shopping";
 import { createList, addItemLocation, deleteItemLocation } from "@/app/app/lists/actions";
 
 export const metadata: Metadata = { title: "Listes" };
@@ -15,17 +16,15 @@ export default async function ListsPage() {
   const { supabase, profile } = ctx;
   const householdId = profile?.household_id ?? "";
 
-  const [{ data: lists }, { data: locations }, { data: storeRows }] = await Promise.all([
+  const [{ data: lists }, { data: locations }] = await Promise.all([
     supabase.from("lists").select("*, list_items(checked, price, count)").eq("household_id", householdId).order("created_at", { ascending: false }),
     supabase.from("item_locations").select("*").eq("household_id", householdId).order("item_label").returns<ItemLocation[]>(),
-    supabase.from("ingredient_prices").select("store").eq("household_id", householdId),
   ]);
 
   type ListWithItems = ListRow & { list_items: { checked: boolean; price: number | null; count: number }[] };
   const typedLists = (lists ?? []) as unknown as ListWithItems[];
   const active = typedLists.filter((l) => !l.archived);
   const archived = typedLists.filter((l) => l.archived).sort((x, y) => (y.week_start ?? y.created_at).localeCompare(x.week_start ?? x.created_at));
-  const stores = [...new Set(((storeRows ?? []) as { store: string }[]).map((r) => r.store))].sort();
   const monday = (() => {
     const d = new Date();
     d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
@@ -76,8 +75,10 @@ export default async function ListsPage() {
           <input name="name" placeholder="Nom (ex. Courses semaine 42)" className="input" required />
           <label className="sr-only" htmlFor="week_start">Semaine</label>
           <input id="week_start" name="week_start" type="date" defaultValue={monday} title="Début de la semaine" className="input" />
-          <input name="store" list="stores" placeholder="Enseigne (ex. Carrefour)" className="input" />
-          <datalist id="stores">{stores.map((st) => <option key={st} value={st} />)}</datalist>
+          <select name="store" defaultValue="" className="input" required>
+            <option value="" disabled>Enseigne…</option>
+            {STORES.map((st) => <option key={st} value={st}>{st}</option>)}
+          </select>
           <button className="btn-primary">Créer et choisir les recettes</button>
         </form>
         <form action={createList} className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3">

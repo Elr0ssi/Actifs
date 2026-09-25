@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient, getSessionUser } from "@/lib/supabase/server";
 import { ensureIngredients, parsePicked } from "@/lib/data/ingredients";
+import { formatQty } from "@/lib/shopping";
 
 async function ctx() {
   const supabase = createClient();
@@ -25,13 +26,15 @@ function readRecipe(formData: FormData) {
 async function saveItems(supabase: ReturnType<typeof createClient>, householdId: string, recipeId: string, picked: ReturnType<typeof parsePicked>) {
   await supabase.from("recipe_items").delete().eq("recipe_id", recipeId);
   if (!picked.length) return;
-  const ids = await ensureIngredients(supabase, householdId, picked.map((p) => p.name));
+  const ids = await ensureIngredients(supabase, householdId, picked);
   await supabase.from("recipe_items").insert(
     picked.map((p, i) => ({
       recipe_id: recipeId,
-      ingredient_id: ids.get(p.name.trim().toLowerCase()) ?? null,
+      ingredient_id: ids.get(p.name.trim().toLowerCase())?.id ?? null,
       label: p.name.trim(),
-      quantity: p.quantity?.trim() || null,
+      qty: p.qty || null,
+      qty_unit: p.qtyUnit ?? null,
+      quantity: formatQty(p.qty, p.qtyUnit),
       position: i,
     }))
   );

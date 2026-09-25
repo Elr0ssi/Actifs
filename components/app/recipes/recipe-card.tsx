@@ -5,8 +5,9 @@ import { RecipeForm } from "@/components/app/recipes/recipe-form";
 import { deleteRecipe, toggleRecipeFavorite } from "@/app/app/lists/recipes/actions";
 import type { Recipe, RecipeItem } from "@/lib/types";
 import { cx } from "@/lib/utils";
+import type { CatalogIngredient } from "@/lib/shopping";
 
-export function RecipeCard({ recipe, householdId, categories, catalog }: { recipe: Recipe & { recipe_items: RecipeItem[] }; householdId: string; categories: string[]; catalog: { id: string; name: string }[] }) {
+export function RecipeCard({ recipe, householdId, categories, catalog }: { recipe: Recipe & { recipe_items: RecipeItem[] }; householdId: string; categories: string[]; catalog: CatalogIngredient[] }) {
   const [editing, setEditing] = useState(false);
   const [pending, start] = useTransition();
 
@@ -41,7 +42,7 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
       <div className="flex flex-1 flex-col p-5">
         <h3 className="text-lg font-bold leading-tight text-slate-900">{recipe.name}</h3>
         <ul className="mt-2 flex-1 space-y-0.5 text-sm text-slate-600">
-          {recipe.recipe_items.slice(0, 5).map((it) => <li key={it.id}>• {it.label}</li>)}
+          {recipe.recipe_items.slice(0, 5).map((it) => <li key={it.id}>• {it.label}{it.quantity && <span className="text-slate-400"> — {it.quantity}</span>}</li>)}
           {recipe.recipe_items.length > 5 && <li className="text-slate-400">+ {recipe.recipe_items.length - 5} autres</li>}
         </ul>
         <div className="mt-4 flex items-center gap-2">

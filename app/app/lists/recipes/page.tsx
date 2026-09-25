@@ -4,6 +4,7 @@ import { getAppContext } from "@/lib/data/context";
 import type { Recipe, RecipeItem } from "@/lib/types";
 import { RecipeForm } from "@/components/app/recipes/recipe-form";
 import { RecipeCard } from "@/components/app/recipes/recipe-card";
+import { loadCatalog } from "@/lib/data/ingredients";
 
 export const metadata: Metadata = { title: "Recettes" };
 
@@ -13,16 +14,15 @@ export default async function RecipesPage() {
   const { supabase, profile } = ctx;
   const householdId = profile?.household_id ?? "";
 
-  const [{ data: recipes }, { data: catalogRows }] = await Promise.all([
+  const [{ data: recipes }, { catalog }] = await Promise.all([
     supabase
       .from("recipes")
       .select("*, recipe_items(*)")
       .eq("household_id", householdId)
       .order("is_favorite", { ascending: false })
       .order("created_at", { ascending: false }),
-    supabase.from("ingredients").select("id, name").eq("household_id", householdId).order("name"),
+    loadCatalog(supabase),
   ]);
-  const catalog = (catalogRows ?? []) as { id: string; name: string }[];
 
   const typed = ((recipes ?? []) as unknown as (Recipe & { recipe_items: RecipeItem[] })[]).map((r) => ({
     ...r,
