@@ -122,10 +122,11 @@ export function FinanceDashboard({
         </div>
       </div>
 
-      <SummaryCards budget={budget} days={monthBounds(y, m).days} />
+      <SummaryCards budget={budget} days={monthBounds(y, m).days} anchor={anchor} today={today} />
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
-        <section className="card p-5">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="min-w-0 space-y-6">
+        <section className="card p-4">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-3">
               <h2 className="text-lg font-bold text-slate-900">{title}</h2>
@@ -155,8 +156,8 @@ export function FinanceDashboard({
                       key={d}
                       onClick={() => select(d)}
                       className={cx(
-                        "flex flex-col gap-1 border-b border-r border-slate-100 p-1.5 text-left transition hover:bg-slate-50",
-                        view === "week" ? "min-h-[220px]" : "min-h-[92px]",
+                        "flex min-w-0 flex-col gap-1 border-b border-r border-slate-100 p-1 text-left transition hover:bg-slate-50",
+                        view === "week" ? "min-h-[220px]" : "min-h-[76px]",
                         outside && "bg-slate-50/60 text-slate-300",
                         d === selected && "bg-brand-50/70 ring-2 ring-inset ring-brand-400"
                       )}
@@ -178,19 +179,20 @@ export function FinanceDashboard({
             </>
           )}
         </section>
-
-        <DayPanel ops={ops} anchor={anchor} date={selected} />
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[1fr_1.4fr]">
-        <BudgetBreakdown budget={budget} />
         <ForecastVsActual ops={ops} anchor={anchor} y={y} m={m} today={today} snapshot={snapshots[monthKey]} realBalances={realBalances} />
+        </div>
+
+        <div className="lg:sticky lg:top-6">
+          <DayPanel ops={ops} anchor={anchor} date={selected} />
+        </div>
       </div>
+
+      <BudgetBreakdown budget={budget} />
     </div>
   );
 }
 
-function SummaryCards({ budget, days }: { budget: ReturnType<typeof getMonthlyBudget>; days: number }) {
+function SummaryCards({ budget, days, anchor, today }: { budget: ReturnType<typeof getMonthlyBudget>; days: number; anchor: BalanceAnchor; today: string }) {
   const pct = (n: number) => (budget.income > 0 ? `${Math.round((n / budget.income) * 100)} %` : "—");
   const stats = [
     { label: "Revenus", value: budget.income, sub: `${budget.incomeCount} prévu(s)`, color: "text-emerald-600", dot: "bg-emerald-500" },
@@ -199,8 +201,8 @@ function SummaryCards({ budget, days }: { budget: ReturnType<typeof getMonthlyBu
     { label: "Épargne / invest.", value: budget.savings, sub: `${pct(budget.savings)} des revenus`, color: "text-violet-600", dot: "bg-violet-500" },
   ];
   return (
-    <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-      <div className="card grid grid-cols-2 gap-4 p-4 sm:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr]">
+      <div className="card grid grid-cols-2 gap-4 p-4 sm:grid-cols-4 md:col-span-2 xl:col-span-1">
         {stats.map((s) => (
           <div key={s.label} className="min-w-0">
             <p className="flex items-center gap-1.5 truncate text-xs text-slate-500"><span className={cx("h-2 w-2 rounded-full", s.dot)} />{s.label}</p>
@@ -221,6 +223,15 @@ function SummaryCards({ budget, days }: { budget: ReturnType<typeof getMonthlyBu
           <p className="text-[11px] text-emerald-700/70">≈ {formatEUR(budget.resteAVivre / days)}/jour</p>
         </div>
       </div>
+      <form action={updateBalanceAnchor} className="card space-y-1.5 border-brand-200 bg-brand-50/40 p-4">
+        <p className="text-xs font-medium text-brand-800">Solde réel à date</p>
+        <div className="flex gap-1.5">
+          <input name="entry_date" type="date" defaultValue={today} className="input min-w-0 px-2 py-1 text-xs" />
+          <input name="current_balance" type="number" step="0.01" placeholder={String(anchor.balance)} className="input w-24 min-w-0 px-2 py-1 text-xs" required />
+          <button className="btn-primary px-2.5 py-1 text-xs">OK</button>
+        </div>
+        <p className="text-[11px] text-slate-500">Dernier : <b>{formatEUR(anchor.balance)}</b> au {fmtShort(anchor.date)}</p>
+      </form>
     </div>
   );
 }
@@ -263,10 +274,12 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
       </div>
 
       <div className="rounded-2xl bg-brand-50 p-4">
-        <p className="text-xs font-medium text-brand-800">Reste à vivre au {fmtShort(s.monthEnd)}</p>
-        <p className={cx("mt-1 text-2xl font-bold", s.endBalance >= 0 ? "text-brand-700" : "text-rose-600")}>{formatEUR(s.endBalance)}</p>
-        <p className="text-xs text-brand-700/70">Après toutes les opérations à venir · ≈ {formatEUR(s.perDay)}/jour ({s.daysRemaining} j)</p>
-        <p className="mt-2 border-t border-brand-100 pt-2 text-xs text-brand-800">Solde prévu ce jour : <b>{formatEUR(s.balance)}</b></p>
+        <p className="text-xs font-medium text-brand-800">Reste à vivre au {fmtShort(date)}</p>
+        <p className={cx("mt-1 text-3xl font-bold", s.balance >= 0 ? "text-brand-700" : "text-rose-600")}>{formatEUR(s.balance)}</p>
+        <p className="mt-2 border-t border-brand-100 pt-2 text-xs text-brand-800">
+          Solde prévu au {fmtShort(s.monthEnd)} : <b className={s.endBalance >= 0 ? "" : "text-rose-600"}>{formatEUR(s.endBalance)}</b>
+        </p>
+        <p className="text-[11px] text-brand-700/70">≈ {formatEUR(s.perDay)}/jour jusqu'à la fin du mois ({s.daysRemaining} j)</p>
       </div>
 
       <div>
@@ -375,7 +388,7 @@ function ForecastVsActual({
   const realIdx = forecast.map((p, i) => (realByDate.has(p.date) ? i : -1)).filter((i) => i >= 0);
   const [hover, setHover] = useState<number | null>(null);
 
-  const W = 640, H = 220, PX = 48, PT = 16, PB = 26;
+  const W = 640, H = 150, PX = 48, PT = 12, PB = 22;
   const all = [...forecast.map((p) => p.value), ...realByDate.values(), 0];
   const min = Math.min(...all), max = Math.max(...all), span = max - min || 1;
   const x = (i: number) => PX + (i / Math.max(1, forecast.length - 1)) * (W - PX - 8);
@@ -391,7 +404,7 @@ function ForecastVsActual({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="font-semibold text-slate-900">Solde prévisionnel vs réel</p>
-          <p className="text-xs text-slate-500">Saisis ton solde bancaire réel pour le comparer au prévu.</p>
+          <p className="text-xs text-slate-500">Points bleus = soldes réels saisis en haut de page.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
           <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-brand-600" />Réel</span>
@@ -404,12 +417,6 @@ function ForecastVsActual({
         </div>
       </div>
 
-      <form action={updateBalanceAnchor} className="mt-3 flex flex-wrap items-center gap-2 rounded-xl bg-slate-50 p-2">
-        <span className="text-xs font-medium text-slate-600">Mon solde réel</span>
-        <input name="entry_date" type="date" defaultValue={today} className="input w-36 py-1 text-xs" />
-        <input name="current_balance" type="number" step="0.01" placeholder="€" className="input w-28 py-1 text-xs" required />
-        <button className="btn-primary px-3 py-1 text-xs">Enregistrer</button>
-      </form>
 
       <div className="relative mt-3">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full" onMouseLeave={() => setHover(null)}>

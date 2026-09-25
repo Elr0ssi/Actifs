@@ -1,24 +1,21 @@
 import Link from "next/link";
 import { getAppContext } from "@/lib/data/context";
+import { loadFinanceData } from "@/lib/data/finance";
+import { getDateSituation, getMonthlyBudget } from "@/lib/finance-engine";
 import { formatEUR, todayISO } from "@/lib/utils";
-import type { Task, Routine, RoutineLog, RecurringCharge, Income } from "@/lib/types";
+import type { Task, Routine, RoutineLog } from "@/lib/types";
 import { ToggleCheckbox } from "@/components/app/toggle-checkbox";
-import { WeekAhead } from "@/components/app/week-ahead";
 import { toggleTaskStatus, toggleRoutineLog, quickAddTask } from "@/app/app/actions";
-import { monthlyEquivalent } from "@/lib/finance";
 
 export default async function DashboardPage() {
   const ctx = await getAppContext();
   if (!ctx) return null;
-  const { supabase, profile, household } = ctx;
+  const { supabase, profile } = ctx;
   const householdId = profile?.household_id;
   const today = todayISO();
   const weekday = new Date().getDay();
-  const weekEnd = new Date();
-  weekEnd.setDate(weekEnd.getDate() + 6);
-  const weekEndISO = weekEnd.toISOString().slice(0, 10);
 
-  const [{ data: tasks }, { data: routines }, { data: logs }, { data: charges }, { data: incomes }] = await Promise.all([
+  const [{ data: tasks }, { data: routines }, { data: logs }, finance] = await Promise.all([
     supabase
       .from("tasks")
       .select("*")
@@ -30,19 +27,7 @@ export default async function DashboardPage() {
       .returns<Task[]>(),
     supabase.from("routines").select("*").eq("household_id", householdId ?? "").eq("active", true).returns<Routine[]>(),
     supabase.from("routine_logs").select("*").eq("log_date", today).returns<RoutineLog[]>(),
-    supabase
-      .from("recurring_charges")
-      .select("*")
-      .eq("household_id", householdId ?? "")
-      .eq("active", true)
-      .order("next_date", { ascending: true })
-      .returns<RecurringCharge[]>(),
-    supabase
-      .from("incomes")
-      .select("*")
-      .eq("household_id", householdId ?? "")
-      .order("expected_date", { ascending: true })
-      .returns<Income[]>(),
+    loadFinanceData(),
   ]);
 
   const todaysRoutines = (routines ?? []).filter(
@@ -50,15 +35,9 @@ export default async function DashboardPage() {
   );
   const logByRoutine = new Map((logs ?? []).map((l) => [l.routine_id, l]));
 
-  const chargesRangeLike = (charges ?? []).map((c) => ({ id: c.id, name: c.name, amount: Number(c.amount), next_date: c.next_date, frequency: c.frequency }));
-  const incomesRangeLike = (incomes ?? [])
-    .filter((i) => i.status !== "received")
-    .map((i) => ({ id: i.id, name: i.name, amount: Number(i.amount), next_date: i.expected_date, frequency: i.recurring ? i.frequency : ("once" as const) }));
-
-  const monthlyExpenses = (charges ?? []).reduce((sum, c) => sum + monthlyEquivalent(Number(c.amount), c.frequency), 0);
-  const monthlyIncomes = (incomes ?? [])
-    .filter((i) => i.recurring)
-    .reduce((sum, i) => sum + monthlyEquivalent(Number(i.amount), i.frequency), 0);
+  const [y, m] = today.split("-").map(Number);
+  const budget = finance ? getMonthlyBudget(finance.ops, finance.anchor, y, m - 1, finance.budgets, finance.savingsRule) : null;
+  const situation = finance ? getDateSituation(finance.ops, finance.anchor, today) : null;
 
   const doneRoutines = todaysRoutines.filter((r) => logByRoutine.get(r.id)?.done).length;
 
@@ -80,8 +59,19 @@ export default async function DashboardPage() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Tâches en cours" value={String(tasks?.length ?? 0)} accent="text-brand-600" />
         <StatCard label="Routines du jour" value={`${doneRoutines}/${todaysRoutines.length}`} accent="text-emerald-600" />
-        <StatCard label="Charges fixes / mois" value={formatEUR(monthlyExpenses)} accent="text-rose-600" />
-        <StatCard label="Revenus fixes / mois" value={formatEUR(monthlyIncomes)} accent="text-emerald-600" />
+        <Link href="/app/finance" className="card p-5 transition hover:border-brand-200 sm:col-span-2">
+          <p className="label">Budget</p>
+          <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs text-slate-500">Reste à vivre aujourd'hui</p>
+              <p className={`text-2xl font-bold ${(situation?.balance ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600"}`}>{formatEUR(situation?.balance ?? 0)}</p>
+            </div>
+            <div className="text-right text-xs text-slate-500">
+              <p>Reste à vivre du mois : <b className="text-slate-800">{formatEUR(budget?.resteAVivre ?? 0)}</b></p>
+              <p>Solde prévu fin de mois : <b className="text-slate-800">{formatEUR(situation?.endBalance ?? 0)}</b></p>
+            </div>
+          </div>
+        </Link>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -125,19 +115,6 @@ export default async function DashboardPage() {
         </section>
       </div>
 
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-semibold text-slate-900">Cette semaine</h2>
-          <Link href="/app/finance" className="text-sm font-medium text-brand-600">Voir toute la finance</Link>
-        </div>
-        <WeekAhead
-          currentBalance={Number(household?.current_balance ?? 0)}
-          charges={chargesRangeLike}
-          incomes={incomesRangeLike}
-          todayISO={today}
-          weekEndISO={weekEndISO}
-        />
-      </div>
     </div>
   );
 }
