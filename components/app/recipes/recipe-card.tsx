@@ -2,19 +2,18 @@
 
 import { useState, useTransition } from "react";
 import { RecipeForm } from "@/components/app/recipes/recipe-form";
-import { GenerateListButton } from "@/components/app/generate-list-button";
 import { deleteRecipe, toggleRecipeFavorite } from "@/app/app/lists/recipes/actions";
 import type { Recipe, RecipeItem } from "@/lib/types";
 import { cx } from "@/lib/utils";
 
-export function RecipeCard({ recipe, householdId, categories }: { recipe: Recipe & { recipe_items: RecipeItem[] }; householdId: string; categories: string[] }) {
+export function RecipeCard({ recipe, householdId, categories, catalog }: { recipe: Recipe & { recipe_items: RecipeItem[] }; householdId: string; categories: string[]; catalog: { id: string; name: string }[] }) {
   const [editing, setEditing] = useState(false);
   const [pending, start] = useTransition();
 
   if (editing) {
     return (
       <div className="card p-5 sm:col-span-2 lg:col-span-3">
-        <RecipeForm recipe={recipe} householdId={householdId} categories={categories} onDone={() => setEditing(false)} />
+        <RecipeForm recipe={recipe} householdId={householdId} categories={categories} catalog={catalog} onDone={() => setEditing(false)} />
       </div>
     );
   }
@@ -46,7 +45,6 @@ export function RecipeCard({ recipe, householdId, categories }: { recipe: Recipe
           {recipe.recipe_items.length > 5 && <li className="text-slate-400">+ {recipe.recipe_items.length - 5} autres</li>}
         </ul>
         <div className="mt-4 flex items-center gap-2">
-          <GenerateListButton recipeId={recipe.id} recipeName={recipe.name} />
           <button onClick={() => setEditing(true)} className="btn-secondary py-2 text-xs">Modifier</button>
           <button
             onClick={() => confirm(`Supprimer "${recipe.name}" ?`) && start(() => deleteRecipe(recipe.id))}

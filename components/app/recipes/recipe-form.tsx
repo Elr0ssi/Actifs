@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { createRecipe, updateRecipe } from "@/app/app/lists/recipes/actions";
 import type { Recipe, RecipeItem } from "@/lib/types";
+import { IngredientPicker } from "@/components/app/recipes/ingredient-picker";
 
 export const RECIPE_CATEGORIES = ["Rapide", "Healthy", "Gourmand", "Végétarien", "Petit-déjeuner", "Dessert", "Batch cooking", "Apéro", "Favoris"];
 
@@ -22,16 +23,19 @@ export function RecipeForm({
   recipe,
   householdId,
   categories,
+  catalog,
   onDone,
 }: {
   recipe?: Recipe & { recipe_items: RecipeItem[] };
   householdId: string;
   categories: string[];
+  catalog: { id: string; name: string }[];
   onDone?: () => void;
 }) {
   const [preview, setPreview] = useState<string | null>(recipe?.image_url ?? null);
   const [file, setFile] = useState<File | null>(null);
   const [pending, setPending] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const allCategories = [...new Set([...RECIPE_CATEGORIES, ...categories])];
@@ -57,6 +61,7 @@ export function RecipeForm({
         formRef.current?.reset();
         setPreview(null);
         setFile(null);
+        setResetKey((k) => k + 1);
       }
       onDone?.();
     } catch {
@@ -112,13 +117,17 @@ export function RecipeForm({
         <select name="category" defaultValue={recipe?.category ?? "Rapide"} className="input">
           {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-        <textarea
-          name="items"
-          rows={5}
-          defaultValue={recipe?.recipe_items.map((i) => i.label).join("\n")}
-          className="input"
-          placeholder={"Ingrédients, un par ligne :\nPoulet\nPoivrons\nRiz"}
-        />
+        <div>
+          <p className="label mb-1.5">Ingrédients</p>
+          <IngredientPicker
+            key={resetKey}
+            name="ingredients"
+            catalog={catalog}
+            initial={recipe?.recipe_items.map((i) => ({ id: i.ingredient_id, name: i.label, quantity: i.quantity ?? "" })) ?? []}
+            suggestions={catalog.map((c) => c.name)}
+            suggestionsLabel="Ingrédients déjà connus"
+          />
+        </div>
         {error && <p className="text-sm text-rose-600">{error}</p>}
         <div className="flex gap-2">
           <button disabled={pending} className="btn-primary">{pending ? "Enregistrement…" : recipe ? "Enregistrer" : "Créer la recette"}</button>

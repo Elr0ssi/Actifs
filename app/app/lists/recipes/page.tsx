@@ -13,12 +13,16 @@ export default async function RecipesPage() {
   const { supabase, profile } = ctx;
   const householdId = profile?.household_id ?? "";
 
-  const { data: recipes } = await supabase
-    .from("recipes")
-    .select("*, recipe_items(*)")
-    .eq("household_id", householdId)
-    .order("is_favorite", { ascending: false })
-    .order("created_at", { ascending: false });
+  const [{ data: recipes }, { data: catalogRows }] = await Promise.all([
+    supabase
+      .from("recipes")
+      .select("*, recipe_items(*)")
+      .eq("household_id", householdId)
+      .order("is_favorite", { ascending: false })
+      .order("created_at", { ascending: false }),
+    supabase.from("ingredients").select("id, name").eq("household_id", householdId).order("name"),
+  ]);
+  const catalog = (catalogRows ?? []) as { id: string; name: string }[];
 
   const typed = ((recipes ?? []) as unknown as (Recipe & { recipe_items: RecipeItem[] })[]).map((r) => ({
     ...r,
@@ -31,18 +35,18 @@ export default async function RecipesPage() {
       <Link href="/app/lists" className="text-sm font-medium text-slate-500 hover:text-slate-800">← Listes</Link>
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Recettes</h1>
-        <p className="mt-1 text-sm text-slate-500">Prépare un repas une fois, régénère sa liste de courses en un clic.</p>
+        <p className="mt-1 text-sm text-slate-500">Compose tes repas avec tes ingrédients ; ils serviront à remplir tes listes de courses.</p>
       </div>
 
       <div className="card p-5">
         <h2 className="mb-4 text-sm font-semibold text-slate-700">Nouvelle recette</h2>
-        <RecipeForm householdId={householdId} categories={categories} />
+        <RecipeForm householdId={householdId} categories={categories} catalog={catalog} />
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {typed.length === 0 && <p className="text-sm text-slate-400">Aucune recette pour l'instant.</p>}
         {typed.map((r) => (
-          <RecipeCard key={r.id} recipe={r} householdId={householdId} categories={categories} />
+          <RecipeCard key={r.id} recipe={r} householdId={householdId} categories={categories} catalog={catalog} />
         ))}
       </div>
     </div>

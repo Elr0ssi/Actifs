@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { toggleListItem, deleteListItem } from "@/app/app/lists/actions";
-import { cx } from "@/lib/utils";
+import { cx, formatEUR } from "@/lib/utils";
 import type { ListItem } from "@/lib/types";
 
 type Item = ListItem & { store?: string };
@@ -33,15 +33,20 @@ function Row({ listId, item }: { listId: string; item: Item }) {
       <div className="min-w-0 flex-1">
         <p className={cx("truncate text-sm font-medium text-slate-800", item.checked && "text-slate-400 line-through")}>
           {item.label}
+          {item.count > 1 && <span className="ml-1.5 rounded-md bg-slate-100 px-1.5 text-xs font-semibold text-slate-600">×{item.count}</span>}
           {item.quantity && <span className="ml-2 text-xs font-normal text-slate-400">{item.quantity}</span>}
         </p>
-        {(item.note || item.store) && (
+        {(item.note || item.store || item.source) && (
           <p className="truncate text-xs text-slate-400">
             {item.store && <span className="mr-2">📍 {item.store}</span>}
+            {item.source && <span className="mr-2">🍽️ {item.source}</span>}
             {item.note}
           </p>
         )}
       </div>
+      {item.price !== null && item.price !== undefined && (
+        <span className={cx("shrink-0 text-sm font-medium", item.checked ? "text-slate-300" : "text-slate-600")}>{formatEUR(Number(item.price) * (item.count || 1))}</span>
+      )}
       <button
         onClick={() => startTransition(() => deleteListItem(listId, item.id))}
         className="rounded-lg px-2 py-1 text-xs text-slate-300 hover:bg-slate-100 hover:text-rose-600"

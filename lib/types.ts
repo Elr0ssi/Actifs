@@ -34,6 +34,9 @@ export interface ListRow {
   name: string;
   category: string | null;
   type: ListType;
+  store: string | null;
+  week_start: string | null;
+  archived: boolean;
   created_by: string | null;
   created_at: string;
 }
@@ -46,6 +49,10 @@ export interface ListItem {
   note: string | null;
   checked: boolean;
   position: number;
+  ingredient_id: string | null;
+  price: number | null;
+  count: number;
+  source: string | null;
   created_at: string;
 }
 
@@ -70,9 +77,21 @@ export interface Recipe {
   created_at: string;
 }
 
+export interface Ingredient {
+  id: string;
+  name: string;
+}
+
+export interface IngredientPrice {
+  ingredient_id: string;
+  store: string;
+  price: number;
+}
+
 export interface RecipeItem {
   id: string;
   recipe_id: string;
+  ingredient_id: string | null;
   label: string;
   quantity: string | null;
   note: string | null;
