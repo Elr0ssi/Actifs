@@ -19,24 +19,43 @@ function parseBulkLines(raw: string) {
     .filter(Boolean);
 }
 
+function readRecipe(formData: FormData) {
+  return {
+    name: String(formData.get("name") || "").trim(),
+    category: String(formData.get("category") || "").trim() || "Repas",
+    image_url: String(formData.get("image_url") || "") || null,
+    notes: String(formData.get("notes") || "").trim() || null,
+    lines: parseBulkLines(String(formData.get("items") || "")),
+  };
+}
+
 export async function createRecipe(formData: FormData) {
-  const name = String(formData.get("name") || "").trim();
-  const category = String(formData.get("category") || "Repas").trim() || "Repas";
-  const items = String(formData.get("items") || "");
-  if (!name) return;
+  const { lines, ...recipe } = readRecipe(formData);
+  if (!recipe.name) return;
   const { supabase, householdId, userId } = await ctx();
   if (!householdId) return;
-
-  const { data: recipe } = await supabase
-    .from("recipes")
-    .insert({ household_id: householdId, name, category, created_by: userId })
-    .select("id")
-    .single();
-
-  const lines = parseBulkLines(items);
-  if (recipe?.id && lines.length > 0) {
-    await supabase.from("recipe_items").insert(lines.map((label, i) => ({ recipe_id: recipe.id, label, position: i })));
+  const { data } = await supabase.from("recipes").insert({ ...recipe, household_id: householdId, created_by: userId }).select("id").single();
+  if (data?.id && lines.length > 0) {
+    await supabase.from("recipe_items").insert(lines.map((label, i) => ({ recipe_id: data.id, label, position: i })));
   }
+  revalidatePath("/app/lists/recipes");
+}
+
+export async function updateRecipe(recipeId: string, formData: FormData) {
+  const { lines, ...recipe } = readRecipe(formData);
+  if (!recipe.name) return;
+  const { supabase } = await ctx();
+  await supabase.from("recipes").update(recipe).eq("id", recipeId);
+  await supabase.from("recipe_items").delete().eq("recipe_id", recipeId);
+  if (lines.length > 0) {
+    await supabase.from("recipe_items").insert(lines.map((label, i) => ({ recipe_id: recipeId, label, position: i })));
+  }
+  revalidatePath("/app/lists/recipes");
+}
+
+export async function toggleRecipeFavorite(recipeId: string, favorite: boolean) {
+  const { supabase } = await ctx();
+  await supabase.from("recipes").update({ is_favorite: favorite }).eq("id", recipeId);
   revalidatePath("/app/lists/recipes");
 }
 
@@ -47,7 +66,6 @@ export async function deleteRecipe(recipeId: string) {
 }
 
 export async function generateListFromRecipe(recipeId: string, recipeName: string) {
-  "use server";
   const { supabase, householdId, userId } = await ctx();
   if (!householdId) return;
 

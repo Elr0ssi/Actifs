@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
 import type { Recipe, RecipeItem } from "@/lib/types";
-import { createRecipe, deleteRecipe } from "@/app/app/lists/recipes/actions";
-import { GenerateListButton } from "@/components/app/generate-list-button";
+import { RecipeForm } from "@/components/app/recipes/recipe-form";
+import { RecipeCard } from "@/components/app/recipes/recipe-card";
 
 export const metadata: Metadata = { title: "Recettes" };
 
@@ -17,10 +17,14 @@ export default async function RecipesPage() {
     .from("recipes")
     .select("*, recipe_items(*)")
     .eq("household_id", householdId)
+    .order("is_favorite", { ascending: false })
     .order("created_at", { ascending: false });
 
-  type RecipeWithItems = Recipe & { recipe_items: RecipeItem[] };
-  const typed = (recipes ?? []) as unknown as RecipeWithItems[];
+  const typed = ((recipes ?? []) as unknown as (Recipe & { recipe_items: RecipeItem[] })[]).map((r) => ({
+    ...r,
+    recipe_items: [...r.recipe_items].sort((a, b) => a.position - b.position),
+  }));
+  const categories = [...new Set(typed.map((r) => r.category).filter(Boolean) as string[])];
 
   return (
     <div className="space-y-8">
@@ -31,40 +35,14 @@ export default async function RecipesPage() {
       </div>
 
       <div className="card p-5">
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">Nouvelle recette</h2>
-        <form action={createRecipe} className="space-y-2">
-          <div className="flex gap-2">
-            <input name="name" placeholder="Nom (ex. Poulet basquaise)" className="input flex-1" required />
-            <input name="category" placeholder="Catégorie" defaultValue="Repas" className="input w-40" />
-          </div>
-          <textarea name="items" rows={4} className="input" placeholder={"Ingrédients, un par ligne :\n- Poulet\n- Poivrons\n- Riz"} />
-          <button className="btn-primary">Créer la recette</button>
-        </form>
+        <h2 className="mb-4 text-sm font-semibold text-slate-700">Nouvelle recette</h2>
+        <RecipeForm householdId={householdId} categories={categories} />
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {typed.length === 0 && <p className="text-sm text-slate-400">Aucune recette pour l'instant.</p>}
         {typed.map((r) => (
-          <div key={r.id} className="card p-5">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-semibold text-slate-900">{r.name}</p>
-                <p className="text-xs text-slate-400">{r.category}</p>
-              </div>
-              <form action={deleteRecipe.bind(null, r.id)}>
-                <button className="text-xs text-slate-300 hover:text-rose-600">✕</button>
-              </form>
-            </div>
-            <ul className="mt-3 space-y-0.5 text-sm text-slate-600">
-              {r.recipe_items.slice(0, 5).map((it) => (
-                <li key={it.id}>• {it.label}</li>
-              ))}
-              {r.recipe_items.length > 5 && <li className="text-slate-400">+ {r.recipe_items.length - 5} autres</li>}
-            </ul>
-            <div className="mt-4">
-              <GenerateListButton recipeId={r.id} recipeName={r.name} />
-            </div>
-          </div>
+          <RecipeCard key={r.id} recipe={r} householdId={householdId} categories={categories} />
         ))}
       </div>
     </div>

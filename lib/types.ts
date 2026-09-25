@@ -64,6 +64,8 @@ export interface Recipe {
   name: string;
   category: string | null;
   notes: string | null;
+  image_url: string | null;
+  is_favorite: boolean;
   created_by: string | null;
   created_at: string;
 }
