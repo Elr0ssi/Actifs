@@ -216,6 +216,19 @@ export function getDateSituation(ops: FinOp[], anchor: BalanceAnchor, date: stri
   };
 }
 
+/** What the user plans to do each month (set manually), compared against real operations. */
+export interface BudgetPlan {
+  income: number;
+  fixed: number;
+  variable: number;
+  savingsMode: "fixed" | "percent";
+  savingsValue: number;
+}
+
+export function planSavings(plan: BudgetPlan) {
+  return plan.savingsMode === "percent" ? (plan.income * plan.savingsValue) / 100 : plan.savingsValue;
+}
+
 export interface MonthlyBudget {
   income: number;
   incomeCount: number;
@@ -233,8 +246,7 @@ export function getMonthlyBudget(
   ops: FinOp[],
   anchor: BalanceAnchor,
   year: number,
-  month: number,
-  savingsRule: { mode: "fixed" | "percent"; value: number }
+  month: number
 ): MonthlyBudget {
   const { start, end } = monthBounds(year, month);
   const occ = expand(ops, start, end);
@@ -242,9 +254,7 @@ export function getMonthlyBudget(
   const income = total("income");
   const fixed = total("fixed");
   const variable = total("variable");
-  const savingsOps = total("savings");
-  const ruleAmount = savingsRule.mode === "percent" ? (income * savingsRule.value) / 100 : savingsRule.value;
-  const savings = savingsOps > 0 ? savingsOps : ruleAmount;
+  const savings = total("savings");
   const startBalance = getBalanceAtDate(ops, anchor, addDays(start, -1));
 
   const byCat = new Map<string, number>();

@@ -15,6 +15,7 @@ export async function loadFinanceData() {
     supabase.from("balance_entries").select("entry_date, balance").eq("household_id", householdId).order("entry_date"),
   ]);
 
+  const h = household as (typeof household & { budget_income?: number; budget_fixed?: number; budget_variable?: number }) | null;
   const ops: FinOp[] = [...(incomes ?? []).map(incomeRowToOp), ...(charges ?? []).map(chargeRowToOp)];
   const anchor: BalanceAnchor = {
     balance: Number(household?.current_balance ?? 0),
@@ -26,7 +27,13 @@ export async function loadFinanceData() {
     householdId,
     ops,
     anchor,
-    savingsRule: { mode: (household?.savings_mode ?? "fixed") as "fixed" | "percent", value: Number(household?.savings_value ?? 0) },
+    plan: {
+      income: Number(h?.budget_income ?? 0),
+      fixed: Number(h?.budget_fixed ?? 0),
+      variable: Number(h?.budget_variable ?? 0),
+      savingsMode: (h?.savings_mode ?? "fixed") as "fixed" | "percent",
+      savingsValue: Number(h?.savings_value ?? 0),
+    },
     realBalances: (entries ?? []).map((e) => ({ date: e.entry_date as string, balance: Number(e.balance) })),
     snapshots: Object.fromEntries((snapshots ?? []).map((s) => [s.month as string, s.balances as number[]])),
   };

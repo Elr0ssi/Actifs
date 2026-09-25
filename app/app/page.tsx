@@ -36,7 +36,7 @@ export default async function DashboardPage() {
   const logByRoutine = new Map((logs ?? []).map((l) => [l.routine_id, l]));
 
   const [y, m] = today.split("-").map(Number);
-  const budget = finance ? getMonthlyBudget(finance.ops, finance.anchor, y, m - 1, finance.savingsRule) : null;
+  const budget = finance ? getMonthlyBudget(finance.ops, finance.anchor, y, m - 1) : null;
   const situation = finance ? getDateSituation(finance.ops, finance.anchor, today) : null;
 
   const doneRoutines = todaysRoutines.filter((r) => logByRoutine.get(r.id)?.done).length;

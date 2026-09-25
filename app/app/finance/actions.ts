@@ -129,11 +129,19 @@ export async function deleteBalanceEntry(date: string) {
   refresh();
 }
 
-export async function updateSavingsConfig(formData: FormData) {
-  const mode = String(formData.get("savings_mode") || "fixed");
-  const value = Number(formData.get("savings_value") || 0);
+export async function updateBudgetPlan(formData: FormData) {
+  const num = (k: string) => Math.max(0, Number(String(formData.get(k) ?? "0").replace(",", ".")) || 0);
   const { supabase, householdId } = await ctx();
   if (!householdId) return;
-  await supabase.from("households").update({ savings_mode: mode, savings_value: value }).eq("id", householdId);
+  await supabase
+    .from("households")
+    .update({
+      budget_income: num("budget_income"),
+      budget_fixed: num("budget_fixed"),
+      budget_variable: num("budget_variable"),
+      savings_mode: String(formData.get("savings_mode") || "fixed"),
+      savings_value: num("savings_value"),
+    })
+    .eq("id", householdId);
   refresh();
 }

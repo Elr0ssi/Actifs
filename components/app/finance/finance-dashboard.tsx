@@ -11,6 +11,8 @@ import {
   getDateSituation,
   getSkippedOccurrences,
   type OpKind,
+  type BudgetPlan,
+  planSavings,
   diffDays,
   KIND_LABEL,
   KIND_STYLE,
@@ -53,14 +55,14 @@ function tooltip(o: Occurrence) {
 export function FinanceDashboard({
   ops,
   anchor,
-  savingsRule,
+  plan,
   today,
   snapshots,
   realBalances,
 }: {
   ops: FinOp[];
   anchor: BalanceAnchor;
-  savingsRule: { mode: "fixed" | "percent"; value: number };
+  plan: BudgetPlan;
   today: string;
   snapshots: Record<string, number[]>;
   realBalances: { date: string; balance: number }[];
@@ -72,7 +74,7 @@ export function FinanceDashboard({
   const monthKey = `${y}-${String(m + 1).padStart(2, "0")}`;
   const { start: mStart, end: mEnd } = monthBounds(y, m);
 
-  const budget = useMemo(() => getMonthlyBudget(ops, anchor, y, m, savingsRule), [ops, anchor, y, m, savingsRule]);
+  const budget = useMemo(() => getMonthlyBudget(ops, anchor, y, m), [ops, anchor, y, m]);
 
   const select = (d: string) => {
     setSelected(d);
@@ -128,7 +130,7 @@ export function FinanceDashboard({
         </div>
       </div>
 
-      <SummaryCards budget={budget} days={monthBounds(y, m).days} anchor={anchor} today={today} picked={picked} onPick={(k) => setPicked(k === picked ? null : k)} />
+      <SummaryCards budget={budget} days={monthBounds(y, m).days} anchor={anchor} today={today} plan={plan} picked={picked} onPick={(k) => setPicked(k === picked ? null : k)} />
       {picked && <KindDetail kind={picked} ops={ops} y={y} m={m} onClose={() => setPicked(null)} />}
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
@@ -204,13 +206,13 @@ export function FinanceDashboard({
   );
 }
 
-function SummaryCards({ budget, days, anchor, today, picked, onPick }: { budget: ReturnType<typeof getMonthlyBudget>; days: number; anchor: BalanceAnchor; today: string; picked: OpKind | null; onPick: (k: OpKind) => void }) {
+function SummaryCards({ budget, days, anchor, today, plan, picked, onPick }: { budget: ReturnType<typeof getMonthlyBudget>; days: number; anchor: BalanceAnchor; today: string; plan: BudgetPlan; picked: OpKind | null; onPick: (k: OpKind) => void }) {
   const pct = (n: number) => (budget.income > 0 ? `${Math.round((n / budget.income) * 100)} %` : "—");
   const stats = [
-    { kind: "income" as OpKind, label: "Revenus", value: budget.income, sub: `${budget.incomeCount} prévu(s)`, color: "text-emerald-600", dot: "bg-emerald-500" },
-    { kind: "fixed" as OpKind, label: "Charges fixes", value: budget.fixed, sub: `${pct(budget.fixed)} des revenus`, color: "text-rose-600", dot: "bg-rose-500" },
-    { kind: "variable" as OpKind, label: "Budget variable", value: budget.variable, sub: `${pct(budget.variable)} des revenus`, color: "text-amber-600", dot: "bg-amber-500" },
-    { kind: "savings" as OpKind, label: "Épargne / invest.", value: budget.savings, sub: `${pct(budget.savings)} des revenus`, color: "text-violet-600", dot: "bg-violet-500" },
+    { kind: "income" as OpKind, label: "Revenus", planned: plan.income, value: budget.income, sub: `${budget.incomeCount} prévu(s)`, color: "text-emerald-600", dot: "bg-emerald-500" },
+    { kind: "fixed" as OpKind, label: "Charges fixes", planned: plan.fixed, value: budget.fixed, sub: `${pct(budget.fixed)} des revenus`, color: "text-rose-600", dot: "bg-rose-500" },
+    { kind: "variable" as OpKind, label: "Dépenses variables", planned: plan.variable, value: budget.variable, sub: `${pct(budget.variable)} des revenus`, color: "text-amber-600", dot: "bg-amber-500" },
+    { kind: "savings" as OpKind, label: "Épargne / invest.", planned: planSavings(plan), value: budget.savings, sub: `${pct(budget.savings)} des revenus`, color: "text-violet-600", dot: "bg-violet-500" },
   ];
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr]">
@@ -223,7 +225,15 @@ function SummaryCards({ budget, days, anchor, today, picked, onPick }: { budget:
             className={cx("min-w-0 rounded-xl p-2 text-left transition hover:bg-slate-50", picked === s.kind && "bg-slate-100 ring-1 ring-slate-200")}
           >
             <p className="flex items-center gap-1.5 truncate text-xs text-slate-500"><span className={cx("h-2 w-2 rounded-full", s.dot)} />{s.label}</p>
-            <p className={cx("mt-0.5 text-lg font-bold", s.color)}>{formatEUR(s.value)}</p>
+            <p className="mt-0.5 truncate text-[10px] text-slate-400">
+              Budget {s.planned > 0 ? formatEUR(s.planned) : "—"}
+              {s.planned > 0 && (
+                <span className={cx("ml-1 font-medium", (s.kind === "income" || s.kind === "savings" ? s.value >= s.planned : s.value <= s.planned) ? "text-emerald-600" : "text-rose-500")}>
+                  ({s.value - s.planned >= 0 ? "+" : ""}{formatEUR(s.value - s.planned)})
+                </span>
+              )}
+            </p>
+            <p className={cx("text-lg font-bold", s.color)}>{formatEUR(s.value)}</p>
             <p className="truncate text-[11px] text-slate-400">{s.sub}</p>
           </button>
         ))}
