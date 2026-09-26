@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient, getSessionUser } from "@/lib/supabase/server";
 import { ensureIngredients, parsePicked } from "@/lib/data/ingredients";
-import { formatQty, lineCost, priceMap, type IngredientUnit } from "@/lib/shopping";
+import { defaultQtyUnit, formatQty, lineCost, priceMap, type IngredientUnit } from "@/lib/shopping";
 
 async function ctx() {
   const supabase = createClient();
@@ -139,14 +139,22 @@ export async function setListArchived(listId: string, archived: boolean) {
   revalidatePath(`/app/lists/${listId}`);
 }
 
+export async function finishShopping(listId: string) {
+  const { supabase } = await ctx();
+  await supabase.from("lists").update({ archived: true }).eq("id", listId);
+  revalidatePath("/app/lists");
+  redirect(`/app/lists/${listId}?done=1#comparatif`);
+}
+
 export async function createPersonalIngredient(formData: FormData) {
   const name = String(formData.get("name") || "").trim();
-  const unit = (String(formData.get("unit") || "unit") === "kg" ? "kg" : "unit") as IngredientUnit;
+  const rawUnit = String(formData.get("unit") || "unit");
+  const unit = (rawUnit === "kg" || rawUnit === "l" ? rawUnit : "unit") as IngredientUnit;
   const store = String(formData.get("store") || "");
   const price = String(formData.get("price") ?? "").replace(",", ".").trim();
   const { supabase, householdId } = await ctx();
   if (!householdId || !name) return;
-  const ids = await ensureIngredients(supabase, householdId, [{ name, qtyUnit: unit === "kg" ? "g" : "u" }]);
+  const ids = await ensureIngredients(supabase, householdId, [{ name, qtyUnit: defaultQtyUnit(unit) }]);
   const id = ids.get(name.toLowerCase())?.id;
   if (id && store && price && !Number.isNaN(Number(price))) {
     await supabase

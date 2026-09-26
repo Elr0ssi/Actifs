@@ -1,5 +1,5 @@
 import type { createClient } from "@/lib/supabase/server";
-import type { CatalogIngredient, IngredientUnit, QtyUnit } from "@/lib/shopping";
+import { unitForQty, type CatalogIngredient, type IngredientUnit, type QtyUnit } from "@/lib/shopping";
 
 type Client = ReturnType<typeof createClient>;
 
@@ -21,11 +21,32 @@ export function parsePicked(raw: FormDataEntryValue | null): PickedIngredient[] 
   }
 }
 
+type PriceRow = { ingredient_id: string; store: string; price: number; household_id: string | null };
+const PAGE = 1000;
+
+/** PostgREST caps responses at 1000 rows: fetch pages in parallel until one comes back short. */
+async function loadAllPrices(supabase: Client) {
+  const rows: PriceRow[] = [];
+  for (let start = 0; ; start += 4 * PAGE) {
+    const pages = await Promise.all(
+      [0, 1, 2, 3].map((k) =>
+        supabase
+          .from("ingredient_prices")
+          .select("ingredient_id, store, price, household_id")
+          .order("id")
+          .range(start + k * PAGE, start + (k + 1) * PAGE - 1),
+      ),
+    );
+    for (const p of pages) rows.push(...((p.data ?? []) as PriceRow[]));
+    if (pages.some((p) => (p.data?.length ?? 0) < PAGE)) return { data: rows };
+  }
+}
+
 /** Global catalog + the household's personal ingredients (RLS returns both). */
 export async function loadCatalog(supabase: Client) {
   const [{ data: ingredients }, { data: prices }] = await Promise.all([
     supabase.from("ingredients").select("id, name, unit, household_id").order("name"),
-    supabase.from("ingredient_prices").select("ingredient_id, store, price, household_id"),
+    loadAllPrices(supabase),
   ]);
   const catalog: CatalogIngredient[] = (ingredients ?? []).map((i) => ({
     id: i.id,
@@ -50,7 +71,7 @@ export async function ensureIngredients(supabase: Client, householdId: string, i
   for (const it of items) {
     const key = it.name.trim().toLowerCase();
     if (!key || byName.has(key) || missing.has(key)) continue;
-    missing.set(key, { household_id: householdId, name: it.name.trim(), unit: it.qtyUnit === "g" || it.qtyUnit === "kg" ? "kg" : "unit" });
+    missing.set(key, { household_id: householdId, name: it.name.trim(), unit: unitForQty(it.qtyUnit) });
   }
   if (missing.size) {
     const { data: created } = await supabase.from("ingredients").insert([...missing.values()]).select("id, name, unit");

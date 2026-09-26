@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { PickedIngredient } from "@/lib/data/ingredients";
-import { QTY_UNITS, defaultQtyUnit, priceSuffix, type CatalogIngredient, type QtyUnit } from "@/lib/shopping";
+import { QTY_UNITS, defaultQtyUnit, priceSuffix, unitForQty, type CatalogIngredient, type QtyUnit } from "@/lib/shopping";
 import { formatEUR } from "@/lib/utils";
 
 export function IngredientPicker({
@@ -88,7 +88,7 @@ export function IngredientPicker({
                       placeholder="Prix"
                       className="w-20 rounded-lg border border-slate-200 bg-white px-2 py-1 text-right text-sm"
                     />
-                    {p.qtyUnit === "u" ? "€/u" : "€/kg"} ({priceStore})
+                    {priceSuffix(unitForQty(p.qtyUnit))} ({priceStore})
                   </label>
                 )}
                 <button type="button" onClick={() => setPicked((all) => all.filter((_, j) => j !== i))} className="px-1 text-slate-400 hover:text-rose-600">×</button>

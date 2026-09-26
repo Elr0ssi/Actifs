@@ -28,6 +28,7 @@ export default async function IngredientsPage() {
         <select name="unit" defaultValue="unit" className="input">
           <option value="unit">Prix à l'unité</option>
           <option value="kg">Prix au kilo</option>
+            <option value="l">Prix au litre</option>
         </select>
         <select name="store" defaultValue="" className="input">
           <option value="">Enseigne (optionnel)</option>

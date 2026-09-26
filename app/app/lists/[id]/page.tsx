@@ -6,7 +6,7 @@ import { ListItemsChecklist } from "@/components/app/list-items-checklist";
 import { ListComposer } from "@/components/app/lists/list-composer";
 import { formatEUR } from "@/lib/utils";
 import { loadCatalog } from "@/lib/data/ingredients";
-import { STORES, lineCost, priceMap } from "@/lib/shopping";
+import { STORES, compareStores, lineCost, priceMap } from "@/lib/shopping";
 import {
   addListItem,
   bulkImportItems,
@@ -15,6 +15,7 @@ import {
   composeList,
   setListStore,
   setListArchived,
+  finishShopping,
 } from "@/app/app/lists/actions";
 
 function weekLabel(iso: string | null) {
@@ -25,7 +26,7 @@ function weekLabel(iso: string | null) {
   return `Semaine du ${f(d)} au ${f(end)}`;
 }
 
-export default async function ListDetailPage({ params, searchParams }: { params: { id: string }; searchParams: { compose?: string } }) {
+export default async function ListDetailPage({ params, searchParams }: { params: { id: string }; searchParams: { compose?: string; done?: string } }) {
   const ctx = await getAppContext();
   if (!ctx) return null;
   const { supabase } = ctx;
@@ -73,7 +74,14 @@ export default async function ListDetailPage({ params, searchParams }: { params:
   const total = all.reduce((s, i) => s + lineTotal(i), 0);
   const remaining = all.filter((i) => !i.checked).reduce((s, i) => s + lineTotal(i), 0);
   const unpriced = all.filter((i) => i.price === null).length;
-  const composeOpen = searchParams.compose === "1" || (isShopping && all.length === 0);
+  const composeOpen = !list.archived && (searchParams.compose === "1" || (isShopping && all.length === 0));
+  const bought = all.some((i) => i.checked) ? all.filter((i) => i.checked) : all;
+  const comparison = isShopping ? compareStores(bought, prices, unitOf) : [];
+  const comparable = bought.filter((i) => i.ingredient_id).length;
+  const outsideBase = bought.length - comparable;
+  const best = comparison.find((c) => c.missing === 0) ?? comparison[0];
+  const current = comparison.find((c) => c.store === list.store);
+  const maxTotal = Math.max(...comparison.map((c) => c.total), 1);
 
   return (
     <div className="space-y-6">
@@ -91,6 +99,11 @@ export default async function ListDetailPage({ params, searchParams }: { params:
           <form action={clearCheckedItems.bind(null, list.id)}>
             <button className="btn-secondary text-xs">Nettoyer les cochés</button>
           </form>
+          {isShopping && !list.archived && (
+            <form action={finishShopping.bind(null, list.id)}>
+              <button className="btn-primary text-xs">✓ J'ai fini mes courses</button>
+            </form>
+          )}
           <form action={setListArchived.bind(null, list.id, !list.archived)}>
             <button className="btn-secondary text-xs">{list.archived ? "Désarchiver" : "Archiver"}</button>
           </form>
@@ -99,6 +112,55 @@ export default async function ListDetailPage({ params, searchParams }: { params:
           </form>
         </div>
       </div>
+
+      {isShopping && (list.archived || searchParams.done === "1") && comparable > 0 && (
+        <section id="comparatif" className="card p-6">
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+            <div>
+              <h2 className="font-semibold text-slate-900">🧾 Comparatif des enseignes</h2>
+              <p className="text-xs text-slate-500">
+                Tes {comparable} article(s) {all.some((i) => i.checked) ? "achetés" : "de la liste"} au prix de référence de chaque enseigne
+                {outsideBase > 0 && ` · ${outsideBase} hors base non comparé(s)`}
+              </p>
+            </div>
+            {best && current && best.store !== current.store && current.total - best.total > 0.01 && (
+              <p className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
+                {formatEUR(current.total - best.total)} d'économie possible chez {best.store}
+              </p>
+            )}
+            {best && current && best.store === current.store && (
+              <p className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">✓ {current.store} était le meilleur choix</p>
+            )}
+          </div>
+          <div className="space-y-2.5">
+            {comparison.map((c) => {
+              const isBest = c.store === best?.store;
+              const isCurrent = c.store === list.store;
+              const diff = current ? c.total - current.total : 0;
+              return (
+                <div key={c.store} className="flex items-center gap-3">
+                  <span className={`w-28 shrink-0 text-sm ${isCurrent ? "font-semibold text-slate-900" : "text-slate-600"}`}>
+                    {c.store}
+                    {isCurrent && <span className="ml-1 text-[10px] text-slate-400">(ta liste)</span>}
+                  </span>
+                  <div className="h-7 flex-1 overflow-hidden rounded-lg bg-slate-100">
+                    <div
+                      className={`flex h-full items-center rounded-lg px-2 text-xs font-semibold text-white ${isBest ? "bg-emerald-500" : isCurrent ? "bg-brand-500" : "bg-slate-400"}`}
+                      style={{ width: `${Math.max(12, (c.total / maxTotal) * 100)}%` }}
+                    >
+                      {formatEUR(c.total)}
+                    </div>
+                  </div>
+                  <span className={`w-20 shrink-0 text-right text-xs ${diff > 0.01 ? "text-rose-600" : diff < -0.01 ? "text-emerald-600" : "text-slate-400"}`}>
+                    {current && !isCurrent ? `${diff > 0 ? "+" : ""}${formatEUR(diff)}` : isBest ? "🏆" : ""}
+                  </span>
+                  {c.missing > 0 && <span className="w-16 shrink-0 text-[11px] text-slate-400">{c.missing} sans prix</span>}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {isShopping && (
         <div className="grid gap-4 sm:grid-cols-2">
