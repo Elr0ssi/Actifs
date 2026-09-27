@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import Link from "next/link";
 import {
   addDays,
   describeRecurrence,
@@ -11,8 +10,6 @@ import {
   getDateSituation,
   getSkippedOccurrences,
   type OpKind,
-  type BudgetPlan,
-  planSavings,
   diffDays,
   KIND_LABEL,
   KIND_STYLE,
@@ -24,12 +21,8 @@ import {
   type Occurrence,
 } from "@/lib/finance-engine";
 import { formatEUR, MONTHS_FR, cx } from "@/lib/utils";
-import type { AccountName } from "@/lib/data/finance";
 import { DonutChart } from "@/components/app/charts/donut-chart";
 import { NewOperationButton } from "@/components/app/finance/operation-form";
-import { AccountsPanel } from "@/components/app/finance/accounts-panel";
-import { BudgetEditor } from "@/components/app/finance/budget-editor";
-import { TaxCalculator } from "@/components/app/finance/tax-calculator";
 import { skipOccurrence, restoreOccurrence, deleteOperation } from "@/app/app/finance/actions";
 
 type View = "month" | "week" | "year";
@@ -59,21 +52,15 @@ function tooltip(o: Occurrence) {
 export function FinanceDashboard({
   ops,
   anchor,
-  plan,
   today,
   snapshots,
   realBalances,
-  accounts,
-  goals,
 }: {
   ops: FinOp[];
   anchor: BalanceAnchor;
-  plan: BudgetPlan;
   today: string;
   snapshots: Record<string, number[]>;
   realBalances: { date: string; balance: number }[];
-  accounts: Record<AccountName, { history: { date: string; balance: number }[]; last: { date: string; balance: number } | null }>;
-  goals: { savings: number; investment: number };
 }) {
   const [view, setView] = useState<View>("month");
   const [selected, setSelected] = useState(today);
@@ -150,10 +137,7 @@ export function FinanceDashboard({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Finances</h1>
-          <p className="mt-1 text-sm text-slate-500">Visualisez et suivez tous vos flux financiers. Cliquez sur une date pour voir le détail.</p>
-        </div>
+        <p className="text-sm text-slate-500">Clique sur une date pour voir le détail.</p>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center rounded-xl border border-slate-200 bg-white">
             <button onClick={() => nav(-1)} className="px-3 py-2 text-slate-500 hover:text-slate-900">‹</button>
@@ -167,18 +151,12 @@ export function FinanceDashboard({
               </button>
             ))}
           </div>
-          <Link href="/app/finance/operations" className="btn-secondary">Gérer les opérations</Link>
           <NewOperationButton defaultDate={selected} />
         </div>
       </div>
 
-      <SummaryCards budget={budget} days={monthBounds(y, m).days} plan={plan} picked={picked} onPick={(k) => setPicked(k === picked ? null : k)} />
+      <SummaryCards budget={budget} days={monthBounds(y, m).days} picked={picked} onPick={(k) => setPicked(k === picked ? null : k)} />
       {picked && <KindDetail kind={picked} ops={ops} y={y} m={m} onClose={() => setPicked(null)} />}
-
-      <div className="grid gap-4 lg:grid-cols-[1fr_260px]">
-        <BudgetEditor plan={plan} budget={budget} />
-        <AccountsPanel accounts={accounts} goals={goals} today={today} />
-      </div>
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-6">
@@ -252,20 +230,11 @@ export function FinanceDashboard({
       </div>
 
       <BudgetBreakdown budget={budget} />
-
-      <details className="card group p-6">
-        <summary className="cursor-pointer list-none font-semibold text-slate-900">
-          <span className="mr-2 inline-block transition group-open:rotate-90">›</span>Salaire net & impôt — estimation
-        </summary>
-        <div className="mt-5">
-          <TaxCalculator />
-        </div>
-      </details>
     </div>
   );
 }
 
-function SummaryCards({ budget, days, plan, picked, onPick }: { budget: ReturnType<typeof getMonthlyBudget>; days: number; plan: BudgetPlan; picked: OpKind | null; onPick: (k: OpKind) => void }) {
+function SummaryCards({ budget, days, picked, onPick }: { budget: ReturnType<typeof getMonthlyBudget>; days: number; picked: OpKind | null; onPick: (k: OpKind) => void }) {
   const pct = (n: number) => (budget.income > 0 ? `${Math.round((n / budget.income) * 100)} %` : "—");
   const stats = [
     { kind: "income" as OpKind, label: "Revenus", value: budget.income, sub: `${budget.incomeCount} prévu(s)`, color: "text-emerald-600", dot: "bg-emerald-500" },
@@ -455,7 +424,7 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
   );
 }
 
-function BudgetBreakdown({ budget }: { budget: ReturnType<typeof getMonthlyBudget> }) {
+export function BudgetBreakdown({ budget }: { budget: ReturnType<typeof getMonthlyBudget> }) {
   const [mode, setMode] = useState<"global" | "variable">("global");
   const [picked, setPicked] = useState<string | null>(null);
   const spend = budget.fixed + budget.variable + budget.savings;

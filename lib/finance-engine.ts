@@ -274,6 +274,15 @@ export function getMonthlyBudget(
   };
 }
 
+/** Splits `amount` per week over the days actually left in the month (never a flat /4). */
+export function perWeekRemaining(amount: number, referenceDate: string) {
+  const d = new Date(toMs(referenceDate));
+  const { end } = monthBounds(d.getUTCFullYear(), d.getUTCMonth());
+  const daysRemaining = diffDays(referenceDate, end);
+  if (daysRemaining <= 0) return { daysRemaining: 0, perWeek: amount, isLastDay: true };
+  return { daysRemaining, perWeek: amount / (daysRemaining / 7), isLastDay: false };
+}
+
 function sum(occ: Occurrence[]) {
   return occ.reduce((s, o) => s + o.signed, 0);
 }
