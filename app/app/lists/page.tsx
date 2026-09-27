@@ -1,10 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
-import type { ListRow, ItemLocation } from "@/lib/types";
+import type { ListRow } from "@/lib/types";
 import { formatEUR } from "@/lib/utils";
 import { STORES } from "@/lib/shopping";
-import { createList, addItemLocation, deleteItemLocation } from "@/app/app/lists/actions";
+import { createList } from "@/app/app/lists/actions";
 
 export const metadata: Metadata = { title: "Listes" };
 
@@ -16,10 +16,11 @@ export default async function ListsPage() {
   const { supabase, profile } = ctx;
   const householdId = profile?.household_id ?? "";
 
-  const [{ data: lists }, { data: locations }] = await Promise.all([
-    supabase.from("lists").select("*, list_items(checked, price, count)").eq("household_id", householdId).order("created_at", { ascending: false }),
-    supabase.from("item_locations").select("*").eq("household_id", householdId).order("item_label").returns<ItemLocation[]>(),
-  ]);
+  const { data: lists } = await supabase
+    .from("lists")
+    .select("*, list_items(checked, price, count)")
+    .eq("household_id", householdId)
+    .order("created_at", { ascending: false });
 
   type ListWithItems = ListRow & { list_items: { checked: boolean; price: number | null; count: number }[] };
   const typedLists = (lists ?? []) as unknown as ListWithItems[];
@@ -81,11 +82,6 @@ export default async function ListsPage() {
           </select>
           <button className="btn-primary">Créer et choisir les recettes</button>
         </form>
-        <form action={createList} className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3">
-          <input type="hidden" name="type" value="generic" />
-          <input name="name" placeholder="Ou une liste simple (checklist, notes…)" className="input py-1.5 text-sm" required />
-          <button className="btn-secondary py-1.5 text-xs">Créer</button>
-        </form>
       </div>
 
       <section>
@@ -102,30 +98,6 @@ export default async function ListsPage() {
           <div className="grid gap-4 opacity-80 sm:grid-cols-2 lg:grid-cols-3">{archived.map(card)}</div>
         </details>
       )}
-
-      <section className="card p-6">
-        <h2 className="mb-1 font-semibold text-slate-900">Emplacements habituels</h2>
-        <p className="mb-4 text-sm text-slate-500">Note où tu trouves habituellement certains articles.</p>
-        <form action={addItemLocation} className="mb-4 flex flex-wrap items-center gap-2">
-          <input name="item_label" placeholder="Article (ex. Fromage de chèvre)" className="input flex-1 min-w-[180px]" required />
-          <input name="store_name" placeholder="Magasin (ex. Monoprix Montparnasse)" className="input flex-1 min-w-[180px]" required />
-          <input name="note" placeholder="Note (optionnel)" className="input flex-1 min-w-[150px]" />
-          <button className="btn-secondary">Ajouter</button>
-        </form>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {(locations ?? []).map((loc) => (
-            <div key={loc.id} className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2 text-sm">
-              <span>
-                <span className="font-medium text-slate-800">{loc.item_label}</span>
-                <span className="text-slate-400"> → {loc.store_name}</span>
-              </span>
-              <form action={deleteItemLocation.bind(null, loc.id)}>
-                <button className="text-xs text-slate-400 hover:text-rose-600">✕</button>
-              </form>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
