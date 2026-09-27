@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import {
   addDays,
@@ -28,7 +28,7 @@ import type { AccountName } from "@/lib/data/finance";
 import { DonutChart } from "@/components/app/charts/donut-chart";
 import { NewOperationButton } from "@/components/app/finance/operation-form";
 import { AccountsPanel } from "@/components/app/finance/accounts-panel";
-import { ObjectifsVsReel } from "@/components/app/finance/objectifs-vs-reel";
+import { BudgetEditor } from "@/components/app/finance/budget-editor";
 import { TaxCalculator } from "@/components/app/finance/tax-calculator";
 import { skipOccurrence, restoreOccurrence, deleteOperation } from "@/app/app/finance/actions";
 
@@ -111,6 +111,40 @@ export function FinanceDashboard({
   const days: string[] = [];
   for (let d = gridStart; d <= gridEnd; d = addDays(d, 1)) days.push(d);
 
+  // Drag the calendar up/down with the mouse held to navigate months, like Google Calendar's scroll.
+  const [grabbing, setGrabbing] = useState(false);
+  const drag = useRef({ active: false, startY: 0, moved: false });
+  useEffect(() => {
+    const THRESHOLD = 60;
+    const onMove = (e: MouseEvent) => {
+      if (!drag.current.active) return;
+      const dy = e.clientY - drag.current.startY;
+      if (Math.abs(dy) > THRESHOLD) {
+        drag.current.moved = true;
+        nav(dy < 0 ? 1 : -1);
+        drag.current.startY = e.clientY;
+      }
+    };
+    const onUp = () => {
+      drag.current.active = false;
+      setGrabbing(false);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  });
+  const onGridMouseDown = (e: React.MouseEvent) => {
+    drag.current = { active: true, startY: e.clientY, moved: false };
+    setGrabbing(true);
+  };
+  const onDaySelect = (d: string) => {
+    if (drag.current.moved) return; // this click ended a drag, not a tap on a day
+    select(d);
+  };
+
   const title = view === "year" ? String(y) : view === "week" ? `Semaine du ${fmtShort(gridStart)}` : `${MONTHS_FR[m]} ${y}`;
 
   return (
@@ -142,7 +176,7 @@ export function FinanceDashboard({
       {picked && <KindDetail kind={picked} ops={ops} y={y} m={m} onClose={() => setPicked(null)} />}
 
       <div className="grid gap-4 lg:grid-cols-[1fr_260px]">
-        <ObjectifsVsReel plan={plan} budget={budget} />
+        <BudgetEditor plan={plan} budget={budget} />
         <AccountsPanel accounts={accounts} goals={goals} today={today} />
       </div>
 
@@ -168,7 +202,10 @@ export function FinanceDashboard({
               <div className="grid grid-cols-7 text-center text-xs font-medium text-slate-400">
                 {DOW.map((d) => <div key={d} className="pb-2">{d}</div>)}
               </div>
-              <div className="grid grid-cols-7 overflow-hidden rounded-xl border border-slate-100">
+              <div
+                onMouseDown={onGridMouseDown}
+                className={cx("grid grid-cols-7 overflow-hidden rounded-xl border border-slate-100 select-none", grabbing ? "cursor-grabbing" : "cursor-grab")}
+              >
                 {days.map((d) => {
                   const occ = occByDate.get(d) ?? [];
                   const outside = view === "month" && monthOf(d) !== m;
@@ -176,7 +213,7 @@ export function FinanceDashboard({
                   return (
                     <button
                       key={d}
-                      onClick={() => select(d)}
+                      onClick={() => onDaySelect(d)}
                       className={cx(
                         "flex min-w-0 flex-col gap-1 border-b border-r border-slate-100 p-1 text-left transition hover:bg-slate-50",
                         view === "week" ? "min-h-[220px]" : "min-h-[76px]",

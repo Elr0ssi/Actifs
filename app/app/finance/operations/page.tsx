@@ -5,7 +5,7 @@ import { CATEGORIES, KIND_LABEL, monthlyAmount, planSavings, type OpKind } from 
 import { formatEUR, todayISO } from "@/lib/utils";
 import { OperationRow } from "@/components/app/finance/operation-row";
 import { NewOperationButton } from "@/components/app/finance/operation-form";
-import { updateBalanceAnchor, updateBudgetPlan } from "@/app/app/finance/actions";
+import { updateBalanceAnchor } from "@/app/app/finance/actions";
 
 export const metadata: Metadata = { title: "Gérer les opérations" };
 
@@ -28,41 +28,10 @@ export default async function OperationsPage() {
         <NewOperationButton defaultDate={today} />
       </div>
 
-      <form action={updateBudgetPlan} className="card p-5">
-        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-          <p className="font-semibold text-slate-900">Budget mensuel prévu</p>
-          <p className="text-xs text-slate-400">Ce que tu prévois chaque mois — comparé au réel (tes opérations) sur la page Finances.</p>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { name: "budget_income", label: "Revenus", value: plan.income, dot: "bg-emerald-500" },
-            { name: "budget_fixed", label: "Charges fixes", value: plan.fixed, dot: "bg-rose-500" },
-            { name: "budget_variable", label: "Budget variable", value: plan.variable, dot: "bg-amber-500" },
-          ].map((f) => (
-            <label key={f.name} className="text-xs text-slate-500">
-              <span className="flex items-center gap-1.5"><span className={`h-2 w-2 rounded-full ${f.dot}`} />{f.label}</span>
-              <input name={f.name} type="number" step="0.01" min="0" defaultValue={f.value || ""} placeholder="€ / mois" className="input mt-1" />
-            </label>
-          ))}
-          <label className="text-xs text-slate-500">
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-violet-500" />Épargne / invest.</span>
-            <div className="mt-1 flex gap-1.5">
-              <select name="savings_mode" defaultValue={plan.savingsMode} className="input w-24 px-2">
-                <option value="fixed">€</option>
-                <option value="percent">% rev.</option>
-              </select>
-              <input name="savings_value" type="number" step="0.01" min="0" defaultValue={plan.savingsValue || ""} className="input min-w-0" />
-            </div>
-          </label>
-        </div>
-        <div className="mt-3 flex items-center justify-between gap-3">
-          <p className="text-xs text-slate-400">
-            Épargne prévue : <b className="text-slate-700">{formatEUR(planSavings(plan))}</b> / mois
-            {plan.income > 0 && <> · Reste prévu : <b className="text-slate-700">{formatEUR(plan.income - plan.fixed - plan.variable - planSavings(plan))}</b></>}
-          </p>
-          <button className="btn-primary">Enregistrer le budget</button>
-        </div>
-      </form>
+      <p className="text-xs text-slate-400">
+        Budget mensuel prévu : <b className="text-slate-700">{formatEUR(plan.income)}</b> revenus, épargne {formatEUR(planSavings(plan))}/mois —{" "}
+        <Link href="/app/finance" className="font-medium text-brand-600">à modifier sur la page Finances</Link>.
+      </p>
 
       <form action={updateBalanceAnchor.bind(null, "Courant")} className="card flex flex-wrap items-end gap-3 p-5">
         <label className="text-xs text-slate-500">
