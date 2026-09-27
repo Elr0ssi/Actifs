@@ -64,9 +64,9 @@ export default async function OperationsPage() {
         </div>
       </form>
 
-      <form action={updateBalanceAnchor} className="card flex flex-wrap items-end gap-3 p-5">
+      <form action={updateBalanceAnchor.bind(null, "Courant")} className="card flex flex-wrap items-end gap-3 p-5">
         <label className="text-xs text-slate-500">
-          Solde bancaire réel
+          Solde bancaire réel (Courant)
           <input name="current_balance" type="number" step="0.01" defaultValue={anchor.balance} className="input mt-1 w-40 font-bold" />
         </label>
         <label className="text-xs text-slate-500">
@@ -74,7 +74,9 @@ export default async function OperationsPage() {
           <input name="entry_date" type="date" defaultValue={today} className="input mt-1" />
         </label>
         <button className="btn-secondary">Mettre à jour</button>
-        <p className="text-xs text-slate-400">Point de départ de toute la trésorerie (dernier : {anchor.date}).</p>
+        <p className="text-xs text-slate-400">
+          Point de départ de la trésorerie (dernier : {anchor.date}). Épargne et investissement se gèrent sur la page Finances.
+        </p>
       </form>
 
       {ORDER.map((kind) => {

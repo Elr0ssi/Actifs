@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FadeIn } from "@/components/marketing/fade-in";
+import { TaxCalculator } from "@/components/app/finance/tax-calculator";
 
 const FEATURES = [
   {
@@ -34,6 +35,13 @@ const FEATURES = [
   },
 ];
 
+const SAMPLE_RECIPES = [
+  { icon: "🍗", name: "Poulet basquaise", desc: "Poivrons, tomates, riz — 6 ingrédients, 35 min.", tag: "Rapide" },
+  { icon: "🥗", name: "Bowl healthy quinoa", desc: "Quinoa, avocat, pois chiches, citron.", tag: "Healthy" },
+  { icon: "🍝", name: "Pâtes bolognaise maison", desc: "Bœuf haché, tomates, carottes, oignons.", tag: "Familial" },
+  { icon: "🍲", name: "Curry de légumes", desc: "Lait de coco, courgettes, pois chiches, riz.", tag: "Végé" },
+];
+
 const STEPS = [
   { n: "01", title: "Crée ton espace", desc: "Inscription en 30 secondes, gratuite et sans carte bancaire." },
   { n: "02", title: "Personnalise tout", desc: "Projets, listes, routines, budget : configure ton hub comme tu l'entends." },
@@ -54,7 +62,8 @@ export default function LandingPage() {
           </div>
           <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
             <a href="#fonctionnalites" className="hover:text-slate-900">Fonctionnalités</a>
-            <a href="#comment" className="hover:text-slate-900">Comment ça marche</a>
+            <a href="#recettes" className="hover:text-slate-900">Recettes</a>
+            <a href="#outils" className="hover:text-slate-900">Calculateurs</a>
             <a href="#gratuit" className="hover:text-slate-900">Tarif</a>
           </nav>
           <div className="flex items-center gap-3">
@@ -169,6 +178,50 @@ export default function LandingPage() {
                 </FadeIn>
               ))}
             </div>
+          </div>
+        </section>
+
+        <section id="recettes" className="mx-auto max-w-6xl px-6 py-24">
+          <FadeIn className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Des recettes, et leur liste de courses en un clic</h2>
+            <p className="mt-4 text-slate-600">
+              Choisis une recette, Actifs génère la liste de courses complète — quantités et prix par enseigne compris.
+            </p>
+          </FadeIn>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {SAMPLE_RECIPES.map((r, i) => (
+              <FadeIn key={r.name} delay={i * 70}>
+                <div className="card h-full p-5 transition hover:-translate-y-1 hover:shadow-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-3xl">{r.icon}</span>
+                    <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700">{r.tag}</span>
+                  </div>
+                  <h3 className="mt-3 font-semibold text-slate-900">{r.name}</h3>
+                  <p className="mt-1 text-sm text-slate-500">{r.desc}</p>
+                  <Link href="/login" className="btn-secondary mt-4 w-full py-2 text-center text-xs">Créer ma liste de courses →</Link>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </section>
+
+        <section id="outils" className="bg-slate-50 py-24">
+          <div className="mx-auto max-w-4xl px-6">
+            <FadeIn className="mx-auto max-w-2xl text-center">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Ton salaire et ton impôt, calculés</h2>
+              <p className="mt-4 text-slate-600">
+                Un aperçu gratuit de l'outil Finance : passe du brut annuel au net mensuel, et connais ta provision d'impôt indicative.
+                Dans ton espace, ces montants sont tracés et suivis mois après mois.
+              </p>
+            </FadeIn>
+            <FadeIn delay={100}>
+              <div className="card mx-auto mt-10 max-w-3xl p-6">
+                <TaxCalculator />
+              </div>
+            </FadeIn>
+            <FadeIn delay={160} className="mt-8 text-center">
+              <Link href="/signup" className="btn-primary px-6 py-3 text-base">Suivre mon budget précisément →</Link>
+            </FadeIn>
           </div>
         </section>
 

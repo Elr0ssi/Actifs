@@ -98,34 +98,21 @@ export function Sidebar({
             const active =
               item.href === "/app"
                 ? pathname === "/app"
-                : pathname.startsWith(item.href) && !(item.href === "/app/finance" && pathname.startsWith("/app/finance-v2"));
+                : pathname.startsWith(item.href);
             return (
-              <div key={item.href}>
-                <Link
-                  href={item.href}
-                  className={cx(
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
-                    active
-                      ? "bg-brand-50 text-brand-700"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
-                  )}
-                >
-                  <span className="text-base">{item.icon}</span>
-                  {item.label}
-                </Link>
-                {item.href === "/app/finance" && (
-                  <Link
-                    href="/app/finance-v2"
-                    className={cx(
-                      "ml-9 mt-0.5 flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium",
-                      pathname.startsWith("/app/finance-v2") ? "text-brand-700" : "text-slate-400 hover:text-slate-700",
-                    )}
-                  >
-                    Aperçu v2
-                    <span className="rounded-full bg-amber-100 px-1.5 py-px text-[9px] font-semibold text-amber-700">bêta</span>
-                  </Link>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cx(
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
+                  active
+                    ? "bg-brand-50 text-brand-700"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
                 )}
-              </div>
+              >
+                <span className="text-base">{item.icon}</span>
+                {item.label}
+              </Link>
             );
           })}
         </nav>

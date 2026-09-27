@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Finances" };
 export default async function FinancePage() {
   const data = await loadFinanceData();
   if (!data) return null;
-  const { supabase, householdId, ops, anchor, plan, snapshots, realBalances } = data;
+  const { supabase, householdId, ops, anchor, plan, snapshots, realBalances, accounts, goals } = data;
   const today = todayISO();
 
   // Freeze this month's forecast the first time it's viewed, so "prévu vs réel" compares against what was planned.
@@ -30,6 +30,8 @@ export default async function FinancePage() {
       today={today}
       snapshots={snapshots}
       realBalances={realBalances}
+      accounts={accounts}
+      goals={goals}
     />
   );
 }

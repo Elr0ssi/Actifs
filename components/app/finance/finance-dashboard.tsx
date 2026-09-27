@@ -24,9 +24,13 @@ import {
   type Occurrence,
 } from "@/lib/finance-engine";
 import { formatEUR, MONTHS_FR, cx } from "@/lib/utils";
+import type { AccountName } from "@/lib/data/finance";
 import { DonutChart } from "@/components/app/charts/donut-chart";
 import { NewOperationButton } from "@/components/app/finance/operation-form";
-import { skipOccurrence, restoreOccurrence, deleteOperation, updateBalanceAnchor } from "@/app/app/finance/actions";
+import { AccountsPanel } from "@/components/app/finance/accounts-panel";
+import { ObjectifsVsReel } from "@/components/app/finance/objectifs-vs-reel";
+import { TaxCalculator } from "@/components/app/finance/tax-calculator";
+import { skipOccurrence, restoreOccurrence, deleteOperation } from "@/app/app/finance/actions";
 
 type View = "month" | "week" | "year";
 const DOW = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
@@ -59,6 +63,8 @@ export function FinanceDashboard({
   today,
   snapshots,
   realBalances,
+  accounts,
+  goals,
 }: {
   ops: FinOp[];
   anchor: BalanceAnchor;
@@ -66,6 +72,8 @@ export function FinanceDashboard({
   today: string;
   snapshots: Record<string, number[]>;
   realBalances: { date: string; balance: number }[];
+  accounts: Record<AccountName, { history: { date: string; balance: number }[]; last: { date: string; balance: number } | null }>;
+  goals: { savings: number; investment: number };
 }) {
   const [view, setView] = useState<View>("month");
   const [selected, setSelected] = useState(today);
@@ -130,8 +138,13 @@ export function FinanceDashboard({
         </div>
       </div>
 
-      <SummaryCards budget={budget} days={monthBounds(y, m).days} anchor={anchor} today={today} plan={plan} picked={picked} onPick={(k) => setPicked(k === picked ? null : k)} />
+      <SummaryCards budget={budget} days={monthBounds(y, m).days} plan={plan} picked={picked} onPick={(k) => setPicked(k === picked ? null : k)} />
       {picked && <KindDetail kind={picked} ops={ops} y={y} m={m} onClose={() => setPicked(null)} />}
+
+      <div className="grid gap-4 lg:grid-cols-[1fr_260px]">
+        <ObjectifsVsReel plan={plan} budget={budget} />
+        <AccountsPanel accounts={accounts} goals={goals} today={today} />
+      </div>
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-6">
@@ -202,21 +215,30 @@ export function FinanceDashboard({
       </div>
 
       <BudgetBreakdown budget={budget} />
+
+      <details className="card group p-6">
+        <summary className="cursor-pointer list-none font-semibold text-slate-900">
+          <span className="mr-2 inline-block transition group-open:rotate-90">›</span>Salaire net & impôt — estimation
+        </summary>
+        <div className="mt-5">
+          <TaxCalculator />
+        </div>
+      </details>
     </div>
   );
 }
 
-function SummaryCards({ budget, days, anchor, today, plan, picked, onPick }: { budget: ReturnType<typeof getMonthlyBudget>; days: number; anchor: BalanceAnchor; today: string; plan: BudgetPlan; picked: OpKind | null; onPick: (k: OpKind) => void }) {
+function SummaryCards({ budget, days, plan, picked, onPick }: { budget: ReturnType<typeof getMonthlyBudget>; days: number; plan: BudgetPlan; picked: OpKind | null; onPick: (k: OpKind) => void }) {
   const pct = (n: number) => (budget.income > 0 ? `${Math.round((n / budget.income) * 100)} %` : "—");
   const stats = [
-    { kind: "income" as OpKind, label: "Revenus", planned: plan.income, value: budget.income, sub: `${budget.incomeCount} prévu(s)`, color: "text-emerald-600", dot: "bg-emerald-500" },
-    { kind: "fixed" as OpKind, label: "Charges fixes", planned: plan.fixed, value: budget.fixed, sub: `${pct(budget.fixed)} des revenus`, color: "text-rose-600", dot: "bg-rose-500" },
-    { kind: "variable" as OpKind, label: "Dépenses variables", planned: plan.variable, value: budget.variable, sub: `${pct(budget.variable)} des revenus`, color: "text-amber-600", dot: "bg-amber-500" },
-    { kind: "savings" as OpKind, label: "Épargne / invest.", planned: planSavings(plan), value: budget.savings, sub: `${pct(budget.savings)} des revenus`, color: "text-violet-600", dot: "bg-violet-500" },
+    { kind: "income" as OpKind, label: "Revenus", value: budget.income, sub: `${budget.incomeCount} prévu(s)`, color: "text-emerald-600", dot: "bg-emerald-500" },
+    { kind: "fixed" as OpKind, label: "Charges fixes", value: budget.fixed, sub: `${pct(budget.fixed)} des revenus`, color: "text-rose-600", dot: "bg-rose-500" },
+    { kind: "variable" as OpKind, label: "Dépenses variables", value: budget.variable, sub: `${pct(budget.variable)} des revenus`, color: "text-amber-600", dot: "bg-amber-500" },
+    { kind: "savings" as OpKind, label: "Épargne / invest.", value: budget.savings, sub: `${pct(budget.savings)} des revenus`, color: "text-violet-600", dot: "bg-violet-500" },
   ];
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr]">
-      <div className="card grid grid-cols-2 gap-1 p-2 sm:grid-cols-4 md:col-span-2 xl:col-span-1">
+    <div className="grid gap-4 md:grid-cols-[1.5fr_1fr]">
+      <div className="card grid grid-cols-2 gap-1 p-2 sm:grid-cols-4">
         {stats.map((s) => (
           <button
             key={s.label}
@@ -225,15 +247,7 @@ function SummaryCards({ budget, days, anchor, today, plan, picked, onPick }: { b
             className={cx("min-w-0 rounded-xl p-2 text-left transition hover:bg-slate-50", picked === s.kind && "bg-slate-100 ring-1 ring-slate-200")}
           >
             <p className="flex items-center gap-1.5 truncate text-xs text-slate-500"><span className={cx("h-2 w-2 rounded-full", s.dot)} />{s.label}</p>
-            <p className="mt-0.5 truncate text-[10px] text-slate-400">
-              Budget {s.planned > 0 ? formatEUR(s.planned) : "—"}
-              {s.planned > 0 && (
-                <span className={cx("ml-1 font-medium", (s.kind === "income" || s.kind === "savings" ? s.value >= s.planned : s.value <= s.planned) ? "text-emerald-600" : "text-rose-500")}>
-                  ({s.value - s.planned >= 0 ? "+" : ""}{formatEUR(s.value - s.planned)})
-                </span>
-              )}
-            </p>
-            <p className={cx("text-lg font-bold", s.color)}>{formatEUR(s.value)}</p>
+            <p className={cx("mt-1 text-lg font-bold", s.color)}>{formatEUR(s.value)}</p>
             <p className="truncate text-[11px] text-slate-400">{s.sub}</p>
           </button>
         ))}
@@ -250,15 +264,6 @@ function SummaryCards({ budget, days, anchor, today, plan, picked, onPick }: { b
           <p className="text-[11px] text-emerald-700/70">≈ {formatEUR(budget.resteAVivre / days)}/jour</p>
         </div>
       </div>
-      <form action={updateBalanceAnchor} className="card space-y-1.5 border-brand-200 bg-brand-50/40 p-4">
-        <p className="text-xs font-medium text-brand-800">Solde réel à date</p>
-        <div className="flex gap-1.5">
-          <input name="entry_date" type="date" defaultValue={today} className="input min-w-0 px-2 py-1 text-xs" />
-          <input name="current_balance" type="number" step="0.01" placeholder={String(anchor.balance)} className="input w-24 min-w-0 px-2 py-1 text-xs" required />
-          <button className="btn-primary px-2.5 py-1 text-xs">OK</button>
-        </div>
-        <p className="text-[11px] text-slate-500">Dernier : <b>{formatEUR(anchor.balance)}</b> au {fmtShort(anchor.date)}</p>
-      </form>
     </div>
   );
 }
