@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { signup } from "@/app/(auth)/actions";
 import { AuthShell } from "@/components/marketing/auth-shell";
 import { GoogleButton } from "@/components/marketing/google-button";
+import { CredentialForm } from "@/components/marketing/credential-form";
 
 export const metadata: Metadata = { title: "Créer mon espace" };
 
@@ -21,7 +22,7 @@ export default function SignupPage({ searchParams }: { searchParams: { error?: s
         <GoogleButton label="S'inscrire avec Google" />
         <div className="flex items-center gap-3 text-xs text-slate-400"><span className="h-px flex-1 bg-slate-200" />ou avec ton email<span className="h-px flex-1 bg-slate-200" /></div>
       </div>
-      <form action={signup} className="space-y-4">
+      <CredentialForm action={signup} className="space-y-4">
         {searchParams?.error && (
           <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{searchParams.error}</p>
         )}
@@ -38,7 +39,7 @@ export default function SignupPage({ searchParams }: { searchParams: { error?: s
           <input className="input mt-1.5" id="password" name="password" type="password" autoComplete="new-password" required minLength={6} placeholder="6 caractères min." />
         </div>
         <button type="submit" className="btn-primary w-full py-2.5">Créer mon espace</button>
-      </form>
+      </CredentialForm>
     </AuthShell>
   );
 }

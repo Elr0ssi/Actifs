@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { FadeIn } from "@/components/marketing/fade-in";
 import { RECIPES, getRecipe } from "@/lib/marketing/recipes";
+import { RecipeCard } from "@/components/marketing/recipe-card";
 
 export function generateStaticParams() {
   return RECIPES.map((r) => ({ slug: r.slug }));
@@ -28,10 +29,18 @@ export default function RecipeDetailPage({ params }: { params: { slug: string } 
         <Link href="/recettes" className="text-sm font-medium text-slate-500 hover:text-slate-800">← Toutes les recettes</Link>
 
         <FadeIn>
-          <div className={`mt-4 flex h-56 items-center justify-center rounded-3xl bg-gradient-to-br ${recipe.gradient} text-8xl`}>
-            {recipe.icon}
+          <div className="relative mt-4 h-56 overflow-hidden rounded-3xl bg-slate-100">
+            {recipe.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={recipe.image} alt={recipe.name} className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm text-slate-300">Photo à venir</div>
+            )}
+            <span className="absolute -bottom-4 left-5 flex h-12 w-12 items-center justify-center rounded-full border-2 border-white bg-white text-2xl shadow-md">
+              {recipe.icon}
+            </span>
           </div>
-          <div className="mt-6 flex flex-wrap items-center gap-2">
+          <div className="mt-8 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700">{recipe.category}</span>
             <span className="text-sm text-slate-400">{recipe.time} · {recipe.servings} pers. · {recipe.difficulty}</span>
           </div>
@@ -83,12 +92,7 @@ export default function RecipeDetailPage({ params }: { params: { slug: string } 
             <h2 className="mb-4 font-semibold text-slate-900">Autres recettes {recipe.category.toLowerCase()}</h2>
             <div className="grid gap-4 sm:grid-cols-3">
               {others.map((r) => (
-                <Link key={r.slug} href={`/recettes/${r.slug}`} className="card block overflow-hidden p-0 transition hover:-translate-y-1 hover:shadow-lg">
-                  <div className={`flex h-24 items-center justify-center bg-gradient-to-br ${r.gradient} text-4xl`}>{r.icon}</div>
-                  <div className="p-3">
-                    <p className="text-sm font-semibold text-slate-900">{r.name}</p>
-                  </div>
-                </Link>
+                <RecipeCard key={r.slug} recipe={r} size="small" />
               ))}
             </div>
           </div>

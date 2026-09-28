@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FadeIn } from "@/components/marketing/fade-in";
 import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { RECIPES } from "@/lib/marketing/recipes";
+import { RecipeCard } from "@/components/marketing/recipe-card";
 
 const FEATURES = [
   {
@@ -132,13 +133,7 @@ export default function LandingPage() {
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {TEASER_RECIPES.map((r, i) => (
               <FadeIn key={r.slug} delay={i * 70}>
-                <Link href={`/recettes/${r.slug}`} className="card group block h-full overflow-hidden p-0 transition hover:-translate-y-1 hover:shadow-lg">
-                  <div className={`flex h-28 items-center justify-center bg-gradient-to-br ${r.gradient} text-5xl`}>{r.icon}</div>
-                  <div className="p-4">
-                    <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700">{r.category}</span>
-                    <h3 className="mt-2 font-semibold text-slate-900 group-hover:text-brand-700">{r.name}</h3>
-                  </div>
-                </Link>
+                <RecipeCard recipe={r} size="small" />
               </FadeIn>
             ))}
           </div>

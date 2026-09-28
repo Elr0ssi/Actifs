@@ -38,6 +38,30 @@ function taxOnPart(quotient: number) {
   return tax;
 }
 
+export interface BracketRow {
+  label: string;
+  rate: number;
+  taxableInBracket: number; // pour une part, avant de remultiplier par le nombre de parts
+  taxInBracket: number; // idem, pour une part
+}
+
+/** Détail barème par tranche, pour une part — sert à l'affichage pédagogique du calcul. */
+export function bracketBreakdown(quotient: number): BracketRow[] {
+  let lower = 0;
+  const rows: BracketRow[] = [];
+  for (const b of BRACKETS_2025) {
+    const taxableInBracket = Math.max(0, Math.min(quotient, b.upTo) - lower);
+    rows.push({
+      label: b.upTo === Infinity ? `Au-delà de ${lower.toLocaleString("fr-FR")} €` : `${lower.toLocaleString("fr-FR")} € – ${b.upTo.toLocaleString("fr-FR")} €`,
+      rate: b.rate,
+      taxableInBracket,
+      taxInBracket: taxableInBracket * b.rate,
+    });
+    lower = b.upTo;
+  }
+  return rows;
+}
+
 export interface TaxEstimate {
   annualTax: number;
   monthlyProvision: number;
@@ -52,11 +76,16 @@ export interface TaxEstimate {
  * before the 10% professional-expense allowance, which is applied here.
  */
 export function estimateIncomeTax(netImposableAnnuel: number, grossForRate: number, parts = 1): TaxEstimate {
-  const base = Math.max(0, netImposableAnnuel * 0.9); // 10% abattement forfaitaire (simplifié, non plafonné)
-  const quotient = base / Math.max(0.5, parts);
+  const quotient = taxQuotient(netImposableAnnuel, parts);
   const annualTax = taxOnPart(quotient) * parts;
   const withholdingRate = grossForRate > 0 ? Math.min(100, (annualTax / grossForRate) * 100) : 0;
   return { annualTax, monthlyProvision: annualTax / 12, low: annualTax * 0.9, high: annualTax * 1.1, withholdingRate };
+}
+
+/** Quotient familial (revenu imposable après abattement de 10%, divisé par le nombre de parts). */
+export function taxQuotient(netImposableAnnuel: number, parts = 1) {
+  const base = Math.max(0, netImposableAnnuel * 0.9); // 10% abattement forfaitaire (simplifié, non plafonné)
+  return base / Math.max(0.5, parts);
 }
 
 const ALTERNANCE_EXEMPTION = 21000; // Salaire d'apprenti/alternant exonéré d'IR jusqu'à ce plafond annuel (SMIC annuel, arrondi).

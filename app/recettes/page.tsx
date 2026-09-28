@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { FadeIn } from "@/components/marketing/fade-in";
-import { RECIPES } from "@/lib/marketing/recipes";
+import { RecipesBrowser } from "@/components/marketing/recipes-browser";
 
 export const metadata: Metadata = {
   title: "Recettes — Actifs",
@@ -25,23 +25,9 @@ export default function RecipesPage() {
         </section>
 
         <section className="mx-auto max-w-6xl px-6 pb-24">
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {RECIPES.map((r, i) => (
-              <FadeIn key={r.slug} delay={i * 50}>
-                <Link href={`/recettes/${r.slug}`} className="card group block h-full overflow-hidden p-0 transition hover:-translate-y-1 hover:shadow-lg">
-                  <div className={`flex h-36 items-center justify-center bg-gradient-to-br ${r.gradient} text-6xl`}>{r.icon}</div>
-                  <div className="p-5">
-                    <div className="flex items-center justify-between">
-                      <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700">{r.category}</span>
-                      <span className="text-xs text-slate-400">{r.tag}</span>
-                    </div>
-                    <h3 className="mt-2.5 font-semibold text-slate-900 group-hover:text-brand-700">{r.name}</h3>
-                    <p className="mt-1 text-sm text-slate-500">{r.desc}</p>
-                  </div>
-                </Link>
-              </FadeIn>
-            ))}
-          </div>
+          <FadeIn>
+            <RecipesBrowser />
+          </FadeIn>
         </section>
 
         <section className="bg-slate-900 py-20 text-center text-white">

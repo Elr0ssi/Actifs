@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { formatEUR } from "@/lib/utils";
-import { grossToNet, estimateIncomeTax } from "@/lib/tax-fr";
+import { grossToNet, estimateIncomeTax, bracketBreakdown, taxQuotient } from "@/lib/tax-fr";
 
 /** Pure client calculator: brut annuel → net mensuel, et une fourchette d'impôt indicative. Rien n'est enregistré. */
 export function TaxCalculator() {
@@ -10,9 +10,13 @@ export function TaxCalculator() {
   const [statut, setStatut] = useState<"non-cadre" | "cadre">("non-cadre");
   const [parts, setParts] = useState(1);
 
+  const [showBrackets, setShowBrackets] = useState(false);
+
   const net = useMemo(() => grossToNet(brut, statut), [brut, statut]);
   const tax = useMemo(() => estimateIncomeTax(net.netAnnuel, brut, parts), [net.netAnnuel, brut, parts]);
   const netAfterTaxMonthly = net.netMensuel - tax.monthlyProvision;
+  const quotient = useMemo(() => taxQuotient(net.netAnnuel, parts), [net.netAnnuel, parts]);
+  const brackets = useMemo(() => bracketBreakdown(quotient).filter((b) => b.taxableInBracket > 0), [quotient]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -64,6 +68,33 @@ export function TaxCalculator() {
           <p className="mt-1 text-2xl font-bold text-emerald-700">{formatEUR(netAfterTaxMonthly)}</p>
           <p className="text-[11px] text-emerald-700/70">par mois, si l'impôt n'est pas déjà prélevé à la source</p>
         </div>
+
+        <button type="button" onClick={() => setShowBrackets((v) => !v)} className="text-xs font-medium text-slate-500 hover:text-slate-800">
+          {showBrackets ? "Masquer" : "Voir"} le détail par tranche du barème →
+        </button>
+        {showBrackets && (
+          <div className="rounded-2xl border border-slate-100 p-3">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-left text-slate-400">
+                  <th className="pb-1.5 font-medium">Tranche (par part)</th>
+                  <th className="pb-1.5 text-right font-medium">Taux</th>
+                  <th className="pb-1.5 text-right font-medium">Impôt (× {parts} part{parts > 1 ? "s" : ""})</th>
+                </tr>
+              </thead>
+              <tbody>
+                {brackets.map((b) => (
+                  <tr key={b.label} className="border-t border-slate-50">
+                    <td className="py-1.5 text-slate-600">{b.label}</td>
+                    <td className="py-1.5 text-right text-slate-600">{(b.rate * 100).toFixed(0)}%</td>
+                    <td className="py-1.5 text-right font-medium text-slate-800">{formatEUR(b.taxInBracket * parts)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-2 text-[10px] text-slate-400">Quotient familial : {formatEUR(quotient)} par part, après abattement forfaitaire de 10%.</p>
+          </div>
+        )}
       </div>
     </div>
   );
