@@ -33,9 +33,42 @@ export async function createRoutine(formData: FormData) {
   revalidatePath("/app");
 }
 
-export async function deleteRoutine(id: string) {
+export async function updateRoutine(id: string, formData: FormData) {
+  const title = String(formData.get("title") || "").trim();
+  const category = String(formData.get("category") || "Général").trim() || "Général";
+  const frequency = String(formData.get("frequency") || "daily") as RoutineFrequency;
+  const days = formData.getAll("days").map(Number);
+  if (!title) return;
   const { supabase } = await ctx();
-  await supabase.from("routines").update({ active: false }).eq("id", id);
+  await supabase
+    .from("routines")
+    .update({ title, category, frequency, days_of_week: frequency === "weekly" ? days : [0, 1, 2, 3, 4, 5, 6] })
+    .eq("id", id);
+  revalidatePath("/app/routines");
   revalidatePath("/app/calendar");
   revalidatePath("/app");
+}
+
+/** Archive (soft delete) — reste visible et récupérable dans "Archivées". */
+export async function archiveRoutine(id: string) {
+  const { supabase } = await ctx();
+  await supabase.from("routines").update({ active: false }).eq("id", id);
+  revalidatePath("/app/routines");
+  revalidatePath("/app/calendar");
+  revalidatePath("/app");
+}
+
+export async function restoreRoutine(id: string) {
+  const { supabase } = await ctx();
+  await supabase.from("routines").update({ active: true }).eq("id", id);
+  revalidatePath("/app/routines");
+  revalidatePath("/app/calendar");
+  revalidatePath("/app");
+}
+
+/** Suppression définitive — seulement depuis la liste des routines déjà archivées. */
+export async function deleteRoutineForever(id: string) {
+  const { supabase } = await ctx();
+  await supabase.from("routines").delete().eq("id", id);
+  revalidatePath("/app/routines");
 }

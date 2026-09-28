@@ -5,7 +5,9 @@ import { getDateSituation, getMonthlyBudget } from "@/lib/finance-engine";
 import { formatEUR, todayISO } from "@/lib/utils";
 import type { Task, Routine, RoutineLog } from "@/lib/types";
 import { ToggleCheckbox } from "@/components/app/toggle-checkbox";
+import { DashboardCalendar } from "@/components/app/dashboard-calendar";
 import { toggleTaskStatus, toggleRoutineLog, quickAddTask } from "@/app/app/actions";
+import { monthBounds } from "@/lib/finance-engine";
 
 export default async function DashboardPage() {
   const ctx = await getAppContext();
@@ -15,7 +17,10 @@ export default async function DashboardPage() {
   const today = todayISO();
   const weekday = new Date().getDay();
 
-  const [{ data: tasks }, { data: routines }, { data: logs }, finance] = await Promise.all([
+  const [y0, m0] = today.split("-").map(Number);
+  const { start: monthStart, end: monthEnd } = monthBounds(y0, m0 - 1);
+
+  const [{ data: tasks }, { data: monthTasks }, { data: routines }, { data: logs }, finance] = await Promise.all([
     supabase
       .from("tasks")
       .select("*")
@@ -25,18 +30,17 @@ export default async function DashboardPage() {
       .order("due_date", { ascending: true })
       .limit(8)
       .returns<Task[]>(),
+    supabase.from("tasks").select("*").eq("household_id", householdId ?? "").gte("due_date", monthStart).lte("due_date", monthEnd).returns<Task[]>(),
     supabase.from("routines").select("*").eq("household_id", householdId ?? "").eq("active", true).returns<Routine[]>(),
-    supabase.from("routine_logs").select("*").eq("log_date", today).returns<RoutineLog[]>(),
+    supabase.from("routine_logs").select("*").gte("log_date", monthStart).lte("log_date", monthEnd).returns<RoutineLog[]>(),
     loadFinanceData(),
   ]);
 
   const todaysRoutines = (routines ?? []).filter(
     (r) => r.frequency === "daily" || (r.frequency === "weekly" && r.days_of_week?.includes(weekday))
   );
-  const logByRoutine = new Map((logs ?? []).map((l) => [l.routine_id, l]));
-
-  const [y, m] = today.split("-").map(Number);
-  const budget = finance ? getMonthlyBudget(finance.ops, finance.anchor, y, m - 1) : null;
+  const logByRoutine = new Map((logs ?? []).filter((l) => l.log_date === today).map((l) => [l.routine_id, l]));
+  const budget = finance ? getMonthlyBudget(finance.ops, finance.anchor, y0, m0 - 1) : null;
   const situation = finance ? getDateSituation(finance.ops, finance.anchor, today) : null;
 
   const doneRoutines = todaysRoutines.filter((r) => logByRoutine.get(r.id)?.done).length;
@@ -73,6 +77,16 @@ export default async function DashboardPage() {
           </div>
         </Link>
       </div>
+
+      <DashboardCalendar
+        year={y0}
+        month={m0 - 1}
+        today={today}
+        tasks={monthTasks ?? []}
+        routines={routines ?? []}
+        logs={logs ?? []}
+        ops={finance?.ops ?? []}
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <section className="card p-6 lg:col-span-2">
