@@ -1,0 +1,68 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
+import { FadeIn } from "@/components/marketing/fade-in";
+import { TaxCalculator } from "@/components/app/finance/tax-calculator";
+
+export const metadata: Metadata = {
+  title: "Calculateur salaire net & impôt — Actifs",
+  description: "Passe du salaire brut annuel au net mensuel, et estime ta provision d'impôt sur le revenu. Gratuit, sans compte.",
+};
+
+const POINTS = [
+  { icon: "💶", title: "Brut → net mensuel", desc: "Un ratio indicatif adapté à ton statut (cadre ou non-cadre)." },
+  { icon: "🧾", title: "Impôt estimé", desc: "Barème progressif français par tranches, toujours donné en fourchette." },
+  { icon: "🎓", title: "Alternance prise en compte", desc: "Exonération jusqu'à 21 000 €/an sur les périodes d'alternance." },
+  { icon: "📅", title: "Suivi mois après mois", desc: "Dans ton espace Actifs, ces montants sont tracés, pas juste calculés une fois." },
+];
+
+export default function CalculateursPage() {
+  return (
+    <div className="relative overflow-hidden">
+      <SiteHeader current="calculateurs" />
+      <main>
+        <section className="mx-auto max-w-4xl px-6 py-16 text-center">
+          <FadeIn>
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">Ton salaire net et ton impôt, calculés</h1>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
+              Un aperçu gratuit de l'outil Finance d'Actifs : passe du brut annuel au net mensuel, et connais ta
+              provision d'impôt indicative. Aucun compte requis pour essayer.
+            </p>
+          </FadeIn>
+        </section>
+
+        <section className="mx-auto max-w-3xl px-6">
+          <FadeIn>
+            <div className="card p-6 sm:p-8">
+              <TaxCalculator />
+            </div>
+          </FadeIn>
+          <FadeIn delay={80} className="mt-6 text-center">
+            <Link href="/signup" className="btn-primary px-6 py-3 text-base">Suivre mon budget précisément →</Link>
+          </FadeIn>
+        </section>
+
+        <section className="mx-auto max-w-5xl px-6 py-24">
+          <div className="grid gap-6 sm:grid-cols-2">
+            {POINTS.map((p, i) => (
+              <FadeIn key={p.title} delay={i * 70}>
+                <div className="card h-full p-6">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-2xl">{p.icon}</div>
+                  <h3 className="mt-4 font-semibold text-slate-900">{p.title}</h3>
+                  <p className="mt-2 text-sm text-slate-600">{p.desc}</p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+          <FadeIn delay={280}>
+            <p className="mx-auto mt-10 max-w-2xl text-center text-xs text-slate-400">
+              Estimation indicative à partir de ratios et d'un barème publics. Ne remplace pas ta fiche de paie ni un
+              simulateur officiel — utile pour anticiper, pas pour déclarer.
+            </p>
+          </FadeIn>
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}
