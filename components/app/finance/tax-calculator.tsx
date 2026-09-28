@@ -11,7 +11,7 @@ export function TaxCalculator() {
   const [parts, setParts] = useState(1);
 
   const net = useMemo(() => grossToNet(brut, statut), [brut, statut]);
-  const tax = useMemo(() => estimateIncomeTax(net.netAnnuel, parts), [net.netAnnuel, parts]);
+  const tax = useMemo(() => estimateIncomeTax(net.netAnnuel, brut, parts), [net.netAnnuel, brut, parts]);
   const netAfterTaxMonthly = net.netMensuel - tax.monthlyProvision;
 
   return (
@@ -55,7 +55,9 @@ export function TaxCalculator() {
         <div className="rounded-2xl bg-brand-50 p-4">
           <p className="text-xs font-medium text-brand-800">Impôt sur le revenu — à provisionner chaque mois</p>
           <p className="mt-1 text-2xl font-bold text-brand-700">{formatEUR(tax.monthlyProvision)}</p>
-          <p className="text-[11px] text-brand-700/70">Fourchette : {formatEUR(tax.low / 12)} – {formatEUR(tax.high / 12)} · soit {formatEUR(tax.annualTax)}/an</p>
+          <p className="text-[11px] text-brand-700/70">
+            Fourchette : {formatEUR(tax.low / 12)} – {formatEUR(tax.high / 12)} · soit {formatEUR(tax.annualTax)}/an · taux calculé ≈ {tax.withholdingRate.toFixed(1)}%
+          </p>
         </div>
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4">
           <p className="text-xs font-medium text-emerald-800">Net réel estimé après impôt</p>

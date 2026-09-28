@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { formatEUR } from "@/lib/utils";
-import { estimateIncomeTax } from "@/lib/tax-fr";
+import { estimateIncomeTax, taxableIncomeFromPeriods } from "@/lib/tax-fr";
 import { saveTaxProfile } from "@/app/app/finance/actions";
 import type { TaxProfile } from "@/lib/data/finance-budgets";
 
@@ -11,14 +11,14 @@ const ACTIVITIES = ["Salarié", "Alternance", "Intérim", "Freelance / indépend
 export function TaxPeriods({ year, profile }: { year: number; profile: TaxProfile }) {
   const [periods, setPeriods] = useState(profile.periods);
   const [adding, setAdding] = useState(false);
-  const [withholdingRate, setWithholdingRate] = useState(profile.withholdingRate ?? 0);
   const [alreadyWithheld, setAlreadyWithheld] = useState(profile.alreadyWithheld ?? 0);
   const [parts, setParts] = useState(profile.householdParts);
   const [provisionManual, setProvisionManual] = useState(profile.provisionManual);
 
   const grossTotal = periods.reduce((s, p) => s + p.amount, 0);
   const hasCompletePeriods = periods.length > 0 && periods.every((p) => p.amount > 0);
-  const estimate = useMemo(() => (hasCompletePeriods ? estimateIncomeTax(grossTotal, parts) : null), [hasCompletePeriods, grossTotal, parts]);
+  const { taxable, exempted } = useMemo(() => taxableIncomeFromPeriods(periods), [periods]);
+  const estimate = useMemo(() => (hasCompletePeriods ? estimateIncomeTax(taxable, grossTotal, parts) : null), [hasCompletePeriods, taxable, grossTotal, parts]);
   const netOfWithholding = estimate ? Math.max(0, estimate.annualTax - alreadyWithheld) : null;
 
   const addPeriod = () => setPeriods((p) => [...p, { label: "", activity: ACTIVITIES[0], amount: 0 }]);
@@ -59,14 +59,11 @@ export function TaxPeriods({ year, profile }: { year: number; profile: TaxProfil
 
         <section className="card p-5">
           <p className="mb-3 font-semibold text-slate-900">Prélèvement à la source</p>
-          <label className="mb-3 flex items-center justify-between gap-3 text-sm">
-            <span className="text-slate-600">Taux renseigné</span>
-            <span className="flex items-center gap-1">
-              <input type="number" step="0.1" value={withholdingRate || ""} onChange={(e) => setWithholdingRate(Number(e.target.value) || 0)} className="input w-20 px-2 py-1 text-right" />
-              <span className="text-slate-400">%</span>
-            </span>
-          </label>
-          <input type="hidden" name="withholding_rate" value={withholdingRate} />
+          <div className="mb-3 flex items-center justify-between gap-3 text-sm">
+            <span className="text-slate-600">Taux calculé</span>
+            <span className="font-semibold text-slate-800">{estimate ? `${estimate.withholdingRate.toFixed(1)} %` : "à calculer"}</span>
+          </div>
+          <p className="mb-3 text-[11px] text-slate-400">Calculé à partir de tes revenus imposables et du barème — pas à saisir toi-même.</p>
           <label className="flex items-center justify-between gap-3 text-sm">
             <span className="text-slate-600">Déjà prélevé cette année</span>
             <input type="number" step="0.01" value={alreadyWithheld || ""} onChange={(e) => setAlreadyWithheld(Number(e.target.value) || 0)} name="already_withheld" placeholder="à compléter" className="input w-28 px-2 py-1 text-right" />
@@ -101,6 +98,8 @@ export function TaxPeriods({ year, profile }: { year: number; profile: TaxProfil
           <summary className="cursor-pointer text-slate-400">Hypothèses et détail du calcul</summary>
           <div className="mt-2 space-y-1 text-slate-500">
             <p>Revenu brut total saisi : {formatEUR(grossTotal)}</p>
+            {exempted > 0 && <p>Dont exonéré (alternance, jusqu'à 21 000 €) : − {formatEUR(exempted)}</p>}
+            <p>Revenu imposable retenu : {formatEUR(taxable)}</p>
             <p>Barème {year} par part, {parts} part(s) fiscale(s) — estimation indicative, non contractuelle.</p>
             <p>Déjà prélevé : {formatEUR(alreadyWithheld)}</p>
             <p>Aucune assiette, exonération ou barème non vérifié n'est inventé : si une donnée manque, aucun montant « exact » n'est affiché.</p>

@@ -10,7 +10,6 @@ import {
   getDateSituation,
   getSkippedOccurrences,
   type OpKind,
-  diffDays,
   KIND_LABEL,
   KIND_STYLE,
   monthBounds,
@@ -53,24 +52,24 @@ export function FinanceDashboard({
   ops,
   anchor,
   today,
-  snapshots,
-  realBalances,
 }: {
   ops: FinOp[];
   anchor: BalanceAnchor;
   today: string;
-  snapshots: Record<string, number[]>;
-  realBalances: { date: string; balance: number }[];
 }) {
   const [view, setView] = useState<View>("month");
   const [mode, setMode] = useState<"month" | "carried">("carried");
   const [selected, setSelected] = useState(today);
   const [cursor, setCursor] = useState({ y: yearOf(today), m: monthOf(today) });
   const { y, m } = cursor;
-  const monthKey = `${y}-${String(m + 1).padStart(2, "0")}`;
   const { start: mStart, end: mEnd } = monthBounds(y, m);
 
   const budget = useMemo(() => getMonthlyBudget(ops, anchor, y, m), [ops, anchor, y, m]);
+  // "Mois seul" repartis à 0 le mois choisi ; "Avec solde reporté" part du vrai solde du compte courant.
+  const effectiveAnchor: BalanceAnchor = useMemo(
+    () => (mode === "carried" ? anchor : { balance: 0, date: addDays(mStart, -1) }),
+    [mode, anchor, mStart]
+  );
 
   const select = (d: string) => {
     setSelected(d);
@@ -187,7 +186,7 @@ export function FinanceDashboard({
           </div>
 
           {view === "year" ? (
-            <YearGrid ops={ops} anchor={anchor} year={y} today={today} onPick={(mm) => { setCursor({ y, m: mm }); setView("month"); }} />
+            <YearGrid ops={ops} anchor={anchor} mode={mode} year={y} today={today} onPick={(mm) => { setCursor({ y, m: mm }); setView("month"); }} />
           ) : (
             <>
               <div className="grid grid-cols-7 text-center text-xs font-medium text-slate-400">
@@ -234,15 +233,12 @@ export function FinanceDashboard({
             </>
           )}
         </section>
-        <ForecastVsActual ops={ops} anchor={anchor} y={y} m={m} today={today} snapshot={snapshots[monthKey]} realBalances={realBalances} />
         </div>
 
         <div className="lg:sticky lg:top-6">
-          <DayPanel ops={ops} anchor={anchor} date={selected} />
+          <DayPanel ops={ops} anchor={effectiveAnchor} date={selected} />
         </div>
       </div>
-
-      <BudgetBreakdown budget={budget} />
     </div>
   );
 }
@@ -497,109 +493,7 @@ export function BudgetBreakdown({ budget }: { budget: ReturnType<typeof getMonth
   );
 }
 
-function ForecastVsActual({
-  ops,
-  anchor,
-  y,
-  m,
-  today,
-  snapshot,
-  realBalances,
-}: {
-  ops: FinOp[];
-  anchor: BalanceAnchor;
-  y: number;
-  m: number;
-  today: string;
-  snapshot?: number[];
-  realBalances: { date: string; balance: number }[];
-}) {
-  const { start, end } = monthBounds(y, m);
-  const current = useMemo(() => getDailyBalances(ops, anchor, start, end), [ops, anchor, start, end]);
-  const forecast = current.map((p, i) => ({ date: p.date, value: snapshot?.[i] ?? p.balance }));
-  const realByDate = new Map(realBalances.filter((r) => r.date >= start && r.date <= end).map((r) => [r.date, r.balance]));
-  const realIdx = forecast.map((p, i) => (realByDate.has(p.date) ? i : -1)).filter((i) => i >= 0);
-  const [hover, setHover] = useState<number | null>(null);
-
-  const W = 640, H = 150, PX = 48, PT = 12, PB = 22;
-  const all = [...forecast.map((p) => p.value), ...realByDate.values(), 0];
-  const min = Math.min(...all), max = Math.max(...all), span = max - min || 1;
-  const x = (i: number) => PX + (i / Math.max(1, forecast.length - 1)) * (W - PX - 8);
-  const yv = (v: number) => PT + (1 - (v - min) / span) * (H - PT - PB);
-  const forecastPath = forecast.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${yv(p.value).toFixed(1)}`).join(" ");
-  const realPath = realIdx.map((i, k) => `${k ? "L" : "M"}${x(i).toFixed(1)},${yv(realByDate.get(forecast[i].date)!).toFixed(1)}`).join(" ");
-  const lastReal = realIdx.length ? realIdx[realIdx.length - 1] : null;
-  const gap = lastReal !== null ? realByDate.get(forecast[lastReal].date)! - forecast[lastReal].value : null;
-  const hReal = hover !== null ? realByDate.get(forecast[hover].date) : undefined;
-
-  return (
-    <section className="card p-5">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <p className="font-semibold text-slate-900">Solde prévisionnel vs réel</p>
-          <p className="text-xs text-slate-500">Points bleus = soldes réels saisis en haut de page.</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-brand-600" />Réel</span>
-          <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 border-t-2 border-dashed border-slate-400" />Prévisionnel</span>
-          {gap !== null && (
-            <span className={cx("rounded-full px-2 py-0.5 font-semibold", gap >= 0 ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700")}>
-              Écart {gap >= 0 ? "+" : ""}{formatEUR(gap)}
-            </span>
-          )}
-        </div>
-      </div>
-
-
-      <div className="relative mt-3">
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" onMouseLeave={() => setHover(null)}>
-          {[0, 0.5, 1].map((f) => {
-            const v = min + f * span;
-            return (
-              <g key={f}>
-                <line x1={PX} x2={W - 8} y1={yv(v)} y2={yv(v)} stroke="#e2e8f0" />
-                <text x={PX - 6} y={yv(v) + 3} textAnchor="end" className="fill-slate-400 text-[10px]">{Math.round(v)} €</text>
-              </g>
-            );
-          })}
-          {min < 0 && <line x1={PX} x2={W - 8} y1={yv(0)} y2={yv(0)} stroke="#fda4af" strokeDasharray="3 3" />}
-          <path d={forecastPath} fill="none" stroke="#94a3b8" strokeWidth={2} strokeDasharray="5 4" />
-          {realIdx.length > 1 && <path d={realPath} fill="none" stroke="#3a3ff0" strokeWidth={2.5} />}
-          {realIdx.map((i) => <circle key={i} cx={x(i)} cy={yv(realByDate.get(forecast[i].date)!)} r={4} fill="#3a3ff0" stroke="#fff" strokeWidth={1.5} />)}
-          {today >= start && today <= end && <line x1={x(diffDays(start, today))} x2={x(diffDays(start, today))} y1={PT} y2={H - PB} stroke="#c7d2fe" strokeDasharray="2 3" />}
-          {forecast.map((p, i) =>
-            i % 5 === 0 || i === forecast.length - 1 ? (
-              <text key={p.date} x={x(i)} y={H - 6} textAnchor="middle" className="fill-slate-400 text-[10px]">{fmtShort(p.date)}</text>
-            ) : null
-          )}
-          {hover !== null && (
-            <>
-              <line x1={x(hover)} x2={x(hover)} y1={PT} y2={H - PB} stroke="#cbd5e1" />
-              <circle cx={x(hover)} cy={yv(forecast[hover].value)} r={3.5} fill="#94a3b8" />
-            </>
-          )}
-          {forecast.map((p, i) => (
-            <rect key={p.date} x={x(i) - (W - PX) / forecast.length / 2} y={PT} width={(W - PX) / forecast.length} height={H - PT - PB} fill="transparent" onMouseEnter={() => setHover(i)} />
-          ))}
-        </svg>
-        {hover !== null && (
-          <div className="pointer-events-none absolute top-0 rounded-xl border border-slate-100 bg-white px-3 py-2 text-xs shadow-lg" style={{ left: `${Math.min(68, (x(hover) / W) * 100)}%` }}>
-            <p className="font-semibold text-slate-800">{fmtShort(forecast[hover].date)}</p>
-            {hReal !== undefined && <p className="text-brand-700">Solde réel : {formatEUR(hReal)}</p>}
-            <p className="text-slate-500">Prévisionnel : {formatEUR(forecast[hover].value)}</p>
-            {hReal !== undefined && (
-              <p className={hReal - forecast[hover].value >= 0 ? "text-emerald-600" : "text-rose-600"}>
-                Écart : {hReal - forecast[hover].value >= 0 ? "+" : ""}{formatEUR(hReal - forecast[hover].value)}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function YearGrid({ ops, anchor, year, today, onPick }: { ops: FinOp[]; anchor: BalanceAnchor; year: number; today: string; onPick: (m: number) => void }) {
+function YearGrid({ ops, anchor, mode, year, today, onPick }: { ops: FinOp[]; anchor: BalanceAnchor; mode: "month" | "carried"; year: number; today: string; onPick: (m: number) => void }) {
   const months = useMemo(
     () =>
       Array.from({ length: 12 }, (_, mm) => {
@@ -607,9 +501,11 @@ function YearGrid({ ops, anchor, year, today, onPick }: { ops: FinOp[]; anchor: 
         const occ = expand(ops, start, end);
         const inflow = occ.filter((o) => o.signed > 0).reduce((s, o) => s + o.signed, 0);
         const outflow = -occ.filter((o) => o.signed < 0).reduce((s, o) => s + o.signed, 0);
-        return { mm, inflow, outflow, endBalance: getDailyBalances(ops, anchor, end, end)[0].balance, current: today >= start && today <= end };
+        // "Mois seul" : chaque mois reprojette depuis 0, sans les gains/pertes accumulés avant lui.
+        const monthAnchor: BalanceAnchor = mode === "carried" ? anchor : { balance: 0, date: addDays(start, -1) };
+        return { mm, inflow, outflow, endBalance: getDailyBalances(ops, monthAnchor, end, end)[0].balance, current: today >= start && today <= end };
       }),
-    [ops, anchor, year, today]
+    [ops, anchor, mode, year, today]
   );
   const maxAbs = Math.max(1, ...months.map((x) => Math.abs(x.endBalance)));
   return (

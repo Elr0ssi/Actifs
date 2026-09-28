@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
-import type { Routine, RoutineLog, Task, RecurringCharge, Income } from "@/lib/types";
+import type { Routine, RoutineLog, Task } from "@/lib/types";
 import { CalendarClient } from "@/components/app/calendar-client";
 import { createRoutine, deleteRoutine } from "@/app/app/calendar/actions";
 import { WEEKDAYS_FR } from "@/lib/utils";
@@ -26,7 +26,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: { m
   const startISO = start.toISOString().slice(0, 10);
   const endISO = end.toISOString().slice(0, 10);
 
-  const [{ data: routines }, { data: logs }, { data: tasks }, { data: charges }, { data: incomes }] = await Promise.all([
+  const [{ data: routines }, { data: logs }, { data: tasks }] = await Promise.all([
     supabase.from("routines").select("*").eq("household_id", householdId).eq("active", true).returns<Routine[]>(),
     supabase.from("routine_logs").select("*").gte("log_date", startISO).lte("log_date", endISO).returns<RoutineLog[]>(),
     supabase
@@ -36,15 +36,13 @@ export default async function CalendarPage({ searchParams }: { searchParams: { m
       .gte("due_date", startISO)
       .lte("due_date", endISO)
       .returns<Task[]>(),
-    supabase.from("recurring_charges").select("*").eq("household_id", householdId).eq("active", true).returns<RecurringCharge[]>(),
-    supabase.from("incomes").select("*").eq("household_id", householdId).returns<Income[]>(),
   ]);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Calendrier</h1>
-        <p className="mt-1 text-sm text-slate-500">Routines, tâches et échéances financières, tout au même endroit.</p>
+        <p className="mt-1 text-sm text-slate-500">Routines et tâches, tout au même endroit — les finances vivent dans Finance.</p>
       </div>
       <CalendarClient
         year={year}
@@ -53,8 +51,6 @@ export default async function CalendarPage({ searchParams }: { searchParams: { m
         routines={routines ?? []}
         logs={logs ?? []}
         tasks={tasks ?? []}
-        charges={charges ?? []}
-        incomes={incomes ?? []}
       />
 
       <section className="card p-6">

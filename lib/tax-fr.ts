@@ -43,6 +43,7 @@ export interface TaxEstimate {
   monthlyProvision: number;
   low: number;
   high: number;
+  withholdingRate: number; // %, calculé — jamais à saisir par l'utilisateur
 }
 
 /**
@@ -50,9 +51,30 @@ export interface TaxEstimate {
  * circumstances change the real bill). `netImposableAnnuel` is the taxable net income
  * before the 10% professional-expense allowance, which is applied here.
  */
-export function estimateIncomeTax(netImposableAnnuel: number, parts = 1): TaxEstimate {
+export function estimateIncomeTax(netImposableAnnuel: number, grossForRate: number, parts = 1): TaxEstimate {
   const base = Math.max(0, netImposableAnnuel * 0.9); // 10% abattement forfaitaire (simplifié, non plafonné)
   const quotient = base / Math.max(0.5, parts);
   const annualTax = taxOnPart(quotient) * parts;
-  return { annualTax, monthlyProvision: annualTax / 12, low: annualTax * 0.9, high: annualTax * 1.1 };
+  const withholdingRate = grossForRate > 0 ? Math.min(100, (annualTax / grossForRate) * 100) : 0;
+  return { annualTax, monthlyProvision: annualTax / 12, low: annualTax * 0.9, high: annualTax * 1.1, withholdingRate };
+}
+
+const ALTERNANCE_EXEMPTION = 21000; // Salaire d'apprenti/alternant exonéré d'IR jusqu'à ce plafond annuel (SMIC annuel, arrondi).
+
+/** Somme des périodes, avec l'exonération alternance appliquée en priorité sur les périodes marquées comme telles. */
+export function taxableIncomeFromPeriods(periods: { activity: string; amount: number }[]) {
+  let exemptionLeft = ALTERNANCE_EXEMPTION;
+  let taxable = 0;
+  let exempted = 0;
+  for (const p of periods) {
+    if (p.activity === "Alternance") {
+      const exempt = Math.min(p.amount, exemptionLeft);
+      exemptionLeft -= exempt;
+      exempted += exempt;
+      taxable += p.amount - exempt;
+    } else {
+      taxable += p.amount;
+    }
+  }
+  return { taxable, exempted };
 }

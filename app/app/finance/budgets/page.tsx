@@ -5,6 +5,7 @@ import { CATEGORIES, KIND_LABEL, KIND_STYLE, getMonthlyBudget, monthlyAmount, ty
 import { formatEUR, todayISO, cx } from "@/lib/utils";
 import { OperationRow } from "@/components/app/finance/operation-row";
 import { NewOperationButton } from "@/components/app/finance/operation-form";
+import { BudgetBreakdown } from "@/components/app/finance/finance-dashboard";
 
 export const metadata: Metadata = { title: "Finance — Budgets" };
 const MONTHS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
@@ -40,14 +41,17 @@ export default async function BudgetsPage({ searchParams }: { searchParams: { ye
         Toutes tes opérations, remplies ici — les mêmes que sur le calendrier. La marge du mois est calculée automatiquement, rien à saisir à côté.
       </p>
 
-      <div className="card flex items-center justify-between gap-3 border-emerald-200 bg-emerald-50/60 p-4">
-        <div>
-          <p className="text-xs font-medium text-emerald-800">Marge du mois</p>
-          <p className="text-[11px] text-emerald-700/70">
-            {formatEUR(budget.income)} − {formatEUR(budget.fixed)} − {formatEUR(budget.variable)} − {formatEUR(budget.savings)}
-          </p>
+      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+        <div className="card flex items-center justify-between gap-3 border-emerald-200 bg-emerald-50/60 p-4">
+          <div>
+            <p className="text-xs font-medium text-emerald-800">Marge du mois</p>
+            <p className="text-[11px] text-emerald-700/70">
+              {formatEUR(budget.income)} − {formatEUR(budget.fixed)} − {formatEUR(budget.variable)} − {formatEUR(budget.savings)}
+            </p>
+          </div>
+          <p className={cx("text-2xl font-bold", margin >= 0 ? "text-emerald-700" : "text-rose-600")}>{formatEUR(margin)}</p>
         </div>
-        <p className={cx("text-2xl font-bold", margin >= 0 ? "text-emerald-700" : "text-rose-600")}>{formatEUR(margin)}</p>
+        <BudgetBreakdown budget={budget} />
       </div>
 
       {ORDER.map((kind) => {
