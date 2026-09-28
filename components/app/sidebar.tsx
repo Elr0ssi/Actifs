@@ -12,6 +12,7 @@ const NAV = [
   { href: "/app/lists", label: "Listes", icon: "🛒" },
   { href: "/app/calendar", label: "Calendrier", icon: "📅" },
   { href: "/app/finance", label: "Finance", icon: "💶" },
+  { href: "/app/notes", label: "Notes", icon: "📝" },
   { href: "/app/settings", label: "Paramètres", icon: "⚙️" },
 ];
 

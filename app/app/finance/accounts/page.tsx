@@ -64,7 +64,10 @@ export default async function AccountsPage() {
                 <ul className="mt-2 space-y-1">
                   {[...acc.history].reverse().map((h) => (
                     <li key={h.date} className="flex justify-between text-slate-500">
-                      <span>{new Date(`${h.date}T00:00:00Z`).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}</span>
+                      <span>
+                        {new Date(`${h.date}T00:00:00Z`).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}
+                        {h.date > today && <span className="ml-1 rounded-full bg-amber-100 px-1.5 py-px text-[10px] font-medium text-amber-700">à venir</span>}
+                      </span>
                       <span className="font-medium text-slate-700">{formatEUR(h.balance)}</span>
                     </li>
                   ))}
