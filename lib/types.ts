@@ -20,6 +20,7 @@ export interface Task {
   priority: TaskPriority;
   status: TaskStatus;
   due_date: string | null;
+  due_time: string | null;
   assigned_to: string | null;
   created_by: string | null;
   created_at: string;

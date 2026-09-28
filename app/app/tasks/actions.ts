@@ -35,6 +35,7 @@ export async function createTask(formData: FormData) {
   const projectId = String(formData.get("project_id") || "") || null;
   const priority = String(formData.get("priority") || "medium") as TaskPriority;
   const dueDate = String(formData.get("due_date") || "") || null;
+  const dueTime = String(formData.get("due_time") || "") || null;
   if (!title) return;
   const { supabase, householdId, userId } = await getHouseholdId();
   if (!householdId) return;
@@ -44,6 +45,7 @@ export async function createTask(formData: FormData) {
     project_id: projectId,
     priority,
     due_date: dueDate,
+    due_time: dueTime,
     status: "todo",
     created_by: userId,
   });

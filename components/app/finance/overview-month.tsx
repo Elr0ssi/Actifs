@@ -23,8 +23,8 @@ export function OverviewMonth({ ops, anchor, year, month, today, carried }: { op
   for (let d = start; d <= end; d = addDays(d, 1)) days.push(d);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
-      <div className="card grid gap-4 p-6 sm:grid-cols-2">
+    <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      <div className="card grid gap-6 p-7 sm:grid-cols-2">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Solde théorique à date</p>
           <p className="text-[11px] capitalize text-slate-400">{fmt(selected)}</p>
@@ -52,7 +52,7 @@ export function OverviewMonth({ ops, anchor, year, month, today, carried }: { op
         </div>
       </div>
 
-      <div className="card p-4">
+      <div className="card p-5">
         <p className="mb-1 text-xs font-medium uppercase tracking-wide text-slate-400">Aperçu du mois — clique un jour</p>
         <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-medium text-slate-400">
           {DOW.map((d, i) => <div key={i}>{d}</div>)}

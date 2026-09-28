@@ -18,6 +18,17 @@ function shiftMonth(iso: string, delta: number) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
 }
 
+function shiftDate(iso: string, days: number) {
+  const d = new Date(`${iso}T00:00:00`);
+  d.setDate(d.getDate() + days);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function mondayOf(iso: string) {
+  const dow = new Date(`${iso}T00:00:00`).getDay();
+  return shiftDate(iso, -((dow + 6) % 7));
+}
+
 /** Vue routines & tâches uniquement — pas de rentrées/sorties d'argent, ça vit dans Finance. */
 export function CalendarClient({
   year,
@@ -44,6 +55,7 @@ export function CalendarClient({
     if (t.getFullYear() === year && t.getMonth() === month) return today;
     return `${year}-${pad(month + 1)}-01`;
   });
+  const [view, setView] = useState<"month" | "week">("month");
 
   const logsByRoutineDate = new Map(logs.map((l) => [`${l.routine_id}_${l.log_date}`, l.done]));
 
@@ -69,7 +81,11 @@ export function CalendarClient({
       const dx = e.clientX - drag.current.startX;
       if (Math.abs(dx) > THRESHOLD) {
         drag.current.moved = true;
-        router.push(`/app/calendar?month=${shiftMonth(monthIso, dx < 0 ? 1 : -1)}`);
+        if (view === "week") {
+          setSelected((s) => shiftDate(s, dx < 0 ? 7 : -7));
+        } else {
+          router.push(`/app/calendar?month=${shiftMonth(monthIso, dx < 0 ? 1 : -1)}`);
+        }
         drag.current.startX = e.clientX;
       }
     };
@@ -83,7 +99,7 @@ export function CalendarClient({
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
     };
-  }, [monthIso, router]);
+  }, [monthIso, router, view]);
   const onGridMouseDown = (e: React.MouseEvent) => {
     drag.current = { active: true, startX: e.clientX, moved: false };
     setGrabbing(true);
@@ -93,54 +109,110 @@ export function CalendarClient({
     setSelected(dateISO);
   };
 
+  const weekStart = mondayOf(selected);
+  const weekDays = Array.from({ length: 7 }, (_, i) => shiftDate(weekStart, i));
+
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
       <div className="card p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <Link href={`/app/calendar?month=${shiftMonth(monthIso, -1)}`} className="btn-secondary px-3 py-1.5 text-sm">←</Link>
-          <p className="font-semibold text-slate-900">{MONTHS_FR[month]} {year}</p>
-          <Link href={`/app/calendar?month=${shiftMonth(monthIso, 1)}`} className="btn-secondary px-3 py-1.5 text-sm">→</Link>
+        <div className="mb-4 flex items-center justify-between gap-2">
+          {view === "month" ? (
+            <>
+              <Link href={`/app/calendar?month=${shiftMonth(monthIso, -1)}`} className="btn-secondary px-3 py-1.5 text-sm">←</Link>
+              <p className="font-semibold text-slate-900">{MONTHS_FR[month]} {year}</p>
+              <Link href={`/app/calendar?month=${shiftMonth(monthIso, 1)}`} className="btn-secondary px-3 py-1.5 text-sm">→</Link>
+            </>
+          ) : (
+            <>
+              <button onClick={() => setSelected(shiftDate(selected, -7))} className="btn-secondary px-3 py-1.5 text-sm">←</button>
+              <p className="font-semibold text-slate-900">Semaine du {Number(weekStart.slice(-2))} {MONTHS_FR[new Date(`${weekStart}T00:00:00`).getMonth()]}</p>
+              <button onClick={() => setSelected(shiftDate(selected, 7))} className="btn-secondary px-3 py-1.5 text-sm">→</button>
+            </>
+          )}
+          <div className="ml-auto flex gap-1 rounded-lg bg-slate-100 p-1 text-xs font-medium">
+            <button onClick={() => setView("month")} className={cx("rounded-md px-2.5 py-1", view === "month" ? "bg-white shadow-sm text-slate-900" : "text-slate-500")}>Mois</button>
+            <button onClick={() => setView("week")} className={cx("rounded-md px-2.5 py-1", view === "week" ? "bg-white shadow-sm text-slate-900" : "text-slate-500")}>Semaine</button>
+          </div>
         </div>
-        <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-slate-400">
-          {WEEKDAYS_FR.map((d) => (
-            <div key={d} className="py-1">{d}</div>
-          ))}
-        </div>
-        <div
-          onMouseDown={onGridMouseDown}
-          className={cx("grid grid-cols-7 gap-1 select-none", grabbing ? "cursor-grabbing" : "cursor-grab")}
-        >
-          {cells.map((cell, i) => {
-            if (!cell.dateISO) return <div key={i} />;
-            const dateISO = cell.dateISO;
-            const dayRoutines = routinesForDate(dateISO);
-            const doneCount = dayRoutines.filter((r) => logsByRoutineDate.get(`${r.id}_${dateISO}`)).length;
-            const taskCount = tasks.filter((t) => t.due_date === dateISO).length;
-            const isSelected = dateISO === selected;
-            const isToday = dateISO === today;
 
-            return (
-              <button
-                key={dateISO}
-                onClick={() => onDaySelect(dateISO)}
-                className={cx(
-                  "flex h-20 flex-col items-start gap-1 rounded-xl border p-1.5 text-left text-xs transition",
-                  isSelected ? "border-brand-400 bg-brand-50 ring-2 ring-brand-200" : "border-transparent hover:bg-slate-50",
-                )}
-              >
-                <span className={cx("flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold", isToday ? "bg-brand-600 text-white" : "text-slate-600")}>
-                  {Number(dateISO.slice(-2))}
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  {dayRoutines.length > 0 && (
-                    <span className="rounded bg-emerald-100 px-1 text-[10px] text-emerald-700">{doneCount}/{dayRoutines.length}</span>
+        {view === "month" ? (
+          <>
+            <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-slate-400">
+              {WEEKDAYS_FR.map((d) => (
+                <div key={d} className="py-1">{d}</div>
+              ))}
+            </div>
+            <div
+              onMouseDown={onGridMouseDown}
+              className={cx("grid grid-cols-7 gap-1 select-none", grabbing ? "cursor-grabbing" : "cursor-grab")}
+            >
+              {cells.map((cell, i) => {
+                if (!cell.dateISO) return <div key={i} />;
+                const dateISO = cell.dateISO;
+                const dayRoutines = routinesForDate(dateISO);
+                const doneCount = dayRoutines.filter((r) => logsByRoutineDate.get(`${r.id}_${dateISO}`)).length;
+                const taskCount = tasks.filter((t) => t.due_date === dateISO).length;
+                const isSelected = dateISO === selected;
+                const isToday = dateISO === today;
+
+                return (
+                  <button
+                    key={dateISO}
+                    onClick={() => onDaySelect(dateISO)}
+                    className={cx(
+                      "flex h-20 flex-col items-start gap-1 rounded-xl border p-1.5 text-left text-xs transition",
+                      isSelected ? "border-brand-400 bg-brand-50 ring-2 ring-brand-200" : "border-transparent hover:bg-slate-50",
+                    )}
+                  >
+                    <span className={cx("flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold", isToday ? "bg-brand-600 text-white" : "text-slate-600")}>
+                      {Number(dateISO.slice(-2))}
+                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {dayRoutines.length > 0 && (
+                        <span className="rounded bg-emerald-100 px-1 text-[10px] text-emerald-700">{doneCount}/{dayRoutines.length}</span>
+                      )}
+                      {taskCount > 0 && <span className="rounded bg-brand-100 px-1 text-[10px] text-brand-700">{taskCount} tâche{taskCount > 1 ? "s" : ""}</span>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <div onMouseDown={onGridMouseDown} className={cx("grid grid-cols-7 gap-2 select-none", grabbing ? "cursor-grabbing" : "cursor-grab")}>
+            {weekDays.map((dateISO) => {
+              const dayRoutines = routinesForDate(dateISO);
+              const dayTasks = tasks.filter((t) => t.due_date === dateISO);
+              const isSelected = dateISO === selected;
+              const isToday = dateISO === today;
+              return (
+                <button
+                  key={dateISO}
+                  onClick={() => onDaySelect(dateISO)}
+                  className={cx(
+                    "flex h-56 flex-col items-start gap-1.5 overflow-hidden rounded-xl border p-2 text-left text-xs transition",
+                    isSelected ? "border-brand-400 bg-brand-50 ring-2 ring-brand-200" : "border-slate-100 hover:bg-slate-50",
                   )}
-                  {taskCount > 0 && <span className="rounded bg-brand-100 px-1 text-[10px] text-brand-700">{taskCount} tâche{taskCount > 1 ? "s" : ""}</span>}
-                </div>
-              </button>
-            );
-          })}
-        </div>
+                >
+                  <span className="text-[10px] font-medium uppercase text-slate-400">{WEEKDAYS_FR[new Date(`${dateISO}T00:00:00`).getDay()]}</span>
+                  <span className={cx("flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold", isToday ? "bg-brand-600 text-white" : "text-slate-700")}>
+                    {Number(dateISO.slice(-2))}
+                  </span>
+                  <div className="mt-1 flex w-full flex-col gap-1 overflow-hidden">
+                    {dayRoutines.map((r) => (
+                      <span key={r.id} className={cx("truncate rounded px-1.5 py-0.5 text-[10px]", logsByRoutineDate.get(`${r.id}_${dateISO}`) ? "bg-emerald-100 text-emerald-700 line-through" : "bg-emerald-50 text-emerald-600")}>
+                        {r.title}
+                      </span>
+                    ))}
+                    {dayTasks.map((t) => (
+                      <span key={t.id} className="truncate rounded bg-brand-50 px-1.5 py-0.5 text-[10px] text-brand-700">{t.title}</span>
+                    ))}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="card p-5">

@@ -27,8 +27,8 @@ export default async function FinanceOverviewPage({ searchParams }: { searchPara
   const monthUrl = (y: number, m: number, mo = mode) => `/app/finance?year=${y}&month=${m}&mode=${mo}`;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-8">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
         <div className="flex items-center gap-2">
           <Link href={monthUrl(prevMonth.y, prevMonth.m)} className="btn-secondary px-2.5 py-1.5 text-sm">‹</Link>
           <p className="text-lg font-bold capitalize text-slate-900">{MONTHS_FR[month]} {year}</p>

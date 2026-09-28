@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
-import type { Project, Task } from "@/lib/types";
+import type { Project, Task, Routine, RoutineLog } from "@/lib/types";
 import { ToggleCheckbox } from "@/components/app/toggle-checkbox";
-import { toggleTaskStatus } from "@/app/app/actions";
+import { toggleTaskStatus, toggleRoutineLog } from "@/app/app/actions";
 import { createProject, createTask, deleteTask } from "@/app/app/tasks/actions";
+import { todayISO, cx } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Tâches & projets" };
 
@@ -15,8 +16,10 @@ export default async function TasksPage() {
   if (!ctx) return null;
   const { supabase, profile } = ctx;
   const householdId = profile?.household_id ?? "";
+  const today = todayISO();
+  const weekday = new Date(`${today}T00:00:00Z`).getUTCDay();
 
-  const [{ data: projects }, { data: tasks }] = await Promise.all([
+  const [{ data: projects }, { data: tasks }, { data: routines }, { data: logs }] = await Promise.all([
     supabase.from("projects").select("*").eq("household_id", householdId).eq("archived", false).order("created_at").returns<Project[]>(),
     supabase
       .from("tasks")
@@ -25,12 +28,22 @@ export default async function TasksPage() {
       .order("status", { ascending: true })
       .order("priority", { ascending: false })
       .returns<Task[]>(),
+    supabase.from("routines").select("*").eq("household_id", householdId).eq("active", true).returns<Routine[]>(),
+    supabase.from("routine_logs").select("*").eq("log_date", today).returns<RoutineLog[]>(),
   ]);
 
+  const allTasks = tasks ?? [];
   const groups: { project: Project | null; tasks: Task[] }[] = [
-    { project: null, tasks: (tasks ?? []).filter((t) => !t.project_id) },
-    ...(projects ?? []).map((p) => ({ project: p, tasks: (tasks ?? []).filter((t) => t.project_id === p.id) })),
+    { project: null, tasks: allTasks.filter((t) => !t.project_id) },
+    ...(projects ?? []).map((p) => ({ project: p, tasks: allTasks.filter((t) => t.project_id === p.id) })),
   ];
+
+  // Une tâche non faite dont l'échéance est passée se reporte automatiquement à aujourd'hui —
+  // sans jamais réécrire sa date, juste à l'affichage.
+  const dueToday = allTasks.filter((t) => t.status !== "done" && t.due_date === today).sort((a, b) => (a.due_time ?? "99:99").localeCompare(b.due_time ?? "99:99"));
+  const overdue = allTasks.filter((t) => t.status !== "done" && t.due_date && t.due_date < today);
+  const todayRoutines = (routines ?? []).filter((r) => r.frequency === "daily" || (r.frequency === "weekly" && r.days_of_week?.includes(weekday)));
+  const doneRoutineIds = new Set((logs ?? []).filter((l) => l.done).map((l) => l.routine_id));
 
   return (
     <div className="space-y-8">
@@ -38,6 +51,50 @@ export default async function TasksPage() {
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Tâches & projets</h1>
         <p className="mt-1 text-sm text-slate-500">Priorise, regroupe par projet, avance.</p>
       </div>
+
+      <section className="card p-6">
+        <h2 className="mb-4 font-semibold text-slate-900">Aujourd'hui</h2>
+        <div className="grid gap-6 sm:grid-cols-2">
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Tâches</p>
+            {dueToday.length === 0 && overdue.length === 0 && <p className="text-sm text-slate-400">Rien de prévu aujourd'hui.</p>}
+            <div className="space-y-1.5">
+              {overdue.map((t) => (
+                <div key={t.id} className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <ToggleCheckbox initialChecked={false} onToggle={toggleTaskStatus.bind(null, t.id)} label={t.title} />
+                  </div>
+                  <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-600">reportée</span>
+                  <span className={cx("h-2 w-2 shrink-0 rounded-full", PRIORITY_DOT[t.priority])} title={PRIORITY_LABEL[t.priority]} />
+                </div>
+              ))}
+              {dueToday.map((t) => (
+                <div key={t.id} className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <ToggleCheckbox initialChecked={false} onToggle={toggleTaskStatus.bind(null, t.id)} label={t.title} sublabel={t.due_time ?? undefined} />
+                  </div>
+                  <span className={cx("h-2 w-2 shrink-0 rounded-full", PRIORITY_DOT[t.priority])} title={PRIORITY_LABEL[t.priority]} />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Routines</p>
+            {todayRoutines.length === 0 && <p className="text-sm text-slate-400">Aucune routine aujourd'hui.</p>}
+            <div className="space-y-1.5">
+              {todayRoutines.map((r) => (
+                <ToggleCheckbox
+                  key={r.id}
+                  initialChecked={doneRoutineIds.has(r.id)}
+                  onToggle={(checked) => toggleRoutineLog(r.id, today, checked)}
+                  label={r.title}
+                  sublabel={r.category ?? undefined}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className="card p-5">
         <h2 className="mb-3 text-sm font-semibold text-slate-700">Nouveau projet</h2>
@@ -60,22 +117,26 @@ export default async function TasksPage() {
 
             <div className="space-y-1">
               {g.tasks.length === 0 && <p className="text-sm text-slate-400">Aucune tâche.</p>}
-              {g.tasks.map((t) => (
-                <div key={t.id} className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <ToggleCheckbox
-                      initialChecked={t.status === "done"}
-                      onToggle={toggleTaskStatus.bind(null, t.id)}
-                      label={t.title}
-                      sublabel={t.due_date ?? undefined}
-                    />
+              {g.tasks.map((t) => {
+                const isOverdue = t.status !== "done" && t.due_date && t.due_date < today;
+                return (
+                  <div key={t.id} className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <ToggleCheckbox
+                        initialChecked={t.status === "done"}
+                        onToggle={toggleTaskStatus.bind(null, t.id)}
+                        label={t.title}
+                        sublabel={[t.due_date, t.due_time].filter(Boolean).join(" ") || undefined}
+                      />
+                    </div>
+                    {isOverdue && <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-600">reportée</span>}
+                    <span className={`h-2 w-2 rounded-full ${PRIORITY_DOT[t.priority]}`} title={PRIORITY_LABEL[t.priority]} />
+                    <form action={deleteTask.bind(null, t.id)}>
+                      <button className="rounded-lg px-2 py-1 text-xs text-slate-400 hover:bg-slate-100 hover:text-rose-600">✕</button>
+                    </form>
                   </div>
-                  <span className={`h-2 w-2 rounded-full ${PRIORITY_DOT[t.priority]}`} title={PRIORITY_LABEL[t.priority]} />
-                  <form action={deleteTask.bind(null, t.id)}>
-                    <button className="rounded-lg px-2 py-1 text-xs text-slate-400 hover:bg-slate-100 hover:text-rose-600">✕</button>
-                  </form>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <form action={createTask} className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
@@ -87,6 +148,7 @@ export default async function TasksPage() {
                 <option value="high">Haute</option>
               </select>
               <input name="due_date" type="date" className="input w-40" />
+              <input name="due_time" type="time" className="input w-28" title="Heure (optionnel)" />
               <button className="btn-secondary">Ajouter</button>
             </form>
           </section>
