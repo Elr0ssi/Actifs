@@ -21,8 +21,8 @@ const FREQS: { v: OpFrequency; l: string; unit: string }[] = [
 const WEEKDAYS = ["L", "M", "M", "J", "V", "S", "D"];
 const WEEKDAY_VALUES = [1, 2, 3, 4, 5, 6, 0];
 
-export function OperationForm({ op, defaultDate, onDone }: { op?: FinOp; defaultDate?: string; onDone?: () => void }) {
-  const [kind, setKind] = useState<OpKind>(op?.kind ?? "fixed");
+export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: FinOp; defaultDate?: string; defaultKind?: OpKind; onDone?: () => void }) {
+  const [kind, setKind] = useState<OpKind>(op?.kind ?? defaultKind ?? "fixed");
   const [freq, setFreq] = useState<OpFrequency>(op?.frequency ?? "monthly");
   const [pending, setPending] = useState(false);
   const unit = FREQS.find((f) => f.v === freq)?.unit;
@@ -124,7 +124,17 @@ export function OperationForm({ op, defaultDate, onDone }: { op?: FinOp; default
   );
 }
 
-export function NewOperationButton({ defaultDate, label = "+ Nouvelle opération", className }: { defaultDate?: string; label?: string; className?: string }) {
+export function NewOperationButton({
+  defaultDate,
+  defaultKind,
+  label = "+ Nouvelle opération",
+  className,
+}: {
+  defaultDate?: string;
+  defaultKind?: OpKind;
+  label?: string;
+  className?: string;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -136,7 +146,7 @@ export function NewOperationButton({ defaultDate, label = "+ Nouvelle opération
               <h3 className="text-lg font-bold text-slate-900">Nouvelle opération</h3>
               <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-700">✕</button>
             </div>
-            <OperationForm defaultDate={defaultDate} onDone={() => setOpen(false)} />
+            <OperationForm defaultDate={defaultDate} defaultKind={defaultKind} onDone={() => setOpen(false)} />
           </div>
         </div>
       )}

@@ -63,6 +63,7 @@ export function FinanceDashboard({
   realBalances: { date: string; balance: number }[];
 }) {
   const [view, setView] = useState<View>("month");
+  const [mode, setMode] = useState<"month" | "carried">("carried");
   const [selected, setSelected] = useState(today);
   const [cursor, setCursor] = useState({ y: yearOf(today), m: monthOf(today) });
   const { y, m } = cursor;
@@ -98,18 +99,18 @@ export function FinanceDashboard({
   const days: string[] = [];
   for (let d = gridStart; d <= gridEnd; d = addDays(d, 1)) days.push(d);
 
-  // Drag the calendar up/down with the mouse held to navigate months, like Google Calendar's scroll.
+  // Drag the calendar left/right with the mouse held to navigate months, like a carousel.
   const [grabbing, setGrabbing] = useState(false);
-  const drag = useRef({ active: false, startY: 0, moved: false });
+  const drag = useRef({ active: false, startX: 0, moved: false });
   useEffect(() => {
     const THRESHOLD = 60;
     const onMove = (e: MouseEvent) => {
       if (!drag.current.active) return;
-      const dy = e.clientY - drag.current.startY;
-      if (Math.abs(dy) > THRESHOLD) {
+      const dx = e.clientX - drag.current.startX;
+      if (Math.abs(dx) > THRESHOLD) {
         drag.current.moved = true;
-        nav(dy < 0 ? 1 : -1);
-        drag.current.startY = e.clientY;
+        nav(dx < 0 ? 1 : -1);
+        drag.current.startX = e.clientX;
       }
     };
     const onUp = () => {
@@ -124,7 +125,7 @@ export function FinanceDashboard({
     };
   });
   const onGridMouseDown = (e: React.MouseEvent) => {
-    drag.current = { active: true, startY: e.clientY, moved: false };
+    drag.current = { active: true, startX: e.clientX, moved: false };
     setGrabbing(true);
   };
   const onDaySelect = (d: string) => {
@@ -155,16 +156,28 @@ export function FinanceDashboard({
         </div>
       </div>
 
-      <SummaryCards budget={budget} days={monthBounds(y, m).days} picked={picked} onPick={(k) => setPicked(k === picked ? null : k)} />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium">
+          <button onClick={() => setMode("month")} className={cx("rounded-lg px-3 py-1.5", mode === "month" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500")}>Mois seul</button>
+          <button onClick={() => setMode("carried")} className={cx("rounded-lg px-3 py-1.5", mode === "carried" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500")}>Avec solde reporté</button>
+        </div>
+        <p className="text-xs text-slate-400">
+          {mode === "carried" ? "Part du solde réel du compte courant, reporté d'un mois à l'autre." : "Repart de 0 chaque mois, sans les gains ni les pertes des mois précédents."}
+        </p>
+      </div>
+
+      <SummaryCards budget={budget} mode={mode} monthEndLabel={fmtShort(mEnd)} picked={picked} onPick={(k) => setPicked(k === picked ? null : k)} />
       {picked && <KindDetail kind={picked} ops={ops} y={y} m={m} onClose={() => setPicked(null)} />}
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-6">
         <section className="card p-4">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <button onClick={() => nav(-1)} className="text-slate-400 hover:text-slate-800">‹</button>
               <h2 className="text-lg font-bold text-slate-900">{title}</h2>
-              <button onClick={() => { select(today); if (view === "year") setView("month"); }} className="btn-secondary px-3 py-1 text-xs">Aujourd'hui</button>
+              <button onClick={() => nav(1)} className="text-slate-400 hover:text-slate-800">›</button>
+              <button onClick={() => { select(today); if (view === "year") setView("month"); }} className="btn-secondary ml-2 px-3 py-1 text-xs">Aujourd'hui</button>
             </div>
             <div className="flex flex-wrap gap-3 text-xs text-slate-500">
               {(["income", "fixed", "variable", "savings"] as const).map((k) => (
@@ -234,7 +247,19 @@ export function FinanceDashboard({
   );
 }
 
-function SummaryCards({ budget, days, picked, onPick }: { budget: ReturnType<typeof getMonthlyBudget>; days: number; picked: OpKind | null; onPick: (k: OpKind) => void }) {
+function SummaryCards({
+  budget,
+  mode,
+  monthEndLabel,
+  picked,
+  onPick,
+}: {
+  budget: ReturnType<typeof getMonthlyBudget>;
+  mode: "month" | "carried";
+  monthEndLabel: string;
+  picked: OpKind | null;
+  onPick: (k: OpKind) => void;
+}) {
   const pct = (n: number) => (budget.income > 0 ? `${Math.round((n / budget.income) * 100)} %` : "—");
   const stats = [
     { kind: "income" as OpKind, label: "Revenus", value: budget.income, sub: `${budget.incomeCount} prévu(s)`, color: "text-emerald-600", dot: "bg-emerald-500" },
@@ -242,6 +267,8 @@ function SummaryCards({ budget, days, picked, onPick }: { budget: ReturnType<typ
     { kind: "variable" as OpKind, label: "Dépenses variables", value: budget.variable, sub: `${pct(budget.variable)} des revenus`, color: "text-amber-600", dot: "bg-amber-500" },
     { kind: "savings" as OpKind, label: "Épargne / invest.", value: budget.savings, sub: `${pct(budget.savings)} des revenus`, color: "text-violet-600", dot: "bg-violet-500" },
   ];
+  const startBalance = mode === "carried" ? budget.startBalance : 0;
+  const resteAVivre = startBalance + budget.income - budget.fixed - budget.variable - budget.savings;
   return (
     <div className="grid gap-4 md:grid-cols-[1.5fr_1fr]">
       <div className="card grid grid-cols-2 gap-1 p-2 sm:grid-cols-4">
@@ -260,14 +287,13 @@ function SummaryCards({ budget, days, picked, onPick }: { budget: ReturnType<typ
       </div>
       <div className="card flex items-center justify-between gap-3 border-emerald-200 bg-emerald-50/60 p-4">
         <div className="min-w-0">
-          <p className="text-xs text-slate-500">Solde début de mois</p>
-          <p className="text-lg font-bold text-slate-800">{formatEUR(budget.startBalance)}</p>
+          <p className="text-xs text-slate-500">{mode === "carried" ? "Solde début de mois (Courant)" : "Solde début de mois"}</p>
+          <p className="text-lg font-bold text-slate-800">{formatEUR(startBalance)}</p>
         </div>
         <span className="text-slate-300">→</span>
         <div className="min-w-0 text-right">
-          <p className="text-xs font-medium text-emerald-800">Reste à vivre estimé</p>
-          <p className={cx("text-lg font-bold", budget.resteAVivre >= 0 ? "text-emerald-700" : "text-rose-600")}>{formatEUR(budget.resteAVivre)}</p>
-          <p className="text-[11px] text-emerald-700/70">≈ {formatEUR(budget.resteAVivre / days)}/jour</p>
+          <p className="text-xs font-medium text-emerald-800">Reste à vivre estimé jusqu'au {monthEndLabel}</p>
+          <p className={cx("text-lg font-bold", resteAVivre >= 0 ? "text-emerald-700" : "text-rose-600")}>{formatEUR(resteAVivre)}</p>
         </div>
       </div>
     </div>

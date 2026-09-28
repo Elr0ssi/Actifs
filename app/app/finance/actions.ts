@@ -143,57 +143,6 @@ export async function updateGoal(type: "savings" | "investment", formData: FormD
   refresh();
 }
 
-/** Saves this month's theoretical budget. "Mois récurrent" also copies it onto the next 11 months. */
-export async function saveMonthlyBudget(year: number, month: number, formData: FormData) {
-  const num = (k: string) => Math.max(0, Number(String(formData.get(k) ?? "0").replace(",", ".")) || 0);
-  const row = {
-    income: num("income"),
-    fixed: num("fixed"),
-    variable: num("variable"),
-    savings: num("savings"),
-    show_categories: formData.get("show_categories") === "on",
-    cap_variable: formData.get("cap_variable") === "on",
-    recurring: formData.get("recurring") === "on",
-  };
-  const { supabase, householdId } = await ctx();
-  if (!householdId) return;
-  await supabase.from("monthly_budget_plans").upsert({ household_id: householdId, year, month, ...row, updated_at: new Date().toISOString() }, { onConflict: "household_id,year,month" });
-  if (row.recurring) {
-    const months = Array.from({ length: 11 }, (_, i) => {
-      const d = new Date(Date.UTC(year, month + 1 + i, 1));
-      return { year: d.getUTCFullYear(), month: d.getUTCMonth() };
-    });
-    await supabase
-      .from("monthly_budget_plans")
-      .upsert(months.map((mo) => ({ household_id: householdId, ...mo, ...row, updated_at: new Date().toISOString() })), { onConflict: "household_id,year,month" });
-  }
-  refresh();
-}
-
-export async function createEnvelope(formData: FormData) {
-  const name = String(formData.get("name") || "").trim();
-  const icon = String(formData.get("icon") || "💳").trim() || "💳";
-  const amount = Math.max(0, Number(String(formData.get("planned_amount") || "0").replace(",", ".")) || 0);
-  if (!name) return;
-  const { supabase, householdId } = await ctx();
-  if (!householdId) return;
-  await supabase.from("variable_budgets").insert({ household_id: householdId, name, icon, planned_amount: amount });
-  refresh();
-}
-
-export async function updateEnvelopeAmount(id: string, formData: FormData) {
-  const amount = Math.max(0, Number(String(formData.get("planned_amount") || "0").replace(",", ".")) || 0);
-  const { supabase } = await ctx();
-  await supabase.from("variable_budgets").update({ planned_amount: amount }).eq("id", id);
-  refresh();
-}
-
-export async function deleteEnvelope(id: string) {
-  const { supabase } = await ctx();
-  await supabase.from("variable_budgets").delete().eq("id", id);
-  refresh();
-}
-
 export async function saveTaxProfile(year: number, formData: FormData) {
   const num = (k: string) => Math.max(0, Number(String(formData.get(k) ?? "0").replace(",", ".")) || 0);
   const periodsRaw = String(formData.get("periods") || "[]");

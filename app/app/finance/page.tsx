@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { loadFinanceData } from "@/lib/data/finance";
-import { loadBudgetsPage } from "@/lib/data/finance-budgets";
 import { getMonthlyBudget, perWeekRemaining } from "@/lib/finance-engine";
 import { todayISO } from "@/lib/utils";
 import { OverviewPanel } from "@/components/app/finance/overview-panel";
@@ -18,11 +17,8 @@ export default async function FinanceOverviewPage({ searchParams }: { searchPara
   const month = searchParams.month !== undefined ? Number(searchParams.month) : now.getUTCMonth();
   const mode: "month" | "carried" = searchParams.mode === "carried" ? "carried" : "month";
 
-  const page = await loadBudgetsPage(year, month);
-  const plan = page?.plan ?? { income: 0, fixed: 0, variable: 0, savings: 0, showCategories: true, capVariable: false, recurring: false, explicit: false };
-  const theoreticalMargin = plan.income - plan.fixed - plan.variable - plan.savings;
-
   const budget = getMonthlyBudget(finance.ops, finance.anchor, year, month);
+  const theoreticalMargin = budget.income - budget.fixed - budget.variable - budget.savings;
   const headline = mode === "carried" ? budget.resteAVivre : theoreticalMargin;
   const weekInfo = perWeekRemaining(headline, today);
   const perWeek = weekInfo.isLastDay ? null : weekInfo.perWeek;
@@ -43,8 +39,8 @@ export default async function FinanceOverviewPage({ searchParams }: { searchPara
       perWeek={perWeek}
       formulaLine={
         mode === "carried"
-          ? `Solde début de mois ${budget.startBalance.toFixed(0)} € + revenus ${budget.income.toFixed(0)} € − charges fixes ${budget.fixed.toFixed(0)} € − variables ${budget.variable.toFixed(0)} € − épargne ${budget.savings.toFixed(0)} € = ${budget.resteAVivre.toFixed(0)} €`
-          : `${plan.income.toFixed(0)} € − ${plan.fixed.toFixed(0)} € − ${plan.variable.toFixed(0)} € − ${plan.savings.toFixed(0)} € = ${theoreticalMargin.toFixed(0)} €${!plan.explicit ? " (pas de budget saisi pour ce mois — modifie-le dans Budgets)" : ""}`
+          ? `Solde début de mois (Courant) ${budget.startBalance.toFixed(0)} € + revenus ${budget.income.toFixed(0)} € − charges fixes ${budget.fixed.toFixed(0)} € − variables ${budget.variable.toFixed(0)} € − épargne ${budget.savings.toFixed(0)} € = ${budget.resteAVivre.toFixed(0)} €`
+          : `${budget.income.toFixed(0)} € − ${budget.fixed.toFixed(0)} € − ${budget.variable.toFixed(0)} € − ${budget.savings.toFixed(0)} € = ${theoreticalMargin.toFixed(0)} € (opérations réelles de ce mois, sans le solde reporté)`
       }
     />
   );
