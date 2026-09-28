@@ -12,8 +12,9 @@ const DESTINATIONS = [
 
 export function OverviewPanel({
   monthLabel,
+  year,
+  month,
   mode,
-  monthUrl,
   headline,
   isCarried,
   refDateLabel,
@@ -23,8 +24,9 @@ export function OverviewPanel({
   formulaLine,
 }: {
   monthLabel: string;
+  year: number;
+  month: number;
   mode: "month" | "carried";
-  monthUrl: (mode: "month" | "carried") => string;
   headline: number;
   isCarried: boolean;
   refDateLabel: string;
@@ -33,6 +35,7 @@ export function OverviewPanel({
   perWeek: number | null;
   formulaLine: string;
 }) {
+  const monthUrl = (m: "month" | "carried") => `/app/finance?year=${year}&month=${month}&mode=${m}`;
   const [values, setValues] = useState<Record<string, number>>({});
   const allocated = Object.values(values).reduce((s, v) => s + v, 0);
   const after = headline - allocated;

@@ -27,14 +27,14 @@ export default async function FinanceOverviewPage({ searchParams }: { searchPara
   const weekInfo = perWeekRemaining(headline, today);
   const perWeek = weekInfo.isLastDay ? null : weekInfo.perWeek;
 
-  const monthUrl = (m: "month" | "carried") => `/app/finance?year=${year}&month=${month}&mode=${m}`;
   const fmtDate = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("fr-FR", { day: "numeric", month: "short", timeZone: "UTC" });
 
   return (
     <OverviewPanel
       monthLabel={`${MONTHS_FR[month]} ${year}`}
+      year={year}
+      month={month}
       mode={mode}
-      monthUrl={monthUrl}
       headline={headline}
       isCarried={mode === "carried"}
       refDateLabel={fmtDate(today)}
