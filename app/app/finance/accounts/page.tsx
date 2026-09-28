@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { loadFinanceData, ACCOUNTS } from "@/lib/data/finance";
 import { formatEUR, todayISO } from "@/lib/utils";
 import { updateBalanceAnchor, updateGoal } from "@/app/app/finance/actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export const metadata: Metadata = { title: "Finance — Comptes" };
 
@@ -47,7 +48,7 @@ export default async function AccountsPage() {
                 )}
                 <form action={updateGoal.bind(null, meta.goalType)} className="mt-1.5 flex gap-1.5">
                   <input name="goal" type="number" step="0.01" placeholder="Objectif €" defaultValue={goal || ""} className="input min-w-0 px-2 py-1 text-xs" />
-                  <button className="btn-secondary shrink-0 px-2 py-1 text-xs">Fixer</button>
+                  <SubmitButton className="btn-secondary shrink-0 px-2 py-1 text-xs">Fixer</SubmitButton>
                 </form>
               </div>
             )}
@@ -55,7 +56,7 @@ export default async function AccountsPage() {
             <form action={updateBalanceAnchor.bind(null, name)} className="flex gap-1.5 border-t border-slate-100 pt-3">
               <input name="entry_date" type="date" defaultValue={today} className="input min-w-0 px-2 py-1 text-xs" />
               <input name="current_balance" type="number" step="0.01" placeholder="Solde" className="input w-20 min-w-0 px-2 py-1 text-xs" required />
-              <button className="btn-primary shrink-0 px-2.5 py-1 text-xs">OK</button>
+              <SubmitButton className="btn-primary shrink-0 px-2.5 py-1 text-xs">OK</SubmitButton>
             </form>
 
             {acc.history.length > 0 && (

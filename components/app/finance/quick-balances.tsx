@@ -1,6 +1,7 @@
 import { loadFinanceData } from "@/lib/data/finance";
 import { formatEUR, todayISO } from "@/lib/utils";
 import { updateBalanceAnchor } from "@/app/app/finance/actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const ACCOUNTS: { name: "Courant" | "Épargne"; icon: string }[] = [
   { name: "Courant", icon: "💳" },
@@ -26,7 +27,7 @@ export async function QuickBalances() {
             </div>
             <input type="hidden" name="entry_date" value={today} />
             <input name="current_balance" type="number" step="0.01" placeholder="Modifier" className="input w-20 min-w-0 px-2 py-1 text-xs" />
-            <button className="btn-secondary shrink-0 px-2 py-1 text-xs">OK</button>
+            <SubmitButton className="btn-secondary shrink-0 px-2 py-1 text-xs">OK</SubmitButton>
           </form>
         );
       })}

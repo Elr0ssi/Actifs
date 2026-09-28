@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
 import { VocabList } from "@/components/app/notes/vocab-list";
 import { addWord, bulkAddWords } from "@/app/app/notes/actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export const metadata: Metadata = { title: "Notes" };
 
@@ -37,7 +38,7 @@ export default async function NotesPage() {
               <input name="french" placeholder="Français (ex. chat)" className="input" required />
               <input name="english" placeholder="Anglais (ex. cat)" className="input" required />
             </div>
-            <button className="btn-primary w-full">Ajouter le mot</button>
+            <SubmitButton className="btn-primary w-full">Ajouter le mot</SubmitButton>
           </form>
 
           <form action={bulkAddWords} className="space-y-2">
@@ -48,7 +49,7 @@ export default async function NotesPage() {
               placeholder={"Une paire par ligne :\nchat - cat\nmaison : house\nvoiture, car"}
               className="input"
             />
-            <button className="btn-secondary w-full">Importer la liste</button>
+            <SubmitButton className="btn-secondary w-full">Importer la liste</SubmitButton>
           </form>
         </div>
       </section>

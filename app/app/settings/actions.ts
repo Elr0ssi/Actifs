@@ -35,3 +35,11 @@ export async function joinHousehold(formData: FormData) {
   revalidatePath("/app");
   if (error) throw new Error(error.message);
 }
+
+export async function changePassword(formData: FormData) {
+  const password = String(formData.get("password") || "");
+  if (password.length < 8) return;
+  const supabase = createClient();
+  await supabase.auth.updateUser({ password });
+  revalidatePath("/app/settings");
+}

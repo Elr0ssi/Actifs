@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
 import type { Profile } from "@/lib/types";
-import { updateProfile, updateHouseholdName, joinHousehold } from "@/app/app/settings/actions";
+import { updateProfile, updateHouseholdName, joinHousehold, changePassword } from "@/app/app/settings/actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export const metadata: Metadata = { title: "Paramètres" };
 
@@ -28,7 +29,16 @@ export default async function SettingsPage() {
         <p className="mb-4 text-sm text-slate-500">{user.email}</p>
         <form action={updateProfile} className="flex gap-2">
           <input name="display_name" defaultValue={profile?.display_name ?? ""} className="input flex-1" />
-          <button className="btn-primary">Enregistrer</button>
+          <SubmitButton className="btn-primary">Enregistrer</SubmitButton>
+        </form>
+      </section>
+
+      <section className="card p-6">
+        <h2 className="mb-1 font-semibold text-slate-900">Mot de passe</h2>
+        <p className="mb-4 text-xs text-slate-500">Si ton navigateur signale ton mot de passe comme compromis, choisis-en un nouveau, unique (8 caractères min.).</p>
+        <form action={changePassword} className="flex gap-2">
+          <input name="password" type="password" autoComplete="new-password" minLength={8} placeholder="Nouveau mot de passe" className="input flex-1" required />
+          <SubmitButton className="btn-primary">Changer</SubmitButton>
         </form>
       </section>
 
@@ -36,7 +46,7 @@ export default async function SettingsPage() {
         <h2 className="mb-4 font-semibold text-slate-900">Mon foyer</h2>
         <form action={updateHouseholdName} className="mb-5 flex gap-2">
           <input name="household_name" defaultValue={household?.name ?? ""} className="input flex-1" />
-          <button className="btn-primary">Renommer</button>
+          <SubmitButton className="btn-primary">Renommer</SubmitButton>
         </form>
 
         <p className="mb-2 text-sm font-medium text-slate-700">Membres</p>
@@ -56,7 +66,7 @@ export default async function SettingsPage() {
 
         <form action={joinHousehold} className="mt-5 flex gap-2">
           <input name="invite_code" placeholder="Rejoindre un autre foyer avec un code" className="input flex-1" />
-          <button className="btn-secondary">Rejoindre</button>
+          <SubmitButton className="btn-secondary">Rejoindre</SubmitButton>
         </form>
       </section>
     </div>

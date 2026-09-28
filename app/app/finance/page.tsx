@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { loadFinanceData } from "@/lib/data/finance";
-import { getMonthlyBudget, perWeekRemaining, type BalanceAnchor } from "@/lib/finance-engine";
-import { todayISO, formatEUR, cx } from "@/lib/utils";
+import { addDays, getMonthlyBudget, monthBounds, type BalanceAnchor } from "@/lib/finance-engine";
+import { todayISO, cx } from "@/lib/utils";
 import { BudgetBreakdown } from "@/components/app/finance/finance-dashboard";
-import { MiniMonth } from "@/components/app/finance/mini-month";
+import { OverviewMonth } from "@/components/app/finance/overview-month";
 
 export const metadata: Metadata = { title: "Finance — Vue d'ensemble" };
 const MONTHS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
@@ -20,10 +20,7 @@ export default async function FinanceOverviewPage({ searchParams }: { searchPara
   const mode: "month" | "carried" = searchParams.mode === "carried" ? "carried" : "month";
 
   const budget = getMonthlyBudget(finance.ops, finance.anchor, year, month);
-  const theoreticalMargin = budget.income - budget.fixed - budget.variable - budget.savings;
-  const headline = mode === "carried" ? budget.resteAVivre : theoreticalMargin;
-  const weekInfo = perWeekRemaining(headline, today);
-  const effectiveAnchor: BalanceAnchor = mode === "carried" ? finance.anchor : { balance: 0, date: `${year}-${String(month + 1).padStart(2, "0")}-01` };
+  const effectiveAnchor: BalanceAnchor = mode === "carried" ? finance.anchor : { balance: 0, date: addDays(monthBounds(year, month).start, -1) };
 
   const prevMonth = month === 0 ? { y: year - 1, m: 11 } : { y: year, m: month - 1 };
   const nextMonth = month === 11 ? { y: year + 1, m: 0 } : { y: year, m: month + 1 };
@@ -43,22 +40,7 @@ export default async function FinanceOverviewPage({ searchParams }: { searchPara
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_260px]">
-        <div className="card p-6">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-            {mode === "carried" ? "Trésorerie projetée en fin de mois" : "Solde théorique en fin de mois"}
-          </p>
-          <p className={cx("mt-1 text-4xl font-bold tabular-nums", headline < 0 ? "text-rose-600" : "text-slate-900")}>{formatEUR(headline)}</p>
-          {!weekInfo.isLastDay && <p className="mt-2 text-xs text-slate-400">≈ {formatEUR(weekInfo.perWeek)}/semaine sur ce qu'il reste du mois</p>}
-          <p className="mt-1 text-xs text-slate-400">
-            {mode === "carried" ? "Part du solde réel du compte courant, reporté d'un mois à l'autre." : "Repart de 0, sans les gains ni les pertes des mois précédents."}
-          </p>
-        </div>
-        <div className="card p-4">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wide text-slate-400">Aperçu du mois</p>
-          <MiniMonth ops={finance.ops} anchor={effectiveAnchor} year={year} month={month} today={today} />
-        </div>
-      </div>
+      <OverviewMonth key={`${year}-${month}-${mode}`} ops={finance.ops} anchor={effectiveAnchor} year={year} month={month} today={today} carried={mode === "carried"} />
 
       <BudgetBreakdown budget={budget} />
     </div>

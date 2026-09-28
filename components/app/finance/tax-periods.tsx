@@ -5,6 +5,7 @@ import { formatEUR } from "@/lib/utils";
 import { estimateIncomeTax, taxableIncomeFromPeriods } from "@/lib/tax-fr";
 import { saveTaxProfile } from "@/app/app/finance/actions";
 import type { TaxProfile } from "@/lib/data/finance-budgets";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const ACTIVITIES = ["Salarié", "Alternance", "Intérim", "Freelance / indépendant", "Autre"];
 
@@ -119,7 +120,7 @@ export function TaxPeriods({ year, profile }: { year: number; profile: TaxProfil
         </label>
       </section>
 
-      <button className="btn-primary">Enregistrer</button>
+      <SubmitButton className="btn-primary">Enregistrer</SubmitButton>
     </form>
   );
 }

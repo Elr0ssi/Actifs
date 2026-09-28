@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getAppContext } from "@/lib/data/context";
 import { chargeRowToOp, incomeRowToOp, type BalanceAnchor, type FinOp } from "@/lib/finance-engine";
 import { todayISO } from "@/lib/utils";
@@ -5,7 +6,8 @@ import { todayISO } from "@/lib/utils";
 export const ACCOUNTS = ["Courant", "Épargne", "Investissement"] as const;
 export type AccountName = (typeof ACCOUNTS)[number];
 
-export async function loadFinanceData() {
+/** Cached per request: the Finance layout (soldes) and the page share one set of queries. */
+export const loadFinanceData = cache(async () => {
   const ctx = await getAppContext();
   if (!ctx) return null;
   const { supabase, profile, household } = ctx;
@@ -49,4 +51,4 @@ export async function loadFinanceData() {
     accounts,
     goals: { savings: Number(h?.savings_goal ?? 0), investment: Number(h?.investment_goal ?? 0) },
   };
-}
+});
