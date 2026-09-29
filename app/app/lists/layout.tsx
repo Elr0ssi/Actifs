@@ -1,14 +1,9 @@
-import Link from "next/link";
 import { SectionHeader, SectionTabs } from "@/components/app/section-tabs";
 
 export default function ListsLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="space-y-5">
-      <SectionHeader
-        title="Courses"
-        subtitle="Retrouve tes recettes, génère tes listes et planifie tes repas."
-        action={<Link href="/app/lists/mes-listes" className="btn-primary">+ Nouvelle liste</Link>}
-      />
+      <SectionHeader title="Courses" subtitle="Retrouve tes recettes, génère tes listes et planifie tes repas." />
       <SectionTabs
         label="Sections Courses"
         tabs={[

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { addDays } from "@/lib/finance-engine";
 import { cx } from "@/lib/utils";
 import { WidgetShell, Empty } from "@/components/app/widgets/shell";
@@ -35,76 +34,6 @@ export function Projects({ data, size }: WidgetProps) {
             );
           })}
         </ul>
-      )}
-    </WidgetShell>
-  );
-}
-
-/* ---------- Mes listes ---------- */
-
-export function ListsOverview({ data }: WidgetProps) {
-  return (
-    <WidgetShell icon="list" title="Mes listes" href="/app/lists/mes-listes">
-      {data.lists.length === 0 ? (
-        <Empty>Aucune liste en cours.</Empty>
-      ) : (
-        <ul className="space-y-2.5">
-          {data.lists.map((l) => {
-            const done = l.items.filter((i) => i.checked).length;
-            const pct = l.items.length ? (done / l.items.length) * 100 : 0;
-            return (
-              <li key={l.id}>
-                <Link href={`/app/lists/${l.id}`} className="block rounded-lg px-1 py-0.5 hover:bg-stone-50">
-                  <div className="flex items-baseline justify-between gap-2 text-[12px]">
-                    <span className="truncate font-medium text-stone-800">{l.name}</span>
-                    <span className="tabular shrink-0 text-[11px] text-stone-400">{done}/{l.items.length}</span>
-                  </div>
-                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-stone-100">
-                    <div className="h-full rounded-full bg-brand-500" style={{ width: `${pct}%` }} />
-                  </div>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </WidgetShell>
-  );
-}
-
-/* ---------- Mes recettes ---------- */
-
-export function RecipesMine({ data, size }: WidgetProps) {
-  const count = size === "m" ? 4 : size === "l" ? 6 : 8;
-  return (
-    <WidgetShell icon="chef" title="Mes recettes" subtitle={`${data.recipes.length} enregistrée(s)`} href="/app/lists/recipes">
-      {data.recipes.length === 0 ? (
-        <Empty>
-          Aucune recette pour l'instant.{" "}
-          <Link href="/app/lists/recipes" className="font-semibold text-brand-700">Pioche dans les idées</Link>
-        </Empty>
-      ) : (
-        <div className={cx("grid gap-2.5", size === "m" ? "grid-cols-2" : size === "l" ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2 sm:grid-cols-4")}>
-          {data.recipes.slice(0, count).map((r) => (
-            <Link key={r.id} href="/app/lists/recipes" className="group flex min-w-0 items-center gap-2.5 rounded-xl border border-line p-2 hover:border-brand-200">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-stone-100 text-lg">
-                {r.image_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={r.image_url} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  "🍽️"
-                )}
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate text-[12px] font-semibold text-stone-800 group-hover:text-brand-700">
-                  {r.is_favorite && <span className="text-brand-500">★ </span>}
-                  {r.name}
-                </span>
-                <span className="block truncate text-[10px] text-stone-400">{[r.category, `${r.items} ingr.`].filter(Boolean).join(" · ")}</span>
-              </span>
-            </Link>
-          ))}
-        </div>
       )}
     </WidgetShell>
   );

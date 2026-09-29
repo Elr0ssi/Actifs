@@ -5,6 +5,9 @@ import { redirect } from "next/navigation";
 import { createClient, getSessionUser } from "@/lib/supabase/server";
 import { ensureIngredients, parsePicked } from "@/lib/data/ingredients";
 import { defaultQtyUnit, formatQty, lineCost, priceMap, type IngredientUnit } from "@/lib/shopping";
+import { RECIPES } from "@/lib/marketing/recipes";
+
+const ICON_BY_NAME = new Map(RECIPES.map((r) => [r.name.toLowerCase(), r.icon]));
 
 async function ctx() {
   const supabase = createClient();
@@ -15,11 +18,10 @@ async function ctx() {
   return { supabase, householdId: profile?.household_id as string | undefined, userId: user?.id };
 }
 
-function parseBulkLines(raw: string) {
-  return raw
-    .split("\n")
-    .map((l) => l.replace(/^[\s]*[-*•▪️✓☐☑]+\s*/, "").trim())
-    .filter(Boolean);
+/** Les listes alimentent aussi les widgets du tableau de bord : on rafraîchit les deux. */
+function refresh() {
+  revalidatePath("/app/lists", "layout");
+  revalidatePath("/app");
 }
 
 export async function createList(formData: FormData) {
@@ -41,7 +43,7 @@ export async function createList(formData: FormData) {
     })
     .select("id")
     .single();
-  revalidatePath("/app/lists", "layout");
+  refresh();
   if (data?.id) redirect(`/app/lists/${data.id}${shopping ? "?compose=1" : ""}`);
 }
 
@@ -111,7 +113,16 @@ export async function composeList(listId: string, formData: FormData) {
       await supabase.from("list_items").insert({ ...row, list_id: listId, label: line.label, ingredient_id: line.ingredient_id, source, position: position++ });
     }
   }
-  revalidatePath(`/app/lists/${listId}`);
+  if (recipeRows?.length) {
+    const { data: known } = await supabase.from("list_recipes").select("id, recipe_id, count").eq("list_id", listId);
+    for (const r of recipeRows as RecipeRow[]) {
+      const count = Math.max(1, recipes.find((x) => x.id === r.id)?.count ?? 1);
+      const prev = (known ?? []).find((k) => k.recipe_id === r.id);
+      if (prev) await supabase.from("list_recipes").update({ count: prev.count + count }).eq("id", prev.id);
+      else await supabase.from("list_recipes").insert({ list_id: listId, recipe_id: r.id, name: r.name, icon: ICON_BY_NAME.get(r.name.toLowerCase()) ?? null, count });
+    }
+  }
+  refresh();
   redirect(`/app/lists/${listId}`);
 }
 
@@ -129,20 +140,19 @@ export async function setListStore(listId: string, formData: FormData) {
     const price = it.ingredient_id ? lineCost(it.qty ? Number(it.qty) : null, it.qty_unit, unitOf.get(it.ingredient_id) ?? "unit", prices.get(it.ingredient_id)) : null;
     await supabase.from("list_items").update({ price }).eq("id", it.id);
   }
-  revalidatePath(`/app/lists/${listId}`);
+  refresh();
 }
 
 export async function setListArchived(listId: string, archived: boolean) {
   const { supabase } = await ctx();
   await supabase.from("lists").update({ archived }).eq("id", listId);
-  revalidatePath("/app/lists", "layout");
-  revalidatePath(`/app/lists/${listId}`);
+  refresh();
 }
 
 export async function finishShopping(listId: string) {
   const { supabase } = await ctx();
   await supabase.from("lists").update({ archived: true }).eq("id", listId);
-  revalidatePath("/app/lists", "layout");
+  refresh();
   redirect(`/app/lists/${listId}?done=1#comparatif`);
 }
 
@@ -188,7 +198,7 @@ export async function setIngredientPrice(ingredientId: string, store: string, va
 export async function deleteList(listId: string) {
   const { supabase } = await ctx();
   await supabase.from("lists").delete().eq("id", listId);
-  revalidatePath("/app/lists", "layout");
+  refresh();
   redirect("/app/lists");
 }
 
@@ -200,36 +210,25 @@ export async function addListItem(listId: string, formData: FormData) {
   const { supabase } = await ctx();
   const { count } = await supabase.from("list_items").select("*", { count: "exact", head: true }).eq("list_id", listId);
   await supabase.from("list_items").insert({ list_id: listId, label, quantity, note, position: count ?? 0 });
-  revalidatePath(`/app/lists/${listId}`);
-}
-
-export async function bulkImportItems(listId: string, formData: FormData) {
-  const raw = String(formData.get("bulk") || "");
-  const lines = parseBulkLines(raw);
-  if (lines.length === 0) return;
-  const { supabase } = await ctx();
-  const { count } = await supabase.from("list_items").select("*", { count: "exact", head: true }).eq("list_id", listId);
-  const start = count ?? 0;
-  await supabase.from("list_items").insert(lines.map((label, i) => ({ list_id: listId, label, position: start + i })));
-  revalidatePath(`/app/lists/${listId}`);
+  refresh();
 }
 
 export async function toggleListItem(listId: string, itemId: string, checked: boolean) {
   const { supabase } = await ctx();
   await supabase.from("list_items").update({ checked }).eq("id", itemId);
-  revalidatePath(`/app/lists/${listId}`);
+  refresh();
 }
 
 export async function deleteListItem(listId: string, itemId: string) {
   const { supabase } = await ctx();
   await supabase.from("list_items").delete().eq("id", itemId);
-  revalidatePath(`/app/lists/${listId}`);
+  refresh();
 }
 
 export async function clearCheckedItems(listId: string) {
   const { supabase } = await ctx();
   await supabase.from("list_items").delete().eq("list_id", listId).eq("checked", true);
-  revalidatePath(`/app/lists/${listId}`);
+  refresh();
 }
 
 export async function addItemLocation(formData: FormData) {
@@ -240,11 +239,11 @@ export async function addItemLocation(formData: FormData) {
   const { supabase, householdId } = await ctx();
   if (!householdId) return;
   await supabase.from("item_locations").insert({ household_id: householdId, item_label: itemLabel, store_name: storeName, note });
-  revalidatePath("/app/lists", "layout");
+  refresh();
 }
 
 export async function deleteItemLocation(id: string) {
   const { supabase } = await ctx();
   await supabase.from("item_locations").delete().eq("id", id);
-  revalidatePath("/app/lists", "layout");
+  refresh();
 }

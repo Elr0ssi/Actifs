@@ -239,6 +239,8 @@ export interface MonthlyBudget {
   endBalance: number;
   resteAVivre: number;
   variableByCategory: { label: string; value: number }[];
+  fixedByCategory: { label: string; value: number }[];
+  savingsByCategory: { label: string; value: number }[];
   occurrences: Occurrence[];
 }
 
@@ -257,8 +259,11 @@ export function getMonthlyBudget(
   const savings = total("savings");
   const startBalance = getBalanceAtDate(ops, anchor, addDays(start, -1));
 
-  const byCat = new Map<string, number>();
-  for (const o of occ.filter((o) => o.op.kind === "variable")) byCat.set(o.op.category || "Autre", (byCat.get(o.op.category || "Autre") ?? 0) + o.op.amount);
+  const byCategory = (kind: OpKind) => {
+    const map = new Map<string, number>();
+    for (const o of occ.filter((o) => o.op.kind === kind)) map.set(o.op.category || "Autre", (map.get(o.op.category || "Autre") ?? 0) + o.op.amount);
+    return [...map.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value);
+  };
 
   return {
     income,
@@ -270,7 +275,9 @@ export function getMonthlyBudget(
     endBalance: getBalanceAtDate(ops, anchor, end),
     resteAVivre: startBalance + income - fixed - variable - savings,
     occurrences: occ,
-    variableByCategory: [...byCat.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value),
+    variableByCategory: byCategory("variable"),
+    fixedByCategory: byCategory("fixed"),
+    savingsByCategory: byCategory("savings"),
   };
 }
 

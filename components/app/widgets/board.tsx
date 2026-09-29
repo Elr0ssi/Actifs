@@ -20,11 +20,14 @@ import {
 import type { WidgetData } from "@/lib/data/widgets";
 import { cx } from "@/lib/utils";
 import { Icon } from "@/components/app/icons";
-import { WidgetSizeContext } from "@/components/app/widgets/shell";
-import { ListsOverview, Projects, RecipesMine, VocabQuiz, VocabStats } from "@/components/app/widgets/sections";
+import { WidgetPageContext, WidgetSizeContext } from "@/components/app/widgets/shell";
+import { Projects, VocabQuiz, VocabStats } from "@/components/app/widgets/sections";
+import { CoursesBudget, CoursesLast, ListsOverview, MenuWeek } from "@/components/app/widgets/courses";
+import { TasksCalendar, TasksList } from "@/components/app/widgets/tasks";
+import { RoutinesCurve } from "@/components/app/widgets/routines";
 import type { WidgetProps } from "@/components/app/widgets/types";
 import { FinAccounts, FinActions, FinBreakdown, FinBudgets, FinCalendar, FinCharges, FinIncomes, FinReste, FinTrend } from "@/components/app/widgets/finance";
-import { CalAgenda, CalWeek, ListsShopping, NotesVocab, RecipesIdeas, RoutinesToday, RoutinesWeek, TasksList, TasksStat } from "@/components/app/widgets/life";
+import { CalAgenda, CalWeek, ListsShopping, NotesVocab, RecipesIdeas, RoutinesToday, TasksStat } from "@/components/app/widgets/life";
 
 const RENDER: Record<WidgetType, (p: WidgetProps) => JSX.Element> = {
   "fin-accounts": FinAccounts,
@@ -40,11 +43,14 @@ const RENDER: Record<WidgetType, (p: WidgetProps) => JSX.Element> = {
   "tasks-stat": TasksStat,
   projects: Projects,
   "lists-overview": ListsOverview,
-  "recipes-mine": RecipesMine,
   "vocab-stats": VocabStats,
   "vocab-quiz": VocabQuiz,
   "routines-today": RoutinesToday,
-  "routines-week": RoutinesWeek,
+  "routines-week": RoutinesCurve,
+  "tasks-calendar": TasksCalendar,
+  "menu-week": MenuWeek,
+  "courses-budget": CoursesBudget,
+  "courses-last": CoursesLast,
   "cal-agenda": CalAgenda,
   "cal-week": CalWeek,
   "lists-shopping": ListsShopping,
@@ -96,6 +102,7 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
   };
 
   return (
+    <WidgetPageContext.Provider value={page}>
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">{toolbar}</div>
@@ -166,6 +173,7 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
 
       {drawer && <WidgetDrawer page={page} items={items} onAdd={add} onClose={() => setDrawer(false)} />}
     </div>
+    </WidgetPageContext.Provider>
   );
 }
 

@@ -9,7 +9,6 @@ import { loadCatalog } from "@/lib/data/ingredients";
 import { STORES, compareStores, lineCost, priceMap } from "@/lib/shopping";
 import {
   addListItem,
-  bulkImportItems,
   deleteList,
   clearCheckedItems,
   composeList,
@@ -59,6 +58,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
       name: r.name,
       category: r.category,
       image_url: r.image_url,
+      is_favorite: r.is_favorite,
       itemCount: r.recipe_items.length,
       estimate: costs.length ? costs.reduce((s, c) => s + c, 0) : null,
     };
@@ -213,27 +213,14 @@ export default async function ListDetailPage({ params, searchParams }: { params:
         />
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <div className="card p-5">
-          <h2 className="mb-3 text-sm font-semibold text-stone-700">Ajouter un article</h2>
-          <form action={addListItem.bind(null, list.id)} className="space-y-2">
-            <input name="label" placeholder="Article" className="input" required />
-            <div className="flex gap-2">
-              <input name="quantity" placeholder="Quantité" className="input" />
-              <input name="note" placeholder="Note" className="input" />
-            </div>
-            <button className="btn-primary w-full">Ajouter</button>
-          </form>
-        </div>
-
-        <div className="card p-5">
-          <h2 className="mb-1 text-sm font-semibold text-stone-700">Import rapide</h2>
-          <p className="mb-3 text-xs text-stone-400">Colle une liste (ChatGPT, notes…), une ligne = un article.</p>
-          <form action={bulkImportItems.bind(null, list.id)} className="space-y-2">
-            <textarea name="bulk" rows={4} className="input" placeholder={"- Lait\n- Oeufs\n- Farine"} />
-            <button className="btn-primary w-full">Importer en checklist</button>
-          </form>
-        </div>
+      <div className="card p-5">
+        <h2 className="mb-3 text-sm font-semibold text-stone-700">Ajouter un article</h2>
+        <form action={addListItem.bind(null, list.id)} className="grid gap-2 sm:grid-cols-[1fr_160px_1fr_auto]">
+          <input name="label" placeholder="Article" className="input" required />
+          <input name="quantity" placeholder="Quantité" className="input" />
+          <input name="note" placeholder="Note" className="input" />
+          <button className="btn-primary">Ajouter</button>
+        </form>
       </div>
     </div>
   );

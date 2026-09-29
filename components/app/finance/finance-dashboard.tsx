@@ -327,18 +327,28 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
   );
 }
 
-export function BudgetBreakdown({ budget }: { budget: ReturnType<typeof getMonthlyBudget> }) {
-  const [mode, setMode] = useState<"global" | "variable">("global");
+type BreakdownMode = "global" | "fixed" | "variable" | "savings";
+const BREAKDOWN_LABEL: Record<BreakdownMode, string> = { global: "Global", fixed: "Charges fixes", variable: "Dépenses variables", savings: "Épargne" };
+
+/** Garde les plus grosses catégories et regroupe le reste : la palette catégorielle n'a que 6 teintes distinctes. */
+function fold(items: { label: string; value: number }[], max = 6) {
+  const list = items.filter((i) => i.value > 0);
+  if (list.length <= max) return list;
+  return [...list.slice(0, max - 1), { label: "Autres", value: list.slice(max - 1).reduce((s, i) => s + i.value, 0) }];
+}
+
+export function BudgetBreakdown({ budget, size = 150 }: { budget: ReturnType<typeof getMonthlyBudget>; size?: number }) {
+  const [mode, setMode] = useState<BreakdownMode>("global");
   const [picked, setPicked] = useState<string | null>(null);
   const spend = budget.fixed + budget.variable + budget.savings;
   const items =
     mode === "global"
       ? [
           { label: "Charges fixes", value: budget.fixed },
-          { label: "Budget variable", value: budget.variable },
-          { label: "Épargne / invest.", value: budget.savings },
-        ]
-      : budget.variableByCategory;
+          { label: "Dépenses variables", value: budget.variable },
+          { label: "Épargne", value: budget.savings },
+        ].filter((i) => i.value > 0)
+      : fold(mode === "fixed" ? budget.fixedByCategory : mode === "variable" ? budget.variableByCategory : budget.savingsByCategory);
   const total = items.reduce((s, i) => s + i.value, 0);
   const pickedItem = items.find((i) => i.label === picked);
   const seg = (v: number) => `${spend > 0 ? (v / spend) * 100 : 0}%`;
@@ -347,25 +357,25 @@ export function BudgetBreakdown({ budget }: { budget: ReturnType<typeof getMonth
     <section className="card p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-[13px] font-semibold text-stone-900">Répartition du budget</p>
-        <div className="flex rounded-lg bg-stone-100 p-0.5 text-[11px] font-medium">
-          {(["global", "variable"] as const).map((v) => (
-            <button key={v} onClick={() => { setMode(v); setPicked(null); }} className={cx("rounded-md px-2 py-1", mode === v ? "bg-white shadow-sm" : "text-stone-500")}>
-              {v === "global" ? "Budget global" : "Dépenses variables"}
+        <div className="segmented">
+          {(Object.keys(BREAKDOWN_LABEL) as BreakdownMode[]).map((v) => (
+            <button key={v} type="button" data-active={mode === v} onClick={() => { setMode(v); setPicked(null); }}>
+              {BREAKDOWN_LABEL[v]}
             </button>
           ))}
         </div>
       </div>
       <p className="mt-2 text-xs text-stone-500">Total dépensé / réservé : <b className="text-stone-800">{formatEUR(spend)}</b> {budget.income > 0 && `· ${Math.round((spend / budget.income) * 100)} % des revenus`}</p>
-      <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-stone-100">
-        <div className="bg-rose-400" style={{ width: seg(budget.fixed) }} />
-        <div className="bg-amber-400" style={{ width: seg(budget.variable) }} />
-        <div className="bg-violet-400" style={{ width: seg(budget.savings) }} />
+      <div className="mt-2 flex h-2 gap-[2px] overflow-hidden rounded-full bg-stone-100">
+        <div className="bg-rose-400" style={{ width: seg(budget.fixed) }} title="Charges fixes" />
+        <div className="bg-amber-400" style={{ width: seg(budget.variable) }} title="Dépenses variables" />
+        <div className="bg-violet-400" style={{ width: seg(budget.savings) }} title="Épargne" />
       </div>
       <div className="mt-4">
-        <DonutChart items={items} size={150} strokeWidth={22} centerCaption={mode === "global" ? "budget" : "variable"} selected={picked} onSelect={(l) => setPicked(l === picked ? null : l)} />
+        <DonutChart items={items} size={size} strokeWidth={Math.round(size / 7)} centerCaption={mode === "global" ? "budget" : BREAKDOWN_LABEL[mode].toLowerCase()} selected={picked} onSelect={(l) => setPicked(l === picked ? null : l)} />
         {pickedItem && (
           <p className="mt-3 rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-600">
-            <b>{pickedItem.label}</b> : {formatEUR(pickedItem.value)} soit {total > 0 ? Math.round((pickedItem.value / total) * 100) : 0} % {mode === "global" ? "du budget" : "du budget variable"}
+            <b>{pickedItem.label}</b> : {formatEUR(pickedItem.value)} soit {total > 0 ? Math.round((pickedItem.value / total) * 100) : 0} % {mode === "global" ? "du budget" : `des ${BREAKDOWN_LABEL[mode].toLowerCase()}`}
             {budget.income > 0 && ` · ${Math.round((pickedItem.value / budget.income) * 100)} % des revenus`}
           </p>
         )}

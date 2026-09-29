@@ -1734,3 +1734,14 @@ export const RECIPES: MarketingRecipe[] = [
 export function getRecipe(slug: string) {
   return RECIPES.find((r) => r.slug === slug) ?? null;
 }
+
+/** Filtre commun (site public, onglet Trouver des recettes, sélecteur de courses). */
+export function filterRecipes(list: MarketingRecipe[], { query = "", category = null, equipment = [] }: { query?: string; category?: string | null; equipment?: string[] }) {
+  const q = query.trim().toLowerCase();
+  return list.filter((r) => {
+    if (category && r.category !== category) return false;
+    if (equipment.length > 0 && r.utensils.some((u) => !BASIC_UTENSILS.includes(u) && !equipment.includes(u))) return false;
+    if (!q) return true;
+    return r.name.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q) || r.ingredients.some((i) => i.toLowerCase().includes(q));
+  });
+}

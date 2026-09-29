@@ -12,7 +12,6 @@ const NAV: { href: string; label: string; short: string; icon: IconName }[] = [
   { href: "/app", label: "Tableau de bord", short: "Accueil", icon: "home" },
   { href: "/app/tasks", label: "Tâches & projets", short: "Tâches", icon: "tasks" },
   { href: "/app/lists", label: "Courses", short: "Courses", icon: "cart" },
-  { href: "/app/calendar", label: "Calendrier", short: "Agenda", icon: "calendar" },
   { href: "/app/finance", label: "Finance", short: "Finance", icon: "wallet" },
   { href: "/app/notes", label: "Notes", short: "Notes", icon: "notes" },
   { href: "/app/settings", label: "Paramètres", short: "Réglages", icon: "settings" },

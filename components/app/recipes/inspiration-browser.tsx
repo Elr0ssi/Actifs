@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
-import { CATEGORIES, EQUIPMENT, BASIC_UTENSILS, RECIPES, type MarketingRecipe } from "@/lib/marketing/recipes";
+import { CATEGORIES, EQUIPMENT, RECIPES, filterRecipes, type MarketingRecipe } from "@/lib/marketing/recipes";
 import { importInspirationRecipe } from "@/app/app/lists/recipes/actions";
 import { cx } from "@/lib/utils";
 
@@ -16,24 +16,7 @@ export function InspirationBrowser() {
     setEquipment((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
   };
 
-  const q = query.trim().toLowerCase();
-  const results = useMemo(
-    () =>
-      RECIPES.filter((r) => {
-        if (category && r.category !== category) return false;
-        if (equipment.length > 0) {
-          const needsOther = r.utensils.some((u) => !BASIC_UTENSILS.includes(u) && !equipment.includes(u));
-          if (needsOther) return false;
-        }
-        if (!q) return true;
-        return (
-          r.name.toLowerCase().includes(q) ||
-          r.desc.toLowerCase().includes(q) ||
-          r.ingredients.some((i) => i.toLowerCase().includes(q))
-        );
-      }),
-    [q, category, equipment]
-  );
+  const results = useMemo(() => filterRecipes(RECIPES, { query, category, equipment }), [query, category, equipment]);
 
   return (
     <div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CATEGORIES, EQUIPMENT, BASIC_UTENSILS, RECIPES } from "@/lib/marketing/recipes";
+import { CATEGORIES, EQUIPMENT, RECIPES, filterRecipes } from "@/lib/marketing/recipes";
 import { RecipeCard } from "@/components/marketing/recipe-card";
 import { cx } from "@/lib/utils";
 
@@ -15,24 +15,7 @@ export function RecipesBrowser() {
     setEquipment((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
   };
 
-  const q = query.trim().toLowerCase();
-  const results = useMemo(
-    () =>
-      RECIPES.filter((r) => {
-        if (category && r.category !== category) return false;
-        if (equipment.length > 0) {
-          const needsOther = r.utensils.some((u) => !BASIC_UTENSILS.includes(u) && !equipment.includes(u));
-          if (needsOther) return false;
-        }
-        if (!q) return true;
-        return (
-          r.name.toLowerCase().includes(q) ||
-          r.desc.toLowerCase().includes(q) ||
-          r.ingredients.some((i) => i.toLowerCase().includes(q))
-        );
-      }),
-    [q, category, equipment]
-  );
+  const results = useMemo(() => filterRecipes(RECIPES, { query, category, equipment }), [query, category, equipment]);
 
   return (
     <div>

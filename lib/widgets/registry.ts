@@ -18,7 +18,10 @@ export type WidgetType =
   | "tasks-stat"
   | "projects"
   | "lists-overview"
-  | "recipes-mine"
+  | "tasks-calendar"
+  | "menu-week"
+  | "courses-budget"
+  | "courses-last"
   | "vocab-stats"
   | "vocab-quiz"
   | "routines-today"
@@ -77,10 +80,13 @@ export const WIDGETS: WidgetDef[] = [
   { type: "tasks-stat", section: "tasks", title: "Compteur de tâches", description: "Tâches en cours et en retard.", icon: "tasks", sizes: ["s"], defaultSize: "s" },
   { type: "projects", section: "tasks", title: "Projets", description: "Avancement de chaque projet, en tâches terminées.", icon: "target", sizes: ["s", "m", "l"], defaultSize: "m" },
   { type: "routines-today", section: "routines", title: "Routines du jour", description: "Coche tes routines d'aujourd'hui.", icon: "repeat", sizes: ["s", "m"], defaultSize: "s" },
-  { type: "routines-week", section: "routines", title: "Progression des routines", description: "Taux de réalisation sur les 7 derniers jours.", icon: "chart", sizes: ["m", "l"], defaultSize: "m" },
+  { type: "tasks-calendar", section: "tasks", title: "Calendrier des tâches", description: "Un calendrier cliquable avec uniquement tes tâches et tes projets.", icon: "calendar", sizes: ["m", "l", "xl"], defaultSize: "l", tall: true },
+  { type: "routines-week", section: "routines", title: "Courbe des routines", description: "Ta réussite dans le temps, par jour, semaine, mois ou année.", icon: "trend", sizes: ["m", "l", "xl"], defaultSize: "l" },
   { type: "lists-shopping", section: "courses", title: "Liste de courses", description: "Les articles qu'il reste à acheter.", icon: "cart", sizes: ["s", "m"], defaultSize: "s" },
-  { type: "lists-overview", section: "courses", title: "Mes listes", description: "Toutes tes listes en cours et leur progression.", icon: "list", sizes: ["s", "m"], defaultSize: "s" },
-  { type: "recipes-mine", section: "courses", title: "Mes recettes", description: "Tes recettes enregistrées, favorites en premier.", icon: "chef", sizes: ["m", "l", "xl"], defaultSize: "m" },
+  { type: "menu-week", section: "courses", title: "Menu de la semaine", description: "Les recettes que tu as choisies pour la semaine.", icon: "chef", sizes: ["s", "m", "l"], defaultSize: "m" },
+  { type: "courses-budget", section: "courses", title: "Budget courses", description: "Ce que tes courses coûtent ce mois-ci face au budget que tu leur alloues.", icon: "wallet", sizes: ["s", "m"], defaultSize: "s" },
+  { type: "courses-last", section: "courses", title: "Dernière course", description: "Montant de ta dernière course et prix moyen par repas.", icon: "cart", sizes: ["s"], defaultSize: "s" },
+  { type: "lists-overview", section: "courses", title: "Listes en cours", description: "Tes listes en cours avec leur avancement et leur montant.", icon: "list", sizes: ["s", "m"], defaultSize: "m" },
   { type: "recipes-ideas", section: "courses", title: "Idées de recettes", description: "Une sélection de recettes qui change chaque jour.", icon: "chef", sizes: ["m", "l", "xl"], defaultSize: "m" },
   { type: "vocab-stats", section: "notes", title: "Compteur de mots", description: "Nombre de mots appris, au total et cette semaine.", icon: "chart", sizes: ["s"], defaultSize: "s" },
   { type: "vocab-quiz", section: "notes", title: "Révision éclair", description: "Une carte à retourner pour réviser ton vocabulaire.", icon: "book", sizes: ["s", "m"], defaultSize: "m" },
@@ -92,7 +98,7 @@ export const WIDGET_BY_TYPE = Object.fromEntries(WIDGETS.map((w) => [w.type, w])
 export const PAGE_SECTIONS: Record<WidgetPage, WidgetSection[]> = {
   dashboard: ["finance", "calendar", "tasks", "routines", "courses", "notes"],
   finance: ["finance"],
-  tasks: ["tasks", "routines", "calendar"],
+  tasks: ["tasks", "routines"],
   courses: ["courses"],
   notes: ["notes"],
 };
@@ -101,15 +107,11 @@ const item = (type: WidgetType, size: WidgetSize, opts?: WidgetOpts): WidgetItem
 
 export const DEFAULT_LAYOUTS = {
   dashboard: [
-    item("cal-week", "l"),
     item("fin-reste", "s"),
-    item("tasks-list", "m"),
     item("routines-today", "s"),
+    item("tasks-list", "m"),
+    item("cal-week", "l"),
     item("lists-shopping", "s"),
-    item("cal-agenda", "l"),
-    item("fin-breakdown", "s"),
-    item("notes-vocab", "s"),
-    item("recipes-ideas", "xl"),
   ],
   finance: [
     item("fin-accounts", "l"),
@@ -130,13 +132,13 @@ DEFAULT_LAYOUTS.tasks = [
   item("projects", "m"),
   item("tasks-list", "m"),
   item("routines-week", "m"),
-  item("cal-week", "xl"),
 ];
 DEFAULT_LAYOUTS.courses = [
-  item("lists-shopping", "s"),
-  item("lists-overview", "s"),
-  item("recipes-mine", "m"),
-  item("recipes-ideas", "xl"),
+  item("menu-week", "m"),
+  item("courses-budget", "s"),
+  item("courses-last", "s"),
+  item("lists-overview", "m"),
+  item("lists-shopping", "m"),
 ];
 DEFAULT_LAYOUTS.notes = [
   item("vocab-stats", "s"),

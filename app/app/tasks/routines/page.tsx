@@ -4,6 +4,9 @@ import { getAppContext } from "@/lib/data/context";
 import type { Routine } from "@/lib/types";
 import { WEEKDAYS_FR } from "@/lib/utils";
 import { createRoutine, archiveRoutine, restoreRoutine, deleteRoutineForever } from "@/app/app/calendar/actions";
+import { RoutineTracker } from "@/components/app/routine-tracker";
+import { addDays } from "@/lib/finance-engine";
+import { todayISO } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Gérer mes routines" };
 
@@ -14,12 +17,21 @@ export default async function RoutinesPage() {
   const householdId = profile?.household_id ?? "";
 
   const { data: routines } = await supabase.from("routines").select("*").eq("household_id", householdId).order("created_at", { ascending: false }).returns<Routine[]>();
+  const today = todayISO();
+  const { data: recent } = await supabase.from("routine_logs").select("routine_id, log_date").gte("log_date", addDays(today, -6)).lte("log_date", today);
+  const doneKeys = (recent ?? []).map((l) => `${l.routine_id}_${l.log_date}`);
   const active = (routines ?? []).filter((r) => r.active);
   const archived = (routines ?? []).filter((r) => !r.active);
 
   return (
     <div className="space-y-6">
       <p className="text-xs text-stone-500">Crée, archive et restaure tes routines. Une routine archivée disparaît du calendrier mais reste récupérable.</p>
+
+      <section className="card p-5">
+        <h2 className="mb-1 font-semibold text-stone-900">Suivi des 7 derniers jours</h2>
+        <p className="mb-3 text-xs text-stone-500">Coche ce que tu as fait, y compris un jour oublié : la courbe se met à jour.</p>
+        <RoutineTracker routines={active} doneKeys={doneKeys} today={today} />
+      </section>
 
       <section className="card p-6">
         <h2 className="mb-4 font-semibold text-stone-900">Nouvelle routine</h2>
