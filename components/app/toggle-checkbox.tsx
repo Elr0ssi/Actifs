@@ -20,7 +20,7 @@ export function ToggleCheckbox({
   const [isPending, startTransition] = useTransition();
 
   return (
-    <label className={cx("flex cursor-pointer items-start gap-3 rounded-xl p-2 transition hover:bg-slate-50", isPending && "opacity-60")}>
+    <label className={cx("flex cursor-pointer items-start gap-2.5 rounded-lg px-1.5 py-1 transition hover:bg-stone-50", isPending && "opacity-60")}>
       <input
         type="checkbox"
         checked={checked}
@@ -31,13 +31,13 @@ export function ToggleCheckbox({
             onToggle(next);
           });
         }}
-        className="mt-1 h-4 w-4 shrink-0 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
+        className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border-stone-300 accent-brand-600"
       />
       <span className="min-w-0">
-        <span className={cx("block truncate text-sm font-medium text-slate-800", checked && strikeThrough && "text-slate-400 line-through")}>
+        <span className={cx("block truncate text-[13px] font-medium text-stone-800", checked && strikeThrough && "text-stone-400 line-through")}>
           {label}
         </span>
-        {sublabel && <span className="block truncate text-xs text-slate-400">{sublabel}</span>}
+        {sublabel && <span className="block truncate text-[11px] text-stone-400">{sublabel}</span>}
       </span>
     </label>
   );

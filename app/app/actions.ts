@@ -58,16 +58,6 @@ export async function quickAddTask(formData: FormData) {
   revalidatePath("/app/tasks");
 }
 
-export async function updateDashboardWidgets(widgets: string[]) {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await getSessionUser(supabase);
-  if (!user) return;
-  await supabase.from("profiles").update({ dashboard_widgets: widgets }).eq("id", user.id);
-  revalidatePath("/app");
-}
-
 export async function updateBalance(formData: FormData) {
   const balance = Number(formData.get("current_balance"));
   if (Number.isNaN(balance)) return;

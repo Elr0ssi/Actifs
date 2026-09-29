@@ -1,7 +1,7 @@
 import { cx } from "@/lib/utils";
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cx("animate-pulse rounded-lg bg-slate-200/70", className)} />;
+  return <div className={cx("animate-pulse rounded-lg bg-stone-200/70", className)} />;
 }
 
 export function CardSkeleton({ lines = 3, className }: { lines?: number; className?: string }) {

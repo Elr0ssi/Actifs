@@ -21,7 +21,7 @@ export function TaxCalculator() {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-3">
-        <label className="block text-xs font-medium text-slate-500">
+        <label className="block text-xs font-medium text-stone-500">
           Salaire brut annuel
           <input
             type="number"
@@ -33,28 +33,28 @@ export function TaxCalculator() {
           />
         </label>
         <div className="grid grid-cols-2 gap-3">
-          <label className="text-xs font-medium text-slate-500">
+          <label className="text-xs font-medium text-stone-500">
             Statut
             <select value={statut} onChange={(e) => setStatut(e.target.value as "non-cadre" | "cadre")} className="input mt-1">
               <option value="non-cadre">Non-cadre</option>
               <option value="cadre">Cadre</option>
             </select>
           </label>
-          <label className="text-xs font-medium text-slate-500">
+          <label className="text-xs font-medium text-stone-500">
             Parts fiscales du foyer
             <input type="number" min={1} step={0.5} value={parts} onChange={(e) => setParts(Math.max(1, Number(e.target.value) || 1))} className="input mt-1" />
           </label>
         </div>
-        <p className="text-[11px] text-slate-400">
+        <p className="text-[11px] text-stone-400">
           Estimation indicative à partir de ratios publics (charges salariales, barème {new Date().getFullYear()}). Ne remplace pas ta fiche de paie ni un simulateur officiel.
         </p>
       </div>
 
       <div className="space-y-3">
-        <div className="rounded-2xl bg-slate-50 p-4">
-          <p className="text-xs font-medium text-slate-500">Net mensuel estimé (avant impôt)</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">{formatEUR(net.netMensuel)}</p>
-          <p className="text-[11px] text-slate-400">Fourchette : {formatEUR(net.low)} – {formatEUR(net.high)}</p>
+        <div className="rounded-2xl bg-stone-50 p-4">
+          <p className="text-xs font-medium text-stone-500">Net mensuel estimé (avant impôt)</p>
+          <p className="mt-1 text-2xl font-bold text-stone-900">{formatEUR(net.netMensuel)}</p>
+          <p className="text-[11px] text-stone-400">Fourchette : {formatEUR(net.low)} – {formatEUR(net.high)}</p>
         </div>
         <div className="rounded-2xl bg-brand-50 p-4">
           <p className="text-xs font-medium text-brand-800">Impôt sur le revenu — à provisionner chaque mois</p>
@@ -69,14 +69,14 @@ export function TaxCalculator() {
           <p className="text-[11px] text-emerald-700/70">par mois, si l'impôt n'est pas déjà prélevé à la source</p>
         </div>
 
-        <button type="button" onClick={() => setShowBrackets((v) => !v)} className="text-xs font-medium text-slate-500 hover:text-slate-800">
+        <button type="button" onClick={() => setShowBrackets((v) => !v)} className="text-xs font-medium text-stone-500 hover:text-stone-800">
           {showBrackets ? "Masquer" : "Voir"} le détail par tranche du barème →
         </button>
         {showBrackets && (
-          <div className="rounded-2xl border border-slate-100 p-3">
+          <div className="rounded-2xl border border-stone-100 p-3">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-left text-slate-400">
+                <tr className="text-left text-stone-400">
                   <th className="pb-1.5 font-medium">Tranche (par part)</th>
                   <th className="pb-1.5 text-right font-medium">Taux</th>
                   <th className="pb-1.5 text-right font-medium">Impôt (× {parts} part{parts > 1 ? "s" : ""})</th>
@@ -84,15 +84,15 @@ export function TaxCalculator() {
               </thead>
               <tbody>
                 {brackets.map((b) => (
-                  <tr key={b.label} className="border-t border-slate-50">
-                    <td className="py-1.5 text-slate-600">{b.label}</td>
-                    <td className="py-1.5 text-right text-slate-600">{(b.rate * 100).toFixed(0)}%</td>
-                    <td className="py-1.5 text-right font-medium text-slate-800">{formatEUR(b.taxInBracket * parts)}</td>
+                  <tr key={b.label} className="border-t border-stone-50">
+                    <td className="py-1.5 text-stone-600">{b.label}</td>
+                    <td className="py-1.5 text-right text-stone-600">{(b.rate * 100).toFixed(0)}%</td>
+                    <td className="py-1.5 text-right font-medium text-stone-800">{formatEUR(b.taxInBracket * parts)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p className="mt-2 text-[10px] text-slate-400">Quotient familial : {formatEUR(quotient)} par part, après abattement forfaitaire de 10%.</p>
+            <p className="mt-2 text-[10px] text-stone-400">Quotient familial : {formatEUR(quotient)} par part, après abattement forfaitaire de 10%.</p>
           </div>
         )}
       </div>

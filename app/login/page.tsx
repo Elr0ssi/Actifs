@@ -14,14 +14,14 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
       title="Content de te revoir"
       subtitle="Connecte-toi à ton espace All In."
       footer={
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-stone-500">
           Pas encore de compte ? <Link href="/signup" className="font-semibold text-brand-600">Créer un espace</Link>
         </p>
       }
     >
       <div className="mb-4 space-y-4">
         <GoogleButton label="Continuer avec Google" />
-        <div className="flex items-center gap-3 text-xs text-slate-400"><span className="h-px flex-1 bg-slate-200" />ou avec ton email<span className="h-px flex-1 bg-slate-200" /></div>
+        <div className="flex items-center gap-3 text-xs text-stone-400"><span className="h-px flex-1 bg-stone-200" />ou avec ton email<span className="h-px flex-1 bg-stone-200" /></div>
       </div>
       <CredentialForm action={login} className="space-y-4">
         {searchParams?.error && (

@@ -15,11 +15,11 @@ export default async function TaxesPage({ searchParams }: { searchParams: { year
     <div className="space-y-5">
       <div className="flex items-center gap-2">
         <Link href={`/app/finance/taxes?year=${year - 1}`} className="btn-secondary px-2.5 py-1.5 text-sm">‹</Link>
-        <p className="text-lg font-bold text-slate-900">Revenus {year}</p>
+        <p className="text-lg font-bold text-stone-900">Revenus {year}</p>
         <Link href={`/app/finance/taxes?year=${year + 1}`} className="btn-secondary px-2.5 py-1.5 text-sm">›</Link>
         <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">Estimation</span>
       </div>
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-stone-400">
         Estimation indicative, à partir d'un barème public — ne remplace pas ta déclaration ni un simulateur officiel.
       </p>
       <TaxPeriods key={year} year={year} profile={profile} />

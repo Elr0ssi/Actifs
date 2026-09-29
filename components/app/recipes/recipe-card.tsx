@@ -21,7 +21,7 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
 
   return (
     <div className={cx("card flex flex-col overflow-hidden", pending && "opacity-60")}>
-      <div className="relative aspect-[16/10] bg-slate-100">
+      <div className="relative aspect-[16/10] bg-stone-100">
         {recipe.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={recipe.image_url} alt={recipe.name} loading="lazy" className="h-full w-full object-cover" />
@@ -36,20 +36,20 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
           {recipe.is_favorite ? "★" : "☆"}
         </button>
         {recipe.category && (
-          <span className="absolute bottom-2 left-2 rounded-full bg-white/90 px-2.5 py-0.5 text-xs font-medium text-slate-700 shadow">{recipe.category}</span>
+          <span className="absolute bottom-2 left-2 rounded-full bg-white/90 px-2.5 py-0.5 text-xs font-medium text-stone-700 shadow">{recipe.category}</span>
         )}
       </div>
       <div className="flex flex-1 flex-col p-5">
-        <h3 className="text-lg font-bold leading-tight text-slate-900">{recipe.name}</h3>
-        <ul className="mt-2 flex-1 space-y-0.5 text-sm text-slate-600">
-          {recipe.recipe_items.slice(0, 5).map((it) => <li key={it.id}>• {it.label}{it.quantity && <span className="text-slate-400"> — {it.quantity}</span>}</li>)}
-          {recipe.recipe_items.length > 5 && <li className="text-slate-400">+ {recipe.recipe_items.length - 5} autres</li>}
+        <h3 className="text-lg font-bold leading-tight text-stone-900">{recipe.name}</h3>
+        <ul className="mt-2 flex-1 space-y-0.5 text-sm text-stone-600">
+          {recipe.recipe_items.slice(0, 5).map((it) => <li key={it.id}>• {it.label}{it.quantity && <span className="text-stone-400"> — {it.quantity}</span>}</li>)}
+          {recipe.recipe_items.length > 5 && <li className="text-stone-400">+ {recipe.recipe_items.length - 5} autres</li>}
         </ul>
         <div className="mt-4 flex items-center gap-2">
           <button onClick={() => setEditing(true)} className="btn-secondary py-2 text-xs">Modifier</button>
           <button
             onClick={() => confirm(`Supprimer "${recipe.name}" ?`) && start(() => deleteRecipe(recipe.id))}
-            className="ml-auto text-xs text-slate-300 hover:text-rose-600"
+            className="ml-auto text-xs text-stone-300 hover:text-rose-600"
           >
             Supprimer
           </button>

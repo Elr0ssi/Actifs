@@ -119,25 +119,25 @@ export function CalendarClient({
           {view === "month" ? (
             <>
               <Link href={`/app/calendar?month=${shiftMonth(monthIso, -1)}`} className="btn-secondary px-3 py-1.5 text-sm">←</Link>
-              <p className="font-semibold text-slate-900">{MONTHS_FR[month]} {year}</p>
+              <p className="font-semibold text-stone-900">{MONTHS_FR[month]} {year}</p>
               <Link href={`/app/calendar?month=${shiftMonth(monthIso, 1)}`} className="btn-secondary px-3 py-1.5 text-sm">→</Link>
             </>
           ) : (
             <>
               <button onClick={() => setSelected(shiftDate(selected, -7))} className="btn-secondary px-3 py-1.5 text-sm">←</button>
-              <p className="font-semibold text-slate-900">Semaine du {Number(weekStart.slice(-2))} {MONTHS_FR[new Date(`${weekStart}T00:00:00`).getMonth()]}</p>
+              <p className="font-semibold text-stone-900">Semaine du {Number(weekStart.slice(-2))} {MONTHS_FR[new Date(`${weekStart}T00:00:00`).getMonth()]}</p>
               <button onClick={() => setSelected(shiftDate(selected, 7))} className="btn-secondary px-3 py-1.5 text-sm">→</button>
             </>
           )}
-          <div className="ml-auto flex gap-1 rounded-lg bg-slate-100 p-1 text-xs font-medium">
-            <button onClick={() => setView("month")} className={cx("rounded-md px-2.5 py-1", view === "month" ? "bg-white shadow-sm text-slate-900" : "text-slate-500")}>Mois</button>
-            <button onClick={() => setView("week")} className={cx("rounded-md px-2.5 py-1", view === "week" ? "bg-white shadow-sm text-slate-900" : "text-slate-500")}>Semaine</button>
+          <div className="ml-auto flex gap-1 rounded-lg bg-stone-100 p-1 text-xs font-medium">
+            <button onClick={() => setView("month")} className={cx("rounded-md px-2.5 py-1", view === "month" ? "bg-white shadow-sm text-stone-900" : "text-stone-500")}>Mois</button>
+            <button onClick={() => setView("week")} className={cx("rounded-md px-2.5 py-1", view === "week" ? "bg-white shadow-sm text-stone-900" : "text-stone-500")}>Semaine</button>
           </div>
         </div>
 
         {view === "month" ? (
           <>
-            <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-slate-400">
+            <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-stone-400">
               {WEEKDAYS_FR.map((d) => (
                 <div key={d} className="py-1">{d}</div>
               ))}
@@ -161,10 +161,10 @@ export function CalendarClient({
                     onClick={() => onDaySelect(dateISO)}
                     className={cx(
                       "flex h-20 flex-col items-start gap-1 rounded-xl border p-1.5 text-left text-xs transition",
-                      isSelected ? "border-brand-400 bg-brand-50 ring-2 ring-brand-200" : "border-transparent hover:bg-slate-50",
+                      isSelected ? "border-brand-400 bg-brand-50 ring-2 ring-brand-200" : "border-transparent hover:bg-stone-50",
                     )}
                   >
-                    <span className={cx("flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold", isToday ? "bg-brand-600 text-white" : "text-slate-600")}>
+                    <span className={cx("flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold", isToday ? "bg-brand-600 text-white" : "text-stone-600")}>
                       {Number(dateISO.slice(-2))}
                     </span>
                     <div className="flex flex-wrap gap-1">
@@ -191,11 +191,11 @@ export function CalendarClient({
                   onClick={() => onDaySelect(dateISO)}
                   className={cx(
                     "flex h-56 flex-col items-start gap-1.5 overflow-hidden rounded-xl border p-2 text-left text-xs transition",
-                    isSelected ? "border-brand-400 bg-brand-50 ring-2 ring-brand-200" : "border-slate-100 hover:bg-slate-50",
+                    isSelected ? "border-brand-400 bg-brand-50 ring-2 ring-brand-200" : "border-stone-100 hover:bg-stone-50",
                   )}
                 >
-                  <span className="text-[10px] font-medium uppercase text-slate-400">{WEEKDAYS_FR[new Date(`${dateISO}T00:00:00`).getDay()]}</span>
-                  <span className={cx("flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold", isToday ? "bg-brand-600 text-white" : "text-slate-700")}>
+                  <span className="text-[10px] font-medium uppercase text-stone-400">{WEEKDAYS_FR[new Date(`${dateISO}T00:00:00`).getDay()]}</span>
+                  <span className={cx("flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold", isToday ? "bg-brand-600 text-white" : "text-stone-700")}>
                     {Number(dateISO.slice(-2))}
                   </span>
                   <div className="mt-1 flex w-full flex-col gap-1 overflow-hidden">
@@ -217,11 +217,11 @@ export function CalendarClient({
 
       <div className="card p-5">
         <p className="label">Jour sélectionné</p>
-        <p className="mt-1 text-lg font-semibold text-slate-900">{selected}</p>
+        <p className="mt-1 text-lg font-semibold text-stone-900">{selected}</p>
 
         {selectedRoutines.length > 0 && (
           <div className="mt-4">
-            <p className="mb-1 text-xs font-semibold uppercase text-slate-400">Routines</p>
+            <p className="mb-1 text-xs font-semibold uppercase text-stone-400">Routines</p>
             {selectedRoutines.map((r) => (
               <ToggleCheckbox
                 key={r.id}
@@ -236,15 +236,15 @@ export function CalendarClient({
 
         {selectedTasks.length > 0 && (
           <div className="mt-4">
-            <p className="mb-1 text-xs font-semibold uppercase text-slate-400">Tâches</p>
-            <ul className="space-y-1 text-sm text-slate-700">
+            <p className="mb-1 text-xs font-semibold uppercase text-stone-400">Tâches</p>
+            <ul className="space-y-1 text-sm text-stone-700">
               {selectedTasks.map((t) => <li key={t.id}>• {t.title}</li>)}
             </ul>
           </div>
         )}
 
         {selectedRoutines.length === 0 && selectedTasks.length === 0 && (
-          <p className="mt-3 text-sm text-slate-400">Rien de programmé ce jour-là.</p>
+          <p className="mt-3 text-sm text-stone-400">Rien de programmé ce jour-là.</p>
         )}
       </div>
     </div>

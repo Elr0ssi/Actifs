@@ -41,8 +41,8 @@ export default async function CalendarPage({ searchParams }: { searchParams: { m
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Calendrier</h1>
-          <p className="mt-1 text-sm text-slate-500">Routines et tâches, tout au même endroit — les finances vivent dans Finance.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-stone-900">Calendrier</h1>
+          <p className="mt-1 text-sm text-stone-500">Routines et tâches, tout au même endroit — les finances vivent dans Finance.</p>
         </div>
         <div className="flex gap-2">
           <Link href="/app/routines" className="btn-secondary">🔁 Gérer mes routines</Link>

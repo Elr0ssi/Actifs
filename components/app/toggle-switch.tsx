@@ -28,7 +28,7 @@ export function ToggleSwitch({
       }}
       className={cx(
         "relative h-5 w-9 shrink-0 rounded-full transition",
-        checked ? "bg-emerald-500" : "bg-slate-200",
+        checked ? "bg-emerald-500" : "bg-stone-200",
         isPending && "opacity-60"
       )}
     >

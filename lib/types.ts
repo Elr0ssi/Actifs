@@ -202,14 +202,12 @@ export interface VariableBudget {
 
 export type SavingsMode = "fixed" | "percent";
 
-export type DashboardWidget = "tasks" | "routines" | "budget" | "calendar" | "breakdown";
-
 export interface Profile {
   id: string;
   household_id: string | null;
   display_name: string | null;
   avatar_url: string | null;
-  dashboard_widgets: DashboardWidget[];
+  widget_layouts: Record<string, unknown>;
 }
 
 export interface Household {

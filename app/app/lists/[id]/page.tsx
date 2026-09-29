@@ -85,14 +85,14 @@ export default async function ListDetailPage({ params, searchParams }: { params:
 
   return (
     <div className="space-y-6">
-      <Link href="/app/lists" className="text-sm font-medium text-slate-500 hover:text-slate-800">← Listes</Link>
+      <Link href="/app/lists" className="text-sm font-medium text-stone-500 hover:text-stone-800">← Listes</Link>
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">{list.name}</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold tracking-tight text-stone-900">{list.name}</h1>
+          <p className="mt-1 text-sm text-stone-500">
             {[list.category, weekLabel(list.week_start), `${checkedCount}/${all.length} cochés`].filter(Boolean).join(" · ")}
-            {list.archived && <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs">Archivée</span>}
+            {list.archived && <span className="ml-2 rounded-full bg-stone-100 px-2 py-0.5 text-xs">Archivée</span>}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -117,8 +117,8 @@ export default async function ListDetailPage({ params, searchParams }: { params:
         <section id="comparatif" className="card p-6">
           <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
             <div>
-              <h2 className="font-semibold text-slate-900">🧾 Comparatif des enseignes</h2>
-              <p className="text-xs text-slate-500">
+              <h2 className="font-semibold text-stone-900">🧾 Comparatif des enseignes</h2>
+              <p className="text-xs text-stone-500">
                 Tes {comparable} article(s) {all.some((i) => i.checked) ? "achetés" : "de la liste"} au prix de référence de chaque enseigne
                 {outsideBase > 0 && ` · ${outsideBase} hors base non comparé(s)`}
               </p>
@@ -139,22 +139,22 @@ export default async function ListDetailPage({ params, searchParams }: { params:
               const diff = current ? c.total - current.total : 0;
               return (
                 <div key={c.store} className="flex items-center gap-3">
-                  <span className={`w-28 shrink-0 text-sm ${isCurrent ? "font-semibold text-slate-900" : "text-slate-600"}`}>
+                  <span className={`w-28 shrink-0 text-sm ${isCurrent ? "font-semibold text-stone-900" : "text-stone-600"}`}>
                     {c.store}
-                    {isCurrent && <span className="ml-1 text-[10px] text-slate-400">(ta liste)</span>}
+                    {isCurrent && <span className="ml-1 text-[10px] text-stone-400">(ta liste)</span>}
                   </span>
-                  <div className="h-7 flex-1 overflow-hidden rounded-lg bg-slate-100">
+                  <div className="h-7 flex-1 overflow-hidden rounded-lg bg-stone-100">
                     <div
-                      className={`flex h-full items-center rounded-lg px-2 text-xs font-semibold text-white ${isBest ? "bg-emerald-500" : isCurrent ? "bg-brand-500" : "bg-slate-400"}`}
+                      className={`flex h-full items-center rounded-lg px-2 text-xs font-semibold text-white ${isBest ? "bg-emerald-500" : isCurrent ? "bg-brand-500" : "bg-stone-400"}`}
                       style={{ width: `${Math.max(12, (c.total / maxTotal) * 100)}%` }}
                     >
                       {formatEUR(c.total)}
                     </div>
                   </div>
-                  <span className={`w-20 shrink-0 text-right text-xs ${diff > 0.01 ? "text-rose-600" : diff < -0.01 ? "text-emerald-600" : "text-slate-400"}`}>
+                  <span className={`w-20 shrink-0 text-right text-xs ${diff > 0.01 ? "text-rose-600" : diff < -0.01 ? "text-emerald-600" : "text-stone-400"}`}>
                     {current && !isCurrent ? `${diff > 0 ? "+" : ""}${formatEUR(diff)}` : isBest ? "🏆" : ""}
                   </span>
-                  {c.missing > 0 && <span className="w-16 shrink-0 text-[11px] text-slate-400">{c.missing} sans prix</span>}
+                  {c.missing > 0 && <span className="w-16 shrink-0 text-[11px] text-stone-400">{c.missing} sans prix</span>}
                 </div>
               );
             })}
@@ -165,7 +165,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
       {isShopping && (
         <div className="grid gap-4 sm:grid-cols-2">
           <form action={setListStore.bind(null, list.id)} className="card flex items-end gap-2 p-4">
-            <label className="flex-1 text-xs text-slate-500">
+            <label className="flex-1 text-xs text-stone-500">
               Enseigne
               <select name="store" defaultValue={list.store ?? ""} className="input mt-1" required>
                 <option value="" disabled>Choisir…</option>
@@ -176,12 +176,12 @@ export default async function ListDetailPage({ params, searchParams }: { params:
           </form>
           <div className="card flex items-center justify-between p-4">
             <div>
-              <p className="text-xs text-slate-500">Total estimé{list.store ? ` chez ${list.store}` : ""}</p>
-              <p className="text-2xl font-bold text-slate-900">{formatEUR(total)}</p>
-              {unpriced > 0 && <p className="text-[11px] text-slate-400">{unpriced} article(s) sans prix</p>}
+              <p className="text-xs text-stone-500">Total estimé{list.store ? ` chez ${list.store}` : ""}</p>
+              <p className="text-2xl font-bold text-stone-900">{formatEUR(total)}</p>
+              {unpriced > 0 && <p className="text-[11px] text-stone-400">{unpriced} article(s) sans prix</p>}
             </div>
             <div className="text-right">
-              <p className="text-xs text-slate-500">Reste à acheter</p>
+              <p className="text-xs text-stone-500">Reste à acheter</p>
               <p className="text-lg font-semibold text-brand-700">{formatEUR(remaining)}</p>
             </div>
           </div>
@@ -190,7 +190,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
 
       {isShopping && (
         <details open={composeOpen} className="card group p-6">
-          <summary className="cursor-pointer list-none font-semibold text-slate-900">
+          <summary className="cursor-pointer list-none font-semibold text-stone-900">
             <span className="mr-2 inline-block transition group-open:rotate-90">›</span>Ajouter des recettes et des produits
           </summary>
           <div className="mt-5">
@@ -215,7 +215,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
 
       <div className="grid gap-6 sm:grid-cols-2">
         <div className="card p-5">
-          <h2 className="mb-3 text-sm font-semibold text-slate-700">Ajouter un article</h2>
+          <h2 className="mb-3 text-sm font-semibold text-stone-700">Ajouter un article</h2>
           <form action={addListItem.bind(null, list.id)} className="space-y-2">
             <input name="label" placeholder="Article" className="input" required />
             <div className="flex gap-2">
@@ -227,8 +227,8 @@ export default async function ListDetailPage({ params, searchParams }: { params:
         </div>
 
         <div className="card p-5">
-          <h2 className="mb-1 text-sm font-semibold text-slate-700">Import rapide</h2>
-          <p className="mb-3 text-xs text-slate-400">Colle une liste (ChatGPT, notes…), une ligne = un article.</p>
+          <h2 className="mb-1 text-sm font-semibold text-stone-700">Import rapide</h2>
+          <p className="mb-3 text-xs text-stone-400">Colle une liste (ChatGPT, notes…), une ligne = un article.</p>
           <form action={bulkImportItems.bind(null, list.id)} className="space-y-2">
             <textarea name="bulk" rows={4} className="input" placeholder={"- Lait\n- Oeufs\n- Farine"} />
             <button className="btn-primary w-full">Importer en checklist</button>

@@ -15,10 +15,10 @@ export default async function IngredientsPage() {
 
   return (
     <div className="space-y-6">
-      <Link href="/app/lists" className="text-sm font-medium text-slate-500 hover:text-slate-800">← Listes</Link>
+      <Link href="/app/lists" className="text-sm font-medium text-stone-500 hover:text-stone-800">← Listes</Link>
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Ingrédients & prix</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold tracking-tight text-stone-900">Ingrédients & prix</h1>
+        <p className="mt-1 text-sm text-stone-500">
           Base de référence pré-remplie (prix indicatifs par enseigne). Tes ajouts et tes prix restent personnels à ton foyer.
         </p>
       </div>

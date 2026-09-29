@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -25,11 +25,17 @@ export const metadata: Metadata = {
     type: "website",
     locale: "fr_FR",
   },
+  appleWebApp: { capable: true, title: "All In", statusBarStyle: "default" },
   twitter: {
     card: "summary_large_image",
     title: "All In — Le hub qui organise ta vie",
     description: "Tâches, routines, listes partagées et finances dans un seul espace, gratuit.",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f7f3ee",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

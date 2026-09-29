@@ -23,8 +23,8 @@ export default function CalculateursPage() {
       <main>
         <section className="mx-auto max-w-4xl px-6 py-16 text-center">
           <FadeIn>
-            <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">Ton salaire net et ton impôt, calculés</h1>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
+            <h1 className="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">Ton salaire net et ton impôt, calculés</h1>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-stone-600">
               Un aperçu gratuit de l'outil Finance d'All In : passe du brut annuel au net mensuel, et connais ta
               provision d'impôt indicative. Aucun compte requis pour essayer.
             </p>
@@ -48,14 +48,14 @@ export default function CalculateursPage() {
               <FadeIn key={p.title} delay={i * 70}>
                 <div className="card h-full p-6">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-2xl">{p.icon}</div>
-                  <h3 className="mt-4 font-semibold text-slate-900">{p.title}</h3>
-                  <p className="mt-2 text-sm text-slate-600">{p.desc}</p>
+                  <h3 className="mt-4 font-semibold text-stone-900">{p.title}</h3>
+                  <p className="mt-2 text-sm text-stone-600">{p.desc}</p>
                 </div>
               </FadeIn>
             ))}
           </div>
           <FadeIn delay={280}>
-            <p className="mx-auto mt-10 max-w-2xl text-center text-xs text-slate-400">
+            <p className="mx-auto mt-10 max-w-2xl text-center text-xs text-stone-400">
               Estimation indicative à partir de ratios et d'un barème publics. Ne remplace pas ta fiche de paie ni un
               simulateur officiel — utile pour anticiper, pas pour déclarer.
             </p>

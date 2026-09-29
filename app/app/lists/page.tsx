@@ -39,18 +39,18 @@ export default async function ListsPage() {
     return (
       <Link key={l.id} href={`/app/lists/${l.id}`} className="card block p-5 transition hover:-translate-y-0.5 hover:shadow-md">
         <div className="flex items-start justify-between gap-2">
-          <p className="font-semibold text-slate-900">{l.name}</p>
-          <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">{TYPE_LABEL[l.type]}</span>
+          <p className="font-semibold text-stone-900">{l.name}</p>
+          <span className="shrink-0 rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-stone-500">{TYPE_LABEL[l.type]}</span>
         </div>
-        <p className="mt-0.5 text-xs text-slate-400">
+        <p className="mt-0.5 text-xs text-stone-400">
           {[l.week_start && `Sem. du ${new Date(`${l.week_start}T00:00:00Z`).toLocaleDateString("fr-FR", { day: "numeric", month: "short", timeZone: "UTC" })}`, l.store].filter(Boolean).join(" · ")}
         </p>
-        <div className="mt-3 h-1.5 w-full rounded-full bg-slate-100">
+        <div className="mt-3 h-1.5 w-full rounded-full bg-stone-100">
           <div className="h-1.5 rounded-full bg-brand-500" style={{ width: total ? `${(done / total) * 100}%` : "0%" }} />
         </div>
-        <div className="mt-2 flex justify-between text-xs text-slate-400">
+        <div className="mt-2 flex justify-between text-xs text-stone-400">
           <span>{done}/{total} cochés</span>
-          {amount > 0 && <span className="font-medium text-slate-600">{formatEUR(amount)}</span>}
+          {amount > 0 && <span className="font-medium text-stone-600">{formatEUR(amount)}</span>}
         </div>
       </Link>
     );
@@ -60,8 +60,8 @@ export default async function ListsPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Courses</h1>
-          <p className="mt-1 text-sm text-slate-500">Listes de courses composées depuis tes recettes, et checklists partagées.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-stone-900">Courses</h1>
+          <p className="mt-1 text-sm text-stone-500">Listes de courses composées depuis tes recettes, et checklists partagées.</p>
         </div>
         <div className="flex gap-2">
           <Link href="/app/lists/recipes" className="btn-secondary">🍽️ Recettes</Link>
@@ -70,7 +70,7 @@ export default async function ListsPage() {
       </div>
 
       <div className="card p-5">
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">Nouvelle liste de courses</h2>
+        <h2 className="mb-3 text-sm font-semibold text-stone-700">Nouvelle liste de courses</h2>
         <form action={createList} className="grid gap-2 sm:grid-cols-[1fr_170px_200px_auto]">
           <input type="hidden" name="type" value="shopping" />
           <input name="name" placeholder="Nom (ex. Courses semaine 42)" className="input" required />
@@ -85,14 +85,14 @@ export default async function ListsPage() {
       </div>
 
       <section>
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">En cours</h3>
-        {active.length === 0 && <p className="text-sm text-slate-400">Aucune liste en cours.</p>}
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">En cours</h3>
+        {active.length === 0 && <p className="text-sm text-stone-400">Aucune liste en cours.</p>}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{active.map(card)}</div>
       </section>
 
       {archived.length > 0 && (
         <details className="group">
-          <summary className="mb-3 cursor-pointer list-none text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <summary className="mb-3 cursor-pointer list-none text-sm font-semibold uppercase tracking-wide text-stone-500">
             <span className="mr-1 inline-block transition group-open:rotate-90">›</span> Archives ({archived.length})
           </summary>
           <div className="grid gap-4 opacity-80 sm:grid-cols-2 lg:grid-cols-3">{archived.map(card)}</div>

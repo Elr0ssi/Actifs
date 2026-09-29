@@ -20,13 +20,13 @@ export default async function SettingsPage() {
   return (
     <div className="max-w-2xl space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Paramètres</h1>
-        <p className="mt-1 text-sm text-slate-500">Ton profil et ton foyer partagé.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-stone-900">Paramètres</h1>
+        <p className="mt-1 text-sm text-stone-500">Ton profil et ton foyer partagé.</p>
       </div>
 
       <section className="card p-6">
-        <h2 className="mb-4 font-semibold text-slate-900">Mon profil</h2>
-        <p className="mb-4 text-sm text-slate-500">{user.email}</p>
+        <h2 className="mb-4 font-semibold text-stone-900">Mon profil</h2>
+        <p className="mb-4 text-sm text-stone-500">{user.email}</p>
         <form action={updateProfile} className="flex gap-2">
           <input name="display_name" defaultValue={profile?.display_name ?? ""} className="input flex-1" />
           <SubmitButton className="btn-primary">Enregistrer</SubmitButton>
@@ -34,8 +34,8 @@ export default async function SettingsPage() {
       </section>
 
       <section className="card p-6">
-        <h2 className="mb-1 font-semibold text-slate-900">Mot de passe</h2>
-        <p className="mb-4 text-xs text-slate-500">Si ton navigateur signale ton mot de passe comme compromis, choisis-en un nouveau, unique (8 caractères min.).</p>
+        <h2 className="mb-1 font-semibold text-stone-900">Mot de passe</h2>
+        <p className="mb-4 text-xs text-stone-500">Si ton navigateur signale ton mot de passe comme compromis, choisis-en un nouveau, unique (8 caractères min.).</p>
         <form action={changePassword} className="flex gap-2">
           <input name="password" type="password" autoComplete="new-password" minLength={8} placeholder="Nouveau mot de passe" className="input flex-1" required />
           <SubmitButton className="btn-primary">Changer</SubmitButton>
@@ -43,23 +43,23 @@ export default async function SettingsPage() {
       </section>
 
       <section className="card p-6">
-        <h2 className="mb-4 font-semibold text-slate-900">Mon foyer</h2>
+        <h2 className="mb-4 font-semibold text-stone-900">Mon foyer</h2>
         <form action={updateHouseholdName} className="mb-5 flex gap-2">
           <input name="household_name" defaultValue={household?.name ?? ""} className="input flex-1" />
           <SubmitButton className="btn-primary">Renommer</SubmitButton>
         </form>
 
-        <p className="mb-2 text-sm font-medium text-slate-700">Membres</p>
+        <p className="mb-2 text-sm font-medium text-stone-700">Membres</p>
         <ul className="mb-5 space-y-1">
           {(members ?? []).map((m) => (
-            <li key={m.id} className="text-sm text-slate-600">• {m.display_name || m.id}</li>
+            <li key={m.id} className="text-sm text-stone-600">• {m.display_name || m.id}</li>
           ))}
         </ul>
 
-        <div className="rounded-xl border border-dashed border-slate-200 p-4">
-          <p className="text-sm font-medium text-slate-700">Inviter ton/ta partenaire</p>
-          <p className="mt-1 text-xs text-slate-500">Partage-lui ce code pour qu'il/elle rejoigne ton espace :</p>
-          <p className="mt-2 inline-block rounded-lg bg-slate-100 px-3 py-1.5 font-mono text-sm font-semibold tracking-wider text-slate-800">
+        <div className="rounded-xl border border-dashed border-stone-200 p-4">
+          <p className="text-sm font-medium text-stone-700">Inviter ton/ta partenaire</p>
+          <p className="mt-1 text-xs text-stone-500">Partage-lui ce code pour qu'il/elle rejoigne ton espace :</p>
+          <p className="mt-2 inline-block rounded-lg bg-stone-100 px-3 py-1.5 font-mono text-sm font-semibold tracking-wider text-stone-800">
             {household?.invite_code}
           </p>
         </div>

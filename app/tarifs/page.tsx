@@ -31,8 +31,8 @@ export default function TarifsPage() {
       <main>
         <section className="mx-auto max-w-4xl px-6 py-16 text-center">
           <FadeIn>
-            <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">Complètement gratuit</h1>
-            <p className="mx-auto mt-4 max-w-xl text-lg text-slate-600">
+            <h1 className="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">Complètement gratuit</h1>
+            <p className="mx-auto mt-4 max-w-xl text-lg text-stone-600">
               All In est un outil gratuit pour organiser ta vie, ton temps et tes finances. Aucune carte bancaire,
               aucune limite artificielle.
             </p>
@@ -44,7 +44,7 @@ export default function TarifsPage() {
             <div className="rounded-3xl border border-brand-200 bg-brand-50 p-8 text-center">
               <p className="text-6xl font-bold text-brand-700">0€</p>
               <p className="mt-1 text-sm text-brand-700/80">pour toujours</p>
-              <ul className="mt-6 space-y-2 text-left text-sm text-slate-700">
+              <ul className="mt-6 space-y-2 text-left text-sm text-stone-700">
                 {INCLUDED.map((item) => (
                   <li key={item} className="flex items-start gap-2">
                     <span className="mt-0.5 text-emerald-600">✓</span>
@@ -59,16 +59,16 @@ export default function TarifsPage() {
 
         <section className="mx-auto max-w-2xl px-6 py-24">
           <FadeIn>
-            <h2 className="text-center text-2xl font-bold tracking-tight text-slate-900">Questions fréquentes</h2>
+            <h2 className="text-center text-2xl font-bold tracking-tight text-stone-900">Questions fréquentes</h2>
           </FadeIn>
           <div className="mt-8 space-y-3">
             {FAQ.map((f, i) => (
               <FadeIn key={f.q} delay={i * 60}>
                 <details className="card group p-5">
-                  <summary className="cursor-pointer list-none font-medium text-slate-900">
+                  <summary className="cursor-pointer list-none font-medium text-stone-900">
                     <span className="mr-2 inline-block transition group-open:rotate-90">›</span>{f.q}
                   </summary>
-                  <p className="mt-2 pl-4 text-sm text-slate-600">{f.a}</p>
+                  <p className="mt-2 pl-4 text-sm text-stone-600">{f.a}</p>
                 </details>
               </FadeIn>
             ))}

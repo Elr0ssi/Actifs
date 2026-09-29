@@ -24,18 +24,18 @@ export function IngredientsTable({ catalog, prices }: { catalog: CatalogIngredie
 
   return (
     <div className={cx("card overflow-hidden p-0", pending && "opacity-70")}>
-      <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 p-4">
+      <div className="flex flex-wrap items-center gap-3 border-b border-stone-100 p-4">
         <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Rechercher un ingrédient…" className="input max-w-xs" />
-        <label className="flex items-center gap-2 text-sm text-slate-600">
-          <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} className="h-4 w-4 rounded border-slate-300" />
+        <label className="flex items-center gap-2 text-sm text-stone-600">
+          <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} className="h-4 w-4 rounded border-stone-300" />
           Seulement mes ajouts
         </label>
-        <p className="ml-auto text-xs text-slate-400">Gris = prix de référence · saisis ton prix pour le remplacer (vide = revenir à la référence)</p>
+        <p className="ml-auto text-xs text-stone-400">Gris = prix de référence · saisis ton prix pour le remplacer (vide = revenir à la référence)</p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-100 text-left text-xs text-slate-500">
+            <tr className="border-b border-stone-100 text-left text-xs text-stone-500">
               <th className="px-4 py-2.5 font-medium">Ingrédient ({rows.length})</th>
               {STORES.map((s) => <th key={s} className="px-2 py-2.5 text-right font-medium">{s}</th>)}
               <th className="w-8" />
@@ -43,10 +43,10 @@ export function IngredientsTable({ catalog, prices }: { catalog: CatalogIngredie
           </thead>
           <tbody>
             {rows.map((ing) => (
-              <tr key={ing.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50">
+              <tr key={ing.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50/50">
                 <td className="px-4 py-1.5">
-                  <span className="font-medium text-slate-800">{ing.name}</span>
-                  <span className="ml-1.5 text-[11px] text-slate-400">{priceSuffix(ing.unit)}</span>
+                  <span className="font-medium text-stone-800">{ing.name}</span>
+                  <span className="ml-1.5 text-[11px] text-stone-400">{priceSuffix(ing.unit)}</span>
                   {ing.personal && <span className="ml-1.5 rounded bg-brand-50 px-1 text-[10px] text-brand-700">perso</span>}
                 </td>
                 {STORES.map((s) => {
@@ -65,7 +65,7 @@ export function IngredientsTable({ catalog, prices }: { catalog: CatalogIngredie
                           if (v !== before) start(() => setIngredientPrice(ing.id, s, v));
                         }}
                         className={cx(
-                          "w-16 rounded-md border border-transparent px-1.5 py-1 text-right text-sm placeholder:text-slate-400 hover:border-slate-200 focus:border-brand-400 focus:outline-none",
+                          "w-16 rounded-md border border-transparent px-1.5 py-1 text-right text-sm placeholder:text-stone-400 hover:border-stone-200 focus:border-brand-400 focus:outline-none",
                           mine !== undefined && "font-semibold text-brand-700"
                         )}
                       />
@@ -74,7 +74,7 @@ export function IngredientsTable({ catalog, prices }: { catalog: CatalogIngredie
                 })}
                 <td className="px-2 text-right">
                   {ing.personal && (
-                    <button onClick={() => confirm(`Supprimer "${ing.name}" ?`) && start(() => deleteIngredient(ing.id))} className="text-xs text-slate-300 hover:text-rose-600">✕</button>
+                    <button onClick={() => confirm(`Supprimer "${ing.name}" ?`) && start(() => deleteIngredient(ing.id))} className="text-xs text-stone-300 hover:text-rose-600">✕</button>
                   )}
                 </td>
               </tr>

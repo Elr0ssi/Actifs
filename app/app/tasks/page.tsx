@@ -9,7 +9,7 @@ import { todayISO, cx } from "@/lib/utils";
 export const metadata: Metadata = { title: "Tâches & projets" };
 
 const PRIORITY_LABEL: Record<string, string> = { high: "Haute", medium: "Moyenne", low: "Basse" };
-const PRIORITY_DOT: Record<string, string> = { high: "bg-rose-500", medium: "bg-amber-500", low: "bg-slate-300" };
+const PRIORITY_DOT: Record<string, string> = { high: "bg-rose-500", medium: "bg-amber-500", low: "bg-stone-300" };
 
 export default async function TasksPage() {
   const ctx = await getAppContext();
@@ -48,16 +48,16 @@ export default async function TasksPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Tâches & projets</h1>
-        <p className="mt-1 text-sm text-slate-500">Priorise, regroupe par projet, avance.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-stone-900">Tâches & projets</h1>
+        <p className="mt-1 text-sm text-stone-500">Priorise, regroupe par projet, avance.</p>
       </div>
 
       <section className="card p-6">
-        <h2 className="mb-4 font-semibold text-slate-900">Aujourd'hui</h2>
+        <h2 className="mb-4 font-semibold text-stone-900">Aujourd'hui</h2>
         <div className="grid gap-6 sm:grid-cols-2">
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Tâches</p>
-            {dueToday.length === 0 && overdue.length === 0 && <p className="text-sm text-slate-400">Rien de prévu aujourd'hui.</p>}
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Tâches</p>
+            {dueToday.length === 0 && overdue.length === 0 && <p className="text-sm text-stone-400">Rien de prévu aujourd'hui.</p>}
             <div className="space-y-1.5">
               {overdue.map((t) => (
                 <div key={t.id} className="flex items-center gap-2">
@@ -79,8 +79,8 @@ export default async function TasksPage() {
             </div>
           </div>
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Routines</p>
-            {todayRoutines.length === 0 && <p className="text-sm text-slate-400">Aucune routine aujourd'hui.</p>}
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Routines</p>
+            {todayRoutines.length === 0 && <p className="text-sm text-stone-400">Aucune routine aujourd'hui.</p>}
             <div className="space-y-1.5">
               {todayRoutines.map((r) => (
                 <ToggleCheckbox
@@ -97,11 +97,11 @@ export default async function TasksPage() {
       </section>
 
       <div className="card p-5">
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">Nouveau projet</h2>
+        <h2 className="mb-3 text-sm font-semibold text-stone-700">Nouveau projet</h2>
         <form action={createProject} className="flex flex-wrap items-center gap-2">
           <input name="icon" defaultValue="📁" className="input w-16 text-center" maxLength={2} />
           <input name="name" placeholder="Ex. Création boîte" className="input flex-1 min-w-[180px]" required />
-          <input name="color" type="color" defaultValue="#4d5dfb" className="h-11 w-14 rounded-xl border border-slate-200" />
+          <input name="color" type="color" defaultValue="#4d5dfb" className="h-11 w-14 rounded-xl border border-stone-200" />
           <button className="btn-primary">Créer</button>
         </form>
       </div>
@@ -111,12 +111,12 @@ export default async function TasksPage() {
           <section key={g.project?.id ?? "none"} className="card p-6">
             <div className="mb-4 flex items-center gap-2">
               <span className="text-xl">{g.project?.icon ?? "📌"}</span>
-              <h2 className="font-semibold text-slate-900">{g.project?.name ?? "Sans projet"}</h2>
-              <span className="ml-auto text-xs text-slate-400">{g.tasks.filter((t) => t.status !== "done").length} en cours</span>
+              <h2 className="font-semibold text-stone-900">{g.project?.name ?? "Sans projet"}</h2>
+              <span className="ml-auto text-xs text-stone-400">{g.tasks.filter((t) => t.status !== "done").length} en cours</span>
             </div>
 
             <div className="space-y-1">
-              {g.tasks.length === 0 && <p className="text-sm text-slate-400">Aucune tâche.</p>}
+              {g.tasks.length === 0 && <p className="text-sm text-stone-400">Aucune tâche.</p>}
               {g.tasks.map((t) => {
                 const isOverdue = t.status !== "done" && t.due_date && t.due_date < today;
                 return (
@@ -132,14 +132,14 @@ export default async function TasksPage() {
                     {isOverdue && <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-600">reportée</span>}
                     <span className={`h-2 w-2 rounded-full ${PRIORITY_DOT[t.priority]}`} title={PRIORITY_LABEL[t.priority]} />
                     <form action={deleteTask.bind(null, t.id)}>
-                      <button className="rounded-lg px-2 py-1 text-xs text-slate-400 hover:bg-slate-100 hover:text-rose-600">✕</button>
+                      <button className="rounded-lg px-2 py-1 text-xs text-stone-400 hover:bg-stone-100 hover:text-rose-600">✕</button>
                     </form>
                   </div>
                 );
               })}
             </div>
 
-            <form action={createTask} className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
+            <form action={createTask} className="mt-4 flex flex-wrap items-center gap-2 border-t border-stone-100 pt-4">
               <input type="hidden" name="project_id" value={g.project?.id ?? ""} />
               <input name="title" placeholder="Nouvelle tâche…" className="input flex-1 min-w-[160px]" required />
               <select name="priority" defaultValue="medium" className="input w-32">

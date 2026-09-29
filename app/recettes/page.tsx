@@ -16,8 +16,8 @@ export default function RecipesPage() {
       <main>
         <section className="mx-auto max-w-6xl px-6 py-16 text-center">
           <FadeIn>
-            <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">Des recettes simples, prêtes à cuisiner</h1>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
+            <h1 className="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">Des recettes simples, prêtes à cuisiner</h1>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-stone-600">
               Parcours-les librement. Ouvre une recette pour voir ingrédients et étapes — et si tu veux sa liste de courses
               complète (quantités et prix par enseigne compris), crée ton espace gratuit en un clic.
             </p>
@@ -30,10 +30,10 @@ export default function RecipesPage() {
           </FadeIn>
         </section>
 
-        <section className="bg-slate-900 py-20 text-center text-white">
+        <section className="bg-stone-900 py-20 text-center text-white">
           <FadeIn className="mx-auto max-w-2xl px-6">
             <h2 className="text-3xl font-bold tracking-tight">Ta liste de courses, générée toute seule</h2>
-            <p className="mt-3 text-slate-300">
+            <p className="mt-3 text-stone-300">
               Dans All In, choisis une ou plusieurs recettes et la liste complète se crée automatiquement — quantités
               ajustées, prix estimés par enseigne, rien à recopier.
             </p>

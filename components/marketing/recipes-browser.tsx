@@ -43,13 +43,13 @@ export function RecipesBrowser() {
           placeholder="Rechercher une recette ou un ingrédient (ex. poivron)…"
           className="input w-full py-3 text-center"
         />
-        <p className="text-xs text-slate-400">La recherche regarde aussi dans les ingrédients.</p>
+        <p className="text-xs text-stone-400">La recherche regarde aussi dans les ingrédients.</p>
       </div>
 
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         <button
           onClick={() => setCategory(null)}
-          className={cx("rounded-full px-3.5 py-1.5 text-sm font-medium transition", category === null ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200")}
+          className={cx("rounded-full px-3.5 py-1.5 text-sm font-medium transition", category === null ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-600 hover:bg-stone-200")}
         >
           Toutes
         </button>
@@ -57,7 +57,7 @@ export function RecipesBrowser() {
           <button
             key={c}
             onClick={() => setCategory(c === category ? null : c)}
-            className={cx("rounded-full px-3.5 py-1.5 text-sm font-medium transition", category === c ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200")}
+            className={cx("rounded-full px-3.5 py-1.5 text-sm font-medium transition", category === c ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-600 hover:bg-stone-200")}
           >
             {c}
           </button>
@@ -69,7 +69,7 @@ export function RecipesBrowser() {
           onClick={() => setShowEquipment((v) => !v)}
           className={cx(
             "flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition",
-            equipment.length > 0 ? "border-brand-300 bg-brand-50 text-brand-700" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+            equipment.length > 0 ? "border-brand-300 bg-brand-50 text-brand-700" : "border-stone-200 bg-white text-stone-500 hover:bg-stone-50"
           )}
         >
           🔧 Mon équipement {equipment.length > 0 && `(${equipment.length})`}
@@ -78,8 +78,8 @@ export function RecipesBrowser() {
       </div>
 
       {showEquipment && (
-        <div className="mx-auto mt-3 max-w-2xl rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <p className="mb-3 text-center text-xs text-slate-500">
+        <div className="mx-auto mt-3 max-w-2xl rounded-2xl border border-stone-200 bg-stone-50 p-4">
+          <p className="mb-3 text-center text-xs text-stone-500">
             Coche ce que tu as chez toi : on ne montre que les recettes réalisables avec.
           </p>
           <div className="flex flex-wrap justify-center gap-2">
@@ -89,7 +89,7 @@ export function RecipesBrowser() {
                 onClick={() => toggleEquipment(e.key)}
                 className={cx(
                   "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition",
-                  equipment.includes(e.key) ? "border-brand-400 bg-brand-100 text-brand-800" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+                  equipment.includes(e.key) ? "border-brand-400 bg-brand-100 text-brand-800" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-100"
                 )}
               >
                 <span>{e.icon}</span>
@@ -98,14 +98,14 @@ export function RecipesBrowser() {
             ))}
           </div>
           {equipment.length > 0 && (
-            <button onClick={() => setEquipment([])} className="mx-auto mt-3 block text-xs text-slate-400 hover:text-slate-700">
+            <button onClick={() => setEquipment([])} className="mx-auto mt-3 block text-xs text-stone-400 hover:text-stone-700">
               Réinitialiser
             </button>
           )}
         </div>
       )}
 
-      <p className="mt-6 text-center text-sm text-slate-400">
+      <p className="mt-6 text-center text-sm text-stone-400">
         {results.length} recette{results.length > 1 ? "s" : ""} {results.length !== RECIPES.length && `sur ${RECIPES.length}`}
       </p>
 
@@ -116,7 +116,7 @@ export function RecipesBrowser() {
       </div>
 
       {results.length === 0 && (
-        <p className="mt-10 text-center text-sm text-slate-400">Aucune recette ne correspond. Essaie un autre mot-clé ou un autre équipement.</p>
+        <p className="mt-10 text-center text-sm text-stone-400">Aucune recette ne correspond. Essaie un autre mot-clé ou un autre équipement.</p>
       )}
     </div>
   );

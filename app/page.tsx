@@ -61,12 +61,12 @@ export default function LandingPage() {
             </span>
           </FadeIn>
           <FadeIn delay={80}>
-            <h1 className="mx-auto mt-6 max-w-2xl text-4xl font-bold tracking-tight text-slate-900 sm:text-6xl">
+            <h1 className="mx-auto mt-6 max-w-2xl text-4xl font-bold tracking-tight text-stone-900 sm:text-6xl">
               Le hub qui organise <span className="text-brand-600">toute ta vie</span>
             </h1>
           </FadeIn>
           <FadeIn delay={160}>
-            <p className="mx-auto mt-6 max-w-xl text-lg text-slate-600">
+            <p className="mx-auto mt-6 max-w-xl text-lg text-stone-600">
               Tâches et projets, listes de courses partagées, routines quotidiennes et finances personnelles :
               un seul espace ultra personnalisé, pensé pour piloter ton quotidien avec précision.
             </p>
@@ -86,7 +86,7 @@ export default function LandingPage() {
         <section id="fonctionnalites" className="mx-auto max-w-6xl px-6 py-24">
           <FadeIn className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Tout ce qui compte, un seul endroit</h2>
-            <p className="mt-4 text-slate-600">
+            <p className="mt-4 text-stone-600">
               All In remplace ton carnet, ton tableur budget et tes 5 applis de listes par un hub unique et cohérent.
             </p>
           </FadeIn>
@@ -96,18 +96,18 @@ export default function LandingPage() {
                 <div className="card h-full p-6 transition hover:-translate-y-1 hover:shadow-lg">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-2xl">{f.icon}</div>
                   <h3 className="mt-4 text-lg font-semibold">{f.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{f.desc}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-stone-600">{f.desc}</p>
                 </div>
               </FadeIn>
             ))}
           </div>
         </section>
 
-        <section id="comment" className="bg-slate-900 py-24 text-white">
+        <section id="comment" className="bg-stone-900 py-24 text-white">
           <div className="mx-auto max-w-6xl px-6">
             <FadeIn className="mx-auto max-w-2xl text-center">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Comment ça marche</h2>
-              <p className="mt-4 text-slate-300">Trois étapes, aucun frein.</p>
+              <p className="mt-4 text-stone-300">Trois étapes, aucun frein.</p>
             </FadeIn>
             <div className="mt-14 grid gap-8 sm:grid-cols-3">
               {STEPS.map((s, i) => (
@@ -115,7 +115,7 @@ export default function LandingPage() {
                   <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
                     <span className="text-sm font-bold text-brand-300">{s.n}</span>
                     <h3 className="mt-3 text-lg font-semibold">{s.title}</h3>
-                    <p className="mt-2 text-sm text-slate-300">{s.desc}</p>
+                    <p className="mt-2 text-sm text-stone-300">{s.desc}</p>
                   </div>
                 </FadeIn>
               ))}
@@ -126,7 +126,7 @@ export default function LandingPage() {
         <section className="mx-auto max-w-6xl px-6 py-24">
           <FadeIn className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Des recettes, et leur liste de courses en un clic</h2>
-            <p className="mt-4 text-slate-600">
+            <p className="mt-4 text-stone-600">
               Choisis une recette, All In génère la liste de courses complète — quantités et prix par enseigne compris.
             </p>
           </FadeIn>
@@ -142,11 +142,11 @@ export default function LandingPage() {
           </FadeIn>
         </section>
 
-        <section className="bg-slate-50 py-24">
+        <section className="bg-stone-50 py-24">
           <div className="mx-auto max-w-3xl px-6 text-center">
             <FadeIn>
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Ton salaire et ton impôt, calculés</h2>
-              <p className="mx-auto mt-4 max-w-xl text-slate-600">
+              <p className="mx-auto mt-4 max-w-xl text-stone-600">
                 Un aperçu gratuit de l'outil Finance : passe du brut annuel au net mensuel, et connais ta provision
                 d'impôt indicative — sans créer de compte.
               </p>
@@ -158,7 +158,7 @@ export default function LandingPage() {
         <section id="gratuit" className="mx-auto max-w-3xl px-6 py-24 text-center">
           <FadeIn>
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Complètement gratuit</h2>
-            <p className="mx-auto mt-4 max-w-xl text-slate-600">
+            <p className="mx-auto mt-4 max-w-xl text-stone-600">
               Aucune carte bancaire, aucune limite artificielle. Tout est inclus.
             </p>
             <div className="mt-7 flex flex-wrap items-center justify-center gap-4">

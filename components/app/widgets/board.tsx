@@ -1,0 +1,247 @@
+"use client";
+
+import { useRef, useState, useTransition } from "react";
+import { saveWidgetLayout } from "@/app/app/widget-actions";
+import {
+  DEFAULT_LAYOUTS,
+  PAGE_SECTIONS,
+  SECTIONS,
+  SIZE_LABEL,
+  WIDGETS,
+  WIDGET_BY_TYPE,
+  spanClass,
+  type WidgetItem,
+  type WidgetOpts,
+  type WidgetPage,
+  type WidgetSection,
+  type WidgetSize,
+  type WidgetType,
+} from "@/lib/widgets/registry";
+import type { WidgetData } from "@/lib/data/widgets";
+import { cx } from "@/lib/utils";
+import { Icon } from "@/components/app/icons";
+import { WidgetSizeContext } from "@/components/app/widgets/shell";
+import type { WidgetProps } from "@/components/app/widgets/types";
+import { FinAccounts, FinActions, FinBreakdown, FinBudgets, FinCalendar, FinCharges, FinIncomes, FinReste, FinTrend } from "@/components/app/widgets/finance";
+import { CalAgenda, CalWeek, ListsShopping, NotesVocab, RecipesIdeas, RoutinesToday, RoutinesWeek, TasksList, TasksStat } from "@/components/app/widgets/life";
+
+const RENDER: Record<WidgetType, (p: WidgetProps) => JSX.Element> = {
+  "fin-accounts": FinAccounts,
+  "fin-reste": FinReste,
+  "fin-calendar": FinCalendar,
+  "fin-breakdown": FinBreakdown,
+  "fin-budgets": FinBudgets,
+  "fin-incomes": FinIncomes,
+  "fin-charges": FinCharges,
+  "fin-trend": FinTrend,
+  "fin-actions": FinActions,
+  "tasks-list": TasksList,
+  "tasks-stat": TasksStat,
+  "routines-today": RoutinesToday,
+  "routines-week": RoutinesWeek,
+  "cal-agenda": CalAgenda,
+  "cal-week": CalWeek,
+  "lists-shopping": ListsShopping,
+  "recipes-ideas": RecipesIdeas,
+  "notes-vocab": NotesVocab,
+};
+
+const SIZE_SHORT: Record<WidgetSize, string> = { s: "S", m: "M", l: "L", xl: "XL" };
+const SIZE_COLS: Record<WidgetSize, number> = { s: 1, m: 2, l: 3, xl: 4 };
+
+export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage; initial: WidgetItem[]; data: WidgetData; toolbar?: React.ReactNode }) {
+  const [items, setItems] = useState(initial);
+  const [editing, setEditing] = useState(false);
+  const [drawer, setDrawer] = useState(false);
+  const [saving, start] = useTransition();
+  const dragId = useRef<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
+
+  const persist = (next: WidgetItem[]) => {
+    setItems(next);
+    start(() => saveWidgetLayout(page, next));
+  };
+  const update = (id: string, patch: Partial<WidgetItem>) => persist(items.map((i) => (i.id === id ? { ...i, ...patch } : i)));
+  const setOpts = (id: string) => (patch: WidgetOpts) => {
+    const cur = items.find((i) => i.id === id);
+    update(id, { opts: { ...(cur?.opts ?? {}), ...patch } });
+  };
+  const move = (id: string, delta: number) => {
+    const idx = items.findIndex((i) => i.id === id);
+    const to = idx + delta;
+    if (idx < 0 || to < 0 || to >= items.length) return;
+    const next = [...items];
+    const [it] = next.splice(idx, 1);
+    next.splice(to, 0, it);
+    persist(next);
+  };
+  const dropOn = (targetId: string) => {
+    const from = dragId.current;
+    dragId.current = null;
+    setOverId(null);
+    if (!from || from === targetId) return;
+    const next = items.filter((i) => i.id !== from);
+    const at = next.findIndex((i) => i.id === targetId);
+    next.splice(at, 0, items.find((i) => i.id === from)!);
+    persist(next);
+  };
+  const add = (type: WidgetType, size: WidgetSize) => {
+    persist([...items, { id: `${type}-${Date.now().toString(36)}`, type, size }]);
+  };
+
+  return (
+    <div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">{toolbar}</div>
+        <div className="flex items-center gap-2">
+          {saving && <span className="text-[11px] text-stone-400">Enregistrement…</span>}
+          {editing ? (
+            <>
+              <button onClick={() => persist(DEFAULT_LAYOUTS[page])} className="btn-secondary px-3 py-1.5 text-xs">Réinitialiser</button>
+              <button onClick={() => setDrawer(true)} className="btn-secondary px-3 py-1.5 text-xs"><Icon name="plus" className="h-3.5 w-3.5" />Ajouter un widget</button>
+              <button onClick={() => { setEditing(false); setDrawer(false); }} className="btn-primary px-3 py-1.5 text-xs">Terminé</button>
+            </>
+          ) : (
+            <button onClick={() => setEditing(true)} className="btn-secondary px-3 py-1.5 text-xs"><Icon name="grid" className="h-3.5 w-3.5" />Personnaliser</button>
+          )}
+        </div>
+      </div>
+
+      {items.length === 0 && (
+        <button onClick={() => { setEditing(true); setDrawer(true); }} className="flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-line py-16 text-sm text-stone-400 hover:border-brand-300 hover:text-brand-700">
+          <Icon name="plus" className="h-6 w-6" />
+          Ajoute ton premier widget
+        </button>
+      )}
+
+      <div className="grid grid-flow-row-dense grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {items.map((it, idx) => {
+          const def = WIDGET_BY_TYPE[it.type];
+          const Comp = RENDER[it.type];
+          return (
+            <div
+              key={it.id}
+              draggable={editing}
+              onDragStart={(e) => { dragId.current = it.id; e.dataTransfer.effectAllowed = "move"; }}
+              onDragOver={(e) => { if (!editing) return; e.preventDefault(); setOverId(it.id); }}
+              onDragLeave={() => setOverId((o) => (o === it.id ? null : o))}
+              onDrop={(e) => { e.preventDefault(); dropOn(it.id); }}
+              onDragEnd={() => { dragId.current = null; setOverId(null); }}
+              className={cx("relative min-w-0", spanClass(it.size, def.tall), editing && "cursor-grab", overId === it.id && "rounded-2xl ring-2 ring-brand-400 ring-offset-2 ring-offset-canvas")}
+            >
+              <div className={cx("h-full", editing && "pointer-events-none select-none opacity-80")}>
+                <WidgetSizeContext.Provider value={it.size}>
+                  <Comp data={data} size={it.size} opts={it.opts ?? {}} setOpts={setOpts(it.id)} />
+                </WidgetSizeContext.Provider>
+              </div>
+              {editing && (
+                <div className="absolute inset-0 z-20 rounded-2xl border-2 border-dashed border-brand-300 bg-white/30">
+                  <div title={`${def.title} · glisse pour déplacer`} className="absolute left-1/2 top-1.5 -translate-x-1/2 rounded-md bg-white/95 px-2 py-0.5 text-stone-400 shadow-sm">
+                    <Icon name="drag" className="h-3.5 w-3.5 rotate-90" />
+                  </div>
+                  <button onClick={() => persist(items.filter((i) => i.id !== it.id))} title="Retirer" className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-stone-800 text-white shadow hover:bg-rose-600">
+                    <Icon name="close" className="h-3 w-3" />
+                  </button>
+                  <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-xl bg-white/95 p-1 shadow-md">
+                    <button onClick={() => move(it.id, -1)} disabled={idx === 0} title="Avancer" className="rounded-md p-1 text-stone-500 hover:bg-stone-100 disabled:opacity-30"><Icon name="chevronLeft" className="h-3.5 w-3.5" /></button>
+                    {def.sizes.map((s) => (
+                      <button key={s} onClick={() => update(it.id, { size: s })} title={SIZE_LABEL[s]} className={cx("min-w-[26px] rounded-md px-1.5 py-0.5 text-[11px] font-bold", it.size === s ? "bg-brand-600 text-white" : "text-stone-500 hover:bg-stone-100")}>
+                        {SIZE_SHORT[s]}
+                      </button>
+                    ))}
+                    <button onClick={() => move(it.id, 1)} disabled={idx === items.length - 1} title="Reculer" className="rounded-md p-1 text-stone-500 hover:bg-stone-100 disabled:opacity-30"><Icon name="chevronRight" className="h-3.5 w-3.5" /></button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {drawer && <WidgetDrawer page={page} items={items} onAdd={add} onClose={() => setDrawer(false)} />}
+    </div>
+  );
+}
+
+function SizePreview({ size }: { size: WidgetSize }) {
+  return (
+    <span className="grid w-10 grid-cols-4 gap-px">
+      {[0, 1, 2, 3].map((i) => (
+        <span key={i} className={cx("h-2.5 rounded-[2px]", i < SIZE_COLS[size] ? "bg-current" : "bg-current opacity-20")} />
+      ))}
+    </span>
+  );
+}
+
+function WidgetDrawer({ page, items, onAdd, onClose }: { page: WidgetPage; items: WidgetItem[]; onAdd: (t: WidgetType, s: WidgetSize) => void; onClose: () => void }) {
+  const allowed = PAGE_SECTIONS[page];
+  const [section, setSection] = useState<WidgetSection | "all">("all");
+  const [sizes, setSizes] = useState<Partial<Record<WidgetType, WidgetSize>>>({});
+  const [justAdded, setJustAdded] = useState<WidgetType | null>(null);
+  const list = WIDGETS.filter((w) => allowed.includes(w.section) && (section === "all" || w.section === section));
+
+  return (
+    <>
+      <div className="fixed inset-0 z-40 bg-stone-900/20 lg:bg-transparent" onClick={onClose} aria-hidden />
+      <aside className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[380px] flex-col border-l border-line bg-canvas shadow-2xl">
+        <div className="flex items-center justify-between border-b border-line px-5 py-4">
+          <div>
+            <p className="text-sm font-bold text-stone-900">Ajouter un widget</p>
+            <p className="text-[11px] text-stone-500">Choisis un format, puis ajoute-le à ta page.</p>
+          </div>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-stone-400 hover:bg-stone-100"><Icon name="close" /></button>
+        </div>
+        {allowed.length > 1 && (
+          <div className="flex gap-1.5 overflow-x-auto border-b border-line px-5 py-3">
+            {[{ key: "all" as const, label: "Tous" }, ...SECTIONS.filter((s) => allowed.includes(s.key))].map((s) => (
+              <button key={s.key} onClick={() => setSection(s.key)} className={cx("shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition", section === s.key ? "bg-stone-900 text-white" : "bg-white text-stone-500 hover:text-stone-800")}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="flex-1 space-y-2.5 overflow-y-auto p-4">
+          {list.map((w) => {
+            const chosen = sizes[w.type] ?? w.defaultSize;
+            const count = items.filter((i) => i.type === w.type).length;
+            return (
+              <div key={w.type} className="rounded-2xl border border-line bg-white p-3.5">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600"><Icon name={w.icon} /></span>
+                  <div className="min-w-0 flex-1">
+                    <p className="flex items-center gap-2 text-[13px] font-semibold text-stone-900">
+                      {w.title}
+                      {count > 0 && <span className="rounded-full bg-stone-100 px-1.5 py-px text-[10px] font-medium text-stone-500">affiché{count > 1 ? ` ×${count}` : ""}</span>}
+                    </p>
+                    <p className="mt-0.5 text-[11px] leading-snug text-stone-500">{w.description}</p>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <div className="flex gap-1">
+                    {w.sizes.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => setSizes((m) => ({ ...m, [w.type]: s }))}
+                        title={SIZE_LABEL[s]}
+                        className={cx("flex flex-col items-center gap-1 rounded-lg border px-2 py-1.5 text-[10px] font-semibold transition", chosen === s ? "border-brand-400 bg-brand-50 text-brand-700" : "border-line text-stone-400 hover:text-stone-700")}
+                      >
+                        <SizePreview size={s} />
+                        {SIZE_LABEL[s]}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => { onAdd(w.type, chosen); setJustAdded(w.type); setTimeout(() => setJustAdded((t) => (t === w.type ? null : t)), 1200); }}
+                    className={cx("shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition", justAdded === w.type ? "bg-emerald-600 text-white" : "bg-brand-600 text-white hover:bg-brand-700")}
+                  >
+                    {justAdded === w.type ? "Ajouté ✓" : "Ajouter"}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </aside>
+    </>
+  );
+}

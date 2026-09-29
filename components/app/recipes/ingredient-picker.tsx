@@ -56,8 +56,8 @@ export function IngredientPicker({
             const known = p.id ? catalog.find((c) => c.id === p.id) : undefined;
             const isNew = !known;
             return (
-              <li key={p.name} className="flex flex-wrap items-center gap-2 rounded-xl bg-slate-50 px-3 py-1.5 text-sm">
-                <span className="min-w-[110px] flex-1 font-medium text-slate-800">
+              <li key={p.name} className="flex flex-wrap items-center gap-2 rounded-xl bg-stone-50 px-3 py-1.5 text-sm">
+                <span className="min-w-[110px] flex-1 font-medium text-stone-800">
                   {p.name}
                   {isNew && <span className="ml-1.5 rounded bg-amber-100 px-1 text-[10px] font-normal text-amber-700">nouveau</span>}
                 </span>
@@ -68,17 +68,17 @@ export function IngredientPicker({
                   value={p.qty ?? ""}
                   onChange={(e) => update(i, { qty: e.target.value === "" ? null : Number(e.target.value) })}
                   placeholder="Qté"
-                  className="w-20 rounded-lg border border-slate-200 bg-white px-2 py-1 text-right text-sm"
+                  className="w-20 rounded-lg border border-stone-200 bg-white px-2 py-1 text-right text-sm"
                 />
                 <select
                   value={p.qtyUnit ?? "u"}
                   onChange={(e) => update(i, { qtyUnit: e.target.value as QtyUnit })}
-                  className="rounded-lg border border-slate-200 bg-white px-1.5 py-1 text-sm"
+                  className="rounded-lg border border-stone-200 bg-white px-1.5 py-1 text-sm"
                 >
                   {QTY_UNITS.map((u) => <option key={u.v} value={u.v}>{u.l}</option>)}
                 </select>
                 {isNew && priceStore && (
-                  <label className="flex items-center gap-1 text-xs text-slate-500">
+                  <label className="flex items-center gap-1 text-xs text-stone-500">
                     <input
                       type="number"
                       min="0"
@@ -86,12 +86,12 @@ export function IngredientPicker({
                       value={p.price ?? ""}
                       onChange={(e) => update(i, { price: e.target.value === "" ? null : Number(e.target.value) })}
                       placeholder="Prix"
-                      className="w-20 rounded-lg border border-slate-200 bg-white px-2 py-1 text-right text-sm"
+                      className="w-20 rounded-lg border border-stone-200 bg-white px-2 py-1 text-right text-sm"
                     />
                     {priceSuffix(unitForQty(p.qtyUnit))} ({priceStore})
                   </label>
                 )}
-                <button type="button" onClick={() => setPicked((all) => all.filter((_, j) => j !== i))} className="px-1 text-slate-400 hover:text-rose-600">×</button>
+                <button type="button" onClick={() => setPicked((all) => all.filter((_, j) => j !== i))} className="px-1 text-stone-400 hover:text-rose-600">×</button>
               </li>
             );
           })}
@@ -114,15 +114,15 @@ export function IngredientPicker({
           className="input"
         />
         {open && (matches.length > 0 || (q && !exact)) && (
-          <ul className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-xl border border-slate-100 bg-white p-1 shadow-lg">
+          <ul className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-xl border border-stone-100 bg-white p-1 shadow-lg">
             {matches.map((m) => (
               <li key={m.id}>
-                <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => add(m.name)} className="flex w-full justify-between rounded-lg px-3 py-1.5 text-left text-sm hover:bg-slate-50">
+                <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => add(m.name)} className="flex w-full justify-between rounded-lg px-3 py-1.5 text-left text-sm hover:bg-stone-50">
                   <span>
                     {m.name}
-                    {m.personal && <span className="ml-1.5 text-[10px] text-slate-400">perso</span>}
+                    {m.personal && <span className="ml-1.5 text-[10px] text-stone-400">perso</span>}
                   </span>
-                  {prices?.[m.id] !== undefined && <span className="text-xs text-slate-400">{formatEUR(prices[m.id])} {priceSuffix(m.unit).slice(1)}</span>}
+                  {prices?.[m.id] !== undefined && <span className="text-xs text-stone-400">{formatEUR(prices[m.id])} {priceSuffix(m.unit).slice(1)}</span>}
                 </button>
               </li>
             ))}
@@ -139,10 +139,10 @@ export function IngredientPicker({
 
       {freeSuggestions.length > 0 && (
         <div>
-          <p className="mb-1 text-[11px] text-slate-400">{suggestionsLabel}</p>
+          <p className="mb-1 text-[11px] text-stone-400">{suggestionsLabel}</p>
           <div className="flex flex-wrap gap-1">
             {freeSuggestions.map((s) => (
-              <button key={s} type="button" onClick={() => add(s)} className="rounded-full border border-slate-200 px-2.5 py-0.5 text-xs text-slate-600 hover:border-brand-300 hover:text-brand-700">
+              <button key={s} type="button" onClick={() => add(s)} className="rounded-full border border-stone-200 px-2.5 py-0.5 text-xs text-stone-600 hover:border-brand-300 hover:text-brand-700">
                 + {s}
               </button>
             ))}

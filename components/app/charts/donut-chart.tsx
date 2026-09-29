@@ -23,7 +23,7 @@ export function DonutChart({
   const circumference = 2 * Math.PI * r;
 
   if (total <= 0) {
-    return <p className="text-sm text-slate-400">Aucune donnée pour l'instant.</p>;
+    return <p className="text-sm text-stone-400">Aucune donnée pour l'instant.</p>;
   }
 
   // Color follows the category's identity (alphabetical slot), never its rank by
@@ -69,10 +69,10 @@ export function DonutChart({
             </circle>
           ))}
         </g>
-        <text x={cx} y={cy - 4} textAnchor="middle" className="fill-slate-900 text-[15px] font-bold">
+        <text x={cx} y={cy - 4} textAnchor="middle" className="fill-stone-900 text-[15px] font-bold">
           {formatEUR(total)}
         </text>
-        <text x={cx} y={cy + 14} textAnchor="middle" className="fill-slate-400 text-[10px]">
+        <text x={cx} y={cy + 14} textAnchor="middle" className="fill-stone-400 text-[10px]">
           {centerCaption}
         </text>
       </svg>
@@ -82,13 +82,13 @@ export function DonutChart({
           <li
             key={i}
             onClick={onSelect ? () => onSelect(s.label) : undefined}
-            className={`flex items-center justify-between gap-3 rounded-lg text-sm ${onSelect ? "cursor-pointer px-1 hover:bg-slate-50" : ""} ${selected === s.label ? "bg-slate-50" : ""}`}
+            className={`flex items-center justify-between gap-3 rounded-lg text-sm ${onSelect ? "cursor-pointer px-1 hover:bg-stone-50" : ""} ${selected === s.label ? "bg-stone-50" : ""}`}
           >
             <span className="flex min-w-0 items-center gap-2">
               <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
-              <span className="truncate text-slate-700">{s.label}</span>
+              <span className="truncate text-stone-700">{s.label}</span>
             </span>
-            <span className="shrink-0 font-medium text-slate-500">{formatEUR(s.value)}</span>
+            <span className="shrink-0 font-medium text-stone-500">{formatEUR(s.value)}</span>
           </li>
         ))}
       </ul>

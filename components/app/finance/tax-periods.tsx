@@ -33,13 +33,13 @@ export function TaxPeriods({ year, profile }: { year: number; profile: TaxProfil
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="card p-5">
           <div className="mb-3 flex items-center justify-between">
-            <p className="font-semibold text-slate-900">Périodes de revenus</p>
+            <p className="font-semibold text-stone-900">Périodes de revenus</p>
             <button type="button" onClick={() => { addPeriod(); setAdding(true); }} className="text-sm font-medium text-brand-600">+ Ajouter une période</button>
           </div>
-          {periods.length === 0 && !adding && <p className="text-sm text-slate-400">Aucune période. Ajoute tes périodes de revenus {year}.</p>}
+          {periods.length === 0 && !adding && <p className="text-sm text-stone-400">Aucune période. Ajoute tes périodes de revenus {year}.</p>}
           <div className="space-y-2">
             {periods.map((p, i) => (
-              <div key={i} className="grid grid-cols-[1fr_1fr_100px_auto] items-center gap-2 rounded-xl border border-slate-100 p-2">
+              <div key={i} className="grid grid-cols-[1fr_1fr_100px_auto] items-center gap-2 rounded-xl border border-stone-100 p-2">
                 <input value={p.label} onChange={(e) => updatePeriod(i, { label: e.target.value })} placeholder="Ex. Janv. – août" className="input px-2 py-1 text-sm" />
                 <select value={p.activity} onChange={(e) => updatePeriod(i, { activity: e.target.value })} className="input px-2 py-1 text-sm">
                   {ACTIVITIES.map((a) => <option key={a} value={a}>{a}</option>)}
@@ -52,38 +52,38 @@ export function TaxPeriods({ year, profile }: { year: number; profile: TaxProfil
                   placeholder="à compléter"
                   className="input px-2 py-1 text-right text-sm"
                 />
-                <button type="button" onClick={() => removePeriod(i)} className="text-xs text-slate-300 hover:text-rose-600">✕</button>
+                <button type="button" onClick={() => removePeriod(i)} className="text-xs text-stone-300 hover:text-rose-600">✕</button>
               </div>
             ))}
           </div>
         </section>
 
         <section className="card p-5">
-          <p className="mb-3 font-semibold text-slate-900">Prélèvement à la source</p>
+          <p className="mb-3 font-semibold text-stone-900">Prélèvement à la source</p>
           <div className="mb-3 flex items-center justify-between gap-3 text-sm">
-            <span className="text-slate-600">Taux calculé</span>
-            <span className="font-semibold text-slate-800">{estimate ? `${estimate.withholdingRate.toFixed(1)} %` : "à calculer"}</span>
+            <span className="text-stone-600">Taux calculé</span>
+            <span className="font-semibold text-stone-800">{estimate ? `${estimate.withholdingRate.toFixed(1)} %` : "à calculer"}</span>
           </div>
-          <p className="mb-3 text-[11px] text-slate-400">Calculé à partir de tes revenus imposables et du barème — pas à saisir toi-même.</p>
+          <p className="mb-3 text-[11px] text-stone-400">Calculé à partir de tes revenus imposables et du barème — pas à saisir toi-même.</p>
           <label className="flex items-center justify-between gap-3 text-sm">
-            <span className="text-slate-600">Déjà prélevé cette année</span>
+            <span className="text-stone-600">Déjà prélevé cette année</span>
             <input type="number" step="0.01" value={alreadyWithheld || ""} onChange={(e) => setAlreadyWithheld(Number(e.target.value) || 0)} name="already_withheld" placeholder="à compléter" className="input w-28 px-2 py-1 text-right" />
           </label>
-          <label className="mt-3 flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-sm">
-            <span className="text-slate-600">Parts fiscales du foyer</span>
+          <label className="mt-3 flex items-center justify-between gap-3 border-t border-stone-100 pt-3 text-sm">
+            <span className="text-stone-600">Parts fiscales du foyer</span>
             <input type="number" step="0.5" min="1" value={parts} onChange={(e) => setParts(Math.max(1, Number(e.target.value) || 1))} name="household_parts" className="input w-20 px-2 py-1 text-right" />
           </label>
         </section>
       </div>
 
       <section className="card p-5">
-        <p className="mb-3 font-semibold text-slate-900">Provision conseillée</p>
+        <p className="mb-3 font-semibold text-stone-900">Provision conseillée</p>
         {!estimate ? (
-          <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-4">
+          <div className="flex items-center gap-3 rounded-2xl bg-stone-50 p-4">
             <span className="text-2xl">🧮</span>
             <div>
-              <p className="text-sm font-semibold text-slate-600">Calculer après saisie</p>
-              <p className="text-xs text-slate-400">Estimation à partir des revenus imposables et des prélèvements saisis.</p>
+              <p className="text-sm font-semibold text-stone-600">Calculer après saisie</p>
+              <p className="text-xs text-stone-400">Estimation à partir des revenus imposables et des prélèvements saisis.</p>
             </div>
           </div>
         ) : (
@@ -96,8 +96,8 @@ export function TaxPeriods({ year, profile }: { year: number; profile: TaxProfil
           </div>
         )}
         <details className="mt-3 text-xs">
-          <summary className="cursor-pointer text-slate-400">Hypothèses et détail du calcul</summary>
-          <div className="mt-2 space-y-1 text-slate-500">
+          <summary className="cursor-pointer text-stone-400">Hypothèses et détail du calcul</summary>
+          <div className="mt-2 space-y-1 text-stone-500">
             <p>Revenu brut total saisi : {formatEUR(grossTotal)}</p>
             {exempted > 0 && <p>Dont exonéré (alternance, jusqu'à 21 000 €) : − {formatEUR(exempted)}</p>}
             <p>Revenu imposable retenu : {formatEUR(taxable)}</p>
@@ -106,8 +106,8 @@ export function TaxPeriods({ year, profile }: { year: number; profile: TaxProfil
             <p>Aucune assiette, exonération ou barème non vérifié n'est inventé : si une donnée manque, aucun montant « exact » n'est affiché.</p>
           </div>
         </details>
-        <label className="mt-3 flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-sm">
-          <span className="text-slate-600">Provision manuelle (si tu préfères la tienne)</span>
+        <label className="mt-3 flex items-center justify-between gap-3 border-t border-stone-100 pt-3 text-sm">
+          <span className="text-stone-600">Provision manuelle (si tu préfères la tienne)</span>
           <input
             type="number"
             step="0.01"

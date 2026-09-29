@@ -40,13 +40,13 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
       className="space-y-3"
     >
       <input type="hidden" name="kind" value={kind} />
-      <div className="grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-1 rounded-xl bg-stone-100 p-1 text-xs font-medium sm:grid-cols-4">
         {KINDS.map((k) => (
           <button
             key={k.v}
             type="button"
             onClick={() => setKind(k.v)}
-            className={cx("rounded-lg py-1.5 transition", kind === k.v ? "bg-white text-slate-900 shadow-sm" : "text-slate-500")}
+            className={cx("rounded-lg py-1.5 transition", kind === k.v ? "bg-white text-stone-900 shadow-sm" : "text-stone-500")}
           >
             {k.l}
           </button>
@@ -55,17 +55,17 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
 
       <input name="name" defaultValue={op?.name} placeholder="Nom (ex. Loyer, Netflix, Salaire…)" className="input" required />
       <div className="grid grid-cols-2 gap-2">
-        <label className="text-xs text-slate-500">
+        <label className="text-xs text-stone-500">
           Montant
           <input name="amount" type="number" step="0.01" min="0" defaultValue={op?.amount} placeholder="€" className="input mt-1" required />
         </label>
-        <label className="text-xs text-slate-500">
+        <label className="text-xs text-stone-500">
           Catégorie
           <select key={kind} name="category" defaultValue={categories.includes(op?.category ?? "") ? op?.category : categories[0]} className="input mt-1">
             {categories.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </label>
-        <label className="col-span-2 text-xs text-slate-500">
+        <label className="col-span-2 text-xs text-stone-500">
           Compte (optionnel)
           <input name="account" list="finance-accounts" defaultValue={op?.account ?? ""} placeholder="Ex. Compte courant, Compte joint…" className="input mt-1" />
           <datalist id="finance-accounts">
@@ -76,7 +76,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
         </label>
       </div>
 
-      <div className="rounded-xl border border-slate-100 p-3">
+      <div className="rounded-xl border border-stone-100 p-3">
         <p className="label mb-2">Date & récurrence</p>
         <input type="hidden" name="frequency" value={freq} />
         <select value={freq} onChange={(e) => setFreq(e.target.value as OpFrequency)} className="input">
@@ -85,26 +85,26 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
           ))}
         </select>
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <label className="text-xs text-slate-500">
+          <label className="text-xs text-stone-500">
             {freq === "once" ? "Date" : "Date de début"}
             <input name="start" type="date" defaultValue={op?.start ?? defaultDate} className="input mt-1" required />
           </label>
           {freq !== "once" && (
-            <label className="text-xs text-slate-500">
-              Date de fin <span className="text-slate-400">(optionnelle)</span>
+            <label className="text-xs text-stone-500">
+              Date de fin <span className="text-stone-400">(optionnelle)</span>
               <input name="end_date" type="date" defaultValue={op?.end ?? ""} className="input mt-1" />
             </label>
           )}
         </div>
         {freq !== "once" && (
           <div className="mt-2 space-y-2">
-            <label className="flex items-center gap-2 text-sm text-slate-600">
+            <label className="flex items-center gap-2 text-sm text-stone-600">
               Tous les <input name="interval" type="number" min="1" defaultValue={op?.interval ?? 1} className="input w-16 py-1" /> {unit}
             </label>
             {freq === "weekly" && (
               <div className="flex gap-1">
                 {WEEKDAYS.map((d, i) => (
-                  <label key={i} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-slate-200 text-xs has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700">
+                  <label key={i} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-stone-200 text-xs has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700">
                     <input type="checkbox" name="weekdays" value={WEEKDAY_VALUES[i]} defaultChecked={op?.weekdays.includes(WEEKDAY_VALUES[i])} className="sr-only" />
                     {d}
                   </label>
@@ -140,11 +140,11 @@ export function NewOperationButton({
     <>
       <button onClick={() => setOpen(true)} className={className ?? "btn-primary"}>{label}</button>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4" onClick={() => setOpen(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 p-4" onClick={() => setOpen(false)}>
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900">Nouvelle opération</h3>
-              <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-700">✕</button>
+              <h3 className="text-lg font-bold text-stone-900">Nouvelle opération</h3>
+              <button onClick={() => setOpen(false)} className="text-stone-400 hover:text-stone-700">✕</button>
             </div>
             <OperationForm defaultDate={defaultDate} defaultKind={defaultKind} onDone={() => setOpen(false)} />
           </div>

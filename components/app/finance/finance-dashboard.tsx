@@ -64,7 +64,6 @@ export function FinanceDashboard({
   const { y, m } = cursor;
   const { start: mStart, end: mEnd } = monthBounds(y, m);
 
-  const budget = useMemo(() => getMonthlyBudget(ops, anchor, y, m), [ops, anchor, y, m]);
   // "Mois seul" repartis à 0 le mois choisi ; "Avec solde reporté" part du vrai solde du compte courant.
   const effectiveAnchor: BalanceAnchor = useMemo(
     () => (mode === "carried" ? anchor : { balance: 0, date: addDays(mStart, -1) }),
@@ -94,7 +93,6 @@ export function FinanceDashboard({
     for (const o of getSkippedOccurrences(ops, gridStart, gridEnd)) map.set(o.date, [...(map.get(o.date) ?? []), o]);
     return map;
   }, [ops, gridStart, gridEnd]);
-  const [picked, setPicked] = useState<OpKind | null>(null);
   const days: string[] = [];
   for (let d = gridStart; d <= gridEnd; d = addDays(d, 1)) days.push(d);
 
@@ -135,206 +133,89 @@ export function FinanceDashboard({
   const title = view === "year" ? String(y) : view === "week" ? `Semaine du ${fmtShort(gridStart)}` : `${MONTHS_FR[m]} ${y}`;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-slate-500">Clique sur une date pour voir le détail.</p>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center rounded-xl border border-slate-200 bg-white">
-            <button onClick={() => nav(-1)} className="px-3 py-2 text-slate-500 hover:text-slate-900">‹</button>
-            <span className="min-w-[130px] text-center text-sm font-semibold text-slate-800">{title}</span>
-            <button onClick={() => nav(1)} className="px-3 py-2 text-slate-500 hover:text-slate-900">›</button>
+    <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <section className="card min-w-0 p-4">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-1">
+            <button onClick={() => nav(-1)} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-800">‹</button>
+            <h2 className="min-w-[140px] text-center text-[15px] font-bold capitalize text-stone-900">{title}</h2>
+            <button onClick={() => nav(1)} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-800">›</button>
+            <button onClick={() => { select(today); if (view === "year") setView("month"); }} className="btn-secondary ml-1 px-2.5 py-1 text-[11px]">Aujourd'hui</button>
           </div>
-          <div className="flex rounded-xl bg-slate-100 p-1 text-xs font-medium">
-            {(["month", "week", "year"] as View[]).map((v) => (
-              <button key={v} onClick={() => setView(v)} className={cx("rounded-lg px-3 py-1.5 transition", view === v ? "bg-slate-900 text-white" : "text-slate-500")}>
-                {v === "month" ? "Mois" : v === "week" ? "Semaine" : "Année"}
-              </button>
-            ))}
-          </div>
-          <NewOperationButton defaultDate={selected} />
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium">
-          <button onClick={() => setMode("month")} className={cx("rounded-lg px-3 py-1.5", mode === "month" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500")}>Mois seul</button>
-          <button onClick={() => setMode("carried")} className={cx("rounded-lg px-3 py-1.5", mode === "carried" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500")}>Avec solde reporté</button>
-        </div>
-        <p className="text-xs text-slate-400">
-          {mode === "carried" ? "Part du solde réel du compte courant, reporté d'un mois à l'autre." : "Repart de 0 chaque mois, sans les gains ni les pertes des mois précédents."}
-        </p>
-      </div>
-
-      <SummaryCards budget={budget} mode={mode} monthEndLabel={fmtShort(mEnd)} picked={picked} onPick={(k) => setPicked(k === picked ? null : k)} />
-      {picked && <KindDetail kind={picked} ops={ops} y={y} m={m} onClose={() => setPicked(null)} />}
-
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="min-w-0 space-y-6">
-        <section className="card p-4">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <button onClick={() => nav(-1)} className="text-slate-400 hover:text-slate-800">‹</button>
-              <h2 className="text-lg font-bold text-slate-900">{title}</h2>
-              <button onClick={() => nav(1)} className="text-slate-400 hover:text-slate-800">›</button>
-              <button onClick={() => { select(today); if (view === "year") setView("month"); }} className="btn-secondary ml-2 px-3 py-1 text-xs">Aujourd'hui</button>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="segmented" title={mode === "carried" ? "Part du solde réel du compte courant" : "Repart de 0 au début du mois"}>
+              <button data-active={mode === "carried"} onClick={() => setMode("carried")}>Solde reporté</button>
+              <button data-active={mode === "month"} onClick={() => setMode("month")}>Mois seul</button>
             </div>
-            <div className="flex flex-wrap gap-3 text-xs text-slate-500">
-              {(["income", "fixed", "variable", "savings"] as const).map((k) => (
-                <span key={k} className="flex items-center gap-1.5"><span className={cx("h-2 w-2 rounded-full", KIND_STYLE[k].dot)} />{KIND_LABEL[k]}</span>
+            <div className="segmented">
+              {(["month", "week", "year"] as View[]).map((v) => (
+                <button key={v} data-active={view === v} onClick={() => setView(v)}>
+                  {v === "month" ? "Mois" : v === "week" ? "Semaine" : "Année"}
+                </button>
               ))}
             </div>
           </div>
-
-          {view === "year" ? (
-            <YearGrid ops={ops} anchor={anchor} mode={mode} year={y} today={today} onPick={(mm) => { setCursor({ y, m: mm }); setView("month"); }} />
-          ) : (
-            <>
-              <div className="grid grid-cols-7 text-center text-xs font-medium text-slate-400">
-                {DOW.map((d) => <div key={d} className="pb-2">{d}</div>)}
-              </div>
-              <div
-                onMouseDown={onGridMouseDown}
-                className={cx("grid grid-cols-7 overflow-hidden rounded-xl border border-slate-100 select-none", grabbing ? "cursor-grabbing" : "cursor-grab")}
-              >
-                {days.map((d) => {
-                  const occ = occByDate.get(d) ?? [];
-                  const outside = view === "month" && monthOf(d) !== m;
-                  const max = view === "week" ? 8 : 2;
-                  return (
-                    <button
-                      key={d}
-                      onClick={() => onDaySelect(d)}
-                      className={cx(
-                        "flex min-w-0 flex-col gap-1 border-b border-r border-slate-100 p-1 text-left transition hover:bg-slate-50",
-                        view === "week" ? "min-h-[220px]" : "min-h-[76px]",
-                        outside && "bg-slate-50/60 text-slate-300",
-                        d === selected && "bg-brand-50/70 ring-2 ring-inset ring-brand-400"
-                      )}
-                    >
-                      <span className={cx("flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold", d === today ? "bg-brand-600 text-white" : outside ? "text-slate-300" : "text-slate-600")}>
-                        {dayNum(d)}
-                      </span>
-                      {occ.slice(0, max).map((o, i) => (
-                        <span key={i} title={tooltip(o)} className={cx("w-full truncate rounded-md px-1.5 py-0.5 text-[11px] font-semibold", KIND_STYLE[o.op.kind].chip, outside && "opacity-50")}>
-                          {o.signed > 0 ? "+" : "-"}{formatEUR(o.op.amount)}
-                          <span className="block truncate text-[10px] font-normal opacity-80">{o.op.name}</span>
-                        </span>
-                      ))}
-                      {occ.length > max && <span className="text-[10px] text-slate-400">+{occ.length - max} autre(s)</span>}
-                      {(skippedByDate.get(d) ?? []).map((o, i) => (
-                        <span key={`s${i}`} title={`${o.op.name} — occurrence ignorée`} className="w-full truncate rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-400 line-through">
-                          {formatEUR(o.op.amount)} {o.op.name}
-                        </span>
-                      ))}
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          )}
-        </section>
         </div>
 
-        <div className="lg:sticky lg:top-6">
-          <DayPanel ops={ops} anchor={effectiveAnchor} date={selected} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SummaryCards({
-  budget,
-  mode,
-  monthEndLabel,
-  picked,
-  onPick,
-}: {
-  budget: ReturnType<typeof getMonthlyBudget>;
-  mode: "month" | "carried";
-  monthEndLabel: string;
-  picked: OpKind | null;
-  onPick: (k: OpKind) => void;
-}) {
-  const pct = (n: number) => (budget.income > 0 ? `${Math.round((n / budget.income) * 100)} %` : "—");
-  const stats = [
-    { kind: "income" as OpKind, label: "Revenus", value: budget.income, sub: `${budget.incomeCount} prévu(s)`, color: "text-emerald-600", dot: "bg-emerald-500" },
-    { kind: "fixed" as OpKind, label: "Charges fixes", value: budget.fixed, sub: `${pct(budget.fixed)} des revenus`, color: "text-rose-600", dot: "bg-rose-500" },
-    { kind: "variable" as OpKind, label: "Dépenses variables", value: budget.variable, sub: `${pct(budget.variable)} des revenus`, color: "text-amber-600", dot: "bg-amber-500" },
-    { kind: "savings" as OpKind, label: "Épargne / invest.", value: budget.savings, sub: `${pct(budget.savings)} des revenus`, color: "text-violet-600", dot: "bg-violet-500" },
-  ];
-  const startBalance = mode === "carried" ? budget.startBalance : 0;
-  const resteAVivre = startBalance + budget.income - budget.fixed - budget.variable - budget.savings;
-  return (
-    <div className="grid gap-4 md:grid-cols-[1.5fr_1fr]">
-      <div className="card grid grid-cols-2 gap-1 p-2 sm:grid-cols-4">
-        {stats.map((s) => (
-          <button
-            key={s.label}
-            onClick={() => onPick(s.kind)}
-            title="Voir le détail"
-            className={cx("min-w-0 rounded-xl p-2 text-left transition hover:bg-slate-50", picked === s.kind && "bg-slate-100 ring-1 ring-slate-200")}
-          >
-            <p className="flex items-center gap-1.5 truncate text-xs text-slate-500"><span className={cx("h-2 w-2 rounded-full", s.dot)} />{s.label}</p>
-            <p className={cx("mt-1 text-lg font-bold", s.color)}>{formatEUR(s.value)}</p>
-            <p className="truncate text-[11px] text-slate-400">{s.sub}</p>
-          </button>
-        ))}
-      </div>
-      <div className="card flex items-center justify-between gap-3 border-emerald-200 bg-emerald-50/60 p-4">
-        <div className="min-w-0">
-          <p className="text-xs text-slate-500">{mode === "carried" ? "Solde début de mois (Courant)" : "Solde début de mois"}</p>
-          <p className="text-lg font-bold text-slate-800">{formatEUR(startBalance)}</p>
-        </div>
-        <span className="text-slate-300">→</span>
-        <div className="min-w-0 text-right">
-          <p className="text-xs font-medium text-emerald-800">Reste à vivre estimé jusqu'au {monthEndLabel}</p>
-          <p className={cx("text-lg font-bold", resteAVivre >= 0 ? "text-emerald-700" : "text-rose-600")}>{formatEUR(resteAVivre)}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function KindDetail({ kind, ops, y, m, onClose }: { kind: OpKind; ops: FinOp[]; y: number; m: number; onClose: () => void }) {
-  const { start, end } = monthBounds(y, m);
-  const occ = useMemo(() => expand(ops.filter((o) => o.kind === kind), start, end), [ops, kind, start, end]);
-  const skipped = useMemo(() => getSkippedOccurrences(ops.filter((o) => o.kind === kind), start, end), [ops, kind, start, end]);
-  const [pending, run] = useTransition();
-  const cats = [...new Set(occ.map((o) => o.op.category || "Autre"))];
-  const total = occ.reduce((s, o) => s + o.op.amount, 0);
-
-  return (
-    <section className={cx("card p-5", pending && "opacity-70")}>
-      <div className="mb-4 flex items-center justify-between">
-        <p className="font-semibold text-slate-900">
-          <span className={cx("mr-2 inline-block h-2.5 w-2.5 rounded-full", KIND_STYLE[kind].dot)} />
-          {KIND_LABEL[kind]} — {MONTHS_FR[m]} {y} <span className={cx("ml-2", KIND_STYLE[kind].text)}>{formatEUR(total)}</span>
-        </p>
-        <button onClick={onClose} className="text-sm text-slate-400 hover:text-slate-700">Fermer ✕</button>
-      </div>
-      {occ.length === 0 && <p className="text-sm text-slate-400">Aucune opération ce mois-ci.</p>}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {cats.map((cat) => {
-          const items = occ.filter((o) => (o.op.category || "Autre") === cat);
-          return (
-            <div key={cat} className="rounded-xl border border-slate-100 p-3">
-              <div className="mb-2 flex justify-between text-xs font-semibold uppercase tracking-wide text-slate-500">
-                <span>{cat}</span>
-                <span className={KIND_STYLE[kind].text}>{formatEUR(items.reduce((s, o) => s + o.op.amount, 0))}</span>
-              </div>
-              <OccList items={items} />
+        {view === "year" ? (
+          <YearGrid ops={ops} anchor={anchor} mode={mode} year={y} today={today} onPick={(mm) => { setCursor({ y, m: mm }); setView("month"); }} />
+        ) : (
+          <>
+            <div className="grid grid-cols-7 text-center text-[10px] font-medium text-stone-400">
+              {DOW.map((d) => <div key={d} className="pb-1.5">{d}</div>)}
             </div>
-          );
-        })}
-      </div>
-      {skipped.length > 0 && (
-        <div className="mt-4 border-t border-slate-100 pt-3">
-          <p className="mb-1.5 text-xs font-semibold text-slate-400">Occurrences ignorées</p>
-          <SkippedList items={skipped} onRestore={(o) => run(() => restoreOccurrence(o.op.table, o.op.id, o.date))} />
+            <div
+              onMouseDown={onGridMouseDown}
+              className={cx("grid grid-cols-7 overflow-hidden rounded-xl border border-line select-none", grabbing ? "cursor-grabbing" : "cursor-grab")}
+            >
+              {days.map((d) => {
+                const occ = occByDate.get(d) ?? [];
+                const outside = view === "month" && monthOf(d) !== m;
+                const max = view === "week" ? 8 : 2;
+                return (
+                  <button
+                    key={d}
+                    onClick={() => onDaySelect(d)}
+                    className={cx(
+                      "flex min-w-0 flex-col gap-0.5 border-b border-r border-line/70 p-1 text-left transition hover:bg-brand-50/40",
+                      view === "week" ? "min-h-[200px]" : "min-h-[72px]",
+                      outside && "bg-stone-50/70 text-stone-300",
+                      d === selected && "bg-brand-50/70 ring-1 ring-inset ring-brand-300"
+                    )}
+                  >
+                    <span className={cx("flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold", d === today ? "bg-brand-600 text-white" : outside ? "text-stone-300" : "text-stone-600")}>
+                      {dayNum(d)}
+                    </span>
+                    {occ.slice(0, max).map((o, i) => (
+                      <span key={i} title={tooltip(o)} className={cx("w-full truncate text-[10px] font-semibold leading-tight", o.signed > 0 ? "text-emerald-600" : "text-rose-600", outside && "opacity-50")}>
+                        {o.signed > 0 ? "+" : "-"}{formatEUR(o.op.amount)}
+                        <span className="block truncate font-normal text-stone-400">{o.op.name}</span>
+                      </span>
+                    ))}
+                    {occ.length > max && <span className="text-[10px] text-stone-400">+{occ.length - max}</span>}
+                    {(skippedByDate.get(d) ?? []).map((o, i) => (
+                      <span key={`s${i}`} title={`${o.op.name} — occurrence ignorée`} className="w-full truncate text-[10px] text-stone-300 line-through">
+                        {formatEUR(o.op.amount)}
+                      </span>
+                    ))}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
+        <div className="mt-2 flex flex-wrap gap-3 text-[10px] text-stone-400">
+          {(["income", "fixed", "variable", "savings"] as const).map((k) => (
+            <span key={k} className="flex items-center gap-1"><span className={cx("h-1.5 w-1.5 rounded-full", KIND_STYLE[k].dot)} />{KIND_LABEL[k]}</span>
+          ))}
+          <span className="ml-auto hidden sm:inline">Astuce : fais glisser le calendrier pour changer de mois.</span>
         </div>
-      )}
-    </section>
+      </section>
+
+      <div className="lg:sticky lg:top-6">
+        <DayPanel ops={ops} anchor={effectiveAnchor} date={selected} />
+      </div>
+    </div>
   );
 }
 
@@ -342,8 +223,8 @@ function SkippedList({ items, onRestore }: { items: Occurrence[]; onRestore: (o:
   return (
     <ul className="space-y-1">
       {items.map((o, i) => (
-        <li key={i} className="flex items-center gap-2 text-sm text-slate-400">
-          <span className="w-12 shrink-0 text-[11px]">{fmtShort(o.date)}</span>
+        <li key={i} className="flex items-center gap-2 text-sm text-stone-400">
+          <span className="w-12 shrink-0 whitespace-nowrap text-[11px]">{fmtShort(o.date)}</span>
           <span className="min-w-0 flex-1 truncate line-through">{o.op.name}</span>
           <span className="shrink-0 line-through">{formatEUR(o.op.amount)}</span>
           <button onClick={() => onRestore(o)} className="shrink-0 text-[11px] font-medium text-brand-600 hover:underline">Rétablir</button>
@@ -357,14 +238,14 @@ function OccList({ items, onSkip, onDelete }: { items: Occurrence[]; onSkip?: (o
   return (
     <ul className="space-y-1.5">
       {items.map((o, i) => (
-        <li key={i} className="group flex items-center gap-2 text-sm" title={tooltip(o)}>
-          <span className="w-12 shrink-0 text-[11px] text-slate-400">{fmtShort(o.date)}</span>
+        <li key={i} className="group flex items-center gap-2 text-[12px]" title={tooltip(o)}>
+          <span className="w-12 shrink-0 whitespace-nowrap text-[11px] text-stone-400">{fmtShort(o.date)}</span>
           <span className={cx("h-2 w-2 shrink-0 rounded-full", KIND_STYLE[o.op.kind].dot)} />
-          <span className="min-w-0 flex-1 truncate text-slate-700">{o.op.name}</span>
+          <span className="min-w-0 flex-1 truncate text-stone-700">{o.op.name}</span>
           {(onSkip || onDelete) && (
             <button
               onClick={() => (o.op.frequency !== "once" ? onSkip?.(o) : onDelete?.(o))}
-              className="hidden text-[11px] text-slate-400 hover:text-rose-600 group-hover:inline"
+              className="hidden text-[11px] text-stone-400 hover:text-rose-600 group-hover:inline"
               title={o.op.frequency !== "once" ? "Ignorer cette occurrence" : "Supprimer"}
             >
               ✕
@@ -389,15 +270,15 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
   }, [ops, date]);
 
   return (
-    <aside className={cx("card space-y-5 p-5", pending && "opacity-70")}>
+    <aside className={cx("card space-y-4 p-4", pending && "opacity-70")}>
       <div className="flex items-center justify-between gap-2">
-        <p className="font-semibold capitalize text-slate-900">{fmtLong(date)}</p>
-        <NewOperationButton defaultDate={date} label="+ Ajouter" className="shrink-0 text-xs font-medium text-brand-600" />
+        <p className="text-[13px] font-semibold capitalize text-stone-900">{fmtLong(date)}</p>
+        <NewOperationButton defaultDate={date} label="+ Ajouter" className="btn-ghost shrink-0" />
       </div>
 
-      <div className="rounded-2xl bg-brand-50 p-4">
+      <div className="rounded-xl bg-brand-50 p-3">
         <p className="text-xs font-medium text-brand-800">Reste à vivre au {fmtShort(date)}</p>
-        <p className={cx("mt-1 text-3xl font-bold", s.balance >= 0 ? "text-brand-700" : "text-rose-600")}>{formatEUR(s.balance)}</p>
+        <p className={cx("tabular mt-0.5 text-2xl font-bold", s.balance >= 0 ? "text-brand-800" : "text-rose-600")}>{formatEUR(s.balance)}</p>
         <p className="mt-2 border-t border-brand-100 pt-2 text-xs text-brand-800">
           Solde prévu au {fmtShort(s.monthEnd)} : <b className={s.endBalance >= 0 ? "" : "text-rose-600"}>{formatEUR(s.endBalance)}</b>
         </p>
@@ -406,11 +287,11 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
 
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-sm font-semibold text-slate-800">Opérations passées <span className="font-normal text-slate-400">(ce mois)</span></p>
+          <p className="text-[12px] font-semibold text-stone-800">Opérations passées <span className="font-normal text-stone-400">(ce mois)</span></p>
         </div>
-        {s.past.length === 0 ? <p className="text-sm text-slate-400">Aucune.</p> : <OccList items={s.past} onSkip={skip} onDelete={del} />}
+        {s.past.length === 0 ? <p className="text-sm text-stone-400">Aucune.</p> : <OccList items={s.past} onSkip={skip} onDelete={del} />}
         {s.past.length > 0 && (
-          <div className="mt-2 flex justify-between rounded-lg bg-slate-50 px-3 py-1.5 text-xs">
+          <div className="mt-2 flex justify-between rounded-lg bg-stone-50 px-3 py-1.5 text-xs">
             <span className="text-emerald-600">+{formatEUR(s.pastIn)}</span>
             <span className="text-rose-600">-{formatEUR(s.pastOut)}</span>
           </div>
@@ -418,17 +299,17 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
       </div>
 
       <div>
-        <p className="mb-2 text-sm font-semibold text-slate-800">Opérations à venir <span className="font-normal text-slate-400">(jusqu'au {fmtShort(s.monthEnd)})</span></p>
-        {s.upcoming.length === 0 ? <p className="text-sm text-slate-400">Rien de prévu.</p> : <OccList items={s.upcoming} onSkip={skip} onDelete={del} />}
+        <p className="mb-2 text-[12px] font-semibold text-stone-800">Opérations à venir <span className="font-normal text-stone-400">(jusqu'au {fmtShort(s.monthEnd)})</span></p>
+        {s.upcoming.length === 0 ? <p className="text-sm text-stone-400">Rien de prévu.</p> : <OccList items={s.upcoming} onSkip={skip} onDelete={del} />}
         {(s.upcomingIn > 0 || s.upcomingOut > 0) && (
-          <div className="mt-2 space-y-1 rounded-lg bg-slate-50 px-3 py-2 text-xs">
-            <div className="flex justify-between"><span className="text-slate-500">Entrées à venir</span><span className="font-semibold text-emerald-600">+{formatEUR(s.upcomingIn)}</span></div>
-            <div className="flex justify-between"><span className="text-slate-500">Sorties à venir</span><span className="font-semibold text-rose-600">-{formatEUR(s.upcomingOut)}</span></div>
+          <div className="mt-2 space-y-1 rounded-lg bg-stone-50 px-3 py-2 text-xs">
+            <div className="flex justify-between"><span className="text-stone-500">Entrées à venir</span><span className="font-semibold text-emerald-600">+{formatEUR(s.upcomingIn)}</span></div>
+            <div className="flex justify-between"><span className="text-stone-500">Sorties à venir</span><span className="font-semibold text-rose-600">-{formatEUR(s.upcomingOut)}</span></div>
             {s.outflowByAccount.length > 0 && (
-              <div className="border-t border-slate-200 pt-1">
-                <p className="mb-0.5 text-slate-400">À provisionner par compte</p>
+              <div className="border-t border-stone-200 pt-1">
+                <p className="mb-0.5 text-stone-400">À provisionner par compte</p>
                 {s.outflowByAccount.map((a) => (
-                  <div key={a.account} className="flex justify-between"><span className="text-slate-600">{a.account}</span><span className="font-semibold text-slate-800">{formatEUR(a.amount)}</span></div>
+                  <div key={a.account} className="flex justify-between"><span className="text-stone-600">{a.account}</span><span className="font-semibold text-stone-800">{formatEUR(a.amount)}</span></div>
                 ))}
               </div>
             )}
@@ -438,7 +319,7 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
 
       {skipped.length > 0 && (
         <div>
-          <p className="mb-2 text-sm font-semibold text-slate-400">Ignorées ce mois</p>
+          <p className="mb-2 text-sm font-semibold text-stone-400">Ignorées ce mois</p>
           <SkippedList items={skipped} onRestore={(o) => start(() => restoreOccurrence(o.op.table, o.op.id, o.date))} />
         </div>
       )}
@@ -463,19 +344,19 @@ export function BudgetBreakdown({ budget }: { budget: ReturnType<typeof getMonth
   const seg = (v: number) => `${spend > 0 ? (v / spend) * 100 : 0}%`;
 
   return (
-    <section className="card p-5">
+    <section className="card p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-semibold text-slate-900">Répartition du budget</p>
-        <div className="flex rounded-lg bg-slate-100 p-0.5 text-[11px] font-medium">
+        <p className="text-[13px] font-semibold text-stone-900">Répartition du budget</p>
+        <div className="flex rounded-lg bg-stone-100 p-0.5 text-[11px] font-medium">
           {(["global", "variable"] as const).map((v) => (
-            <button key={v} onClick={() => { setMode(v); setPicked(null); }} className={cx("rounded-md px-2 py-1", mode === v ? "bg-white shadow-sm" : "text-slate-500")}>
+            <button key={v} onClick={() => { setMode(v); setPicked(null); }} className={cx("rounded-md px-2 py-1", mode === v ? "bg-white shadow-sm" : "text-stone-500")}>
               {v === "global" ? "Budget global" : "Dépenses variables"}
             </button>
           ))}
         </div>
       </div>
-      <p className="mt-2 text-xs text-slate-500">Total dépensé / réservé : <b className="text-slate-800">{formatEUR(spend)}</b> {budget.income > 0 && `· ${Math.round((spend / budget.income) * 100)} % des revenus`}</p>
-      <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-slate-100">
+      <p className="mt-2 text-xs text-stone-500">Total dépensé / réservé : <b className="text-stone-800">{formatEUR(spend)}</b> {budget.income > 0 && `· ${Math.round((spend / budget.income) * 100)} % des revenus`}</p>
+      <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-stone-100">
         <div className="bg-rose-400" style={{ width: seg(budget.fixed) }} />
         <div className="bg-amber-400" style={{ width: seg(budget.variable) }} />
         <div className="bg-violet-400" style={{ width: seg(budget.savings) }} />
@@ -483,7 +364,7 @@ export function BudgetBreakdown({ budget }: { budget: ReturnType<typeof getMonth
       <div className="mt-4">
         <DonutChart items={items} size={150} strokeWidth={22} centerCaption={mode === "global" ? "budget" : "variable"} selected={picked} onSelect={(l) => setPicked(l === picked ? null : l)} />
         {pickedItem && (
-          <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
+          <p className="mt-3 rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-600">
             <b>{pickedItem.label}</b> : {formatEUR(pickedItem.value)} soit {total > 0 ? Math.round((pickedItem.value / total) * 100) : 0} % {mode === "global" ? "du budget" : "du budget variable"}
             {budget.income > 0 && ` · ${Math.round((pickedItem.value / budget.income) * 100)} % des revenus`}
           </p>
@@ -511,10 +392,10 @@ function YearGrid({ ops, anchor, mode, year, today, onPick }: { ops: FinOp[]; an
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
       {months.map((mo) => (
-        <button key={mo.mm} onClick={() => onPick(mo.mm)} className={cx("rounded-xl border p-3 text-left transition hover:border-brand-300", mo.current ? "border-brand-400 bg-brand-50/50" : "border-slate-100")}>
-          <p className="text-xs font-semibold text-slate-500">{MONTHS_FR[mo.mm]}</p>
-          <p className={cx("mt-1 text-lg font-bold", mo.endBalance >= 0 ? "text-slate-900" : "text-rose-600")}>{formatEUR(mo.endBalance)}</p>
-          <div className="mt-1 h-1.5 rounded-full bg-slate-100">
+        <button key={mo.mm} onClick={() => onPick(mo.mm)} className={cx("rounded-xl border p-3 text-left transition hover:border-brand-300", mo.current ? "border-brand-400 bg-brand-50/50" : "border-stone-100")}>
+          <p className="text-xs font-semibold text-stone-500">{MONTHS_FR[mo.mm]}</p>
+          <p className={cx("mt-1 text-lg font-bold", mo.endBalance >= 0 ? "text-stone-900" : "text-rose-600")}>{formatEUR(mo.endBalance)}</p>
+          <div className="mt-1 h-1.5 rounded-full bg-stone-100">
             <div className={cx("h-1.5 rounded-full", mo.endBalance >= 0 ? "bg-brand-500" : "bg-rose-500")} style={{ width: `${(Math.abs(mo.endBalance) / maxAbs) * 100}%` }} />
           </div>
           <p className="mt-1.5 text-[11px] text-emerald-600">+{formatEUR(mo.inflow)} <span className="text-rose-500">-{formatEUR(mo.outflow)}</span></p>

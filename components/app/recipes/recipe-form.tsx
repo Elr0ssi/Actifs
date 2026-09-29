@@ -74,7 +74,7 @@ export function RecipeForm({
 
   return (
     <form ref={formRef} action={submit} className="grid gap-4 sm:grid-cols-[160px_1fr]">
-      <label className="group relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 text-center text-xs text-slate-400 hover:border-brand-300">
+      <label className="group relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-stone-200 bg-stone-50 text-center text-xs text-stone-400 hover:border-brand-300">
         {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={preview} alt="" className="h-full w-full object-cover" />
@@ -100,7 +100,7 @@ export function RecipeForm({
               setPreview(null);
               setFile(null);
             }}
-            className="absolute right-1.5 top-1.5 hidden rounded-full bg-white/90 px-2 py-0.5 text-[11px] text-slate-600 shadow group-hover:block"
+            className="absolute right-1.5 top-1.5 hidden rounded-full bg-white/90 px-2 py-0.5 text-[11px] text-stone-600 shadow group-hover:block"
           >
             Retirer
           </button>
