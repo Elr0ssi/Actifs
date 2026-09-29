@@ -29,14 +29,16 @@ export default function RecipeDetailPage({ params }: { params: { slug: string } 
         <Link href="/recettes" className="text-sm font-medium text-slate-500 hover:text-slate-800">← Toutes les recettes</Link>
 
         <FadeIn>
-          <div className="relative mt-4 h-56 overflow-hidden rounded-3xl bg-slate-100">
-            {recipe.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={recipe.image} alt={recipe.name} className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full items-center justify-center text-sm text-slate-300">Photo à venir</div>
-            )}
-            <span className="absolute -bottom-4 left-5 flex h-12 w-12 items-center justify-center rounded-full border-2 border-white bg-white text-2xl shadow-md">
+          <div className="relative mt-4">
+            <div className="h-56 overflow-hidden rounded-3xl bg-slate-100">
+              {recipe.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={recipe.image} alt={recipe.name} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full items-center justify-center text-sm text-slate-300">Photo à venir</div>
+              )}
+            </div>
+            <span className="absolute -bottom-4 left-5 z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 border-white bg-white text-2xl shadow-md">
               {recipe.icon}
             </span>
           </div>
@@ -72,6 +74,38 @@ export default function RecipeDetailPage({ params }: { params: { slug: string } 
                 ))}
               </ol>
             </div>
+          </div>
+        </FadeIn>
+
+        <FadeIn delay={110}>
+          <div className="mt-10 rounded-3xl border border-slate-200 bg-slate-50 p-6 sm:p-8">
+            <h2 className="font-semibold text-slate-900">Détail plus poussé</h2>
+            <div className="mt-5 grid gap-6 sm:grid-cols-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Préparation</p>
+                <p className="mt-1 text-lg font-bold text-slate-900">{recipe.prepMinutes} min</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Cuisson</p>
+                <p className="mt-1 text-lg font-bold text-slate-900">{recipe.cookMinutes > 0 ? `${recipe.cookMinutes} min` : "—"}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Temps total</p>
+                <p className="mt-1 text-lg font-bold text-slate-900">{recipe.prepMinutes + recipe.cookMinutes} min</p>
+              </div>
+            </div>
+            {recipe.utensils.length > 0 && (
+              <div className="mt-6">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Ustensiles nécessaires</p>
+                <div className="flex flex-wrap gap-2">
+                  {recipe.utensils.map((u) => (
+                    <span key={u} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm text-slate-700">
+                      {u}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </FadeIn>
 

@@ -5,15 +5,17 @@ import type { MarketingRecipe } from "@/lib/marketing/recipes";
 export function RecipeCard({ recipe, size = "normal" }: { recipe: MarketingRecipe; size?: "normal" | "small" }) {
   const photoHeight = size === "small" ? "h-24" : "h-36";
   return (
-    <Link href={`/recettes/${recipe.slug}`} className="card group block h-full overflow-hidden p-0 transition hover:-translate-y-1 hover:shadow-lg">
-      <div className={`relative ${photoHeight} bg-slate-100`}>
-        {recipe.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={recipe.image} alt={recipe.name} className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full items-center justify-center text-xs text-slate-300">Photo à venir</div>
-        )}
-        <span className="absolute -bottom-3 left-3 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-white text-lg shadow-md">
+    <Link href={`/recettes/${recipe.slug}`} className="card group block h-full p-0 transition hover:-translate-y-1 hover:shadow-lg">
+      <div className="relative">
+        <div className={`overflow-hidden rounded-t-2xl ${photoHeight} bg-slate-100`}>
+          {recipe.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={recipe.image} alt={recipe.name} className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full items-center justify-center text-xs text-slate-300">Photo à venir</div>
+          )}
+        </div>
+        <span className="absolute -bottom-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-white text-lg shadow-md">
           {recipe.icon}
         </span>
       </div>
