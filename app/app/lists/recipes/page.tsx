@@ -31,11 +31,7 @@ export default async function RecipesPage() {
 
   return (
     <div className="space-y-8">
-      <Link href="/app/lists" className="text-sm font-medium text-stone-500 hover:text-stone-800">← Listes</Link>
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-stone-900">Recettes</h1>
-        <p className="mt-1 text-sm text-stone-500">Compose tes repas avec tes ingrédients ; ils serviront à remplir tes listes de courses.</p>
-      </div>
+      <p className="text-xs text-stone-500">Compose tes repas avec tes ingrédients ; ils serviront à remplir tes listes de courses.</p>
 
       <RecipesTabs recipes={typed} householdId={householdId} categories={categories} catalog={catalog} />
     </div>

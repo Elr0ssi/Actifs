@@ -15,13 +15,7 @@ export default async function IngredientsPage() {
 
   return (
     <div className="space-y-6">
-      <Link href="/app/lists" className="text-sm font-medium text-stone-500 hover:text-stone-800">← Listes</Link>
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-stone-900">Ingrédients & prix</h1>
-        <p className="mt-1 text-sm text-stone-500">
-          Base de référence pré-remplie (prix indicatifs par enseigne). Tes ajouts et tes prix restent personnels à ton foyer.
-        </p>
-      </div>
+      <p className="text-xs text-stone-500">Base de référence pré-remplie (prix indicatifs par enseigne). Tes ajouts et tes prix restent personnels à ton foyer.</p>
 
       <form action={createPersonalIngredient} className="card grid gap-2 p-4 sm:grid-cols-[1fr_130px_160px_110px_auto]">
         <input name="name" placeholder="Nouvel ingrédient (ex. Gnocchis)" className="input" required />

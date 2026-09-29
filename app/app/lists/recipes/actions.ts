@@ -48,7 +48,7 @@ export async function createRecipe(formData: FormData) {
   if (!householdId) return;
   const { data } = await supabase.from("recipes").insert({ ...recipe, household_id: householdId, created_by: userId }).select("id").single();
   if (data?.id) await saveItems(supabase, householdId, data.id, picked);
-  revalidatePath("/app/lists/recipes");
+  revalidatePath("/app/lists", "layout");
 }
 
 export async function updateRecipe(recipeId: string, formData: FormData) {
@@ -58,19 +58,19 @@ export async function updateRecipe(recipeId: string, formData: FormData) {
   if (!householdId) return;
   await supabase.from("recipes").update(recipe).eq("id", recipeId);
   await saveItems(supabase, householdId, recipeId, picked);
-  revalidatePath("/app/lists/recipes");
+  revalidatePath("/app/lists", "layout");
 }
 
 export async function toggleRecipeFavorite(recipeId: string, favorite: boolean) {
   const { supabase } = await ctx();
   await supabase.from("recipes").update({ is_favorite: favorite }).eq("id", recipeId);
-  revalidatePath("/app/lists/recipes");
+  revalidatePath("/app/lists", "layout");
 }
 
 export async function deleteRecipe(recipeId: string) {
   const { supabase } = await ctx();
   await supabase.from("recipes").delete().eq("id", recipeId);
-  revalidatePath("/app/lists/recipes");
+  revalidatePath("/app/lists", "layout");
 }
 
 /** Copie une recette d'inspiration (base fournie) dans "Mes recettes" du foyer. */
@@ -98,5 +98,5 @@ export async function importInspirationRecipe(slug: string) {
       position: i,
     }))
   );
-  revalidatePath("/app/lists/recipes");
+  revalidatePath("/app/lists", "layout");
 }

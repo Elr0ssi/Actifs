@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient, getSessionUser } from "@/lib/supabase/server";
 import { sanitizeLayout, type WidgetItem, type WidgetPage } from "@/lib/widgets/registry";
 
-const PATHS: Record<WidgetPage, string> = { dashboard: "/app", finance: "/app/finance" };
+const PATHS: Record<WidgetPage, string> = { dashboard: "/app", finance: "/app/finance", tasks: "/app/tasks", courses: "/app/lists", notes: "/app/notes" };
 
 export async function saveWidgetLayout(page: WidgetPage, items: WidgetItem[]) {
   if (!(page in PATHS)) return;

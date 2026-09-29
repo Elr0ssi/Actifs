@@ -42,7 +42,7 @@ export function TasksList({ data, size }: WidgetProps) {
   );
   const limit = size === "s" ? 4 : size === "m" ? 6 : 10;
   return (
-    <WidgetShell icon="tasks" title="Tâches prioritaires" subtitle={`${open.length} en cours`} href="/app/tasks">
+    <WidgetShell icon="tasks" title="Tâches prioritaires" subtitle={`${open.length} en cours`} href="/app/tasks/list">
       {open.length === 0 ? (
         <Empty>Rien en attente. Profites-en.</Empty>
       ) : (
@@ -74,7 +74,7 @@ export function TasksStat({ data }: WidgetProps) {
   const late = open.filter((t) => t.due_date && t.due_date < data.today).length;
   const todayCount = open.filter((t) => t.due_date === data.today).length;
   return (
-    <WidgetShell icon="tasks" title="Tâches en cours" href="/app/tasks" hrefLabel="Gérer">
+    <WidgetShell icon="tasks" title="Tâches en cours" href="/app/tasks/list" hrefLabel="Gérer">
       <p className="tabular text-3xl font-bold text-stone-900">{open.length}</p>
       <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
         <span className="rounded-full bg-brand-50 px-2 py-0.5 font-medium text-brand-700">{todayCount} aujourd'hui</span>
@@ -103,7 +103,7 @@ export function RoutinesToday({ data }: WidgetProps) {
   const today = data.routines.filter((r) => scheduledOn(r, data.today));
   const count = today.filter((r) => done.has(`${r.id}_${data.today}`)).length;
   return (
-    <WidgetShell icon="repeat" title="Routines du jour" href="/app/routines" hrefLabel="Gérer">
+    <WidgetShell icon="repeat" title="Routines du jour" href="/app/tasks/routines" hrefLabel="Gérer">
       {today.length === 0 ? (
         <Empty>Aucune routine prévue aujourd'hui.</Empty>
       ) : (
@@ -132,7 +132,7 @@ export function RoutinesWeek({ data, size }: WidgetProps) {
   const totalDue = perDay.reduce((s, p) => s + p.due, 0);
   const totalOk = perDay.reduce((s, p) => s + p.ok, 0);
   return (
-    <WidgetShell icon="chart" title="Progression des routines" subtitle="7 derniers jours" href="/app/routines">
+    <WidgetShell icon="chart" title="Progression des routines" subtitle="7 derniers jours" href="/app/tasks/routines">
       {data.routines.length === 0 ? (
         <Empty>Crée une routine pour suivre ta régularité.</Empty>
       ) : (
@@ -359,7 +359,7 @@ export function ListsShopping({ data, size, opts, setOpts }: WidgetProps) {
   const [checked, setChecked] = useState<Set<string>>(new Set());
   if (!list) {
     return (
-      <WidgetShell icon="cart" title="Liste de courses" href="/app/lists">
+      <WidgetShell icon="cart" title="Liste de courses" href="/app/lists/mes-listes">
         <Empty>Aucune liste en cours.</Empty>
       </WidgetShell>
     );
@@ -369,11 +369,11 @@ export function ListsShopping({ data, size, opts, setOpts }: WidgetProps) {
     <WidgetShell
       icon="cart"
       title="Liste de courses"
-      subtitle={`${remaining.length} article(s) à acheter`}
+      subtitle={size === "s" ? `${list.name} · ${remaining.length} à acheter` : `${remaining.length} article(s) à acheter`}
       href={`/app/lists/${list.id}`}
       hrefLabel="Ouvrir"
       right={
-        data.lists.length > 1 ? (
+        data.lists.length > 1 && size !== "s" ? (
           <select value={list.id} onChange={(e) => setOpts({ listId: e.target.value })} className="max-w-[110px] rounded-md border border-line bg-white px-1.5 py-1 text-[11px] text-stone-600">
             {data.lists.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
           </select>
@@ -441,7 +441,7 @@ export function RecipesIdeas({ data, size }: WidgetProps) {
 
 export function NotesVocab({ data, size }: WidgetProps) {
   return (
-    <WidgetShell icon="book" title="Vocabulaire récent" href="/app/notes">
+    <WidgetShell icon="book" title="Vocabulaire récent" href="/app/notes/vocabulaire">
       {data.words.length === 0 ? (
         <Empty>Aucun mot enregistré pour l'instant.</Empty>
       ) : (

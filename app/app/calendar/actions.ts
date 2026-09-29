@@ -30,6 +30,7 @@ export async function createRoutine(formData: FormData) {
     days_of_week: frequency === "weekly" ? days : [0, 1, 2, 3, 4, 5, 6],
   });
   revalidatePath("/app/calendar");
+  revalidatePath("/app/tasks", "layout");
   revalidatePath("/app");
 }
 
@@ -44,7 +45,7 @@ export async function updateRoutine(id: string, formData: FormData) {
     .from("routines")
     .update({ title, category, frequency, days_of_week: frequency === "weekly" ? days : [0, 1, 2, 3, 4, 5, 6] })
     .eq("id", id);
-  revalidatePath("/app/routines");
+  revalidatePath("/app/tasks", "layout");
   revalidatePath("/app/calendar");
   revalidatePath("/app");
 }
@@ -53,7 +54,7 @@ export async function updateRoutine(id: string, formData: FormData) {
 export async function archiveRoutine(id: string) {
   const { supabase } = await ctx();
   await supabase.from("routines").update({ active: false }).eq("id", id);
-  revalidatePath("/app/routines");
+  revalidatePath("/app/tasks", "layout");
   revalidatePath("/app/calendar");
   revalidatePath("/app");
 }
@@ -61,7 +62,7 @@ export async function archiveRoutine(id: string) {
 export async function restoreRoutine(id: string) {
   const { supabase } = await ctx();
   await supabase.from("routines").update({ active: true }).eq("id", id);
-  revalidatePath("/app/routines");
+  revalidatePath("/app/tasks", "layout");
   revalidatePath("/app/calendar");
   revalidatePath("/app");
 }
@@ -70,5 +71,5 @@ export async function restoreRoutine(id: string) {
 export async function deleteRoutineForever(id: string) {
   const { supabase } = await ctx();
   await supabase.from("routines").delete().eq("id", id);
-  revalidatePath("/app/routines");
+  revalidatePath("/app/tasks", "layout");
 }

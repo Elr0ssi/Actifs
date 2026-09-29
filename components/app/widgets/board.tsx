@@ -21,6 +21,7 @@ import type { WidgetData } from "@/lib/data/widgets";
 import { cx } from "@/lib/utils";
 import { Icon } from "@/components/app/icons";
 import { WidgetSizeContext } from "@/components/app/widgets/shell";
+import { ListsOverview, Projects, RecipesMine, VocabQuiz, VocabStats } from "@/components/app/widgets/sections";
 import type { WidgetProps } from "@/components/app/widgets/types";
 import { FinAccounts, FinActions, FinBreakdown, FinBudgets, FinCalendar, FinCharges, FinIncomes, FinReste, FinTrend } from "@/components/app/widgets/finance";
 import { CalAgenda, CalWeek, ListsShopping, NotesVocab, RecipesIdeas, RoutinesToday, RoutinesWeek, TasksList, TasksStat } from "@/components/app/widgets/life";
@@ -37,6 +38,11 @@ const RENDER: Record<WidgetType, (p: WidgetProps) => JSX.Element> = {
   "fin-actions": FinActions,
   "tasks-list": TasksList,
   "tasks-stat": TasksStat,
+  projects: Projects,
+  "lists-overview": ListsOverview,
+  "recipes-mine": RecipesMine,
+  "vocab-stats": VocabStats,
+  "vocab-quiz": VocabQuiz,
   "routines-today": RoutinesToday,
   "routines-week": RoutinesWeek,
   "cal-agenda": CalAgenda,

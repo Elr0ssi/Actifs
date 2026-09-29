@@ -41,7 +41,7 @@ export async function createList(formData: FormData) {
     })
     .select("id")
     .single();
-  revalidatePath("/app/lists");
+  revalidatePath("/app/lists", "layout");
   if (data?.id) redirect(`/app/lists/${data.id}${shopping ? "?compose=1" : ""}`);
 }
 
@@ -135,14 +135,14 @@ export async function setListStore(listId: string, formData: FormData) {
 export async function setListArchived(listId: string, archived: boolean) {
   const { supabase } = await ctx();
   await supabase.from("lists").update({ archived }).eq("id", listId);
-  revalidatePath("/app/lists");
+  revalidatePath("/app/lists", "layout");
   revalidatePath(`/app/lists/${listId}`);
 }
 
 export async function finishShopping(listId: string) {
   const { supabase } = await ctx();
   await supabase.from("lists").update({ archived: true }).eq("id", listId);
-  revalidatePath("/app/lists");
+  revalidatePath("/app/lists", "layout");
   redirect(`/app/lists/${listId}?done=1#comparatif`);
 }
 
@@ -188,7 +188,7 @@ export async function setIngredientPrice(ingredientId: string, store: string, va
 export async function deleteList(listId: string) {
   const { supabase } = await ctx();
   await supabase.from("lists").delete().eq("id", listId);
-  revalidatePath("/app/lists");
+  revalidatePath("/app/lists", "layout");
   redirect("/app/lists");
 }
 
@@ -240,11 +240,11 @@ export async function addItemLocation(formData: FormData) {
   const { supabase, householdId } = await ctx();
   if (!householdId) return;
   await supabase.from("item_locations").insert({ household_id: householdId, item_label: itemLabel, store_name: storeName, note });
-  revalidatePath("/app/lists");
+  revalidatePath("/app/lists", "layout");
 }
 
 export async function deleteItemLocation(id: string) {
   const { supabase } = await ctx();
   await supabase.from("item_locations").delete().eq("id", id);
-  revalidatePath("/app/lists");
+  revalidatePath("/app/lists", "layout");
 }

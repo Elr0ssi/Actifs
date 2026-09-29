@@ -45,8 +45,8 @@ export default async function CalendarPage({ searchParams }: { searchParams: { m
           <p className="mt-1 text-sm text-stone-500">Routines et tâches, tout au même endroit — les finances vivent dans Finance.</p>
         </div>
         <div className="flex gap-2">
-          <Link href="/app/routines" className="btn-secondary">🔁 Gérer mes routines</Link>
-          <Link href="/app/tasks" className="btn-secondary">✅ Gérer mes tâches</Link>
+          <Link href="/app/tasks/routines" className="btn-secondary">🔁 Gérer mes routines</Link>
+          <Link href="/app/tasks/list" className="btn-secondary">✅ Gérer mes tâches</Link>
         </div>
       </div>
       <CalendarClient

@@ -85,7 +85,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
 
   return (
     <div className="space-y-6">
-      <Link href="/app/lists" className="text-sm font-medium text-stone-500 hover:text-stone-800">← Listes</Link>
+      <Link href="/app/lists/mes-listes" className="text-sm font-medium text-stone-500 hover:text-stone-800">← Listes</Link>
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>

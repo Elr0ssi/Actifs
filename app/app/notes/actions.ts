@@ -13,7 +13,7 @@ async function ctx() {
 }
 
 function refresh() {
-  revalidatePath("/app/notes");
+  revalidatePath("/app/notes", "layout");
 }
 
 export async function addWord(formData: FormData) {

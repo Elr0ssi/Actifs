@@ -2,7 +2,7 @@ import type { IconName } from "@/components/app/icons";
 
 export type WidgetSize = "s" | "m" | "l" | "xl";
 export type WidgetSection = "finance" | "tasks" | "routines" | "calendar" | "courses" | "notes";
-export type WidgetPage = "dashboard" | "finance";
+export type WidgetPage = "dashboard" | "finance" | "tasks" | "courses" | "notes";
 
 export type WidgetType =
   | "fin-accounts"
@@ -16,6 +16,11 @@ export type WidgetType =
   | "fin-actions"
   | "tasks-list"
   | "tasks-stat"
+  | "projects"
+  | "lists-overview"
+  | "recipes-mine"
+  | "vocab-stats"
+  | "vocab-quiz"
   | "routines-today"
   | "routines-week"
   | "cal-agenda"
@@ -70,10 +75,15 @@ export const WIDGETS: WidgetDef[] = [
   { type: "cal-week", section: "calendar", title: "Cette semaine", description: "Les 7 prochains jours d'un coup d'œil.", icon: "list", sizes: ["m", "l", "xl"], defaultSize: "m" },
   { type: "tasks-list", section: "tasks", title: "Tâches prioritaires", description: "Tes tâches en cours, à cocher directement.", icon: "tasks", sizes: ["s", "m", "l"], defaultSize: "m" },
   { type: "tasks-stat", section: "tasks", title: "Compteur de tâches", description: "Tâches en cours et en retard.", icon: "tasks", sizes: ["s"], defaultSize: "s" },
+  { type: "projects", section: "tasks", title: "Projets", description: "Avancement de chaque projet, en tâches terminées.", icon: "target", sizes: ["s", "m", "l"], defaultSize: "m" },
   { type: "routines-today", section: "routines", title: "Routines du jour", description: "Coche tes routines d'aujourd'hui.", icon: "repeat", sizes: ["s", "m"], defaultSize: "s" },
   { type: "routines-week", section: "routines", title: "Progression des routines", description: "Taux de réalisation sur les 7 derniers jours.", icon: "chart", sizes: ["m", "l"], defaultSize: "m" },
   { type: "lists-shopping", section: "courses", title: "Liste de courses", description: "Les articles qu'il reste à acheter.", icon: "cart", sizes: ["s", "m"], defaultSize: "s" },
+  { type: "lists-overview", section: "courses", title: "Mes listes", description: "Toutes tes listes en cours et leur progression.", icon: "list", sizes: ["s", "m"], defaultSize: "s" },
+  { type: "recipes-mine", section: "courses", title: "Mes recettes", description: "Tes recettes enregistrées, favorites en premier.", icon: "chef", sizes: ["m", "l", "xl"], defaultSize: "m" },
   { type: "recipes-ideas", section: "courses", title: "Idées de recettes", description: "Une sélection de recettes qui change chaque jour.", icon: "chef", sizes: ["m", "l", "xl"], defaultSize: "m" },
+  { type: "vocab-stats", section: "notes", title: "Compteur de mots", description: "Nombre de mots appris, au total et cette semaine.", icon: "chart", sizes: ["s"], defaultSize: "s" },
+  { type: "vocab-quiz", section: "notes", title: "Révision éclair", description: "Une carte à retourner pour réviser ton vocabulaire.", icon: "book", sizes: ["s", "m"], defaultSize: "m" },
   { type: "notes-vocab", section: "notes", title: "Vocabulaire récent", description: "Tes derniers mots enregistrés.", icon: "book", sizes: ["s", "m"], defaultSize: "s" },
 ];
 
@@ -82,11 +92,14 @@ export const WIDGET_BY_TYPE = Object.fromEntries(WIDGETS.map((w) => [w.type, w])
 export const PAGE_SECTIONS: Record<WidgetPage, WidgetSection[]> = {
   dashboard: ["finance", "calendar", "tasks", "routines", "courses", "notes"],
   finance: ["finance"],
+  tasks: ["tasks", "routines", "calendar"],
+  courses: ["courses"],
+  notes: ["notes"],
 };
 
 const item = (type: WidgetType, size: WidgetSize, opts?: WidgetOpts): WidgetItem => ({ id: type, type, size, ...(opts ? { opts } : {}) });
 
-export const DEFAULT_LAYOUTS: Record<WidgetPage, WidgetItem[]> = {
+export const DEFAULT_LAYOUTS = {
   dashboard: [
     item("cal-week", "l"),
     item("fin-reste", "s"),
@@ -109,7 +122,27 @@ export const DEFAULT_LAYOUTS: Record<WidgetPage, WidgetItem[]> = {
     item("fin-trend", "s"),
     item("fin-actions", "s"),
   ],
-};
+} as Record<WidgetPage, WidgetItem[]>;
+
+DEFAULT_LAYOUTS.tasks = [
+  item("tasks-stat", "s"),
+  item("routines-today", "s"),
+  item("projects", "m"),
+  item("tasks-list", "m"),
+  item("routines-week", "m"),
+  item("cal-week", "xl"),
+];
+DEFAULT_LAYOUTS.courses = [
+  item("lists-shopping", "s"),
+  item("lists-overview", "s"),
+  item("recipes-mine", "m"),
+  item("recipes-ideas", "xl"),
+];
+DEFAULT_LAYOUTS.notes = [
+  item("vocab-stats", "s"),
+  item("vocab-quiz", "m"),
+  item("notes-vocab", "s"),
+];
 
 /** Nettoie une disposition venue de la base : types inconnus retirés, tailles ramenées à une taille permise. */
 export function sanitizeLayout(raw: unknown, page: WidgetPage): WidgetItem[] {

@@ -11,7 +11,7 @@ export async function toggleTaskStatus(taskId: string, done: boolean) {
     .update({ status: done ? "done" : "todo", completed_at: done ? new Date().toISOString() : null })
     .eq("id", taskId);
   revalidatePath("/app");
-  revalidatePath("/app/tasks");
+  revalidatePath("/app/tasks", "layout");
 }
 
 export async function toggleRoutineLog(routineId: string, date: string, done: boolean) {
@@ -34,6 +34,7 @@ export async function toggleRoutineLog(routineId: string, date: string, done: bo
   }
   revalidatePath("/app");
   revalidatePath("/app/calendar");
+  revalidatePath("/app/tasks", "layout");
 }
 
 export async function quickAddTask(formData: FormData) {
@@ -55,7 +56,7 @@ export async function quickAddTask(formData: FormData) {
     created_by: user?.id,
   });
   revalidatePath("/app");
-  revalidatePath("/app/tasks");
+  revalidatePath("/app/tasks", "layout");
 }
 
 export async function updateBalance(formData: FormData) {

@@ -17,6 +17,9 @@ export interface WidgetData {
   logs: RoutineLog[];
   lists: { id: string; name: string; items: { id: string; label: string; quantity: string | null; checked: boolean }[] }[];
   words: { id: string; french: string; english: string; created_at: string }[];
+  wordsTotal: number;
+  projects: { id: string; name: string; color: string; total: number; done: number }[];
+  recipes: { id: string; name: string; category: string | null; image_url: string | null; is_favorite: boolean; items: number }[];
 }
 
 /** Toutes les données dont les widgets peuvent avoir besoin, chargées en parallèle (un aller-retour par table). */
@@ -29,7 +32,7 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
   const from = addDays(today, -62);
   const to = addDays(today, 124);
 
-  const [finance, { data: tasks }, { data: routines }, { data: logs }, { data: lists }, { data: words }] = await Promise.all([
+  const [finance, { data: tasks }, { data: routines }, { data: logs }, { data: lists }, { data: words, count: wordsTotal }, { data: projects }, { data: projectTasks }, { data: recipes }] = await Promise.all([
     loadFinanceData(),
     supabase
       .from("tasks")
@@ -48,8 +51,17 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
       .eq("archived", false)
       .neq("type", "recipe")
       .order("created_at", { ascending: false })
-      .limit(5),
-    supabase.from("vocab_words").select("id, french, english, created_at").eq("household_id", householdId).order("created_at", { ascending: false }).limit(12),
+      .limit(8),
+    supabase.from("vocab_words").select("id, french, english, created_at", { count: "exact" }).eq("household_id", householdId).order("created_at", { ascending: false }).limit(200),
+    supabase.from("projects").select("id, name, color").eq("household_id", householdId).eq("archived", false).order("created_at"),
+    supabase.from("tasks").select("project_id, status").eq("household_id", householdId).not("project_id", "is", null),
+    supabase
+      .from("recipes")
+      .select("id, name, category, image_url, is_favorite, recipe_items(count)")
+      .eq("household_id", householdId)
+      .order("is_favorite", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(12),
   ]);
 
   return {
@@ -74,6 +86,19 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
       items: [...l.list_items].sort((a, b) => a.position - b.position).map(({ id, label, quantity, checked }) => ({ id, label, quantity, checked })),
     })),
     words: words ?? [],
+    wordsTotal: wordsTotal ?? words?.length ?? 0,
+    projects: (projects ?? []).map((p) => {
+      const own = (projectTasks ?? []).filter((t) => t.project_id === p.id);
+      return { id: p.id, name: p.name, color: p.color ?? "#b05538", total: own.length, done: own.filter((t) => t.status === "done").length };
+    }),
+    recipes: ((recipes ?? []) as { id: string; name: string; category: string | null; image_url: string | null; is_favorite: boolean; recipe_items: { count: number }[] }[]).map((r) => ({
+      id: r.id,
+      name: r.name,
+      category: r.category,
+      image_url: r.image_url,
+      is_favorite: r.is_favorite,
+      items: r.recipe_items?.[0]?.count ?? 0,
+    })),
   };
 }
 

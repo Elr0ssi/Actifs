@@ -15,19 +15,19 @@ async function getHouseholdId() {
 
 export async function createProject(formData: FormData) {
   const name = String(formData.get("name") || "").trim();
-  const color = String(formData.get("color") || "#4d5dfb");
+  const color = String(formData.get("color") || "#b05538");
   const icon = String(formData.get("icon") || "📁");
   if (!name) return;
   const { supabase, householdId, userId } = await getHouseholdId();
   if (!householdId) return;
   await supabase.from("projects").insert({ household_id: householdId, name, color, icon, created_by: userId });
-  revalidatePath("/app/tasks");
+  revalidatePath("/app/tasks", "layout");
 }
 
 export async function archiveProject(projectId: string) {
   const { supabase } = await getHouseholdId();
   await supabase.from("projects").update({ archived: true }).eq("id", projectId);
-  revalidatePath("/app/tasks");
+  revalidatePath("/app/tasks", "layout");
 }
 
 export async function createTask(formData: FormData) {
@@ -49,13 +49,13 @@ export async function createTask(formData: FormData) {
     status: "todo",
     created_by: userId,
   });
-  revalidatePath("/app/tasks");
+  revalidatePath("/app/tasks", "layout");
   revalidatePath("/app");
 }
 
 export async function deleteTask(taskId: string) {
   const { supabase } = await getHouseholdId();
   await supabase.from("tasks").delete().eq("id", taskId);
-  revalidatePath("/app/tasks");
+  revalidatePath("/app/tasks", "layout");
   revalidatePath("/app");
 }
