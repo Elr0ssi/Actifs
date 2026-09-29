@@ -2,8 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
 import type { Recipe, RecipeItem } from "@/lib/types";
-import { RecipeForm } from "@/components/app/recipes/recipe-form";
-import { RecipeCard } from "@/components/app/recipes/recipe-card";
+import { RecipesTabs } from "@/components/app/recipes/recipes-tabs";
 import { loadCatalog } from "@/lib/data/ingredients";
 
 export const metadata: Metadata = { title: "Recettes" };
@@ -38,17 +37,7 @@ export default async function RecipesPage() {
         <p className="mt-1 text-sm text-slate-500">Compose tes repas avec tes ingrédients ; ils serviront à remplir tes listes de courses.</p>
       </div>
 
-      <div className="card p-5">
-        <h2 className="mb-4 text-sm font-semibold text-slate-700">Nouvelle recette</h2>
-        <RecipeForm householdId={householdId} categories={categories} catalog={catalog} />
-      </div>
-
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {typed.length === 0 && <p className="text-sm text-slate-400">Aucune recette pour l'instant.</p>}
-        {typed.map((r) => (
-          <RecipeCard key={r.id} recipe={r} householdId={householdId} categories={categories} catalog={catalog} />
-        ))}
-      </div>
+      <RecipesTabs recipes={typed} householdId={householdId} categories={categories} catalog={catalog} />
     </div>
   );
 }

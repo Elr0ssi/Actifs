@@ -1,19 +1,29 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CATEGORIES, RECIPES } from "@/lib/marketing/recipes";
+import { CATEGORIES, EQUIPMENT, BASIC_UTENSILS, RECIPES } from "@/lib/marketing/recipes";
 import { RecipeCard } from "@/components/marketing/recipe-card";
 import { cx } from "@/lib/utils";
 
 export function RecipesBrowser() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
+  const [equipment, setEquipment] = useState<string[]>([]);
+  const [showEquipment, setShowEquipment] = useState(false);
+
+  const toggleEquipment = (key: string) => {
+    setEquipment((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+  };
 
   const q = query.trim().toLowerCase();
   const results = useMemo(
     () =>
       RECIPES.filter((r) => {
         if (category && r.category !== category) return false;
+        if (equipment.length > 0) {
+          const needsOther = r.utensils.some((u) => !BASIC_UTENSILS.includes(u) && !equipment.includes(u));
+          if (needsOther) return false;
+        }
         if (!q) return true;
         return (
           r.name.toLowerCase().includes(q) ||
@@ -21,7 +31,7 @@ export function RecipesBrowser() {
           r.ingredients.some((i) => i.toLowerCase().includes(q))
         );
       }),
-    [q, category]
+    [q, category, equipment]
   );
 
   return (
@@ -54,6 +64,47 @@ export function RecipesBrowser() {
         ))}
       </div>
 
+      <div className="mt-4 flex justify-center">
+        <button
+          onClick={() => setShowEquipment((v) => !v)}
+          className={cx(
+            "flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition",
+            equipment.length > 0 ? "border-brand-300 bg-brand-50 text-brand-700" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+          )}
+        >
+          🔧 Mon équipement {equipment.length > 0 && `(${equipment.length})`}
+          <span className="text-xs">{showEquipment ? "▲" : "▼"}</span>
+        </button>
+      </div>
+
+      {showEquipment && (
+        <div className="mx-auto mt-3 max-w-2xl rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="mb-3 text-center text-xs text-slate-500">
+            Coche ce que tu as chez toi : on ne montre que les recettes réalisables avec.
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {EQUIPMENT.map((e) => (
+              <button
+                key={e.key}
+                onClick={() => toggleEquipment(e.key)}
+                className={cx(
+                  "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition",
+                  equipment.includes(e.key) ? "border-brand-400 bg-brand-100 text-brand-800" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+                )}
+              >
+                <span>{e.icon}</span>
+                {e.label}
+              </button>
+            ))}
+          </div>
+          {equipment.length > 0 && (
+            <button onClick={() => setEquipment([])} className="mx-auto mt-3 block text-xs text-slate-400 hover:text-slate-700">
+              Réinitialiser
+            </button>
+          )}
+        </div>
+      )}
+
       <p className="mt-6 text-center text-sm text-slate-400">
         {results.length} recette{results.length > 1 ? "s" : ""} {results.length !== RECIPES.length && `sur ${RECIPES.length}`}
       </p>
@@ -65,7 +116,7 @@ export function RecipesBrowser() {
       </div>
 
       {results.length === 0 && (
-        <p className="mt-10 text-center text-sm text-slate-400">Aucune recette ne correspond. Essaie un autre mot-clé.</p>
+        <p className="mt-10 text-center text-sm text-slate-400">Aucune recette ne correspond. Essaie un autre mot-clé ou un autre équipement.</p>
       )}
     </div>
   );

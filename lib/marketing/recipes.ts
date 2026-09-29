@@ -22,6 +22,20 @@ export interface MarketingRecipe {
 
 export const CATEGORIES = ["Rapide", "Viande", "Poisson", "Pâtes", "Riz", "Végétarien", "Salade", "Soupe", "Gratin", "Tarte", "Apéritif", "Petit déjeuner", "Dessert"] as const;
 
+/** Ustensiles toujours supposés disponibles : jamais filtrés. */
+export const BASIC_UTENSILS = ["couteau", "planche à découper", "saladier", "papier cuisson", "fouet"];
+
+/** Équipements filtrables (correspondent aux valeurs du champ `utensils` des recettes). */
+export const EQUIPMENT: { key: string; label: string; icon: string }[] = [
+  { key: "four", label: "Four", icon: "🔥" },
+  { key: "poêle", label: "Poêle", icon: "🍳" },
+  { key: "casserole", label: "Casserole", icon: "🍲" },
+  { key: "air fryer (alternative)", label: "Air fryer", icon: "🌀" },
+  { key: "mixeur", label: "Mixeur / blender", icon: "🥤" },
+  { key: "plat ou moule adapté", label: "Plat ou moule", icon: "🧁" },
+  { key: "micro-ondes", label: "Micro-ondes", icon: "📻" },
+];
+
 export const RECIPES: MarketingRecipe[] = [
   {
     slug: "poulet-basquaise",

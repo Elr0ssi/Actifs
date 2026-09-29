@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient, getSessionUser } from "@/lib/supabase/server";
 import { ensureIngredients, parsePicked } from "@/lib/data/ingredients";
 import { formatQty } from "@/lib/shopping";
+import { getRecipe } from "@/lib/marketing/recipes";
 
 async function ctx() {
   const supabase = createClient();
@@ -69,5 +70,33 @@ export async function toggleRecipeFavorite(recipeId: string, favorite: boolean) 
 export async function deleteRecipe(recipeId: string) {
   const { supabase } = await ctx();
   await supabase.from("recipes").delete().eq("id", recipeId);
+  revalidatePath("/app/lists/recipes");
+}
+
+/** Copie une recette d'inspiration (base fournie) dans "Mes recettes" du foyer. */
+export async function importInspirationRecipe(slug: string) {
+  const source = getRecipe(slug);
+  if (!source) return;
+  const { supabase, householdId, userId } = await ctx();
+  if (!householdId) return;
+
+  const { data } = await supabase
+    .from("recipes")
+    .insert({ name: source.name, category: source.category, image_url: null, household_id: householdId, created_by: userId })
+    .select("id")
+    .single();
+  if (!data?.id) return;
+
+  await supabase.from("recipe_items").insert(
+    source.ingredients.map((label, i) => ({
+      recipe_id: data.id,
+      ingredient_id: null,
+      label,
+      quantity: null,
+      qty: null,
+      qty_unit: null,
+      position: i,
+    }))
+  );
   revalidatePath("/app/lists/recipes");
 }
