@@ -4,11 +4,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://actifs.app"),
   title: {
-    default: "Actifs — Le hub qui organise ta vie",
-    template: "%s — Actifs",
+    default: "All In — Le hub qui organise ta vie",
+    template: "%s — All In",
   },
   description:
-    "Actifs regroupe tes tâches, tes projets, tes routines, tes listes partagées et tes finances dans un seul espace personnel, gratuit et ultra ergonomique.",
+    "All In regroupe tes tâches, tes projets, tes routines, tes listes partagées et tes finances dans un seul espace personnel, gratuit et ultra ergonomique.",
   keywords: [
     "gestion de tâches",
     "organisation quotidienne",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     "gestion financière personnelle",
   ],
   openGraph: {
-    title: "Actifs — Le hub qui organise ta vie",
+    title: "All In — Le hub qui organise ta vie",
     description:
       "Tâches, projets, routines, listes partagées et finances : un seul espace, gratuit et ultra ergonomique.",
     type: "website",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Actifs — Le hub qui organise ta vie",
+    title: "All In — Le hub qui organise ta vie",
     description: "Tâches, routines, listes partagées et finances dans un seul espace, gratuit.",
   },
 };

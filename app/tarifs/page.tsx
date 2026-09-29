@@ -4,8 +4,8 @@ import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { FadeIn } from "@/components/marketing/fade-in";
 
 export const metadata: Metadata = {
-  title: "Tarifs — Actifs",
-  description: "Actifs est 100% gratuit : tâches, listes, routines, calendrier et finances, sans carte bancaire ni limite.",
+  title: "Tarifs — All In",
+  description: "All In est 100% gratuit : tâches, listes, routines, calendrier et finances, sans carte bancaire ni limite.",
 };
 
 const INCLUDED = [
@@ -18,10 +18,10 @@ const INCLUDED = [
 ];
 
 const FAQ = [
-  { q: "Actifs est-il vraiment gratuit ?", a: "Oui, entièrement. Aucune carte bancaire n'est demandée à l'inscription, et il n'y a pas de palier payant caché." },
+  { q: "All In est-il vraiment gratuit ?", a: "Oui, entièrement. Aucune carte bancaire n'est demandée à l'inscription, et il n'y a pas de palier payant caché." },
   { q: "Y a-t-il une limite de listes, tâches ou opérations ?", a: "Non, tout est illimité : projets, listes, routines, opérations financières." },
   { q: "Puis-je partager mon espace ?", a: "Oui, invite ton/ta partenaire avec un code : vous partagez alors listes, budget et objectifs à deux." },
-  { q: "Est-ce que mes données financières sont fiables ?", a: "Actifs affiche toujours des estimations tracées et explicables, jamais des montants inventés — et le calcul détaillé est visible à chaque fois." },
+  { q: "Est-ce que mes données financières sont fiables ?", a: "All In affiche toujours des estimations tracées et explicables, jamais des montants inventés — et le calcul détaillé est visible à chaque fois." },
 ];
 
 export default function TarifsPage() {
@@ -33,7 +33,7 @@ export default function TarifsPage() {
           <FadeIn>
             <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">Complètement gratuit</h1>
             <p className="mx-auto mt-4 max-w-xl text-lg text-slate-600">
-              Actifs est un outil gratuit pour organiser ta vie, ton temps et tes finances. Aucune carte bancaire,
+              All In est un outil gratuit pour organiser ta vie, ton temps et tes finances. Aucune carte bancaire,
               aucune limite artificielle.
             </p>
           </FadeIn>

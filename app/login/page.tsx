@@ -12,7 +12,7 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
   return (
     <AuthShell
       title="Content de te revoir"
-      subtitle="Connecte-toi à ton espace Actifs."
+      subtitle="Connecte-toi à ton espace All In."
       footer={
         <p className="text-sm text-slate-500">
           Pas encore de compte ? <Link href="/signup" className="font-semibold text-brand-600">Créer un espace</Link>

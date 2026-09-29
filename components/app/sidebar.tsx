@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cx } from "@/lib/utils";
+import { LogoWordmark } from "@/components/logo";
 import { logout } from "@/app/(auth)/actions";
 
 const NAV = [
   { href: "/app", label: "Tableau de bord", icon: "🏠" },
   { href: "/app/tasks", label: "Tâches & projets", icon: "✅" },
-  { href: "/app/lists", label: "Listes", icon: "🛒" },
+  { href: "/app/lists", label: "Courses", icon: "🛒" },
   { href: "/app/calendar", label: "Calendrier", icon: "📅" },
   { href: "/app/finance", label: "Finance", icon: "💶" },
   { href: "/app/notes", label: "Notes", icon: "📝" },
@@ -55,12 +56,7 @@ export function Sidebar({
             <path d="M4 7h16M4 12h16M4 17h16" />
           </svg>
         </button>
-        <span className="flex items-center gap-2 font-bold tracking-tight">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-600 text-sm text-white">
-            A
-          </span>
-          Actifs
-        </span>
+        <LogoWordmark />
       </header>
 
       {open && (
@@ -79,12 +75,7 @@ export function Sidebar({
         )}
       >
         <div className="flex items-center justify-between px-6 py-5">
-          <span className="flex items-center gap-2 text-lg font-bold tracking-tight">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">
-              A
-            </span>
-            Actifs
-          </span>
+          <LogoWordmark className="text-lg" />
           <button
             type="button"
             onClick={() => setOpen(false)}

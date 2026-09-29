@@ -13,7 +13,7 @@ export function generateStaticParams() {
 export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
   const recipe = getRecipe(params.slug);
   if (!recipe) return {};
-  return { title: `${recipe.name} — Actifs`, description: recipe.desc };
+  return { title: `${recipe.name} — All In`, description: recipe.desc };
 }
 
 export default function RecipeDetailPage({ params }: { params: { slug: string } }) {
@@ -79,7 +79,7 @@ export default function RecipeDetailPage({ params }: { params: { slug: string } 
           <div className="mt-12 rounded-3xl border border-brand-200 bg-brand-50 p-8 text-center">
             <h2 className="text-xl font-bold text-slate-900">Envie de cuisiner ça cette semaine ?</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
-              Crée ton espace gratuit : Actifs transforme cette recette en liste de courses complète, avec quantités et
+              Crée ton espace gratuit : All In transforme cette recette en liste de courses complète, avec quantités et
               prix estimés par enseigne.
             </p>
             <Link href="/signup" className="btn-primary mt-5 inline-block px-6 py-3 text-base">Créer ma liste de courses →</Link>

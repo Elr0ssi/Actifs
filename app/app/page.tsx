@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { getAppContext } from "@/lib/data/context";
 import { loadFinanceData } from "@/lib/data/finance";
-import { getDateSituation, getMonthlyBudget } from "@/lib/finance-engine";
+import { getDateSituation, getMonthlyBudget, monthBounds } from "@/lib/finance-engine";
 import { formatEUR, todayISO } from "@/lib/utils";
-import type { Task, Routine, RoutineLog } from "@/lib/types";
+import type { Task, Routine, RoutineLog, DashboardWidget } from "@/lib/types";
 import { ToggleCheckbox } from "@/components/app/toggle-checkbox";
 import { DashboardCalendar } from "@/components/app/dashboard-calendar";
+import { DashboardCustomizer } from "@/components/app/dashboard-customizer";
+import { BudgetBreakdown } from "@/components/app/finance/finance-dashboard";
 import { toggleTaskStatus, toggleRoutineLog, quickAddTask } from "@/app/app/actions";
-import { monthBounds } from "@/lib/finance-engine";
+
+const DEFAULT_WIDGETS: DashboardWidget[] = ["tasks", "routines", "budget", "calendar", "breakdown"];
 
 export default async function DashboardPage() {
   const ctx = await getAppContext();
@@ -16,6 +19,8 @@ export default async function DashboardPage() {
   const householdId = profile?.household_id;
   const today = todayISO();
   const weekday = new Date().getDay();
+  const widgets = profile?.dashboard_widgets?.length ? profile.dashboard_widgets : DEFAULT_WIDGETS;
+  const show = (w: DashboardWidget) => widgets.includes(w);
 
   const [y0, m0] = today.split("-").map(Number);
   const { start: monthStart, end: monthEnd } = monthBounds(y0, m0 - 1);
@@ -44,6 +49,7 @@ export default async function DashboardPage() {
   const situation = finance ? getDateSituation(finance.ops, finance.anchor, today) : null;
 
   const doneRoutines = todaysRoutines.filter((r) => logByRoutine.get(r.id)?.done).length;
+  const statCount = [show("tasks"), show("routines"), show("budget")].filter(Boolean).length;
 
   return (
     <div className="space-y-8">
@@ -54,81 +60,97 @@ export default async function DashboardPage() {
           </h1>
           <p className="mt-1 text-sm text-slate-500">Voici ton point du jour.</p>
         </div>
-        <form action={quickAddTask} className="flex gap-2">
-          <input name="title" placeholder="Ajouter une tâche rapide…" className="input w-64" />
-          <button className="btn-primary">Ajouter</button>
-        </form>
+        <div className="flex flex-wrap items-center gap-2">
+          <form action={quickAddTask} className="flex gap-2">
+            <input name="title" placeholder="Ajouter une tâche rapide…" className="input w-64" />
+            <button className="btn-primary">Ajouter</button>
+          </form>
+          <DashboardCustomizer enabled={widgets} />
+        </div>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Tâches en cours" value={String(tasks?.length ?? 0)} accent="text-brand-600" />
-        <StatCard label="Routines du jour" value={`${doneRoutines}/${todaysRoutines.length}`} accent="text-emerald-600" />
-        <Link href="/app/finance" className="card p-5 transition hover:border-brand-200 sm:col-span-2">
-          <p className="label">Budget</p>
-          <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-xs text-slate-500">Reste à vivre aujourd'hui</p>
-              <p className={`text-2xl font-bold ${(situation?.balance ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600"}`}>{formatEUR(situation?.balance ?? 0)}</p>
-            </div>
-            <div className="text-right text-xs text-slate-500">
-              <p>Reste à vivre du mois : <b className="text-slate-800">{formatEUR(budget?.resteAVivre ?? 0)}</b></p>
-              <p>Solde prévu fin de mois : <b className="text-slate-800">{formatEUR(situation?.endBalance ?? 0)}</b></p>
-            </div>
-          </div>
-        </Link>
-      </div>
+      {statCount > 0 && (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {show("tasks") && <StatCard label="Tâches en cours" value={String(tasks?.length ?? 0)} accent="text-brand-600" />}
+          {show("routines") && <StatCard label="Routines du jour" value={`${doneRoutines}/${todaysRoutines.length}`} accent="text-emerald-600" />}
+          {show("budget") && (
+            <Link href="/app/finance" className={`card p-5 transition hover:border-brand-200 ${statCount <= 2 ? "sm:col-span-2" : "sm:col-span-2"}`}>
+              <p className="label">Budget</p>
+              <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="text-xs text-slate-500">Reste à vivre aujourd'hui</p>
+                  <p className={`text-2xl font-bold ${(situation?.balance ?? 0) >= 0 ? "text-emerald-600" : "text-rose-600"}`}>{formatEUR(situation?.balance ?? 0)}</p>
+                </div>
+                <div className="text-right text-xs text-slate-500">
+                  <p>Reste à vivre du mois : <b className="text-slate-800">{formatEUR(budget?.resteAVivre ?? 0)}</b></p>
+                  <p>Solde prévu fin de mois : <b className="text-slate-800">{formatEUR(situation?.endBalance ?? 0)}</b></p>
+                </div>
+              </div>
+            </Link>
+          )}
+        </div>
+      )}
 
-      <DashboardCalendar
-        year={y0}
-        month={m0 - 1}
-        today={today}
-        tasks={monthTasks ?? []}
-        routines={routines ?? []}
-        logs={logs ?? []}
-        ops={finance?.ops ?? []}
-      />
+      {show("calendar") && (
+        <DashboardCalendar
+          year={y0}
+          month={m0 - 1}
+          today={today}
+          tasks={monthTasks ?? []}
+          routines={routines ?? []}
+          logs={logs ?? []}
+          ops={finance?.ops ?? []}
+        />
+      )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <section className="card p-6 lg:col-span-2">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-semibold text-slate-900">Tâches prioritaires</h2>
-            <Link href="/app/tasks" className="text-sm font-medium text-brand-600">Tout voir</Link>
-          </div>
-          <div className="space-y-1">
-            {(tasks ?? []).length === 0 && <p className="text-sm text-slate-400">Rien en attente. Profites-en 🎉</p>}
-            {(tasks ?? []).map((t) => (
-              <ToggleCheckbox
-                key={t.id}
-                initialChecked={t.status === "done"}
-                onToggle={toggleTaskStatus.bind(null, t.id)}
-                label={t.title}
-                sublabel={t.priority === "high" ? "Priorité haute" : t.due_date ? `Échéance ${t.due_date}` : undefined}
-              />
-            ))}
-          </div>
-        </section>
+      {(show("tasks") || show("routines")) && (
+        <div className="grid gap-6 lg:grid-cols-3">
+          {show("tasks") && (
+            <section className="card p-6 lg:col-span-2">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="font-semibold text-slate-900">Tâches prioritaires</h2>
+                <Link href="/app/tasks" className="text-sm font-medium text-brand-600">Tout voir</Link>
+              </div>
+              <div className="space-y-1">
+                {(tasks ?? []).length === 0 && <p className="text-sm text-slate-400">Rien en attente. Profites-en 🎉</p>}
+                {(tasks ?? []).map((t) => (
+                  <ToggleCheckbox
+                    key={t.id}
+                    initialChecked={t.status === "done"}
+                    onToggle={toggleTaskStatus.bind(null, t.id)}
+                    label={t.title}
+                    sublabel={t.priority === "high" ? "Priorité haute" : t.due_date ? `Échéance ${t.due_date}` : undefined}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
 
-        <section className="card p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-semibold text-slate-900">Routines du jour</h2>
-            <Link href="/app/calendar" className="text-sm font-medium text-brand-600">Calendrier</Link>
-          </div>
-          <div className="space-y-1">
-            {todaysRoutines.length === 0 && <p className="text-sm text-slate-400">Aucune routine programmée aujourd'hui.</p>}
-            {todaysRoutines.map((r) => (
-              <ToggleCheckbox
-                key={r.id}
-                initialChecked={!!logByRoutine.get(r.id)?.done}
-                onToggle={toggleRoutineLog.bind(null, r.id, today)}
-                label={r.title}
-                sublabel={r.category ?? undefined}
-                strikeThrough={false}
-              />
-            ))}
-          </div>
-        </section>
-      </div>
+          {show("routines") && (
+            <section className={`card p-6 ${show("tasks") ? "" : "lg:col-span-3"}`}>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="font-semibold text-slate-900">Routines du jour</h2>
+                <Link href="/app/calendar" className="text-sm font-medium text-brand-600">Calendrier</Link>
+              </div>
+              <div className="space-y-1">
+                {todaysRoutines.length === 0 && <p className="text-sm text-slate-400">Aucune routine programmée aujourd'hui.</p>}
+                {todaysRoutines.map((r) => (
+                  <ToggleCheckbox
+                    key={r.id}
+                    initialChecked={!!logByRoutine.get(r.id)?.done}
+                    onToggle={toggleRoutineLog.bind(null, r.id, today)}
+                    label={r.title}
+                    sublabel={r.category ?? undefined}
+                    strikeThrough={false}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
 
+      {show("breakdown") && budget && <BudgetBreakdown budget={budget} />}
     </div>
   );
 }

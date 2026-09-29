@@ -26,11 +26,13 @@ const config: Config = {
         float: { "0%,100%": { transform: "translateY(0)" }, "50%": { transform: "translateY(-12px)" } },
         fadeUp: { "0%": { opacity: "0", transform: "translateY(24px)" }, "100%": { opacity: "1", transform: "translateY(0)" } },
         gradientShift: { "0%,100%": { backgroundPosition: "0% 50%" }, "50%": { backgroundPosition: "100% 50%" } },
+        pageIn: { "0%": { opacity: "0", transform: "translateY(6px)" }, "100%": { opacity: "1", transform: "translateY(0)" } },
       },
       animation: {
         float: "float 6s ease-in-out infinite",
         fadeUp: "fadeUp 0.7s ease-out both",
         gradientShift: "gradientShift 8s ease infinite",
+        pageIn: "pageIn 0.25s ease-out both",
       },
     },
   },

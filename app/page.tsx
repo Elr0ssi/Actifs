@@ -87,7 +87,7 @@ export default function LandingPage() {
           <FadeIn className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Tout ce qui compte, un seul endroit</h2>
             <p className="mt-4 text-slate-600">
-              Actifs remplace ton carnet, ton tableur budget et tes 5 applis de listes par un hub unique et cohérent.
+              All In remplace ton carnet, ton tableur budget et tes 5 applis de listes par un hub unique et cohérent.
             </p>
           </FadeIn>
           <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -127,7 +127,7 @@ export default function LandingPage() {
           <FadeIn className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Des recettes, et leur liste de courses en un clic</h2>
             <p className="mt-4 text-slate-600">
-              Choisis une recette, Actifs génère la liste de courses complète — quantités et prix par enseigne compris.
+              Choisis une recette, All In génère la liste de courses complète — quantités et prix par enseigne compris.
             </p>
           </FadeIn>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

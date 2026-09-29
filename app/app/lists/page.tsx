@@ -6,7 +6,7 @@ import { formatEUR } from "@/lib/utils";
 import { STORES } from "@/lib/shopping";
 import { createList } from "@/app/app/lists/actions";
 
-export const metadata: Metadata = { title: "Listes" };
+export const metadata: Metadata = { title: "Courses" };
 
 const TYPE_LABEL: Record<string, string> = { generic: "Générale", shopping: "Courses", recipe: "Recette" };
 
@@ -60,7 +60,7 @@ export default async function ListsPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Listes</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Courses</h1>
           <p className="mt-1 text-sm text-slate-500">Listes de courses composées depuis tes recettes, et checklists partagées.</p>
         </div>
         <div className="flex gap-2">

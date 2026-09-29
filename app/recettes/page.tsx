@@ -5,8 +5,8 @@ import { FadeIn } from "@/components/marketing/fade-in";
 import { RecipesBrowser } from "@/components/marketing/recipes-browser";
 
 export const metadata: Metadata = {
-  title: "Recettes — Actifs",
-  description: "Des recettes faciles, avec leur liste de courses générée automatiquement dans Actifs.",
+  title: "Recettes — All In",
+  description: "Des recettes faciles, avec leur liste de courses générée automatiquement dans All In.",
 };
 
 export default function RecipesPage() {
@@ -34,7 +34,7 @@ export default function RecipesPage() {
           <FadeIn className="mx-auto max-w-2xl px-6">
             <h2 className="text-3xl font-bold tracking-tight">Ta liste de courses, générée toute seule</h2>
             <p className="mt-3 text-slate-300">
-              Dans Actifs, choisis une ou plusieurs recettes et la liste complète se crée automatiquement — quantités
+              Dans All In, choisis une ou plusieurs recettes et la liste complète se crée automatiquement — quantités
               ajustées, prix estimés par enseigne, rien à recopier.
             </p>
             <Link href="/signup" className="btn-primary mt-8 inline-block px-6 py-3 text-base">Créer mon espace gratuit →</Link>
