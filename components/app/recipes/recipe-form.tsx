@@ -115,9 +115,16 @@ export function RecipeForm({
           className="input py-3 text-lg font-semibold"
           required
         />
-        <select name="category" defaultValue={recipe?.category ?? "Rapide"} className="input">
-          {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
+        <div className="grid grid-cols-[1fr_auto] gap-2">
+          <select name="category" defaultValue={recipe?.category ?? "Rapide"} className="input">
+            {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <label className="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 text-xs text-stone-500">
+            Pour
+            <input name="servings" type="number" min={1} max={50} defaultValue={recipe?.servings ?? 2} className="w-12 bg-transparent text-center text-sm font-semibold text-stone-800 outline-none" aria-label="Nombre de personnes" />
+            pers.
+          </label>
+        </div>
         <div>
           <p className="label mb-1.5">Ingrédients</p>
           <IngredientPicker

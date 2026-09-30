@@ -108,6 +108,7 @@ export function MenuWeek({ data }: WidgetProps) {
                     <p className="mt-1 flex items-center gap-1 text-[11px] text-stone-500">
                       <span>⏱</span>
                       {rec?.time ?? "—"}
+                      <span className="ml-1 text-stone-400">· {first.servings ?? data.defaultServings} pers.</span>
                       {meals.length > 1 && <span className="ml-auto rounded-full bg-stone-100 px-1.5 text-[10px] font-semibold text-stone-500">+{meals.length - 1}</span>}
                     </p>
                   </>

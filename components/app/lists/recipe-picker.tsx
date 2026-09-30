@@ -17,10 +17,12 @@ export function RecipePicker({
   idBySlug,
   busy,
   store,
+  defaultPeople,
   onCount,
   onPickInspiration,
   onClose,
 }: {
+  defaultPeople: number;
   initialTab: Tab;
   mine: ComposerRecipe[];
   counts: Record<string, number>;
@@ -38,6 +40,7 @@ export function RecipePicker({
   const [showEquipment, setShowEquipment] = useState(false);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
+  const drag = useRef({ down: false, x: 0, left: 0, moved: false });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -57,9 +60,28 @@ export function RecipePicker({
   );
 
   const chosen = Object.entries(counts).filter(([, c]) => c > 0);
-  const total = chosen.reduce((s, [, c]) => s + c, 0);
-  const estimate = chosen.reduce((s, [id, c]) => s + (mine.find((r) => r.id === id)?.estimate ?? 0) * c, 0);
-  const scrollBy = (dir: number) => scroller.current?.scrollBy({ left: dir * scroller.current.clientWidth * 0.75, behavior: "smooth" });
+  const total = chosen.length;
+  const people = chosen.reduce((s, [, c]) => s + c, 0);
+  const estimate = chosen.reduce((s, [id, c]) => {
+    const r = mine.find((x) => x.id === id);
+    return s + (r?.estimate ?? 0) * (c / (r?.servings || 4));
+  }, 0);
+  const scrollBy = (dir: number) => scroller.current?.scrollBy({ left: dir * 296, behavior: "smooth" });
+  const dragProps = {
+    onPointerDown: (e: React.PointerEvent) => {
+      if (e.pointerType !== "mouse" || e.button !== 0 || !scroller.current || (e.target as HTMLElement).closest("button,input,a")) return;
+      drag.current = { down: true, x: e.clientX, left: scroller.current.scrollLeft, moved: false };
+    },
+    onPointerMove: (e: React.PointerEvent) => {
+      const g = drag.current;
+      if (!g.down || !scroller.current) return;
+      const dx = e.clientX - g.x;
+      if (Math.abs(dx) > 5) g.moved = true;
+      if (g.moved) scroller.current.scrollLeft = g.left - dx;
+    },
+    onPointerUp: () => { drag.current.down = false; },
+    onPointerLeave: () => { drag.current.down = false; },
+  };
   const toggleEquipment = (key: string) => setEquipment((p) => (p.includes(key) ? p.filter((k) => k !== key) : [...p, key]));
 
   const chip = (on: boolean) => cx("shrink-0 rounded-full px-3 py-1 text-xs font-medium transition", on ? "bg-ink text-onink" : "bg-stone-100 text-stone-600 hover:bg-stone-200");
@@ -71,12 +93,12 @@ export function RecipePicker({
         aria-modal="true"
         aria-label="Choisir des recettes"
         onClick={(e) => e.stopPropagation()}
-        className="flex h-full w-full max-w-[1180px] animate-modal flex-col overflow-hidden bg-canvas shadow-2xl sm:h-[min(820px,94vh)] sm:rounded-3xl"
+        className="flex h-full w-full max-w-[1180px] animate-modal flex-col overflow-hidden bg-canvas shadow-2xl sm:h-[min(720px,92vh)] sm:rounded-3xl"
       >
         <header className="flex flex-wrap items-center gap-3 border-b border-line bg-surface px-5 py-3.5">
           <div className="mr-auto">
             <p className="text-base font-bold text-stone-900">Choisis tes recettes</p>
-            <p className="text-[11px] text-stone-500">Chaque recette choisie est ajoutée au menu et à ta liste.</p>
+            <p className="text-[11px] text-stone-500">Choisis le nombre de personnes : les quantités s'ajustent pour chaque recette.</p>
           </div>
           <div className="segmented">
             <button type="button" data-active={tab === "discover"} onClick={() => setTab("discover")}>✨ Découvrir</button>
@@ -144,7 +166,7 @@ export function RecipePicker({
             ) : (
               <>
                 <p className="px-5 pt-3 text-[11px] text-stone-400">{discover.length} recette{discover.length > 1 ? "s" : ""} · fais défiler pour en voir d'autres</p>
-                <div ref={scroller} className="flex h-[calc(100%-1.75rem)] snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-4 pt-2 [scrollbar-width:thin]">
+                <div ref={scroller} {...dragProps} className="flex h-[calc(100%-1.75rem)] cursor-grab select-none items-start gap-4 overflow-auto px-5 pb-4 pt-2 active:cursor-grabbing [scrollbar-width:thin]">
                   {discover.map((r) => {
                     const id = idBySlug(r.slug);
                     return <DiscoverCard key={r.slug} recipe={r} count={id ? counts[id] ?? 0 : 0} busy={busy.has(r.slug)} onAdd={() => onPickInspiration(r)} onCount={(c) => id && onCount(id, c)} />;
@@ -166,7 +188,7 @@ export function RecipePicker({
                     const c = counts[r.id] ?? 0;
                     return (
                       <div key={r.id} className={cx("flex items-center gap-3 rounded-2xl border bg-surface p-2.5 transition", c > 0 ? "border-brand-300 bg-brand-50/60" : "border-line")}>
-                        <button type="button" onClick={() => onCount(r.id, c ? 0 : 1)} className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-stone-100 text-2xl">
+                        <button type="button" onClick={() => onCount(r.id, c ? 0 : defaultPeople)} className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-stone-100 text-2xl">
                           {r.image_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={r.image_url} alt="" className="h-full w-full object-cover" />
@@ -174,11 +196,11 @@ export function RecipePicker({
                             r.icon ?? "🍽️"
                           )}
                         </button>
-                        <button type="button" onClick={() => onCount(r.id, c ? 0 : 1)} className="min-w-0 flex-1 text-left">
+                        <button type="button" onClick={() => onCount(r.id, c ? 0 : defaultPeople)} className="min-w-0 flex-1 text-left">
                           <p className="truncate text-sm font-semibold text-stone-800">{r.is_favorite && <span className="text-brand-500">★ </span>}{r.name}</p>
                           <p className="truncate text-xs text-stone-400">{r.itemCount} ingr.{r.estimate !== null && store ? ` · ≈ ${formatEUR(r.estimate)}` : ""}</p>
                         </button>
-                        <Stepper count={c} onChange={(n) => onCount(r.id, n)} />
+                        <Stepper count={c} unit="pers." onChange={(n) => onCount(r.id, n)} />
                       </div>
                     );
                   })}
@@ -190,7 +212,7 @@ export function RecipePicker({
 
         <footer className="flex items-center justify-between gap-3 border-t border-line bg-surface px-5 py-3">
           <p className="text-sm text-stone-500">
-            <b className="text-stone-900">{total}</b> repas au menu
+            <b className="text-stone-900">{total}</b> recette{total > 1 ? "s" : ""}{people > 0 && <> · <b className="text-stone-900">{people}</b> portion{people > 1 ? "s" : ""}</>}
             {store && estimate > 0 && <> · ≈ <b className="text-stone-900">{formatEUR(estimate)}</b> chez {store}</>}
           </p>
           <button type="button" onClick={onClose} className="btn-primary">{total > 0 ? "Terminé" : "Fermer"}</button>
@@ -200,11 +222,11 @@ export function RecipePicker({
   );
 }
 
-function Stepper({ count, onChange }: { count: number; onChange: (n: number) => void }) {
+function Stepper({ count, onChange, unit }: { count: number; onChange: (n: number) => void; unit?: string }) {
   return (
     <div className="flex items-center gap-1">
       <button type="button" onClick={() => onChange(Math.max(0, count - 1))} className="h-7 w-7 rounded-lg border border-line bg-surface text-stone-500 hover:bg-stone-50" aria-label="Moins">−</button>
-      <span className="w-5 text-center text-sm font-semibold">{count}</span>
+      <span className={unit ? "min-w-[2.6rem] text-center text-sm font-semibold" : "w-5 text-center text-sm font-semibold"}>{count}{unit && <span className="ml-0.5 text-[10px] font-medium text-stone-400">{unit}</span>}</span>
       <button type="button" onClick={() => onChange(count + 1)} className="h-7 w-7 rounded-lg border border-line bg-surface text-stone-500 hover:bg-stone-50" aria-label="Plus">+</button>
     </div>
   );
@@ -212,43 +234,41 @@ function Stepper({ count, onChange }: { count: number; onChange: (n: number) => 
 
 function DiscoverCard({ recipe, count, busy, onAdd, onCount }: { recipe: MarketingRecipe; count: number; busy: boolean; onAdd: () => void; onCount: (n: number) => void }) {
   return (
-    <article className={cx("flex h-full w-[82vw] max-w-[340px] shrink-0 snap-center flex-col overflow-hidden rounded-3xl border bg-surface shadow-sm transition", count > 0 ? "border-brand-400 ring-2 ring-brand-200" : "border-line")}>
+    <article className={cx("flex w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border bg-surface shadow-sm transition", count > 0 ? "border-brand-400 ring-2 ring-brand-200" : "border-line")}>
       <div className="relative">
-        <div className="flex aspect-video shrink-0 items-center justify-center overflow-hidden bg-stone-100 text-xs text-stone-300">
+        <div className="flex aspect-[16/8] shrink-0 items-center justify-center overflow-hidden bg-stone-100 text-xs text-stone-300">
           {recipe.image ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={recipe.image} alt={recipe.name} className="h-full w-full object-cover" />
+            <img src={recipe.image} alt={recipe.name} draggable={false} className="h-full w-full object-cover" />
           ) : (
-            "Photo à venir"
+            <span className="text-4xl">{recipe.icon}</span>
           )}
         </div>
-        <span className="absolute -bottom-5 left-4 z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 border-surface bg-surface text-2xl shadow-md">{recipe.icon}</span>
-        {count > 0 && <span className="absolute right-3 top-3 rounded-full bg-brand-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow">✓ Au menu</span>}
+        {count > 0 && <span className="absolute right-2 top-2 rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-semibold text-white shadow">✓ Choisie</span>}
       </div>
-      <div className="flex min-h-0 flex-1 flex-col px-4 pb-4 pt-7">
+      <div className="flex flex-col px-3.5 pb-3.5 pt-3">
         <div className="flex items-center gap-2 text-[11px]">
           <span className="rounded-full bg-brand-50 px-2 py-0.5 font-medium text-brand-700">{recipe.category}</span>
-          <span className="text-stone-400">{recipe.time} · {recipe.difficulty}</span>
+          <span className="text-stone-400">⏱ {recipe.time} · {recipe.difficulty}</span>
         </div>
-        <h3 className="mt-2 text-lg font-bold leading-tight text-stone-900">{recipe.name}</h3>
-        <p className="mt-1 text-xs text-stone-500">Pour {recipe.servings} pers.</p>
-        <ul className="mt-3 min-h-0 flex-1 space-y-1 overflow-hidden text-[12px] text-stone-600">
-          {recipe.ingredients.slice(0, 7).map((i) => (
-            <li key={i} className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-400" /><span className="truncate">{i}</span></li>
+        <h3 className="mt-1.5 text-[15px] font-bold leading-tight text-stone-900">{recipe.icon} {recipe.name}</h3>
+        <ul className="mt-2 space-y-0.5 text-[11.5px] text-stone-600">
+          {recipe.ingredients.slice(0, 4).map((i) => (
+            <li key={i} className="flex gap-1.5"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-400" /><span className="truncate">{i}</span></li>
           ))}
-          {recipe.ingredients.length > 7 && <li className="text-stone-400">+ {recipe.ingredients.length - 7} autres ingrédients</li>}
+          {recipe.ingredients.length > 4 && <li className="text-stone-400">+ {recipe.ingredients.length - 4} autres ingrédients</li>}
         </ul>
-        {recipe.utensils.length > 0 && (
-          <p className="mt-2 truncate text-[11px] text-stone-400">🔧 {recipe.utensils.filter((u) => !BASIC_UTENSILS.includes(u)).join(", ") || "Aucun équipement particulier"}</p>
+        {recipe.utensils.filter((u) => !BASIC_UTENSILS.includes(u)).length > 0 && (
+          <p className="mt-1.5 truncate text-[10.5px] text-stone-400">🔧 {recipe.utensils.filter((u) => !BASIC_UTENSILS.includes(u)).join(", ")}</p>
         )}
-        <div className="mt-3">
+        <div className="mt-2.5">
           {count > 0 ? (
-            <div className="flex items-center justify-between rounded-xl bg-brand-50 px-3 py-2">
-              <span className="text-xs font-semibold text-brand-800">{count} repas</span>
-              <Stepper count={count} onChange={onCount} />
+            <div className="flex items-center justify-between rounded-xl bg-brand-50 px-2.5 py-1.5">
+              <span className="text-[11px] font-semibold text-brand-800">Pour</span>
+              <Stepper count={count} unit="pers." onChange={onCount} />
             </div>
           ) : (
-            <button type="button" onClick={onAdd} disabled={busy} className="btn-primary w-full">{busy ? "Ajout…" : "+ Ajouter au menu"}</button>
+            <button type="button" onClick={onAdd} disabled={busy} className="btn-primary w-full py-2 text-xs">{busy ? "Ajout…" : "+ Ajouter"}</button>
           )}
         </div>
       </div>

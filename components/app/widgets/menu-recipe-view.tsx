@@ -1,6 +1,9 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import { createPortal } from "react-dom";
+import { setMenuServings } from "@/app/app/menu-actions";
+import { scaleIngredientText, scaleQuantityLabel } from "@/lib/ingredient-parse";
 import { RECIPES } from "@/lib/marketing/recipes";
 import { Inline } from "@/components/app/notes/inline";
 import { stepsOf } from "@/components/app/recipes/recipe-card";
@@ -10,6 +13,7 @@ export interface MealRef {
   id: string;
   name: string;
   icon: string | null;
+  servings: number | null;
 }
 
 /** Fiche d'un repas planifié, en consultation : ingrédients et étapes, comme dans « Mes recettes ». */
@@ -33,13 +37,28 @@ export function MenuRecipeView({
   onRemove: (id: string) => void;
 }) {
   const meal = meals.find((m) => m.id === activeId) ?? meals[0];
+  const [sv, setSv] = useState<Record<string, number>>({});
+  const [, start] = useTransition();
   if (!meal) return null;
   const idea = RECIPES.find((r) => r.name.toLowerCase() === meal.name.toLowerCase());
   const mine = data.myRecipes.find((r) => r.name.toLowerCase() === meal.name.toLowerCase());
 
   const image = idea?.image ?? mine?.image_url ?? null;
   const category = idea?.category ?? mine?.category ?? null;
-  const ingredients: { label: string; quantity?: string | null }[] = mine && mine.items.length ? mine.items : idea ? idea.ingredients.map((label) => ({ label })) : [];
+  const base = idea?.servings ?? mine?.servings ?? 4;
+  const people = sv[meal.id] ?? meal.servings ?? data.defaultServings;
+  const factor = people / base;
+  const ingredients: { label: string; quantity?: string | null }[] =
+    mine && mine.items.length
+      ? mine.items.map((i) => ({ label: i.label, quantity: scaleQuantityLabel(i.qty, i.unit, factor, i.quantity) }))
+      : idea
+        ? idea.ingredients.map((label) => ({ label: scaleIngredientText(label, factor) }))
+        : [];
+  const changePeople = (n: number) => {
+    const v = Math.min(100, Math.max(1, n));
+    setSv((m) => ({ ...m, [meal.id]: v }));
+    start(() => setMenuServings(meal.id, v));
+  };
   const steps = mine && stepsOf(mine.notes).length ? stepsOf(mine.notes) : idea ? idea.steps : [];
   const found = !!(idea || mine);
 
@@ -73,7 +92,7 @@ export function MenuRecipeView({
           <div className="mt-4 flex flex-wrap gap-2 text-xs text-stone-600">
             {category && <span className="rounded-full bg-brand-50 px-2.5 py-1 font-medium text-brand-700">{category}</span>}
             {idea && <span className="rounded-full bg-stone-100 px-2.5 py-1">⏱ {idea.time}</span>}
-            {idea && <span className="rounded-full bg-stone-100 px-2.5 py-1">🍽 {idea.servings} pers.</span>}
+
             {idea && <span className="rounded-full bg-stone-100 px-2.5 py-1">{idea.difficulty}</span>}
           </div>
 
@@ -83,12 +102,21 @@ export function MenuRecipeView({
             </p>
           ) : (
             <>
-              <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Ingrédients ({ingredients.length})</h3>
+              <div className="mb-2 mt-5 flex items-center justify-between gap-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-stone-400">Ingrédients ({ingredients.length})</h3>
+                <div className="flex items-center gap-1 text-xs text-stone-500">
+                  Pour
+                  <button type="button" onClick={() => changePeople(people - 1)} className="h-6 w-6 rounded-md border border-line text-stone-600" aria-label="Moins de personnes">−</button>
+                  <b className="min-w-[1.5rem] text-center text-sm text-stone-900">{people}</b>
+                  <button type="button" onClick={() => changePeople(people + 1)} className="h-6 w-6 rounded-md border border-line text-stone-600" aria-label="Plus de personnes">+</button>
+                  pers.
+                </div>
+              </div>
               {ingredients.length === 0 ? (
                 <p className="text-sm text-stone-400">Aucun ingrédient renseigné.</p>
               ) : (
                 <ul className="grid gap-x-6 gap-y-1 text-sm text-stone-700 sm:grid-cols-2">
-                  {ingredients.map((i, k) => <li key={k}>• {i.label}{i.quantity && <span className="text-stone-400"> — {i.quantity}</span>}</li>)}
+                  {ingredients.map((i, k) => <li key={k}>• {i.quantity && <b className="font-semibold">{i.quantity} </b>}{i.label}</li>)}
                 </ul>
               )}
               {idea && idea.utensils.length > 0 && (

@@ -54,10 +54,11 @@ export function sampleWidgetData(today: string): WidgetData {
       },
     ],
     menu: [
-      { id: "m1", name: "Poulet rôti", icon: "🍗", day: monday },
-      { id: "m2", name: "Pâtes tomate basilic", icon: "🍝", day: addDays(monday, 1) },
-      { id: "m3", name: "Chili sin carne", icon: "🌶️", day: addDays(monday, 3) },
+      { id: "m1", name: "Poulet rôti", icon: "🍗", day: monday, servings: 2 },
+      { id: "m2", name: "Pâtes tomate basilic", icon: "🍝", day: addDays(monday, 1), servings: 2 },
+      { id: "m3", name: "Chili sin carne", icon: "🌶️", day: addDays(monday, 3), servings: 2 },
     ],
+    defaultServings: 2,
     myRecipes: [],
     notes: [
       { id: "n1", title: "Idées de voyage", icon: "✈️", search: "Lisbonne, Porto, road trip en Algarve au printemps…", updated_at: stamp },

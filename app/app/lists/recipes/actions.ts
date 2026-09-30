@@ -5,6 +5,8 @@ import { createClient, getSessionUser } from "@/lib/supabase/server";
 import { ensureIngredients, parsePicked } from "@/lib/data/ingredients";
 import { formatQty } from "@/lib/shopping";
 import { getRecipe } from "@/lib/marketing/recipes";
+import { buildMatcher, parseIngredientLine } from "@/lib/ingredient-parse";
+import type { CatalogIngredient, IngredientUnit } from "@/lib/shopping";
 
 async function ctx() {
   const supabase = createClient();
@@ -21,6 +23,7 @@ function readRecipe(formData: FormData) {
     category: String(formData.get("category") || "").trim() || "Repas",
     image_url: String(formData.get("image_url") || "") || null,
     notes: String(formData.get("notes") || "").trim().slice(0, 10000) || null,
+    servings: Math.min(50, Math.max(1, Math.round(Number(formData.get("servings") || 4)) || 4)),
     picked: parsePicked(formData.get("ingredients")),
   };
 }
@@ -98,21 +101,28 @@ export async function importInspirationRecipe(slug: string, favorite = false): P
 
   const { data } = await supabase
     .from("recipes")
-    .insert({ name: source.name, category: source.category, image_url: null, source_slug: slug, is_favorite: favorite, household_id: householdId, created_by: userId })
+    .insert({ name: source.name, category: source.category, image_url: null, servings: source.servings, source_slug: slug, is_favorite: favorite, household_id: householdId, created_by: userId })
     .select("id")
     .single();
   if (!data?.id) return null;
 
+  const { data: cat } = await supabase.from("ingredients").select("id, name, unit, household_id");
+  const catalog = (cat ?? []).map((i) => ({ id: i.id as string, name: i.name as string, unit: i.unit as IngredientUnit, personal: i.household_id !== null })) as CatalogIngredient[];
+  const match = buildMatcher(catalog);
   await supabase.from("recipe_items").insert(
-    source.ingredients.map((label, i) => ({
-      recipe_id: data.id,
-      ingredient_id: null,
-      label,
-      quantity: null,
-      qty: null,
-      qty_unit: null,
-      position: i,
-    }))
+    source.ingredients.map((line, i) => {
+      const p = parseIngredientLine(line);
+      const c = match(p.name);
+      return {
+        recipe_id: data.id,
+        ingredient_id: c?.id ?? null,
+        label: p.name,
+        quantity: p.qty === null ? null : line.replace(p.name, "").trim() || null,
+        qty: p.qty,
+        qty_unit: p.qty === null ? null : p.unit,
+        position: i,
+      };
+    })
   );
   revalidatePath("/app/lists", "layout");
   return { id: data.id, name: source.name, itemCount: source.ingredients.length };

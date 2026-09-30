@@ -3,7 +3,8 @@
 import { useMemo, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { addDays } from "@/lib/finance-engine";
-import { addMenuItems, removeMenuItem } from "@/app/app/menu-actions";
+import { addMenuItems, removeMenuItem, setMenuServings } from "@/app/app/menu-actions";
+import { setDefaultServings } from "@/app/app/lists/actions";
 import { RECIPES } from "@/lib/marketing/recipes";
 import { cx } from "@/lib/utils";
 import { DOW } from "@/components/app/widgets/helpers";
@@ -19,6 +20,8 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
   const [q, setQ] = useState("");
   const [optimistic, setOptimistic] = useState<{ name: string; icon: string | null; day: string }[]>([]);
   const [removed, setRemoved] = useState<string[]>([]);
+  const [people, setPeople] = useState(data.defaultServings);
+  const [sv, setSv] = useState<Record<string, number>>({});
   const days = Array.from({ length: 14 }, (_, i) => addDays(weekStart, i));
 
   const dayItems = data.menu.filter((m) => m.day === day && !removed.includes(m.id));
@@ -37,7 +40,18 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
     const fresh = meals.filter((m) => !inDay.has(m.name.toLowerCase()));
     if (!fresh.length) return;
     setOptimistic((o) => [...o, ...fresh.map((m) => ({ ...m, day }))]);
-    start(() => addMenuItems(day, fresh));
+    start(() => addMenuItems(day, fresh.map((m) => ({ ...m, servings: people }))));
+  };
+  const changePeople = (n: number) => {
+    const v = Math.min(20, Math.max(1, n));
+    setPeople(v);
+    void setDefaultServings(v);
+  };
+  const changeMeal = (id: string, current: number, n: number) => {
+    const v = Math.min(100, Math.max(1, n));
+    setSv((m) => ({ ...m, [id]: v }));
+    start(() => setMenuServings(id, v));
+    void current;
   };
 
   const query = fold(q.trim());
@@ -66,6 +80,18 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
           ))}
         </div>
 
+        <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-brand-50/60 px-3.5 py-2.5">
+          <div>
+            <p className="text-[13px] font-semibold text-stone-800">Pour combien de personnes ?</p>
+            <p className="text-[11px] text-stone-500">Les recettes ajoutées s'ajustent à ce nombre.</p>
+          </div>
+          <div className="flex items-center gap-1">
+            <button type="button" onClick={() => changePeople(people - 1)} className="h-8 w-8 rounded-lg border border-line bg-surface text-stone-600" aria-label="Moins de personnes">−</button>
+            <span className="min-w-[3rem] text-center text-base font-bold text-stone-900">{people}<span className="ml-0.5 text-[10px] font-medium text-stone-400">pers.</span></span>
+            <button type="button" onClick={() => changePeople(people + 1)} className="h-8 w-8 rounded-lg border border-line bg-surface text-stone-600" aria-label="Plus de personnes">+</button>
+          </div>
+        </div>
+
         <Section title={`Au menu · ${label(day)}`}>
           {dayItems.length + dayOpt.length === 0 ? (
             <p className="text-xs text-stone-400">Rien de prévu ce jour-là.</p>
@@ -74,6 +100,11 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
               {dayItems.map((m) => (
                 <span key={m.id} className="flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1.5 text-[12px] font-medium text-brand-800">
                   {m.icon ?? "🍽️"} {m.name}
+                  <span className="flex items-center gap-0.5 rounded-full bg-surface/80 px-1 text-[11px] text-brand-700">
+                    <button type="button" aria-label="Moins de personnes" onClick={() => changeMeal(m.id, sv[m.id] ?? m.servings ?? data.defaultServings, (sv[m.id] ?? m.servings ?? data.defaultServings) - 1)} className="px-0.5">−</button>
+                    {sv[m.id] ?? m.servings ?? data.defaultServings} pers.
+                    <button type="button" aria-label="Plus de personnes" onClick={() => changeMeal(m.id, sv[m.id] ?? m.servings ?? data.defaultServings, (sv[m.id] ?? m.servings ?? data.defaultServings) + 1)} className="px-0.5">+</button>
+                  </span>
                   <button aria-label={`Retirer ${m.name}`} onClick={() => { setRemoved((r) => [...r, m.id]); start(() => removeMenuItem(m.id)); }} className="text-brand-500 hover:text-rose-600">✕</button>
                 </span>
               ))}

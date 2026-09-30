@@ -78,6 +78,7 @@ export interface Recipe {
   image_url: string | null;
   is_favorite: boolean;
   source_slug?: string | null;
+  servings?: number;
   created_by: string | null;
   created_at: string;
 }

@@ -6,6 +6,7 @@ import { createClient, getSessionUser } from "@/lib/supabase/server";
 import { ensureIngredients, parsePicked } from "@/lib/data/ingredients";
 import { defaultQtyUnit, formatQty, lineCost, priceMap, type IngredientUnit } from "@/lib/shopping";
 import { RECIPES } from "@/lib/marketing/recipes";
+import { buildRecipeLines, type ComposeLine } from "@/lib/data/compose";
 
 const ICON_BY_NAME = new Map(RECIPES.map((r) => [r.name.toLowerCase(), r.icon]));
 
@@ -52,11 +53,63 @@ async function storePrices(supabase: ReturnType<typeof createClient>, store: str
   return priceMap((data ?? []) as Parameters<typeof priceMap>[0], store);
 }
 
-type Line = { key: string; label: string; ingredient_id: string | null; unit: IngredientUnit; qty: number | null; qtyUnit: string | null; sources: Set<string> };
+type FinalLine = { label: string; ingredient_id: string | null; qty: number | null; unit: string | null; source: string };
 
-/** Adds chosen recipes (× count) and extras, merging same ingredient + unit and pricing each line for the list's store. */
+/** Fusionne des lignes dans une liste (même ingrédient + même unité). `sign` = -1 pour retirer une quantité. */
+async function applyLines(supabase: ReturnType<typeof createClient>, listId: string, lines: FinalLine[], store: string | null, sign = 1) {
+  const [{ data: existing }, prices, { data: units }] = await Promise.all([
+    supabase.from("list_items").select("*").eq("list_id", listId),
+    storePrices(supabase, store),
+    supabase.from("ingredients").select("id, unit").in("id", [...new Set(lines.map((l) => l.ingredient_id).filter((x): x is string => !!x))]),
+  ]);
+  const unitOf = new Map((units ?? []).map((u) => [u.id as string, u.unit as IngredientUnit]));
+  const items = [...(existing ?? [])];
+  let position = items.length;
+  for (const line of lines) {
+    const match = items.find(
+      (i) => (i.ingredient_id ? i.ingredient_id === line.ingredient_id : String(i.label).toLowerCase() === line.label.trim().toLowerCase()) && (i.qty_unit ?? null) === (line.unit ?? null)
+    );
+    const add = line.qty === null || line.qty === undefined ? (sign > 0 ? 1 : 0) : line.qty * sign;
+    const qty = (match?.qty ? Number(match.qty) : 0) + add;
+    if (match && qty <= 0.0001) {
+      await supabase.from("list_items").delete().eq("id", match.id);
+      items.splice(items.indexOf(match), 1);
+      continue;
+    }
+    if (qty <= 0) continue;
+    const unit = unitOf.get(line.ingredient_id ?? "") ?? "unit";
+    const price = line.ingredient_id ? lineCost(qty, line.unit, unit, prices.get(line.ingredient_id)) : null;
+    const row = { qty, qty_unit: line.unit, quantity: formatQty(qty, line.unit), price, count: 1 };
+    if (match) {
+      const source = sign > 0 ? [...new Set([...(match.source ? String(match.source).split(", ") : []), line.source].filter(Boolean))].join(", ") : match.source;
+      await supabase.from("list_items").update({ ...row, ...(sign > 0 ? { checked: false } : {}), source }).eq("id", match.id);
+      Object.assign(match, row, { source });
+    } else {
+      const { data: inserted } = await supabase.from("list_items").insert({ ...row, list_id: listId, label: line.label.trim(), ingredient_id: line.ingredient_id, source: line.source, position: position++ }).select("*").single();
+      if (inserted) items.push(inserted);
+    }
+  }
+}
+
+/** Aperçu éditable : quantités calculées pour le nombre de personnes choisi, avant d'ajouter quoi que ce soit à la liste. */
+export async function previewCompose(listId: string, recipes: { id: string; servings: number }[]) {
+  const { supabase, householdId } = await ctx();
+  if (!householdId) return { lines: [] as ComposeLine[] };
+  const { data: list } = await supabase.from("lists").select("store").eq("id", listId).single();
+  const { lines } = await buildRecipeLines(supabase, recipes, list?.store ?? null);
+  return { lines };
+}
+
+/** Ajoute les recettes choisies (pour N personnes chacune, quantités éventuellement corrigées à la main) et les produits en plus. */
 export async function composeList(listId: string, formData: FormData) {
-  const recipes: { id: string; count: number }[] = JSON.parse(String(formData.get("recipes") || "[]"));
+  const recipes: { id: string; servings: number }[] = (JSON.parse(String(formData.get("recipes") || "[]")) as { id: string; servings?: number; count?: number }[]).map((r) => ({ id: r.id, servings: Math.max(1, Math.round(r.servings ?? r.count ?? 1)) }));
+  let reviewed: { label: string; ingredient_id: string | null; qty: number | null; unit: string | null; sources: string[] }[] | null = null;
+  try {
+    const raw = JSON.parse(String(formData.get("lines") || "null"));
+    if (Array.isArray(raw)) reviewed = raw;
+  } catch {
+    reviewed = null;
+  }
   const extras = parsePicked(formData.get("extras"));
   const { supabase, householdId } = await ctx();
   if (!householdId) return;
@@ -71,59 +124,74 @@ export async function composeList(listId: string, formData: FormData) {
     .map((e) => ({ household_id: householdId, ingredient_id: ids.get(e.name.trim().toLowerCase())!.id, store: store!, price: Number(e.price) }));
   if (personalPrices.length) await supabase.from("ingredient_prices").upsert(personalPrices, { onConflict: "ingredient_id,store,household_id" });
 
-  const [{ data: existing }, { data: recipeRows }, prices] = await Promise.all([
-    supabase.from("list_items").select("*").eq("list_id", listId),
-    recipes.length
-      ? supabase.from("recipes").select("id, name, recipe_items(label, qty, qty_unit, ingredient_id)").in("id", recipes.map((r) => r.id))
-      : Promise.resolve({ data: [] }),
-    storePrices(supabase, store),
-  ]);
-  const unitOf = new Map([...ids.values()].map((v) => [v.id, v.unit]));
+  const built = await buildRecipeLines(supabase, recipes, store);
+  const recipeLines: FinalLine[] = (reviewed ?? built.lines).map((l) => ({
+    label: l.label,
+    ingredient_id: l.ingredient_id,
+    qty: l.qty === null || l.qty === undefined ? null : Number(l.qty),
+    unit: ("unit" in l ? (l as ComposeLine).unit : (l as { unit: string | null }).unit) ?? null,
+    source: (l.sources ?? []).join(", "),
+  }));
+  const extraLines: FinalLine[] = extras.map((e) => ({ label: e.name, ingredient_id: ids.get(e.name.trim().toLowerCase())?.id ?? null, qty: e.qty ?? 1, unit: e.qtyUnit ?? null, source: "Extra" }));
+  await applyLines(supabase, listId, [...recipeLines, ...extraLines], store);
 
-  const lines = new Map<string, Line>();
-  const add = (label: string, ingredientId: string | null, qty: number | null, qtyUnit: string | null, count: number, source: string) => {
-    const key = `${ingredientId ?? label.trim().toLowerCase()}|${qtyUnit ?? ""}`;
-    const line = lines.get(key) ?? { key, label: label.trim(), ingredient_id: ingredientId, unit: unitOf.get(ingredientId ?? "") ?? "unit", qty: null, qtyUnit, sources: new Set<string>() };
-    line.qty = (line.qty ?? 0) + (qty && qty > 0 ? qty : 1) * count;
-    line.sources.add(source);
-    lines.set(key, line);
-  };
-  type RecipeRow = { id: string; name: string; recipe_items: { label: string; qty: number | null; qty_unit: string | null; ingredient_id: string | null }[] };
-  for (const r of (recipeRows ?? []) as RecipeRow[]) {
-    const count = Math.max(1, recipes.find((x) => x.id === r.id)?.count ?? 1);
-    for (const it of r.recipe_items) add(it.label, it.ingredient_id, it.qty ? Number(it.qty) : null, it.qty_unit, count, r.name);
-  }
-  for (const e of extras) {
-    const found = ids.get(e.name.trim().toLowerCase());
-    add(e.name, found?.id ?? null, e.qty ?? null, e.qtyUnit ?? null, 1, "Extra");
-  }
-
-  let position = existing?.length ?? 0;
-  for (const line of lines.values()) {
-    const source = [...line.sources].join(", ");
-    const match = (existing ?? []).find(
-      (i) => (i.ingredient_id ? i.ingredient_id === line.ingredient_id : String(i.label).toLowerCase() === line.label.toLowerCase()) && (i.qty_unit ?? null) === (line.qtyUnit ?? null)
-    );
-    const qty = (match?.qty ? Number(match.qty) : 0) + (line.qty ?? 0);
-    const price = line.ingredient_id ? lineCost(qty, line.qtyUnit, line.unit, prices.get(line.ingredient_id)) : null;
-    const row = { qty, qty_unit: line.qtyUnit, quantity: formatQty(qty, line.qtyUnit), price, count: 1 };
-    if (match) {
-      await supabase.from("list_items").update({ ...row, checked: false, source: [match.source, source].filter(Boolean).join(", ") }).eq("id", match.id);
-    } else {
-      await supabase.from("list_items").insert({ ...row, list_id: listId, label: line.label, ingredient_id: line.ingredient_id, source, position: position++ });
-    }
-  }
-  if (recipeRows?.length) {
-    const { data: known } = await supabase.from("list_recipes").select("id, recipe_id, count").eq("list_id", listId);
-    for (const r of recipeRows as RecipeRow[]) {
-      const count = Math.max(1, recipes.find((x) => x.id === r.id)?.count ?? 1);
-      const prev = (known ?? []).find((k) => k.recipe_id === r.id);
-      if (prev) await supabase.from("list_recipes").update({ count: prev.count + count }).eq("id", prev.id);
-      else await supabase.from("list_recipes").insert({ list_id: listId, recipe_id: r.id, name: r.name, icon: ICON_BY_NAME.get(r.name.toLowerCase()) ?? null, count });
+  if (built.metas.length) {
+    const { data: known } = await supabase.from("list_recipes").select("id, recipe_id, count, servings").eq("list_id", listId);
+    for (const m of built.metas) {
+      const prev = (known ?? []).find((k) => k.recipe_id === m.id);
+      if (prev) await supabase.from("list_recipes").update({ servings: (prev.servings ?? prev.count * m.base) + m.servings, count: 1 }).eq("id", prev.id);
+      else await supabase.from("list_recipes").insert({ list_id: listId, recipe_id: m.id, name: m.name, icon: ICON_BY_NAME.get(m.name.toLowerCase()) ?? null, count: 1, servings: m.servings });
     }
   }
   refresh();
   redirect(`/app/lists/${listId}`);
+}
+
+/** Change le nombre de personnes d'une recette déjà dans la liste : les quantités de ses ingrédients sont ajustées d'autant. */
+export async function setListRecipePeople(listId: string, listRecipeId: string, people: number) {
+  const target = Math.min(100, Math.max(1, Math.round(people)));
+  const { supabase, householdId } = await ctx();
+  if (!householdId) return;
+  const [{ data: row }, { data: list }] = await Promise.all([
+    supabase.from("list_recipes").select("id, recipe_id, count, servings").eq("id", listRecipeId).eq("list_id", listId).single(),
+    supabase.from("lists").select("store").eq("id", listId).single(),
+  ]);
+  if (!row?.recipe_id) return;
+  const { data: recipe } = await supabase.from("recipes").select("servings").eq("id", row.recipe_id).single();
+  const base = recipe?.servings && recipe.servings > 0 ? recipe.servings : 4;
+  const old = row.servings ?? row.count * base;
+  if (target === old) return;
+  const { lines } = await buildRecipeLines(supabase, [{ id: row.recipe_id, servings: Math.abs(target - old) }], list?.store ?? null, target > old ? 1 : -1);
+  await applyLines(supabase, listId, lines.map((l) => ({ label: l.label, ingredient_id: l.ingredient_id, qty: l.qty, unit: l.unit, source: l.sources.join(", ") })), list?.store ?? null, 1);
+  await supabase.from("list_recipes").update({ servings: target, count: 1 }).eq("id", row.id);
+  refresh();
+}
+
+/** Corrige à la main la quantité d'un article de la liste (le prix est recalculé). */
+export async function updateListItemQty(listId: string, itemId: string, qty: number, unit: string) {
+  const q = Number(qty);
+  if (!Number.isFinite(q) || q <= 0) return;
+  const { supabase } = await ctx();
+  const [{ data: item }, { data: list }] = await Promise.all([
+    supabase.from("list_items").select("ingredient_id").eq("id", itemId).eq("list_id", listId).single(),
+    supabase.from("lists").select("store").eq("id", listId).single(),
+  ]);
+  if (!item) return;
+  let price: number | null = null;
+  if (item.ingredient_id) {
+    const [{ data: ing }, prices] = await Promise.all([supabase.from("ingredients").select("unit").eq("id", item.ingredient_id).single(), storePrices(supabase, list?.store ?? null)]);
+    price = lineCost(q, unit, (ing?.unit as IngredientUnit) ?? "unit", prices.get(item.ingredient_id));
+  }
+  await supabase.from("list_items").update({ qty: q, qty_unit: unit, quantity: formatQty(q, unit), price }).eq("id", itemId);
+  refresh();
+}
+
+/** Nombre de personnes proposé par défaut pour toutes les recettes du foyer. */
+export async function setDefaultServings(n: number) {
+  const { supabase, householdId } = await ctx();
+  if (!householdId) return;
+  await supabase.from("households").update({ default_servings: Math.min(20, Math.max(1, Math.round(n))) }).eq("id", householdId);
+  revalidatePath("/app", "layout");
 }
 
 export async function setListStore(listId: string, formData: FormData) {

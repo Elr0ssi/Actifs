@@ -4,6 +4,7 @@ import { getAppContext } from "@/lib/data/context";
 import type { ListItem, ListRow, ItemLocation, Recipe, RecipeItem } from "@/lib/types";
 import { ListItemsChecklist } from "@/components/app/list-items-checklist";
 import { ListComposer } from "@/components/app/lists/list-composer";
+import { ListRecipes } from "@/components/app/lists/list-recipes";
 import { formatEUR } from "@/lib/utils";
 import { loadCatalog } from "@/lib/data/ingredients";
 import { STORES, compareStores, lineCost, priceMap } from "@/lib/shopping";
@@ -12,6 +13,7 @@ import {
   deleteList,
   clearCheckedItems,
   composeList,
+  previewCompose,
   setListStore,
   setListArchived,
   finishShopping,
@@ -35,7 +37,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
   const isShopping = list.type === "shopping";
   const hh = list.household_id;
 
-  const [{ data: items }, { data: locations }, { data: recipes }, { catalog, prices }, { data: pastLists }] = await Promise.all([
+  const [{ data: items }, { data: locations }, { data: recipes }, { catalog, prices }, { data: pastLists }, { data: listRecipes }] = await Promise.all([
     supabase.from("list_items").select("*").eq("list_id", params.id).order("position").returns<ListItem[]>(),
     supabase.from("item_locations").select("*").eq("household_id", hh).returns<ItemLocation[]>(),
     isShopping
@@ -45,6 +47,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
     isShopping
       ? supabase.from("lists").select("id, list_items(label)").eq("household_id", hh).eq("type", "shopping").neq("id", list.id).order("created_at", { ascending: false }).limit(8)
       : Promise.resolve({ data: [] }),
+    isShopping ? supabase.from("list_recipes").select("id, name, icon, count, servings, recipe_id").eq("list_id", params.id).order("created_at") : Promise.resolve({ data: [] }),
   ]);
 
   const priceAt = priceMap(prices, list.store);
@@ -61,6 +64,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
       is_favorite: r.is_favorite,
       itemCount: r.recipe_items.length,
       estimate: costs.length ? costs.reduce((s, c) => s + c, 0) : null,
+      servings: r.servings ?? 4,
     };
   });
   const recommendations = [
@@ -196,6 +200,8 @@ export default async function ListDetailPage({ params, searchParams }: { params:
           <div className="mt-5">
             <ListComposer
               action={composeList.bind(null, list.id)}
+              preview={previewCompose.bind(null, list.id)}
+              defaultServings={(ctx.household as { default_servings?: number } | null)?.default_servings ?? 2}
               recipes={composerRecipes}
               catalog={catalog}
               prices={Object.fromEntries(priceAt)}
@@ -204,6 +210,18 @@ export default async function ListDetailPage({ params, searchParams }: { params:
             />
           </div>
         </details>
+      )}
+
+      {isShopping && (
+        <ListRecipes
+          listId={list.id}
+          recipes={((listRecipes ?? []) as { id: string; name: string; icon: string | null; count: number; servings: number | null; recipe_id: string | null }[]).map((r) => ({
+            id: r.id,
+            name: r.name,
+            icon: r.icon,
+            people: r.servings ?? r.count * (((recipes ?? []) as { id: string; servings?: number }[]).find((x) => x.id === r.recipe_id)?.servings ?? 4),
+          }))}
+        />
       )}
 
       <div className="card p-6">

@@ -17,7 +17,7 @@ const refresh = () => {
 };
 
 /** Ajoute des repas à un jour du menu (sans toucher aux listes de courses). Un même repas n'est pas ajouté deux fois le même jour. */
-export async function addMenuItems(day: string, meals: { name: string; icon: string | null }[]) {
+export async function addMenuItems(day: string, meals: { name: string; icon: string | null; servings?: number }[]) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return;
   const { supabase, householdId, userId } = await ctx();
   if (!householdId || meals.length === 0) return;
@@ -27,7 +27,7 @@ export async function addMenuItems(day: string, meals: { name: string; icon: str
   const rows = meals
     .filter((m) => m.name.trim() && !have.has(m.name.trim().toLowerCase()))
     .slice(0, 50)
-    .map((m) => ({ household_id: householdId, week_start: monday, day, name: m.name.trim().slice(0, 120), icon: m.icon?.slice(0, 8) ?? null, created_by: userId }));
+    .map((m) => ({ household_id: householdId, week_start: monday, day, name: m.name.trim().slice(0, 120), icon: m.icon?.slice(0, 8) ?? null, servings: m.servings ? Math.min(100, Math.max(1, Math.round(m.servings))) : null, created_by: userId }));
   if (rows.length) await supabase.from("menu_items").insert(rows);
   refresh();
 }
@@ -36,5 +36,13 @@ export async function removeMenuItem(id: string) {
   const { supabase, householdId } = await ctx();
   if (!householdId) return;
   await supabase.from("menu_items").delete().eq("id", id).eq("household_id", householdId);
+  refresh();
+}
+
+/** Change le nombre de personnes d'un repas planifié. */
+export async function setMenuServings(id: string, servings: number) {
+  const { supabase, householdId } = await ctx();
+  if (!householdId) return;
+  await supabase.from("menu_items").update({ servings: Math.min(100, Math.max(1, Math.round(servings))) }).eq("id", id).eq("household_id", householdId);
   refresh();
 }

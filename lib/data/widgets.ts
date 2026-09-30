@@ -35,8 +35,10 @@ export interface WidgetData {
   logs: RoutineLog[];
   lists: WidgetList[];
   /** Menu de la semaine saisi à la main (en plus des recettes des listes de courses de la semaine). */
-  menu: { id: string; name: string; icon: string | null; day: string }[];
-  myRecipes: { name: string; category: string | null; image_url: string | null; notes: string | null; items: { label: string; quantity: string | null }[] }[];
+  menu: { id: string; name: string; icon: string | null; day: string; servings: number | null }[];
+  /** Nombre de personnes proposé par défaut (réglé pour le foyer). */
+  defaultServings: number;
+  myRecipes: { name: string; category: string | null; image_url: string | null; servings: number; notes: string | null; items: { label: string; quantity: string | null; qty: number | null; unit: string | null }[] }[];
   notes: { id: string; title: string; icon: string | null; search: string; updated_at: string }[];
   words: { id: string; french: string; english: string; created_at: string }[];
   wordsTotal: number;
@@ -96,8 +98,8 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
     supabase.from("projects").select("id, name, color").eq("household_id", householdId).eq("archived", false).order("created_at"),
     supabase.from("tasks").select("project_id, status").eq("household_id", householdId).not("project_id", "is", null),
     supabase.from("notes").select("id, title, icon, search, updated_at").eq("household_id", householdId).order("updated_at", { ascending: false }).limit(8),
-    supabase.from("menu_items").select("id, name, icon, day").eq("household_id", householdId).gte("day", addDays(weekStart, -14)).lte("day", addDays(weekStart, 42)).order("created_at"),
-    supabase.from("recipes").select("name, category, image_url, notes, recipe_items(label, quantity, position)").eq("household_id", householdId).order("name").limit(300),
+    supabase.from("menu_items").select("id, name, icon, day, servings").eq("household_id", householdId).gte("day", addDays(weekStart, -14)).lte("day", addDays(weekStart, 42)).order("created_at"),
+    supabase.from("recipes").select("name, category, image_url, servings, notes, recipe_items(label, quantity, qty, qty_unit, position)").eq("household_id", householdId).order("name").limit(300),
   ]);
 
   type ListRow = {
@@ -140,13 +142,15 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
       items: [...l.list_items].sort((a, b) => a.position - b.position).map(({ id, label, quantity, checked }) => ({ id, label, quantity, checked })),
       recipes: l.list_recipes ?? [],
     })),
-    menu: (menu ?? []).filter((m) => m.day).map((m) => ({ id: m.id, name: m.name, icon: m.icon, day: m.day as string })),
+    menu: (menu ?? []).filter((m) => m.day).map((m) => ({ id: m.id, name: m.name, icon: m.icon, day: m.day as string, servings: m.servings ?? null })),
+    defaultServings: (ctx.household as { default_servings?: number } | null)?.default_servings ?? 2,
     myRecipes: (myRecipes ?? []).map((r) => ({
       name: r.name,
       category: r.category,
       image_url: r.image_url,
+      servings: r.servings ?? 4,
       notes: r.notes,
-      items: [...((r.recipe_items ?? []) as { label: string; quantity: string | null; position: number }[])].sort((a, b) => a.position - b.position).map(({ label, quantity }) => ({ label, quantity })),
+      items: [...((r.recipe_items ?? []) as { label: string; quantity: string | null; qty: number | null; qty_unit: string | null; position: number }[])].sort((a, b) => a.position - b.position).map(({ label, quantity, qty, qty_unit }) => ({ label, quantity, qty: qty === null ? null : Number(qty), unit: qty_unit })),
     })),
     notes: (notes ?? []).map((n) => ({ ...n, search: n.search.slice(0, 160) })),
     words: words ?? [],
