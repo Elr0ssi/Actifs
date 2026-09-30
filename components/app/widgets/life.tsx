@@ -11,7 +11,7 @@ import { ToggleCheckbox } from "@/components/app/toggle-checkbox";
 import { Icon } from "@/components/app/icons";
 import { WidgetShell, Empty, Segmented } from "@/components/app/widgets/shell";
 import { DOW, eur0, fmtLong, fmtShort, scheduledOn, weekday } from "@/components/app/widgets/helpers";
-import { CalendarGrid, CalendarNav, calRange, type CalItem, type CalView } from "@/components/app/widgets/calendar-grid";
+import { CalendarGrid, CalendarNav, calRange, calShift, type CalItem, type CalView } from "@/components/app/widgets/calendar-grid";
 import { TaskRow } from "@/components/app/widgets/tasks";
 import type { WidgetProps } from "@/components/app/widgets/types";
 import type { Task } from "@/lib/types";
@@ -151,6 +151,7 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
             wide={wide}
             itemsFor={itemsFor}
             onSelect={(d) => { setSelected(d); if (view === "month" && d.slice(0, 7) !== anchor.slice(0, 7)) setAnchor(d); }}
+            onShift={(delta) => setAnchor((a) => calShift(view, a, delta))}
           />
         </div>
         <div className="min-w-0 rounded-xl border border-line bg-stone-50/50 p-3">

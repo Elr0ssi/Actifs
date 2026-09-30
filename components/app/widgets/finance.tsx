@@ -21,6 +21,7 @@ import { NewOperationButton } from "@/components/app/finance/operation-form";
 import { DonutChart } from "@/components/app/charts/donut-chart";
 import { Icon, type IconName } from "@/components/app/icons";
 import { WidgetShell, Empty, Segmented } from "@/components/app/widgets/shell";
+import { useDragNav } from "@/components/app/widgets/calendar-grid";
 import type { WidgetProps } from "@/components/app/widgets/types";
 
 const DOW = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
@@ -41,7 +42,7 @@ const ACCOUNT_META: { name: "Courant" | "Épargne" | "Investissement"; icon: Ico
   { name: "Investissement", icon: "trend", tint: "bg-violet-50 text-violet-600" },
 ];
 
-function AccountTile({ name, icon, tint, value, today }: { name: string; icon: IconName; tint: string; value: { date: string; balance: number } | null; today: string }) {
+function AccountTile({ name, icon, tint, value, today, editable }: { name: string; icon: IconName; tint: string; value: { date: string; balance: number } | null; today: string; editable: boolean }) {
   const [editing, setEditing] = useState(false);
   const [pending, start] = useTransition();
   return (
@@ -66,7 +67,7 @@ function AccountTile({ name, icon, tint, value, today }: { name: string; icon: I
           )}
         </div>
       </div>
-      {!editing && (
+      {!editing && editable && (
         <button onClick={() => setEditing(true)} title="Mettre à jour le solde" className="absolute right-2 top-2 rounded-md p-1 text-stone-300 transition hover:bg-stone-100 hover:text-stone-600">
           <Icon name="pencil" className="h-3.5 w-3.5" />
         </button>
@@ -79,13 +80,18 @@ function AccountTile({ name, icon, tint, value, today }: { name: string; icon: I
 export function FinAccounts({ data, size }: WidgetProps) {
   const f = data.finance;
   if (!f) return <WidgetShell icon="bank" title="Situation des comptes"><NoFinance /></WidgetShell>;
+  const realToday = data.realToday ?? data.today;
+  const viewing = realToday !== data.today;
+  // Autre mois : le compte courant est projeté à la date consultée, l'épargne garde son dernier solde connu.
+  const valueOf = (name: "Courant" | "Épargne" | "Investissement") =>
+    name === "Courant" && viewing ? { date: data.today, balance: getBalanceAtDate(f.ops, f.anchor, data.today) } : f.accounts[name];
   const shown = ACCOUNT_META.filter((a) => a.name !== "Investissement" || f.accounts.Investissement);
-  const total = shown.reduce((s, a) => s + (f.accounts[a.name]?.balance ?? 0), 0);
+  const total = shown.reduce((s, a) => s + (valueOf(a.name)?.balance ?? 0), 0);
   return (
-    <WidgetShell icon="bank" title={`Situation au ${fmtShort(data.today)}`} href="/app/finance/accounts" hrefLabel="Comptes">
+    <WidgetShell icon="bank" title={`${viewing ? "Prévision au" : "Situation au"} ${fmtShort(data.today)}`} href="/app/finance/accounts" hrefLabel="Comptes">
       <div className={cx("grid gap-2.5", size === "m" ? "grid-cols-2" : "grid-cols-2 lg:grid-cols-4")}>
         {shown.map((a) => (
-          <AccountTile key={a.name} name={a.name} icon={a.icon} tint={a.tint} value={f.accounts[a.name]} today={data.today} />
+          <AccountTile key={a.name} name={a.name} icon={a.icon} tint={a.tint} value={valueOf(a.name)} today={realToday} editable={!viewing} />
         ))}
         <div className={cx("flex min-w-0 flex-col justify-center rounded-xl bg-brand-50 p-3", size === "m" && "col-span-2")}>
           <p className="text-[11px] font-medium text-brand-800">Solde total</p>
@@ -129,6 +135,12 @@ export function FinCalendar({ data, size, opts, setOpts }: WidgetProps) {
   const flow = (opts.flow as Flow) ?? "all";
   const [selected, setSelected] = useState(data.today);
   const [cursor, setCursor] = useState(ym(data.today));
+  const drag = useDragNav((delta) =>
+    setCursor((c) => {
+      const d = new Date(Date.UTC(c.y, c.m + delta, 1));
+      return { y: d.getUTCFullYear(), m: d.getUTCMonth() };
+    })
+  );
   const { start, end } = monthBounds(cursor.y, cursor.m);
   const gridStart = addDays(start, -((new Date(toMs(start)).getUTCDay() + 6) % 7));
   const gridEnd = addDays(end, (7 - new Date(toMs(end)).getUTCDay()) % 7);
@@ -171,7 +183,7 @@ export function FinCalendar({ data, size, opts, setOpts }: WidgetProps) {
           <div className="grid grid-cols-7 text-center text-[10px] font-medium text-stone-400">
             {DOW.map((d) => <div key={d} className="pb-1.5">{wide ? d : d[0]}</div>)}
           </div>
-          <div className="grid flex-1 auto-rows-fr grid-cols-7 overflow-hidden rounded-xl border border-line">
+          <div {...{ onPointerDown: drag.props.onPointerDown, style: drag.props.style }} className={cx("grid flex-1 auto-rows-fr grid-cols-7 overflow-hidden rounded-xl border border-line", drag.props.className)}>
             {days.map((d) => {
               const occ = byDate.get(d) ?? [];
               const inflow = occ.filter((o) => o.signed > 0).reduce((s, o) => s + o.signed, 0);
@@ -180,7 +192,7 @@ export function FinCalendar({ data, size, opts, setOpts }: WidgetProps) {
               return (
                 <button
                   key={d}
-                  onClick={() => { setSelected(d); if (outside) setCursor(ym(d)); }}
+                  onClick={() => { if (drag.consumeClick()) return; setSelected(d); if (outside) setCursor(ym(d)); }}
                   className={cx(
                     "flex min-w-0 flex-col items-center gap-0.5 border-b border-r border-line/70 px-0.5 py-1.5 transition hover:bg-brand-50/50",
                     wide ? "min-h-[58px]" : "min-h-[40px]",
@@ -188,7 +200,7 @@ export function FinCalendar({ data, size, opts, setOpts }: WidgetProps) {
                     d === selected && "bg-brand-50 ring-1 ring-inset ring-brand-300"
                   )}
                 >
-                  <span className={cx("flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-medium", d === data.today ? "bg-brand-600 text-white" : outside ? "text-stone-300" : "text-stone-700")}>
+                  <span className={cx("flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-medium", d === (data.realToday ?? data.today) ? "bg-brand-600 text-white" : outside ? "text-stone-300" : "text-stone-700")}>
                     {Number(d.slice(-2))}
                   </span>
                   {wide && inflow > 0 && <span className="tabular hidden max-w-full truncate text-[10px] font-semibold text-emerald-600 sm:block">+{eur0(inflow)}</span>}
@@ -284,11 +296,11 @@ export function FinBudgets({ data }: WidgetProps) {
       const k = o.op.category || "Autre";
       const e = byCat.get(k) ?? { planned: 0, spent: 0 };
       e.planned += o.op.amount;
-      if (o.date <= data.today) e.spent += o.op.amount;
+      if (o.date <= (data.realToday ?? data.today)) e.spent += o.op.amount;
       byCat.set(k, e);
     }
     return [...byCat.entries()].map(([label, v]) => ({ label, ...v })).sort((a, b) => b.planned - a.planned);
-  }, [f, y, m, data.today]);
+  }, [f, y, m, data.today, data.realToday]);
   return (
     <WidgetShell icon="chart" title="Budgets" subtitle="Dépenses variables du mois" href="/app/finance/budgets">
       {!f || rows.length === 0 ? (

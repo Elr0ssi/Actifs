@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { addDays, monthBounds } from "@/lib/finance-engine";
 import { cx, MONTHS_FR } from "@/lib/utils";
 import { Icon } from "@/components/app/icons";
@@ -7,6 +8,59 @@ import { Segmented } from "@/components/app/widgets/shell";
 import { DOW, fmtShort, mondayOf } from "@/components/app/widgets/helpers";
 
 export type CalView = "month" | "week";
+
+/**
+ * Maintenir le clic (ou le doigt) et glisser à gauche / droite pour changer de période, comme un carrousel.
+ * `consumeClick` sert à ignorer le clic qui termine un glissement au lieu de sélectionner un jour.
+ */
+export function useDragNav(onShift: (delta: number) => void) {
+  const shift = useRef(onShift);
+  shift.current = onShift;
+  const drag = useRef({ active: false, startX: 0, moved: false });
+  const [grabbing, setGrabbing] = useState(false);
+
+  useEffect(() => {
+    const THRESHOLD = 90;
+    const onMove = (e: PointerEvent) => {
+      if (!drag.current.active) return;
+      const dx = e.clientX - drag.current.startX;
+      if (Math.abs(dx) > THRESHOLD) {
+        drag.current.moved = true;
+        shift.current(dx < 0 ? 1 : -1);
+        drag.current.startX = e.clientX;
+      }
+    };
+    const onUp = () => {
+      drag.current.active = false;
+      setGrabbing(false);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, []);
+
+  return {
+    props: {
+      onPointerDown: (e: React.PointerEvent) => {
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+        drag.current = { active: true, startX: e.clientX, moved: false };
+        setGrabbing(true);
+      },
+      style: { touchAction: "pan-y" } as React.CSSProperties,
+      className: cx("select-none", grabbing ? "cursor-grabbing" : "cursor-grab"),
+    },
+    consumeClick: () => {
+      const moved = drag.current.moved;
+      drag.current.moved = false;
+      return moved;
+    },
+  };
+}
 
 export interface CalItem {
   key: string;
@@ -109,6 +163,7 @@ export function CalendarGrid({
   wide,
   itemsFor,
   onSelect,
+  onShift,
 }: {
   view: CalView;
   anchor: string;
@@ -117,7 +172,9 @@ export function CalendarGrid({
   wide: boolean;
   itemsFor: (day: string) => CalItem[];
   onSelect: (day: string) => void;
+  onShift: (delta: number) => void;
 }) {
+  const nav = useDragNav(onShift);
   const { from, to } = calRange(view, anchor);
   const days: string[] = [];
   for (let d = from; d <= to; d = addDays(d, 1)) days.push(d);
@@ -129,7 +186,7 @@ export function CalendarGrid({
       <div className="grid grid-cols-7 text-center text-[10px] font-medium text-stone-400">
         {DOW.map((d) => <div key={d} className="pb-1.5">{wide ? d : d[0]}</div>)}
       </div>
-      <div className="grid flex-1 auto-rows-fr grid-cols-7 overflow-hidden rounded-xl border border-line">
+      <div {...{ onPointerDown: nav.props.onPointerDown, style: nav.props.style }} className={cx("grid flex-1 auto-rows-fr grid-cols-7 overflow-hidden rounded-xl border border-line", nav.props.className)}>
         {days.map((d) => {
           const items = itemsFor(d);
           const outside = view === "month" && d.slice(0, 7) !== anchorMonth;
@@ -137,7 +194,7 @@ export function CalendarGrid({
             <button
               key={d}
               type="button"
-              onClick={() => onSelect(d)}
+              onClick={() => { if (!nav.consumeClick()) onSelect(d); }}
               className={cx(
                 "flex min-w-0 flex-col gap-0.5 border-b border-r border-line/70 p-1 text-left transition hover:bg-brand-50/50",
                 wide ? (view === "week" ? "min-h-[64px] sm:min-h-[240px]" : "min-h-[52px] sm:min-h-[84px]") : "min-h-[44px]",

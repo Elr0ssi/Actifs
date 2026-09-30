@@ -21,7 +21,10 @@ export interface WidgetList {
 }
 
 export interface WidgetData {
+  /** Date de référence des widgets. Sur la vue d'ensemble Finance, elle suit le mois choisi. */
   today: string;
+  /** Vraie date du jour quand `today` a été déplacée pour consulter un autre mois. */
+  realToday?: string;
   finance: {
     ops: FinOp[];
     anchor: BalanceAnchor;

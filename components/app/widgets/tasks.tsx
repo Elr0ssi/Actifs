@@ -7,7 +7,7 @@ import { createTask } from "@/app/app/tasks/actions";
 import { Icon } from "@/components/app/icons";
 import { WidgetShell, Empty, Segmented } from "@/components/app/widgets/shell";
 import { PRIORITY_RANK, fmtLong, fmtShort, isDone } from "@/components/app/widgets/helpers";
-import { CalendarGrid, CalendarNav, type CalItem, type CalView } from "@/components/app/widgets/calendar-grid";
+import { CalendarGrid, CalendarNav, calShift, type CalItem, type CalView } from "@/components/app/widgets/calendar-grid";
 import type { WidgetProps } from "@/components/app/widgets/types";
 import type { Task } from "@/lib/types";
 
@@ -130,6 +130,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
   const [view, setView] = useState<CalView>((opts.view as CalView) ?? "month");
   const [projectFilter, setProjectFilter] = useState("");
   const [formKey, setFormKey] = useState(0);
+  const [adding, setAdding] = useState(false);
   const [pending, start] = useTransition();
   const projectOf = useMemo(() => new Map(data.projects.map((p) => [p.id, p])), [data.projects]);
 
@@ -184,6 +185,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
             wide={wide}
             itemsFor={itemsFor}
             onSelect={(d) => { setSelected(d); if (view === "month" && d.slice(0, 7) !== anchor.slice(0, 7)) setAnchor(d); }}
+            onShift={(delta) => setAnchor((a) => calShift(view, a, delta))}
           />
         </div>
 
@@ -199,9 +201,14 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
             {dayTasks.length === 0 && overdue.length === 0 && <p className="text-[11px] text-stone-400">Aucune tâche ce jour-là.</p>}
             {dayTasks.map((t) => <TaskRow key={t.id} task={t} today={data.today} project={t.project_id ? projectOf.get(t.project_id) : undefined} />)}
           </div>
-          <form key={formKey} action={(fd) => start(async () => { await createTask(fd); setFormKey((k) => k + 1); })} className="mt-3 space-y-1.5 border-t border-line pt-3">
+          {!adding ? (
+            <button type="button" onClick={() => setAdding(true)} className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-line py-2 text-[12px] font-medium text-stone-500 transition hover:border-brand-300 hover:text-brand-700">
+              <Icon name="plus" className="h-3.5 w-3.5" />Ajouter une tâche ce jour-là
+            </button>
+          ) : (
+          <form key={formKey} action={(fd) => start(async () => { await createTask(fd); setFormKey((k) => k + 1); setAdding(false); })} className="mt-3 space-y-1.5 border-t border-line pt-3">
             <input type="hidden" name="due_date" value={selected} />
-            <input name="title" placeholder="Nouvelle tâche ce jour-là…" className="input py-1.5 text-xs" required />
+            <input name="title" placeholder="Nouvelle tâche ce jour-là…" className="input py-1.5 text-xs" required autoFocus />
             <div className="grid grid-cols-2 gap-1.5">
               <input name="due_time" type="time" className="input min-w-0 py-1 text-xs" aria-label="Heure" />
               <select key={projectFilter} name="project_id" defaultValue={projectFilter} className="input min-w-0 py-1 text-xs" aria-label="Projet">
@@ -209,8 +216,12 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
                 {data.projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
-            <button className="btn-primary w-full py-1.5 text-xs"><Icon name="plus" className="h-3.5 w-3.5" />Ajouter</button>
+            <div className="flex gap-1.5">
+              <button className="btn-primary flex-1 py-1.5 text-xs"><Icon name="plus" className="h-3.5 w-3.5" />Ajouter</button>
+              <button type="button" onClick={() => setAdding(false)} className="btn-secondary px-3 py-1.5 text-xs">Annuler</button>
+            </div>
           </form>
+          )}
         </div>
       </div>
     </WidgetShell>

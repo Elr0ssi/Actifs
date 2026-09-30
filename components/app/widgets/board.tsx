@@ -18,7 +18,8 @@ import {
   type WidgetType,
 } from "@/lib/widgets/registry";
 import type { WidgetData } from "@/lib/data/widgets";
-import { cx } from "@/lib/utils";
+import { cx, MONTHS_FR } from "@/lib/utils";
+import { monthBounds } from "@/lib/finance-engine";
 import { Icon } from "@/components/app/icons";
 import { WidgetPageContext, WidgetSizeContext } from "@/components/app/widgets/shell";
 import { Projects, VocabQuiz, VocabStats } from "@/components/app/widgets/sections";
@@ -66,6 +67,16 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
   const [editing, setEditing] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const [saving, start] = useTransition();
+  const realMonth = { y: Number(data.today.slice(0, 4)), m: Number(data.today.slice(5, 7)) - 1 };
+  const [viewMonth, setViewMonth] = useState(realMonth);
+  const isReal = viewMonth.y === realMonth.y && viewMonth.m === realMonth.m;
+  // Vue d'ensemble Finance : on peut se déplacer dans le temps ; les widgets lisent alors la date de référence du mois choisi.
+  const refDate = page === "finance" && !isReal ? monthBounds(viewMonth.y, viewMonth.m).start : data.today;
+  const viewData: WidgetData = refDate === data.today ? data : { ...data, today: refDate, realToday: data.today };
+  const shiftMonth = (delta: number) => {
+    const d = new Date(Date.UTC(viewMonth.y, viewMonth.m + delta, 1));
+    setViewMonth({ y: d.getUTCFullYear(), m: d.getUTCMonth() });
+  };
   const dragId = useRef<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
 
@@ -105,7 +116,18 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
     <WidgetPageContext.Provider value={page}>
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">{toolbar}</div>
+        <div className="min-w-0">
+          {page === "finance" ? (
+            <div className="flex items-center gap-1">
+              <button type="button" onClick={() => shiftMonth(-1)} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label="Mois précédent"><Icon name="chevronLeft" /></button>
+              <p className="min-w-[140px] text-center text-[15px] font-bold text-stone-900">{MONTHS_FR[viewMonth.m]} {viewMonth.y}</p>
+              <button type="button" onClick={() => shiftMonth(1)} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label="Mois suivant"><Icon name="chevronRight" /></button>
+              {!isReal && <button type="button" onClick={() => setViewMonth(realMonth)} className="btn-secondary ml-1 px-2.5 py-1 text-[11px]">Aujourd'hui</button>}
+            </div>
+          ) : (
+            toolbar
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {saving && <span className="text-[11px] text-stone-400">Enregistrement…</span>}
           {editing ? (
@@ -144,7 +166,7 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
             >
               <div className={cx("h-full", editing && "pointer-events-none select-none opacity-80")}>
                 <WidgetSizeContext.Provider value={it.size}>
-                  <Comp data={data} size={it.size} opts={it.opts ?? {}} setOpts={setOpts(it.id)} />
+                  <Comp key={refDate} data={viewData} size={it.size} opts={it.opts ?? {}} setOpts={setOpts(it.id)} />
                 </WidgetSizeContext.Provider>
               </div>
               {editing && (
