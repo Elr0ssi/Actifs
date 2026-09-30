@@ -10,6 +10,7 @@ import { DOW } from "@/components/app/widgets/helpers";
 import type { WidgetData } from "@/lib/data/widgets";
 
 const fold = (t: string) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const timeOf = (name: string) => RECIPES.find((r) => r.name.toLowerCase() === name.toLowerCase())?.time ?? null;
 const iconFor = (name: string) => RECIPES.find((r) => r.name.toLowerCase() === name.toLowerCase())?.icon ?? null;
 
 export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: WidgetData; weekStart: string; initialDay: string; onClose: () => void }) {
@@ -21,9 +22,11 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
   const days = Array.from({ length: 14 }, (_, i) => addDays(weekStart, i));
 
   const dayItems = data.menu.filter((m) => m.day === day && !removed.includes(m.id));
-  const dayOpt = optimistic.filter((o) => o.day === day);
+  // Une ligne « en attente » disparaît dès que le serveur a renvoyé le repas (sinon il apparaîtrait en double).
+  const saved = new Set(data.menu.map((m) => `${m.day}|${m.name.toLowerCase()}`));
+  const dayOpt = optimistic.filter((o) => o.day === day && !saved.has(`${o.day}|${o.name.toLowerCase()}`));
   const inDay = new Set([...dayItems.map((m) => m.name.toLowerCase()), ...dayOpt.map((o) => o.name.toLowerCase())]);
-  const countOn = (d: string) => data.menu.filter((m) => m.day === d && !removed.includes(m.id)).length + optimistic.filter((o) => o.day === d).length;
+  const countOn = (d: string) => data.menu.filter((m) => m.day === d && !removed.includes(m.id)).length + optimistic.filter((o) => o.day === d && !saved.has(`${o.day}|${o.name.toLowerCase()}`)).length;
 
   const lastCourse = useMemo(
     () => data.lists.filter((l) => l.type === "shopping" && l.recipes.length > 0).sort((a, b) => b.date.localeCompare(a.date))[0] ?? null,
@@ -79,23 +82,26 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
           )}
         </Section>
 
-        {lastCourse && (
-          <Section
-            title={`Menus de ma dernière course · ${lastCourse.name}`}
-            action={<button className="text-xs font-medium text-brand-600 hover:underline" onClick={() => add(lastCourse.recipes.map((r) => ({ name: r.name, icon: r.icon })))}>Tout ajouter</button>}
-          >
+        <Section
+          title={lastCourse ? `Menus de ma dernière course · ${lastCourse.name}` : "Menus de ma dernière course"}
+          action={lastCourse ? <button className="text-xs font-medium text-brand-600 hover:underline" onClick={() => add(lastCourse.recipes.map((r) => ({ name: r.name, icon: r.icon })))}>Tout ajouter</button> : undefined}
+        >
+          {lastCourse ? (
             <div className="flex flex-wrap gap-1.5">
               {lastCourse.recipes.map((r) => {
                 const on = inDay.has(r.name.toLowerCase());
+                const t = timeOf(r.name);
                 return (
                   <button key={r.name} disabled={on} onClick={() => add([{ name: r.name, icon: r.icon }])} className={cx(chip, on && "cursor-default border-transparent bg-stone-100 text-stone-400 hover:bg-stone-100")}>
-                    {r.icon ?? "🍽️"} {r.name} {on ? "✓" : "+"}
+                    {r.icon ?? "🍽️"} {r.name}{t && <span className="text-stone-400"> · {t}</span>} {on ? "✓" : "+"}
                   </button>
                 );
               })}
             </div>
-          </Section>
-        )}
+          ) : (
+            <p className="text-xs text-stone-400">Les recettes que tu choisis en créant une liste de courses apparaîtront ici.</p>
+          )}
+        </Section>
 
         <Section title="Ajouter d'autres menus">
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher une recette…" className="input mb-3" />
@@ -111,11 +117,12 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
             <>
               <p className="mb-1.5 text-[11px] font-medium text-stone-400">Idées</p>
               <div className="flex flex-wrap gap-1.5">
-                {ideas.map((r) => <button key={r.slug} onClick={() => add([{ name: r.name, icon: r.icon }])} className={chip}>{r.icon} {r.name} +</button>)}
+                {ideas.map((r) => <button key={r.slug} onClick={() => add([{ name: r.name, icon: r.icon }])} className={chip}>{r.icon} {r.name} <span className="text-stone-400">· {r.time}</span> +</button>)}
               </div>
             </>
           )}
           {mine.length === 0 && ideas.length === 0 && <p className="text-xs text-stone-400">Aucune recette trouvée.</p>}
+          <a href="/app/lists/recipes" className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline">+ Créer une nouvelle recette</a>
         </Section>
 
         <button onClick={onClose} className="btn-primary mt-6 w-full justify-center">Terminé</button>

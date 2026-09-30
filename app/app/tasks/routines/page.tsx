@@ -6,6 +6,8 @@ import { WEEKDAYS_FR } from "@/lib/utils";
 import { createRoutine, archiveRoutine, restoreRoutine, deleteRoutineForever } from "@/app/app/calendar/actions";
 import { RoutineTracker } from "@/components/app/routine-tracker";
 import { addDays } from "@/lib/finance-engine";
+import { loadWidgetData } from "@/lib/data/widgets";
+import { RoutinesCurvePage } from "@/components/app/widgets/standalone";
 import { todayISO } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Gérer mes routines" };
@@ -18,6 +20,7 @@ export default async function RoutinesPage() {
 
   const { data: routines } = await supabase.from("routines").select("*").eq("household_id", householdId).order("created_at", { ascending: false }).returns<Routine[]>();
   const today = todayISO();
+  const widgetData = await loadWidgetData();
   const { data: recent } = await supabase.from("routine_logs").select("routine_id, log_date").gte("log_date", addDays(today, -6)).lte("log_date", today);
   const doneKeys = (recent ?? []).map((l) => `${l.routine_id}_${l.log_date}`);
   const active = (routines ?? []).filter((r) => r.active);
@@ -26,6 +29,8 @@ export default async function RoutinesPage() {
   return (
     <div className="space-y-6">
       <p className="text-xs text-stone-500">Crée, archive et restaure tes routines. Une routine archivée disparaît du calendrier mais reste récupérable.</p>
+
+      {widgetData && <RoutinesCurvePage data={widgetData} />}
 
       <section className="card p-5">
         <h2 className="mb-1 font-semibold text-stone-900">Suivi des 7 derniers jours</h2>

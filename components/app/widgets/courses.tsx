@@ -38,7 +38,32 @@ export function MenuWeek({ data }: WidgetProps) {
     }
     return [...out.values()];
   }, [data.lists, data.menu, weekStart]);
-  const scrollBy = (dir: number) => scroller.current?.scrollBy({ left: dir * (scroller.current.clientWidth * 0.8), behavior: "smooth" });
+  const CARD = 162; // largeur d'une carte + espace : les flèches et le glisser avancent d'un jour à la fois
+  const scrollBy = (dir: number) => scroller.current?.scrollBy({ left: dir * CARD, behavior: "smooth" });
+  const drag = useRef({ down: false, x: 0, left: 0, moved: false });
+  const dragProps = {
+    onPointerDown: (e: React.PointerEvent) => {
+      if (e.pointerType !== "mouse" || e.button !== 0 || !scroller.current) return;
+      drag.current = { down: true, x: e.clientX, left: scroller.current.scrollLeft, moved: false };
+    },
+    onPointerMove: (e: React.PointerEvent) => {
+      const g = drag.current;
+      if (!g.down || !scroller.current) return;
+      const dx = e.clientX - g.x;
+      if (Math.abs(dx) > 5) g.moved = true;
+      if (g.moved) scroller.current.scrollLeft = g.left - dx;
+    },
+    onPointerUp: () => endDrag(),
+    onPointerLeave: () => endDrag(),
+  };
+  function endDrag() {
+    const g = drag.current;
+    if (!g.down) return;
+    g.down = false;
+    const el = scroller.current;
+    // Après un glissement, on s'aligne sur le jour le plus proche.
+    if (g.moved && el) el.scrollTo({ left: Math.round(el.scrollLeft / CARD) * CARD, behavior: "smooth" });
+  }
   const nextWord = new Date(`${realToday}T00:00:00Z`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
 
   return (
@@ -49,7 +74,7 @@ export function MenuWeek({ data }: WidgetProps) {
       right={<button type="button" onClick={() => setEditDay(realToday)} className="btn-secondary px-2.5 py-1 text-[11px]">Planifier</button>}
     >
       <div className="relative">
-        <div ref={scroller} className="-mx-1 flex snap-x gap-3 overflow-x-auto scroll-smooth px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div ref={scroller} {...dragProps} className="-mx-1 flex cursor-grab select-none gap-3 overflow-x-auto px-1 pb-2 active:cursor-grabbing [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {days.map((d, i) => {
             const meals = mealsOn(d);
             const first = meals[0];
@@ -60,8 +85,9 @@ export function MenuWeek({ data }: WidgetProps) {
               <button
                 key={d}
                 type="button"
-                onClick={() => setEditDay(d)}
-                className={cx("group w-[150px] shrink-0 snap-start rounded-2xl border p-2.5 text-left transition hover:shadow-soft", isToday ? "border-brand-300 bg-brand-50/40" : "border-line bg-surface")}
+                onClick={() => { if (drag.current.moved) { drag.current.moved = false; return; } setEditDay(d); }}
+                draggable={false}
+                className={cx("group w-[150px] shrink-0 rounded-2xl border p-2.5 text-left transition hover:shadow-soft", isToday ? "border-brand-300 bg-brand-50/40" : "border-line bg-surface")}
               >
                 <p className={cx("text-[13px] font-bold", isToday ? "text-brand-700" : "text-stone-900")}>{DAY_SHORT[i % 7]} {Number(d.slice(8))}</p>
                 {first ? (
@@ -69,7 +95,7 @@ export function MenuWeek({ data }: WidgetProps) {
                     <div className="mt-2 aspect-[4/3] overflow-hidden rounded-xl bg-stone-100">
                       {image ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={image} alt={first.name} loading="lazy" className="h-full w-full object-cover transition group-hover:scale-105" />
+                        <img src={image} alt={first.name} loading="lazy" draggable={false} className="h-full w-full object-cover transition group-hover:scale-105" />
                       ) : (
                         <div className="flex h-full items-center justify-center text-4xl">{first.icon ?? rec?.icon ?? "🍽️"}</div>
                       )}

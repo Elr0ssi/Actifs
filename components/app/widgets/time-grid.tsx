@@ -15,7 +15,12 @@ export interface TimeEvent {
   done: boolean;
 }
 
-const HOUR_PX = 48;
+export type Zoom = "compact" | "normal" | "large";
+const ZOOM: Record<Zoom, { px: number; from: number; to: number }> = {
+  compact: { px: 26, from: 7, to: 22 },
+  normal: { px: 40, from: 6, to: 23 },
+  large: { px: 56, from: 0, to: 24 },
+};
 const SNAP = 15;
 const MIN_DUR = 15;
 const DAY_MIN = 24 * 60;
@@ -68,7 +73,9 @@ export function TimeGrid({
   onOpen,
   onToggle,
   onPickDay,
+  zoom = "normal",
 }: {
+  zoom?: Zoom;
   days: string[];
   today: string;
   events: TimeEvent[];
@@ -81,6 +88,13 @@ export function TimeGrid({
   onPickDay?: (day: string) => void;
 }) {
   const n = days.length;
+  const cfg = ZOOM[zoom];
+  const HOUR_PX = cfg.px;
+  const visible = events.filter((e) => days.includes(e.day));
+  const fromH = Math.min(cfg.from, ...visible.map((e) => Math.floor(e.startMin / 60)));
+  const toH = Math.max(cfg.to, ...visible.map((e) => Math.ceil(e.endMin / 60)));
+  const OFF = fromH * 60;
+  const hours = Array.from({ length: toH - fromH }, (_, i) => fromH + i);
   const colsRef = useRef<HTMLDivElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const gesture = useRef<Gesture | null>(null);
@@ -100,18 +114,21 @@ export function TimeGrid({
     const compute = () => setNow(new Date().getHours() * 60 + new Date().getMinutes());
     compute();
     const t = setInterval(compute, 60_000);
-    if (scroller.current) scroller.current.scrollTop = Math.max(0, (Math.max(6, d.getHours() - 1) - 0) * HOUR_PX);
+    if (scroller.current) scroller.current.scrollTop = zoom === "compact" ? 0 : Math.max(0, (Math.max(fromH, d.getHours() - 1) - fromH) * HOUR_PX);
     return () => clearInterval(t);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zoom]);
 
   const setPrev = (p: Preview | null) => {
     previewRef.current = p;
     setPreview(p);
   };
 
+  const geo = useRef({ px: HOUR_PX, off: OFF });
+  geo.current = { px: HOUR_PX, off: OFF };
   const pointerMin = (clientY: number) => {
     const r = colsRef.current?.getBoundingClientRect();
-    return r ? ((clientY - r.top) / HOUR_PX) * 60 : 0;
+    return r ? ((clientY - r.top) / geo.current.px) * 60 + geo.current.off : 0;
   };
   const pointerDay = (clientX: number) => {
     const r = colsRef.current?.getBoundingClientRect();
@@ -206,10 +223,10 @@ export function TimeGrid({
         </div>
 
         {/* Grille horaire */}
-        <div className="relative flex" style={{ height: 24 * HOUR_PX }}>
+        <div className="relative flex" style={{ height: (toH - fromH) * HOUR_PX }}>
           <div className="relative w-11 shrink-0">
-            {Array.from({ length: 24 }, (_, h) => (
-              <span key={h} className="absolute right-1.5 -translate-y-1/2 text-[10px] tabular-nums text-stone-400" style={{ top: h * HOUR_PX, display: h === 0 ? "none" : undefined }}>{timeLabel(h)}</span>
+            {hours.map((h) => (
+              <span key={h} className="absolute right-1.5 -translate-y-1/2 text-[10px] tabular-nums text-stone-400" style={{ top: (h - fromH) * HOUR_PX, display: h === fromH ? "none" : undefined }}>{timeLabel(h)}</span>
             ))}
           </div>
           <div
@@ -217,11 +234,11 @@ export function TimeGrid({
             className="relative grid min-w-0 flex-1 select-none"
             style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}
           >
-            {Array.from({ length: 24 }, (_, h) => (
-              <div key={h} className="pointer-events-none absolute inset-x-0 border-t border-line/60" style={{ top: h * HOUR_PX }} />
+            {hours.map((h) => (
+              <div key={h} className="pointer-events-none absolute inset-x-0 border-t border-line/60" style={{ top: (h - fromH) * HOUR_PX }} />
             ))}
-            {Array.from({ length: 24 }, (_, h) => (
-              <div key={`h${h}`} className="pointer-events-none absolute inset-x-0 border-t border-dashed border-line/30" style={{ top: h * HOUR_PX + HOUR_PX / 2 }} />
+            {zoom !== "compact" && hours.map((h) => (
+              <div key={`h${h}`} className="pointer-events-none absolute inset-x-0 border-t border-dashed border-line/30" style={{ top: (h - fromH) * HOUR_PX + HOUR_PX / 2 }} />
             ))}
 
             {days.map((d) => {
@@ -248,7 +265,7 @@ export function TimeGrid({
                 >
                   {dayEvents.map((ev) => {
                     const pos = lay.get(ev.id) ?? { col: 0, cols: 1 };
-                    const top = (ev.startMin / 60) * HOUR_PX;
+                    const top = ((ev.startMin - OFF) / 60) * HOUR_PX;
                     const height = Math.max(((ev.endMin - ev.startMin) / 60) * HOUR_PX, 18);
                     const active = preview?.id === ev.id;
                     return (
@@ -311,12 +328,12 @@ export function TimeGrid({
                   })}
 
                   {preview?.kind === "create" && preview.day === d && (
-                    <div className="pointer-events-none absolute inset-x-0.5 z-20 rounded-lg border-l-[3px] border-brand-500 bg-brand-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-brand-700" style={{ top: (preview.start / 60) * HOUR_PX, height: ((preview.end - preview.start) / 60) * HOUR_PX }}>
+                    <div className="pointer-events-none absolute inset-x-0.5 z-20 rounded-lg border-l-[3px] border-brand-500 bg-brand-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-brand-700" style={{ top: ((preview.start - OFF) / 60) * HOUR_PX, height: ((preview.end - preview.start) / 60) * HOUR_PX }}>
                       {fmtMin(preview.start)} – {fmtMin(preview.end)}
                     </div>
                   )}
                   {d === today && now !== null && (
-                    <div className="pointer-events-none absolute inset-x-0 z-20 flex items-center" style={{ top: (now / 60) * HOUR_PX }}>
+                    <div className="pointer-events-none absolute inset-x-0 z-20 flex items-center" style={{ top: ((now - OFF) / 60) * HOUR_PX, display: now < OFF || now > toH * 60 ? "none" : undefined }}>
                       <span className="-ml-1 h-2 w-2 rounded-full bg-rose-500" />
                       <span className="h-px flex-1 bg-rose-500" />
                     </div>

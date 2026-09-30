@@ -8,7 +8,7 @@ import { Icon } from "@/components/app/icons";
 import { WidgetShell, Empty, Segmented } from "@/components/app/widgets/shell";
 import { PRIORITY_RANK, fmtLong, fmtShort, isDone } from "@/components/app/widgets/helpers";
 import { CalendarGrid, CalendarNav, CheckRow, calRange, calShift, type CalItem, type CalView } from "@/components/app/widgets/calendar-grid";
-import { TimeGrid, fmtMin, type TimeEvent } from "@/components/app/widgets/time-grid";
+import { TimeGrid, fmtMin, type TimeEvent, type Zoom } from "@/components/app/widgets/time-grid";
 import { TaskEditor, type EditorValues } from "@/components/app/widgets/task-editor";
 import { addDays } from "@/lib/finance-engine";
 import { useAgendaToggles } from "@/components/app/widgets/agenda-state";
@@ -136,6 +136,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
   const [formKey, setFormKey] = useState(0);
   const [adding, setAdding] = useState(false);
   const [pending, start] = useTransition();
+  const zoom: Zoom = opts.zoom === "normal" || opts.zoom === "large" ? opts.zoom : "compact";
   type Sched = { date: string | null; time: string | null; end: string | null };
   const [sched, setSched] = useState<Record<string, Sched>>({});
   const [editor, setEditor] = useState<{ id?: string; values: EditorValues } | null>(null);
@@ -234,6 +235,12 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
       <div className="mb-3 flex flex-wrap items-center gap-1.5">
         <button type="button" onClick={() => setOpts({ tasks: !showTasks })} className={chip(showTasks)}>Tâches</button>
         <button type="button" onClick={() => setOpts({ routines: !showRoutines })} className={chip(showRoutines)}>Routines</button>
+        {timeView && (
+          <div className="ml-auto flex items-center gap-1.5 text-[11px] text-stone-400">
+            Taille
+            <Segmented<Zoom> value={zoom} onChange={(z) => setOpts({ zoom: z })} options={[{ v: "compact", l: "Compact" }, { v: "normal", l: "Normal" }, { v: "large", l: "Grand" }]} />
+          </div>
+        )}
       </div>
       <div className={cx("grid gap-4", wide && !timeView && "lg:grid-cols-[minmax(0,1fr)_290px]")}>
         <div className="flex min-w-0 flex-col">
@@ -242,6 +249,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
             <TimeGrid
               days={(() => { const { from, to } = calRange(view, anchor); const out: string[] = []; for (let d = from; d <= to; d = addDays(d, 1)) out.push(d); return out; })()}
               today={data.today}
+              zoom={zoom}
               events={showTasks ? (data.tasks.map((t) => (projectFilter && t.project_id !== projectFilter ? null : eventFor(t))).filter(Boolean) as TimeEvent[]) : []}
               allDay={itemsFor}
               onPickDay={(d) => { setSelected(d); setAnchor(d); changeView("day"); }}
