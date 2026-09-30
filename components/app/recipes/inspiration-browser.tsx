@@ -3,10 +3,10 @@
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { CATEGORIES, EQUIPMENT, RECIPES, filterRecipes, type MarketingRecipe } from "@/lib/marketing/recipes";
-import { importInspirationRecipe } from "@/app/app/lists/recipes/actions";
+import { setInspirationFavorite } from "@/app/app/lists/recipes/actions";
 import { cx } from "@/lib/utils";
 
-export function InspirationBrowser() {
+export function InspirationBrowser({ favoriteKeys }: { favoriteKeys: { slugs: string[]; names: string[] } }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [equipment, setEquipment] = useState<string[]>([]);
@@ -88,7 +88,7 @@ export function InspirationBrowser() {
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {results.map((r) => (
-          <InspirationCard key={r.slug} recipe={r} />
+          <InspirationCard key={r.slug} recipe={r} initialFav={favoriteKeys.slugs.includes(r.slug) || favoriteKeys.names.includes(r.name.toLowerCase())} />
         ))}
       </div>
 
@@ -99,9 +99,9 @@ export function InspirationBrowser() {
   );
 }
 
-function InspirationCard({ recipe }: { recipe: MarketingRecipe }) {
+function InspirationCard({ recipe, initialFav }: { recipe: MarketingRecipe; initialFav: boolean }) {
   const [pending, start] = useTransition();
-  const [added, setAdded] = useState(false);
+  const [fav, setFav] = useState(initialFav);
 
   return (
     <div className="card flex flex-col overflow-hidden p-0">
@@ -130,11 +130,16 @@ function InspirationCard({ recipe }: { recipe: MarketingRecipe }) {
             Voir la recette
           </Link>
           <button
-            disabled={pending || added}
-            onClick={() => start(async () => { await importInspirationRecipe(recipe.slug); setAdded(true); })}
-            className={cx("ml-auto py-1.5 text-xs", added ? "text-emerald-600" : "btn-primary")}
+            disabled={pending}
+            aria-pressed={fav}
+            onClick={() => {
+              const next = !fav;
+              setFav(next);
+              start(() => setInspirationFavorite(recipe.slug, next));
+            }}
+            className={cx("ml-auto rounded-xl px-3 py-1.5 text-xs font-medium transition", fav ? "bg-amber-500/15 text-amber-700 hover:bg-amber-500/25" : "btn-primary")}
           >
-            {added ? "Ajoutée ✓" : "+ Ajouter à mes recettes"}
+            {fav ? "★ Dans mes favoris" : "☆ Ajouter aux favoris"}
           </button>
         </div>
       </div>

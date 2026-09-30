@@ -78,7 +78,7 @@ export async function deleteRecipe(recipeId: string) {
  * Copie une recette d'inspiration (base fournie) dans "Mes recettes" du foyer.
  * Si elle y est déjà (même nom), on la réutilise au lieu de la dupliquer.
  */
-export async function importInspirationRecipe(slug: string): Promise<{ id: string; name: string; itemCount: number } | null> {
+export async function importInspirationRecipe(slug: string, favorite = false): Promise<{ id: string; name: string; itemCount: number } | null> {
   const source = getRecipe(slug);
   if (!source) return null;
   const { supabase, householdId, userId } = await ctx();
@@ -88,13 +88,17 @@ export async function importInspirationRecipe(slug: string): Promise<{ id: strin
     .from("recipes")
     .select("id, name")
     .eq("household_id", householdId)
-    .ilike("name", source.name.replace(/[\\%_]/g, "\\$&"))
+    .or(`source_slug.eq.${slug},name.ilike.${source.name.replace(/[\\%_,()]/g, "_")}`)
     .limit(1);
-  if (existing?.[0]) return { id: existing[0].id, name: existing[0].name, itemCount: source.ingredients.length };
+  if (existing?.[0]) {
+    if (favorite) await supabase.from("recipes").update({ is_favorite: true }).eq("id", existing[0].id);
+    revalidatePath("/app/lists", "layout");
+    return { id: existing[0].id, name: existing[0].name, itemCount: source.ingredients.length };
+  }
 
   const { data } = await supabase
     .from("recipes")
-    .insert({ name: source.name, category: source.category, image_url: null, household_id: householdId, created_by: userId })
+    .insert({ name: source.name, category: source.category, image_url: null, source_slug: slug, is_favorite: favorite, household_id: householdId, created_by: userId })
     .select("id")
     .single();
   if (!data?.id) return null;
@@ -112,4 +116,21 @@ export async function importInspirationRecipe(slug: string): Promise<{ id: strin
   );
   revalidatePath("/app/lists", "layout");
   return { id: data.id, name: source.name, itemCount: source.ingredients.length };
+}
+
+/** Cœur des recettes d'inspiration : ajoute ou retire des favoris (les favoris apparaissent dans « Mes recettes »). */
+export async function setInspirationFavorite(slug: string, favorite: boolean) {
+  if (favorite) {
+    await importInspirationRecipe(slug, true);
+    return;
+  }
+  const source = getRecipe(slug);
+  const { supabase, householdId } = await ctx();
+  if (!source || !householdId) return;
+  await supabase
+    .from("recipes")
+    .update({ is_favorite: false })
+    .eq("household_id", householdId)
+    .or(`source_slug.eq.${slug},name.ilike.${source.name.replace(/[\\%_,()]/g, "_")}`);
+  revalidatePath("/app/lists", "layout");
 }

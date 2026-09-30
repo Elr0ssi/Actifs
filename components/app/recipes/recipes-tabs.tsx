@@ -27,9 +27,17 @@ export function RecipesTabs({
   const [cat, setCat] = useState<string | null>(null);
   const [sort, setSort] = useState<"recent" | "az" | "fav" | "items">("recent");
   const fold = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const mine = useMemo(() => recipes.filter((r) => !r.source_slug || r.is_favorite), [recipes]);
+  const favoriteKeys = useMemo(
+    () => ({
+      slugs: recipes.filter((r) => r.is_favorite && r.source_slug).map((r) => r.source_slug as string),
+      names: recipes.filter((r) => r.is_favorite).map((r) => r.name.toLowerCase()),
+    }),
+    [recipes]
+  );
   const shown = useMemo(() => {
     const query = fold(q.trim());
-    const list = recipes.filter(
+    const list = mine.filter(
       (r) => (!cat || r.category === cat) && (!query || fold(`${r.name} ${r.recipe_items.map((i) => i.label).join(" ")}`).includes(query))
     );
     const byName = (a: MyRecipe, b: MyRecipe) => a.name.localeCompare(b.name, "fr");
@@ -38,8 +46,8 @@ export function RecipesTabs({
     else if (sort === "items") list.sort((a, b) => a.recipe_items.length - b.recipe_items.length || byName(a, b));
     else list.sort((a, b) => b.created_at.localeCompare(a.created_at));
     return list;
-  }, [recipes, q, cat, sort]);
-  const usedCats = [...new Set(recipes.map((r) => r.category).filter(Boolean) as string[])];
+  }, [mine, q, cat, sort]);
+  const usedCats = [...new Set(mine.map((r) => r.category).filter(Boolean) as string[])];
 
   return (
     <div>
@@ -48,7 +56,7 @@ export function RecipesTabs({
           onClick={() => setTab("mine")}
           className={cx("flex-1 rounded-full px-4 py-2 text-sm font-medium transition sm:flex-none", tab === "mine" ? "bg-surface text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-800")}
         >
-          Mes recettes {recipes.length > 0 && `(${recipes.length})`}
+          Mes recettes {mine.length > 0 && `(${mine.length})`}
         </button>
         <button
           onClick={() => setTab("inspiration")}
@@ -88,8 +96,8 @@ export function RecipesTabs({
           )}
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {recipes.length === 0 && <p className="text-sm text-stone-400">Aucune recette pour l'instant. Crée-en une avec « + Nouvelle recette », ou pioche dans "Trouver des recettes".</p>}
-            {recipes.length > 0 && shown.length === 0 && <p className="text-sm text-stone-400">Aucune recette ne correspond.</p>}
+            {mine.length === 0 && <p className="text-sm text-stone-400">Aucune recette pour l'instant. Crée-en une avec « + Nouvelle recette », ou mets en favori celles de « Trouver des recettes ».</p>}
+            {mine.length > 0 && shown.length === 0 && <p className="text-sm text-stone-400">Aucune recette ne correspond.</p>}
             {shown.map((r) => (
               <RecipeCard key={r.id} recipe={r} householdId={householdId} categories={categories} catalog={catalog} />
             ))}
@@ -97,7 +105,7 @@ export function RecipesTabs({
         </div>
       ) : (
         <div className="mt-6">
-          <InspirationBrowser />
+          <InspirationBrowser favoriteKeys={favoriteKeys} />
         </div>
       )}
     </div>

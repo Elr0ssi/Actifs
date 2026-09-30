@@ -76,6 +76,7 @@ export interface Recipe {
   notes: string | null;
   image_url: string | null;
   is_favorite: boolean;
+  source_slug?: string | null;
   created_by: string | null;
   created_at: string;
 }
