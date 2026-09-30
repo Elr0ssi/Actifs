@@ -12,7 +12,7 @@ export function WalletSetup({ token, defaultOpen }: { token: string; defaultOpen
   const [tested, setTested] = useState(false);
   const origin = typeof window === "undefined" ? "" : window.location.origin;
   const url = `${origin}/api/wallet/${token}`;
-  const body = '{\n  "merchant": «Commerçant»,\n  "amount": «Montant»,\n  "card": «Carte ou Pass»\n}';
+  const template = `${url}?merchant=&amount=&card=`;
 
   const copy = async (what: string, text: string) => {
     try {
@@ -35,28 +35,25 @@ export function WalletSetup({ token, defaultOpen }: { token: string; defaultOpen
       {open && (
         <div className="mt-4 space-y-4 text-[13px] text-stone-700">
           <div>
-            <p className="label mb-1.5">1 · Ton adresse privée (garde-la pour toi)</p>
+            <p className="label mb-1.5">1 · Copie ton adresse privée (garde-la pour toi)</p>
             <div className="flex gap-2">
-              <input readOnly value={url} onFocus={(e) => e.currentTarget.select()} className="input flex-1 font-mono text-xs" aria-label="Adresse de réception des paiements" />
-              <button type="button" className="btn-primary" onClick={() => copy("url", url)}>{copied === "url" ? "Copié ✓" : "Copier"}</button>
+              <input readOnly value={template} onFocus={(e) => e.currentTarget.select()} className="input flex-1 font-mono text-xs" aria-label="Adresse de réception des paiements" />
+              <button type="button" className="btn-primary" onClick={() => copy("url", template)}>{copied === "url" ? "Copié ✓" : "Copier"}</button>
             </div>
+            <p className="mt-1 text-[11px] text-stone-500">Elle se termine par <span className={CODE}>?merchant=&amp;amount=&amp;card=</span> : c'est là que Raccourcis viendra mettre le commerçant, le montant et la carte.</p>
           </div>
 
           <div>
-            <p className="label mb-1.5">2 · Sur ton iPhone : application Raccourcis (une seule fois, ~2 min)</p>
+            <p className="label mb-1.5">2 · Sur ton iPhone : Raccourcis → Automatisation → + → Transaction</p>
             <ol className="list-decimal space-y-1.5 pl-5 leading-relaxed">
-              <li>Onglet <b>Automatisation</b> → <b>+</b> → <b>Nouvelle automatisation personnelle</b> → <b>Transaction</b>.</li>
-              <li>Choisis tes cartes (toutes), laisse « Toute transaction » puis <b>Suivant</b>.</li>
-              <li>Ajoute l'action <b>Obtenir le contenu de l'URL</b> et colle l'adresse ci-dessus.</li>
-              <li>Touche <b>Afficher plus</b> : Méthode <b>POST</b>, Corps de la requête <b>JSON</b>, puis ajoute ces champs (en touchant la variable proposée par Raccourcis) :
-                <div className="mt-1.5 flex items-start gap-2">
-                  <pre className="flex-1 overflow-x-auto rounded-lg bg-stone-100 p-2.5 font-mono text-[11px] leading-relaxed text-stone-700">{body}</pre>
-                </div>
-                <p className="mt-1 text-[11px] text-stone-500">Les trois champs sont <span className={CODE}>merchant</span> (Commerçant), <span className={CODE}>amount</span> (Montant) et <span className={CODE}>card</span> (Carte ou Pass). Écris le nom du champ, puis choisis la variable correspondante.</p>
-              </li>
-              <li><b>Suivant</b>, désactive <b>Demander avant d'exécuter</b>, puis <b>OK</b>.</li>
+              <li>Choisis tes cartes, garde « Toute transaction », <b>Suivant</b>. Tu arrives sur l'écran avec <b>« Recevoir transaction en tant qu'entrée »</b>.</li>
+              <li>Si une action <b>« Partager Contenu avec App »</b> est présente, supprime-la (croix à droite).</li>
+              <li>Dans « Rechercher des actions », tape <b>URL</b> et ajoute <b>« Obtenir le contenu de l'URL »</b>.</li>
+              <li>Touche le champ URL et <b>colle</b> l'adresse copiée.</li>
+              <li>Place le curseur juste après <span className={CODE}>merchant=</span>, puis dans la barre au-dessus du clavier touche la variable <b>Transaction</b> et choisis sa propriété <b>Commerçant</b>. Fais pareil après <span className={CODE}>amount=</span> avec <b>Montant</b>, et après <span className={CODE}>card=</span> avec <b>Carte ou Pass</b>.</li>
+              <li>Laisse la méthode sur <b>GET</b> (par défaut), touche <b>✓</b> en haut à droite, puis désactive <b>« Demander avant d'exécuter »</b> s'il apparaît.</li>
             </ol>
-            <p className="mt-2 rounded-lg bg-amber-500/10 px-3 py-2 text-[12px] text-amber-800">Apple ne permet pas de partager une automatisation « Transaction » par lien : elle doit être créée sur le téléphone. Le reste est automatique.</p>
+            <p className="mt-2 rounded-lg bg-amber-500/10 px-3 py-2 text-[12px] text-amber-800">Apple ne permet pas de partager cette automatisation par lien : elle doit être créée sur le téléphone. Les noms des propriétés peuvent varier légèrement selon la version d'iOS : prends celles qui correspondent au commerçant, au montant et à la carte.</p>
           </div>
 
           <div>
