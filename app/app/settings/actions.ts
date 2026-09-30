@@ -54,3 +54,12 @@ export async function setAppearance(mode: string | null, accent: string | null) 
   if (accent !== null) jar.set(ACCENT_COOKIE, parseAccent(accent), opts);
   revalidatePath("/app", "layout");
 }
+
+export async function regenerateCalendarToken() {
+  const supabase = createClient();
+  const { data: { user } } = await getSessionUser(supabase);
+  const { data: profile } = await supabase.from("profiles").select("household_id").eq("id", user?.id).single();
+  if (!profile?.household_id) return;
+  await supabase.from("households").update({ ical_token: crypto.randomUUID() }).eq("id", profile.household_id);
+  revalidatePath("/app/settings");
+}

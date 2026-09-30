@@ -361,6 +361,31 @@ export function RecipesIdeas({ data, size }: WidgetProps) {
 
 /* ---------- Notes ---------- */
 
+export function NotesRecent({ data, size }: WidgetProps) {
+  return (
+    <WidgetShell icon="notes" title="Pages récentes" href="/app/notes/pages" hrefLabel="Ouvrir">
+      {data.notes.length === 0 ? (
+        <Empty>Aucune page pour l'instant. Crée ta première note !</Empty>
+      ) : (
+        <ul className={cx("grid gap-x-4 divide-y divide-line/70", size !== "s" && "sm:grid-cols-2 sm:divide-y-0")}>
+          {data.notes.slice(0, size === "s" ? 4 : 8).map((n) => (
+            <li key={n.id}>
+              <Link href={`/app/notes/pages/${n.id}`} className="flex items-start gap-2 rounded-lg py-1.5 hover:bg-stone-50">
+                <span className="mt-px">{n.icon || "📄"}</span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[13px] font-medium text-stone-800">{n.title || "Sans titre"}</span>
+                  {size !== "s" && n.search && <span className="block truncate text-[11px] text-stone-400">{n.search}</span>}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Link href="/app/notes/pages" className="mt-2 inline-block text-[12px] font-medium text-brand-600 hover:underline">+ Nouvelle page</Link>
+    </WidgetShell>
+  );
+}
+
 export function NotesVocab({ data, size }: WidgetProps) {
   return (
     <WidgetShell icon="book" title="Vocabulaire récent" href="/app/notes/vocabulaire">

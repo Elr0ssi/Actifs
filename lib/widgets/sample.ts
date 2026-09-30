@@ -52,6 +52,11 @@ export function sampleWidgetData(today: string): WidgetData {
         recipes: [{ name: "Poulet rôti", icon: "🍗", count: 1 }, { name: "Pâtes tomate", icon: "🍝", count: 2 }],
       },
     ],
+    notes: [
+      { id: "n1", title: "Idées de voyage", icon: "✈️", search: "Lisbonne, Porto, road trip en Algarve au printemps…", updated_at: stamp },
+      { id: "n2", title: "Compte rendu réunion", icon: "💼", search: "Points clés : budget validé, prochaine étape lundi.", updated_at: stamp },
+      { id: "n3", title: "Recettes à tester", icon: "🍳", search: "Curry de pois chiches, gratin dauphinois…", updated_at: stamp },
+    ],
     words: [
       { id: "w1", french: "Bonjour", english: "Hello", created_at: stamp },
       { id: "w2", french: "Merci", english: "Thank you", created_at: stamp },

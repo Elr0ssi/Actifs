@@ -29,7 +29,7 @@ import { TasksCalendar, TasksList } from "@/components/app/widgets/tasks";
 import { RoutinesCurve } from "@/components/app/widgets/routines";
 import type { WidgetProps } from "@/components/app/widgets/types";
 import { FinAccounts, FinActions, FinBreakdown, FinBudgets, FinCalendar, FinCharges, FinIncomes, FinReste, FinTrend } from "@/components/app/widgets/finance";
-import { CalAgenda, CalWeek, ListsShopping, NotesVocab, RecipesIdeas, RoutinesToday, TasksStat } from "@/components/app/widgets/life";
+import { CalAgenda, CalWeek, ListsShopping, NotesRecent, NotesVocab, RecipesIdeas, RoutinesToday, TasksStat } from "@/components/app/widgets/life";
 
 const RENDER: Record<WidgetType, (p: WidgetProps) => JSX.Element> = {
   "fin-accounts": FinAccounts,
@@ -58,6 +58,7 @@ const RENDER: Record<WidgetType, (p: WidgetProps) => JSX.Element> = {
   "lists-shopping": ListsShopping,
   "recipes-ideas": RecipesIdeas,
   "notes-vocab": NotesVocab,
+  "notes-recent": NotesRecent,
 };
 
 const SIZE_SHORT: Record<WidgetSize, string> = { s: "S", m: "M", l: "L", xl: "XL" };

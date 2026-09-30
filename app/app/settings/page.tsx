@@ -4,6 +4,7 @@ import type { Profile } from "@/lib/types";
 import { updateProfile, updateHouseholdName, joinHousehold, changePassword } from "@/app/app/settings/actions";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { cookies } from "next/headers";
+import { CalendarFeedCard } from "@/components/app/calendar-feed-card";
 import { AppearancePicker } from "@/components/app/appearance-picker";
 import { ACCENT_COOKIE, THEME_COOKIE, parseAccent, parseMode } from "@/lib/theme";
 
@@ -31,6 +32,12 @@ export default async function SettingsPage() {
         <h2 className="mb-1 font-semibold text-stone-900">Apparence</h2>
         <p className="mb-4 text-xs text-stone-500">Mode clair ou sombre et couleur d'accent, enregistrés sur cet appareil.</p>
         <AppearancePicker mode={parseMode(cookies().get(THEME_COOKIE)?.value)} accent={parseAccent(cookies().get(ACCENT_COOKIE)?.value)} />
+      </section>
+
+      <section className="card p-6">
+        <h2 className="mb-1 font-semibold text-stone-900">Synchroniser mon calendrier</h2>
+        <p className="mb-4 text-xs text-stone-500">Retrouve tes tâches (avec heure) et tes routines dans Google Agenda ou le Calendrier de ton iPhone.</p>
+        <CalendarFeedCard token={(household as { ical_token?: string } | null)?.ical_token ?? ""} />
       </section>
 
       <section className="card p-6">

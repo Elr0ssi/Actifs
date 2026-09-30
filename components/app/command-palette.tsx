@@ -61,6 +61,7 @@ export function CommandPalette({ mode }: { mode: ThemeMode }) {
       { id: "a-task", group: "Actions", label: "Nouvelle tâche", hint: "Ajout rapide", icon: "plus", keywords: "ajouter creer todo", run: () => window.dispatchEvent(new Event("allin:quickadd")) },
       { id: "a-list", group: "Actions", label: "Nouvelle liste de courses", icon: "cart", keywords: "creer courses", run: go("/app/lists/mes-listes") },
       { id: "a-op", group: "Actions", label: "Nouvelle opération", hint: "Finance", icon: "wallet", keywords: "depense revenu charge", run: go("/app/finance/operations") },
+      { id: "a-note", group: "Actions", label: "Nouvelle note", icon: "notes", keywords: "page ecrire notion", run: go("/app/notes/pages") },
       { id: "a-word", group: "Actions", label: "Ajouter un mot de vocabulaire", icon: "book", keywords: "notes", run: go("/app/notes/vocabulaire") },
       {
         id: "a-theme",
@@ -84,7 +85,7 @@ export function CommandPalette({ mode }: { mode: ThemeMode }) {
       { id: "n-ops", group: "Aller à", label: "Finance — opérations", icon: "list", run: go("/app/finance/operations") },
       { id: "n-acc", group: "Aller à", label: "Finance — comptes", icon: "bank", run: go("/app/finance/accounts") },
       { id: "n-tax", group: "Aller à", label: "Finance — impôts", icon: "chart", run: go("/app/finance/taxes") },
-      { id: "n-notes", group: "Aller à", label: "Notes & vocabulaire", icon: "notes", run: go("/app/notes") },
+      { id: "n-notes", group: "Aller à", label: "Notes, pages & vocabulaire", icon: "notes", run: go("/app/notes") },
       { id: "n-set", group: "Aller à", label: "Paramètres & apparence", icon: "settings", keywords: "theme couleur profil", run: go("/app/settings") },
       ...RECIPES.map<Cmd>((r) => ({ id: `r-${r.slug}`, group: "Recettes", label: r.name, hint: `${r.category} · ${r.time}`, icon: "chef", keywords: r.ingredients.join(" "), run: () => window.open(`/recettes/${r.slug}`, "_blank") })),
     ],

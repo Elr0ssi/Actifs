@@ -34,6 +34,7 @@ export interface WidgetData {
   routines: Routine[];
   logs: RoutineLog[];
   lists: WidgetList[];
+  notes: { id: string; title: string; icon: string | null; search: string; updated_at: string }[];
   words: { id: string; french: string; english: string; created_at: string }[];
   wordsTotal: number;
   projects: { id: string; name: string; color: string; total: number; done: number }[];
@@ -67,7 +68,7 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
   const from = addDays(today, -62);
   const to = addDays(today, 124);
 
-  const [finance, { data: tasks }, { data: routines }, logs, { data: lists }, { data: words, count: wordsTotal }, { data: projects }, { data: projectTasks }] = await Promise.all([
+  const [finance, { data: tasks }, { data: routines }, logs, { data: lists }, { data: words, count: wordsTotal }, { data: projects }, { data: projectTasks }, { data: notes }] = await Promise.all([
     loadFinanceData(),
     supabase
       .from("tasks")
@@ -90,6 +91,7 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
     supabase.from("vocab_words").select("id, french, english, created_at", { count: "exact" }).eq("household_id", householdId).order("created_at", { ascending: false }).limit(200),
     supabase.from("projects").select("id, name, color").eq("household_id", householdId).eq("archived", false).order("created_at"),
     supabase.from("tasks").select("project_id, status").eq("household_id", householdId).not("project_id", "is", null),
+    supabase.from("notes").select("id, title, icon, search, updated_at").eq("household_id", householdId).order("updated_at", { ascending: false }).limit(8),
   ]);
 
   type ListRow = {
@@ -132,6 +134,7 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
       items: [...l.list_items].sort((a, b) => a.position - b.position).map(({ id, label, quantity, checked }) => ({ id, label, quantity, checked })),
       recipes: l.list_recipes ?? [],
     })),
+    notes: (notes ?? []).map((n) => ({ ...n, search: n.search.slice(0, 160) })),
     words: words ?? [],
     wordsTotal: wordsTotal ?? words?.length ?? 0,
     projects: (projects ?? []).map((p) => {

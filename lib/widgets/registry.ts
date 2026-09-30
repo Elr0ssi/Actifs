@@ -30,7 +30,8 @@ export type WidgetType =
   | "cal-week"
   | "lists-shopping"
   | "recipes-ideas"
-  | "notes-vocab";
+  | "notes-vocab"
+  | "notes-recent";
 
 export type WidgetOpts = Record<string, string | boolean>;
 
@@ -90,6 +91,7 @@ export const WIDGETS: WidgetDef[] = [
   { type: "recipes-ideas", section: "courses", title: "Idées de recettes", description: "Une sélection de recettes qui change chaque jour.", icon: "chef", sizes: ["m", "l", "xl"], defaultSize: "m" },
   { type: "vocab-stats", section: "notes", title: "Compteur de mots", description: "Nombre de mots appris, au total et cette semaine.", icon: "chart", sizes: ["s"], defaultSize: "s" },
   { type: "vocab-quiz", section: "notes", title: "Révision éclair", description: "Une carte à retourner pour réviser ton vocabulaire.", icon: "book", sizes: ["s", "m"], defaultSize: "m" },
+  { type: "notes-recent", section: "notes", title: "Pages récentes", description: "Tes dernières notes, pour les rouvrir en un clic.", icon: "notes", sizes: ["s", "m", "l"], defaultSize: "m" },
   { type: "notes-vocab", section: "notes", title: "Vocabulaire récent", description: "Tes derniers mots enregistrés.", icon: "book", sizes: ["s", "m"], defaultSize: "s" },
 ];
 
@@ -141,6 +143,7 @@ DEFAULT_LAYOUTS.courses = [
   item("lists-shopping", "m"),
 ];
 DEFAULT_LAYOUTS.notes = [
+  item("notes-recent", "m"),
   item("vocab-stats", "s"),
   item("vocab-quiz", "m"),
   item("notes-vocab", "s"),
