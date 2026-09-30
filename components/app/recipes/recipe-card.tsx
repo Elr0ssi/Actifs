@@ -21,7 +21,7 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
 
   return (
     <div className={cx("card flex flex-col overflow-hidden", pending && "opacity-60")}>
-      <div className="relative aspect-[16/10] bg-stone-100">
+      <div className="relative aspect-video bg-stone-100">
         {recipe.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={recipe.image_url} alt={recipe.name} loading="lazy" className="h-full w-full object-cover" />

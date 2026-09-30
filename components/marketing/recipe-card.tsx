@@ -3,11 +3,10 @@ import type { MarketingRecipe } from "@/lib/marketing/recipes";
 
 /** Zone photo (vide pour l'instant, prête pour un vrai PNG) + badge d'ingrédient qui déborde dessus. */
 export function RecipeCard({ recipe, size = "normal" }: { recipe: MarketingRecipe; size?: "normal" | "small" }) {
-  const photoHeight = size === "small" ? "h-24" : "h-36";
   return (
     <Link href={`/recettes/${recipe.slug}`} className="card group block h-full p-0 transition hover:-translate-y-1 hover:shadow-lg">
       <div className="relative">
-        <div className={`overflow-hidden rounded-t-2xl ${photoHeight} bg-stone-100`}>
+        <div className="aspect-video overflow-hidden rounded-t-2xl bg-stone-100">
           {recipe.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={recipe.image} alt={recipe.name} className="h-full w-full object-cover" />

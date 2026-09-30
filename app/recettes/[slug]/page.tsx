@@ -30,7 +30,7 @@ export default function RecipeDetailPage({ params }: { params: { slug: string } 
 
         <FadeIn>
           <div className="relative mt-4">
-            <div className="h-56 overflow-hidden rounded-3xl bg-stone-100">
+            <div className="aspect-video overflow-hidden rounded-3xl bg-stone-100">
               {recipe.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={recipe.image} alt={recipe.name} className="h-full w-full object-cover" />

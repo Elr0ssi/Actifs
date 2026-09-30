@@ -325,7 +325,7 @@ export function RecipesIdeas({ data, size }: WidgetProps) {
         {picks.map((r) => (
           <Link key={r.slug} href={`/recettes/${r.slug}`} className="group min-w-0">
             <div className="relative">
-              <div className="flex h-20 items-center justify-center overflow-hidden rounded-xl bg-stone-100 text-[10px] text-stone-300">
+              <div className="flex aspect-video items-center justify-center overflow-hidden rounded-xl bg-stone-100 text-[10px] text-stone-300">
                 {r.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={r.image} alt={r.name} className="h-full w-full object-cover" />

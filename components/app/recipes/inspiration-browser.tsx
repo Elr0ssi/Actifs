@@ -106,7 +106,7 @@ function InspirationCard({ recipe }: { recipe: MarketingRecipe }) {
   return (
     <div className="card flex flex-col overflow-hidden p-0">
       <div className="relative">
-        <div className="h-28 overflow-hidden bg-stone-100">
+        <div className="aspect-video overflow-hidden bg-stone-100">
           {recipe.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={recipe.image} alt={recipe.name} className="h-full w-full object-cover" />

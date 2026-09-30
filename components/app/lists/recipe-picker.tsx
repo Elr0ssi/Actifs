@@ -214,7 +214,7 @@ function DiscoverCard({ recipe, count, busy, onAdd, onCount }: { recipe: Marketi
   return (
     <article className={cx("flex h-full w-[82vw] max-w-[340px] shrink-0 snap-center flex-col overflow-hidden rounded-3xl border bg-white shadow-sm transition", count > 0 ? "border-brand-400 ring-2 ring-brand-200" : "border-line")}>
       <div className="relative">
-        <div className="flex h-36 items-center justify-center overflow-hidden bg-stone-100 text-xs text-stone-300">
+        <div className="flex aspect-video shrink-0 items-center justify-center overflow-hidden bg-stone-100 text-xs text-stone-300">
           {recipe.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={recipe.image} alt={recipe.name} className="h-full w-full object-cover" />
