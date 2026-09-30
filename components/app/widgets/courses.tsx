@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { addDays, expand, monthBounds } from "@/lib/finance-engine";
 import { cx } from "@/lib/utils";
+import { CountUp } from "@/components/app/count-up";
 import { WidgetShell, Empty } from "@/components/app/widgets/shell";
 import { eur0, fmtShort, mondayOf } from "@/components/app/widgets/helpers";
 import type { WidgetProps } from "@/components/app/widgets/types";
@@ -74,7 +75,7 @@ export function ListsOverview({ data, size }: WidgetProps) {
                     </span>
                   </div>
                   <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-stone-100">
-                    <div className="h-full rounded-full bg-brand-500" style={{ width: `${pct}%` }} />
+                    <div className="fill-grow h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600" style={{ width: `${pct}%` }} />
                   </div>
                 </Link>
               </li>
@@ -105,12 +106,12 @@ export function CoursesBudget({ data, size }: WidgetProps) {
   return (
     <WidgetShell icon="wallet" title="Budget courses" subtitle="Dépenses vs budget · ce mois-ci">
       <p className="tabular text-2xl font-bold tracking-tight text-stone-900">
-        {eur0(total)}
+        <CountUp value={total} kind="eur0" />
         {budget > 0 && <span className="ml-1.5 text-[12px] font-normal tracking-normal text-stone-400">/ {eur0(budget)}</span>}
       </p>
       <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-stone-100">
-        <div className={cx("h-full", left < 0 ? "bg-rose-400" : "bg-brand-600")} style={{ width: `${(spent / scale) * 100}%` }} />
-        <div className={cx("h-full", left < 0 ? "bg-rose-200" : "bg-brand-200")} style={{ width: `${(planned / scale) * 100}%` }} />
+        <div className={cx("fill-grow h-full", left < 0 ? "bg-rose-400" : "bg-brand-600")} style={{ width: `${(spent / scale) * 100}%` }} />
+        <div className={cx("fill-grow h-full", left < 0 ? "bg-rose-200" : "bg-brand-200")} style={{ width: `${(planned / scale) * 100}%` }} />
       </div>
       {budget > 0 ? (
         <p className={cx("mt-1.5 text-[11px]", left < 0 ? "font-medium text-rose-600" : "text-stone-500")}>
@@ -144,7 +145,7 @@ export function CoursesLast({ data }: WidgetProps) {
         <Empty>Termine une liste de courses pour voir ce qu'elle coûte.</Empty>
       ) : (
         <>
-          <p className="tabular text-2xl font-bold tracking-tight text-stone-900">{eur0(last.amount)}</p>
+          <p className="tabular text-2xl font-bold tracking-tight text-stone-900"><CountUp value={last.amount} kind="eur0" /></p>
           <p className="mt-1.5 text-[11px] text-stone-500">
             {avgMeal !== null ? (
               <>Prix moyen par repas : <b className="tabular text-stone-800">{avgMeal.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 2 })}</b></>

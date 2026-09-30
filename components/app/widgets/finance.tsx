@@ -21,6 +21,7 @@ import { NewOperationButton } from "@/components/app/finance/operation-form";
 import { DonutChart } from "@/components/app/charts/donut-chart";
 import { Icon, type IconName } from "@/components/app/icons";
 import { WidgetShell, Empty, Segmented } from "@/components/app/widgets/shell";
+import { CountUp } from "@/components/app/count-up";
 import { useDragNav } from "@/components/app/widgets/calendar-grid";
 import type { WidgetProps } from "@/components/app/widgets/types";
 
@@ -63,7 +64,7 @@ function AccountTile({ name, icon, tint, value, today, editable }: { name: strin
               <button className="btn-primary px-2 py-1 text-xs">OK</button>
             </form>
           ) : (
-            <p className="tabular truncate text-base font-bold text-stone-900">{value ? formatEUR(value.balance) : "—"}</p>
+            <p className="tabular truncate text-base font-bold text-stone-900">{value ? <CountUp value={value.balance} /> : "—"}</p>
           )}
         </div>
       </div>
@@ -95,7 +96,7 @@ export function FinAccounts({ data, size }: WidgetProps) {
         ))}
         <div className={cx("flex min-w-0 flex-col justify-center rounded-xl bg-brand-50 p-3", size === "m" && "col-span-2")}>
           <p className="text-[11px] font-medium text-brand-800">Solde total</p>
-          <p className="tabular text-xl font-bold text-brand-800">{formatEUR(total)}</p>
+          <p className="tabular text-xl font-bold text-brand-800"><CountUp value={total} /></p>
         </div>
       </div>
     </WidgetShell>
@@ -112,12 +113,12 @@ export function FinReste({ data }: WidgetProps) {
   const leftPct = planned > 0 ? Math.round((s.upcomingOut / planned) * 100) : 0;
   return (
     <WidgetShell icon="target" title="Reste à vivre" href="/app/finance/calendar" hrefLabel="Détail">
-      <p className={cx("tabular text-3xl font-bold tracking-tight", s.endBalance >= 0 ? "text-stone-900" : "text-rose-600")}>{formatEUR(s.endBalance)}</p>
+      <p className={cx("tabular text-3xl font-bold tracking-tight", s.endBalance >= 0 ? "text-stone-900" : "text-rose-600")}><CountUp value={s.endBalance} /></p>
       <p className="mt-0.5 text-[11px] text-stone-500">
         ≈ <b className="text-stone-700">{eur0(s.perDay)}</b> / jour · {s.daysRemaining} j jusqu'au {fmtShort(s.monthEnd)}
       </p>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-brand-100">
-        <div className="h-full rounded-full bg-brand-500" style={{ width: `${100 - leftPct}%` }} />
+        <div className="fill-grow h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600" style={{ width: `${100 - leftPct}%` }} />
       </div>
       <p className="mt-1.5 text-[11px] text-stone-400">
         {eur0(s.pastOut)} déjà sortis · {eur0(s.upcomingOut)} encore prévus
@@ -316,7 +317,7 @@ export function FinBudgets({ data }: WidgetProps) {
                   <span className="tabular shrink-0 text-[11px] text-stone-500"><b className="text-stone-800">{eur0(r.spent)}</b> / {eur0(r.planned)}</span>
                 </div>
                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-stone-100">
-                  <div className={cx("h-full rounded-full", pct >= 100 ? "bg-rose-400" : "bg-brand-400")} style={{ width: `${pct}%` }} />
+                  <div className={cx("fill-grow h-full rounded-full", pct >= 100 ? "bg-rose-400" : "bg-brand-400")} style={{ width: `${pct}%` }} />
                 </div>
               </li>
             );
@@ -399,11 +400,11 @@ export function FinTrend({ data, size }: WidgetProps) {
         <p className={cx("tabular text-lg font-bold", points[shown].balance >= 0 ? "text-stone-900" : "text-rose-600")}>{formatEUR(points[shown].balance)}</p>
       </div>
       <svg ref={ref} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="mt-1 h-auto w-full touch-none" onPointerMove={onMove} onPointerLeave={() => setHover(null)} role="img" aria-label="Solde prévu jour par jour">
-        {lo < 0 && <line x1={0} x2={W} y1={yv(0)} y2={yv(0)} stroke="#d6cfc6" strokeDasharray="3 3" strokeWidth={1} vectorEffect="non-scaling-stroke" />}
-        <path d={area} fill="#c4673f" fillOpacity={0.1} />
-        <path d={line} fill="none" stroke="#b05538" strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-        <line x1={x(shown)} x2={x(shown)} y1={0} y2={H} stroke="#b05538" strokeOpacity={0.35} strokeWidth={1} vectorEffect="non-scaling-stroke" />
-        <circle cx={x(shown)} cy={yv(points[shown].balance)} r={3.5} fill="#b05538" stroke="white" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
+        {lo < 0 && <line x1={0} x2={W} y1={yv(0)} y2={yv(0)} stroke="rgb(var(--stone-300))" strokeDasharray="3 3" strokeWidth={1} vectorEffect="non-scaling-stroke" />}
+        <path d={area} fill="rgb(var(--brand-500))" fillOpacity={0.12} className="animate-fade" />
+        <path d={line} pathLength={1} className="stroke-draw" fill="none" stroke="rgb(var(--brand-600))" strokeWidth={2.25} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+        <line x1={x(shown)} x2={x(shown)} y1={0} y2={H} stroke="rgb(var(--brand-600))" strokeOpacity={0.35} strokeWidth={1} vectorEffect="non-scaling-stroke" />
+        <circle cx={x(shown)} cy={yv(points[shown].balance)} r={3.5} fill="rgb(var(--brand-600))" stroke="rgb(var(--surface))" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
       </svg>
       <div className="mt-1 flex justify-between text-[10px] text-stone-400">
         <span>1 {MONTHS_FR[m].slice(0, 3).toLowerCase()}.</span>

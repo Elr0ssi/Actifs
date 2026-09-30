@@ -8,9 +8,10 @@ import { toggleTaskStatus, toggleRoutineLog } from "@/app/app/actions";
 import { toggleListItem } from "@/app/app/lists/actions";
 import { RECIPES } from "@/lib/marketing/recipes";
 import { ToggleCheckbox } from "@/components/app/toggle-checkbox";
+import { CountUp } from "@/components/app/count-up";
 import { Icon } from "@/components/app/icons";
 import { WidgetShell, Empty, Segmented } from "@/components/app/widgets/shell";
-import { DOW, eur0, fmtLong, fmtShort, scheduledOn, weekday } from "@/components/app/widgets/helpers";
+import { DOW, eur0, fmtLong, fmtShort, routineStreak, scheduledOn, weekday } from "@/components/app/widgets/helpers";
 import { CalendarGrid, CalendarNav, calRange, calShift, type CalItem, type CalView } from "@/components/app/widgets/calendar-grid";
 import { TaskRow } from "@/components/app/widgets/tasks";
 import type { WidgetProps } from "@/components/app/widgets/types";
@@ -28,7 +29,7 @@ export function TasksStat({ data }: WidgetProps) {
   const todayCount = open.filter((t) => t.due_date === data.today).length;
   return (
     <WidgetShell icon="tasks" title="Tâches en cours" href="/app/tasks/list" hrefLabel="Gérer">
-      <p className="tabular text-3xl font-bold text-stone-900">{open.length}</p>
+      <p className="tabular text-3xl font-bold text-stone-900"><CountUp value={open.length} kind="int" /></p>
       <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
         <span className="rounded-full bg-brand-50 px-2 py-0.5 font-medium text-brand-700">{todayCount} aujourd'hui</span>
         <span className={cx("rounded-full px-2 py-0.5 font-medium", late ? "bg-rose-50 text-rose-600" : "bg-stone-100 text-stone-500")}>{late} en retard</span>
@@ -45,8 +46,8 @@ function Ring({ value, total }: { value: number; total: number }) {
   const pct = total ? value / total : 0;
   return (
     <svg viewBox="0 0 36 36" className="h-10 w-10 shrink-0 -rotate-90" aria-hidden>
-      <circle cx="18" cy="18" r={r} fill="none" stroke="#f0e7df" strokeWidth="4" />
-      <circle cx="18" cy="18" r={r} fill="none" stroke="#b05538" strokeWidth="4" strokeLinecap="round" strokeDasharray={`${pct * c} ${c}`} />
+      <circle cx="18" cy="18" r={r} fill="none" stroke="rgb(var(--stone-200))" strokeWidth="4" />
+      <circle cx="18" cy="18" r={r} fill="none" stroke="rgb(var(--brand-600))" strokeWidth="4" strokeLinecap="round" strokeDasharray={`${pct * c} ${c}`} className="transition-[stroke-dasharray] duration-700" />
     </svg>
   );
 }
@@ -55,8 +56,22 @@ export function RoutinesToday({ data }: WidgetProps) {
   const done = useLogIndex(data);
   const today = data.routines.filter((r) => scheduledOn(r, data.today));
   const count = today.filter((r) => done.has(`${r.id}_${data.today}`)).length;
+  const streak = routineStreak(data.routines, data.logs, data.today);
   return (
-    <WidgetShell icon="repeat" title="Routines du jour" href="/app/tasks/routines" hrefLabel="Gérer">
+    <WidgetShell
+      icon="repeat"
+      title="Routines du jour"
+      href="/app/tasks/routines"
+      hrefLabel="Gérer"
+      right={
+        streak > 1 ? (
+          <span title={`${streak} jours d'affilée avec toutes tes routines faites`} className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+            <Icon name="bolt" className="h-3 w-3" />
+            {streak} j
+          </span>
+        ) : undefined
+      }
+    >
       {today.length === 0 ? (
         <Empty>Aucune routine prévue aujourd'hui.</Empty>
       ) : (
@@ -105,7 +120,7 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
   const { from, to } = calRange(view, anchor);
   const { tasksBy, finBy } = useDayIndex(data, from, to, fin);
   const wide = size !== "m";
-  const chip = (on: boolean) => cx("rounded-full border px-2.5 py-1 text-[11px] font-medium transition", on ? "border-brand-300 bg-brand-50 text-brand-700" : "border-line bg-white text-stone-400 hover:text-stone-700");
+  const chip = (on: boolean) => cx("rounded-full border px-2.5 py-1 text-[11px] font-medium transition", on ? "border-brand-300 bg-brand-50 text-brand-700" : "border-line bg-surface text-stone-400 hover:text-stone-700");
   const changeView = (v: CalView) => {
     setView(v);
     setOpts({ view: v });
@@ -224,7 +239,7 @@ export function CalWeek({ data, size }: WidgetProps) {
             >
               <span className={cx("text-[10px]", d === data.today ? "text-brand-100" : "text-stone-400")}>{DOW[(weekday(d) + 6) % 7]}</span>
               <span className="text-sm font-bold">{Number(d.slice(-2))}</span>
-              <span className={cx("mt-0.5 h-1 w-1 rounded-full", n ? (d === data.today ? "bg-white" : "bg-brand-500") : "bg-transparent")} />
+              <span className={cx("mt-0.5 h-1 w-1 rounded-full", n ? (d === data.today ? "bg-surface" : "bg-brand-500") : "bg-transparent")} />
             </button>
           );
         })}
@@ -278,7 +293,7 @@ export function ListsShopping({ data, size, opts, setOpts }: WidgetProps) {
       hrefLabel="Ouvrir"
       right={
         open.length > 1 && size !== "s" ? (
-          <select value={list.id} onChange={(e) => setOpts({ listId: e.target.value })} className="max-w-[110px] rounded-md border border-line bg-white px-1.5 py-1 text-[11px] text-stone-600">
+          <select value={list.id} onChange={(e) => setOpts({ listId: e.target.value })} className="max-w-[110px] rounded-md border border-line bg-surface px-1.5 py-1 text-[11px] text-stone-600">
             {open.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
           </select>
         ) : undefined
@@ -334,7 +349,7 @@ export function RecipesIdeas({ data, size }: WidgetProps) {
                   "Photo à venir"
                 )}
               </div>
-              <span className="absolute -bottom-2.5 left-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-white text-sm shadow">{r.icon}</span>
+              <span className="absolute -bottom-2.5 left-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface bg-surface text-sm shadow">{r.icon}</span>
             </div>
             <p className="mt-3.5 truncate text-[12px] font-semibold text-stone-800 group-hover:text-brand-700">{r.name}</p>
             <p className="text-[10px] text-stone-400">{r.time} · {r.category}</p>

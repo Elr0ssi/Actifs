@@ -112,7 +112,7 @@ export default function LandingPage() {
             <div className="mt-14 grid gap-8 sm:grid-cols-3">
               {STEPS.map((s, i) => (
                 <FadeIn key={s.n} delay={i * 100}>
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                  <div className="rounded-2xl border border-white/10 bg-surface/5 p-6">
                     <span className="text-sm font-bold text-brand-300">{s.n}</span>
                     <h3 className="mt-3 text-lg font-semibold">{s.title}</h3>
                     <p className="mt-2 text-sm text-stone-300">{s.desc}</p>

@@ -31,12 +31,12 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
         <button
           onClick={() => start(() => toggleRecipeFavorite(recipe.id, !recipe.is_favorite))}
           title={recipe.is_favorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-lg shadow"
+          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-surface/90 text-lg shadow"
         >
           {recipe.is_favorite ? "★" : "☆"}
         </button>
         {recipe.category && (
-          <span className="absolute bottom-2 left-2 rounded-full bg-white/90 px-2.5 py-0.5 text-xs font-medium text-stone-700 shadow">{recipe.category}</span>
+          <span className="absolute bottom-2 left-2 rounded-full bg-surface/90 px-2.5 py-0.5 text-xs font-medium text-stone-700 shadow">{recipe.category}</span>
         )}
       </div>
       <div className="flex flex-1 flex-col p-5">

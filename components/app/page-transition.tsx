@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
-/** Fondu léger à chaque changement de section — juste assez pour que la navigation se sente vivante. */
+/** Fondu + légère montée à chaque changement de section. */
 export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   return (

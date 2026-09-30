@@ -46,9 +46,9 @@ export function DonutChart({
 
   return (
     <div className="flex flex-wrap items-center gap-6">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0" role="img" aria-label="Répartition des charges par catégorie">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0 animate-pop" role="img" aria-label="Répartition des charges par catégorie">
         <g transform={`rotate(-90 ${cx} ${cy})`}>
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#e1e0d9" strokeWidth={strokeWidth} />
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgb(var(--stone-200))" strokeWidth={strokeWidth} />
           {segments.map((s, i) => (
             <circle
               key={i}

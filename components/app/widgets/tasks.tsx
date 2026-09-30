@@ -161,7 +161,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
       subtitle={wide ? "Clique sur un jour pour voir et ajouter tes tâches" : undefined}
       right={
         data.projects.length > 0 ? (
-          <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className="max-w-[130px] rounded-md border border-line bg-white px-1.5 py-1 text-[11px] text-stone-600">
+          <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className="max-w-[130px] rounded-md border border-line bg-surface px-1.5 py-1 text-[11px] text-stone-600">
             <option value="">Tous les projets</option>
             {data.projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>

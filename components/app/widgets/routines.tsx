@@ -152,17 +152,17 @@ export function RoutinesCurve({ data, size, opts, setOpts }: WidgetProps) {
                 <div key={v} className={cx("absolute inset-x-0 border-t", v === 0 ? "border-stone-300" : "border-dashed border-line")} style={{ top: `${100 - v}%` }} />
               ))}
               <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible">
-                {segments.filter((s) => s.length > 1).map((s, k) => <path key={`a${k}`} d={area(s)} fill="#c4673f" fillOpacity={0.1} />)}
+                {segments.filter((s) => s.length > 1).map((s, k) => <path key={`a${k}`} d={area(s)} fill="rgb(var(--brand-500))" fillOpacity={0.12} className="animate-fade" />)}
                 {segments.filter((s) => s.length > 1).map((s, k) => (
-                  <path key={`l${k}`} d={path(s)} fill="none" stroke="#b05538" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                  <path key={`l${k}`} d={path(s)} pathLength={1} className="stroke-draw" fill="none" stroke="rgb(var(--brand-600))" strokeWidth={2.25} strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
                 ))}
-                {hover !== null && <line x1={xPct(hover)} x2={xPct(hover)} y1={0} y2={100} stroke="#b05538" strokeOpacity={0.3} strokeWidth={1} vectorEffect="non-scaling-stroke" />}
+                {hover !== null && <line x1={xPct(hover)} x2={xPct(hover)} y1={0} y2={100} stroke="rgb(var(--brand-600))" strokeOpacity={0.3} strokeWidth={1} vectorEffect="non-scaling-stroke" />}
               </svg>
               {points.map((p, i) =>
                 p.pct === null ? null : (
                   <span
                     key={p.key}
-                    className={cx("absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-brand-600 transition-all", hover === i ? "h-3 w-3" : n > 14 ? "h-1.5 w-1.5 border" : "h-2 w-2")}
+                    className={cx("absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface bg-brand-600 transition-all", hover === i ? "h-3 w-3" : n > 14 ? "h-1.5 w-1.5 border" : "h-2 w-2")}
                     style={{ left: `${xPct(i)}%`, top: `${100 - p.pct}%` }}
                   />
                 )

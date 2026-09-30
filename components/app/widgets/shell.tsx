@@ -32,14 +32,14 @@ export function WidgetShell({
   const compact = useContext(WidgetSizeContext) === "s";
   const showLink = useContext(WidgetPageContext) === "dashboard";
   return (
-    <section className={cx("card flex h-full min-w-0 flex-col p-4", className)}>
+    <section className={cx("card flex h-full min-w-0 flex-col p-4 transition-shadow duration-300 hover:shadow-lift", className)}>
       <header className="mb-3 flex flex-wrap items-start justify-between gap-x-2 gap-y-2">
         <div className="flex min-w-[9rem] flex-1 items-start gap-2.5">
-          <span className="mt-px flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+          <span className="mt-px flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500/20 to-brand-500/5 text-brand-600 ring-1 ring-inset ring-brand-500/15">
             <Icon name={icon} />
           </span>
           <div className="min-w-0">
-            <h2 className="truncate text-[13px] font-semibold text-stone-900">{title}</h2>
+            <h2 className="truncate text-[13px] font-semibold tracking-tight text-stone-900">{title}</h2>
             {subtitle && <p className="truncate text-[11px] text-stone-400">{subtitle}</p>}
           </div>
         </div>

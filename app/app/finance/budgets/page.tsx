@@ -30,7 +30,7 @@ export default async function BudgetsPage({ searchParams }: { searchParams: { ye
     return { label: MONTHS_FR[d.getUTCMonth()].slice(0, 3), margin: b.income - b.fixed - b.variable - b.savings, current: i === 5 };
   });
   const maxAbs = Math.max(1, ...history.map((h) => Math.abs(h.margin)));
-  const actionCls = "flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 text-[12px] font-semibold text-stone-700 transition hover:border-brand-200 hover:bg-brand-50/50";
+  const actionCls = "flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-[12px] font-semibold text-stone-700 transition hover:border-brand-200 hover:bg-brand-50/50";
 
   return (
     <div className="space-y-4">

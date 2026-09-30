@@ -17,7 +17,8 @@ export function SectionTabs({ tabs, label }: { tabs: SectionTab[]; label: string
   const matched = tabs.find((t) => (t.href === root ? pathname === root : pathname.startsWith(t.href)));
   const active = matched ?? tabs.find((t) => t.fallback);
   return (
-    <nav aria-label={label} className="-mx-4 flex gap-1 overflow-x-auto border-b border-line px-4 sm:mx-0 sm:px-0">
+    <nav aria-label={label} className="-mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+      <div className="inline-flex gap-1 rounded-2xl border border-line/70 bg-surface/60 p-1 shadow-soft backdrop-blur">
       {tabs.map((t) => {
         const on = active?.href === t.href;
         return (
@@ -25,12 +26,16 @@ export function SectionTabs({ tabs, label }: { tabs: SectionTab[]; label: string
             key={t.href}
             href={t.href}
             aria-current={on ? "page" : undefined}
-            className={cx("shrink-0 border-b-2 px-3 py-2 text-[13px] font-medium transition", on ? "border-brand-600 text-brand-700" : "border-transparent text-stone-500 hover:text-stone-800")}
+            className={cx(
+              "shrink-0 whitespace-nowrap rounded-xl px-3.5 py-1.5 text-[13px] font-medium transition-all duration-200",
+              on ? "bg-gradient-to-b from-brand-500 to-brand-600 text-white shadow-glow" : "text-stone-500 hover:bg-stone-100 hover:text-stone-800"
+            )}
           >
             {t.label}
           </Link>
         );
       })}
+      </div>
     </nav>
   );
 }
@@ -39,7 +44,7 @@ export function SectionHeader({ title, subtitle, action }: { title: string; subt
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-stone-900">{title}</h1>
+        <h1 className="text-[1.7rem] font-bold tracking-tight text-stone-900">{title}</h1>
         <p className="mt-0.5 text-sm text-stone-500">{subtitle}</p>
       </div>
       {action}

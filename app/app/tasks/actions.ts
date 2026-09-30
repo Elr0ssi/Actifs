@@ -15,7 +15,7 @@ async function getHouseholdId() {
 
 export async function createProject(formData: FormData) {
   const name = String(formData.get("name") || "").trim();
-  const color = String(formData.get("color") || "#b05538");
+  const color = String(formData.get("color") || "#8b5cf6");
   const icon = String(formData.get("icon") || "📁");
   if (!name) return;
   const { supabase, householdId, userId } = await getHouseholdId();

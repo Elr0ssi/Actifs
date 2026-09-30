@@ -62,18 +62,18 @@ export function RecipePicker({
   const scrollBy = (dir: number) => scroller.current?.scrollBy({ left: dir * scroller.current.clientWidth * 0.75, behavior: "smooth" });
   const toggleEquipment = (key: string) => setEquipment((p) => (p.includes(key) ? p.filter((k) => k !== key) : [...p, key]));
 
-  const chip = (on: boolean) => cx("shrink-0 rounded-full px-3 py-1 text-xs font-medium transition", on ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-600 hover:bg-stone-200");
+  const chip = (on: boolean) => cx("shrink-0 rounded-full px-3 py-1 text-xs font-medium transition", on ? "bg-ink text-onink" : "bg-stone-100 text-stone-600 hover:bg-stone-200");
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-stretch justify-center bg-stone-900/50 p-0 backdrop-blur-sm sm:items-center sm:p-6" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex animate-fade items-stretch justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-6" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Choisir des recettes"
         onClick={(e) => e.stopPropagation()}
-        className="flex h-full w-full max-w-[1180px] flex-col overflow-hidden bg-canvas shadow-2xl sm:h-[min(820px,94vh)] sm:rounded-3xl"
+        className="flex h-full w-full max-w-[1180px] animate-modal flex-col overflow-hidden bg-canvas shadow-2xl sm:h-[min(820px,94vh)] sm:rounded-3xl"
       >
-        <header className="flex flex-wrap items-center gap-3 border-b border-line bg-white px-5 py-3.5">
+        <header className="flex flex-wrap items-center gap-3 border-b border-line bg-surface px-5 py-3.5">
           <div className="mr-auto">
             <p className="text-base font-bold text-stone-900">Choisis tes recettes</p>
             <p className="text-[11px] text-stone-500">Chaque recette choisie est ajoutée au menu et à ta liste.</p>
@@ -87,7 +87,7 @@ export function RecipePicker({
           </button>
         </header>
 
-        <div className="space-y-2.5 border-b border-line bg-white px-5 py-3">
+        <div className="space-y-2.5 border-b border-line bg-surface px-5 py-3">
           <div className="flex gap-2">
             <input
               value={query}
@@ -100,7 +100,7 @@ export function RecipePicker({
               <button
                 type="button"
                 onClick={() => setShowEquipment((v) => !v)}
-                className={cx("shrink-0 rounded-xl border px-3 text-xs font-medium transition", equipment.length ? "border-brand-300 bg-brand-50 text-brand-700" : "border-line bg-white text-stone-500 hover:bg-stone-50")}
+                className={cx("shrink-0 rounded-xl border px-3 text-xs font-medium transition", equipment.length ? "border-brand-300 bg-brand-50 text-brand-700" : "border-line bg-surface text-stone-500 hover:bg-stone-50")}
               >
                 🔧 Équipement{equipment.length > 0 && ` (${equipment.length})`}
               </button>
@@ -127,7 +127,7 @@ export function RecipePicker({
                   key={e.key}
                   type="button"
                   onClick={() => toggleEquipment(e.key)}
-                  className={cx("flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition", equipment.includes(e.key) ? "border-brand-400 bg-brand-100 text-brand-800" : "border-line bg-white text-stone-600 hover:bg-stone-100")}
+                  className={cx("flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition", equipment.includes(e.key) ? "border-brand-400 bg-brand-100 text-brand-800" : "border-line bg-surface text-stone-600 hover:bg-stone-100")}
                 >
                   <span>{e.icon}</span>{e.label}
                 </button>
@@ -150,8 +150,8 @@ export function RecipePicker({
                     return <DiscoverCard key={r.slug} recipe={r} count={id ? counts[id] ?? 0 : 0} busy={busy.has(r.slug)} onAdd={() => onPickInspiration(r)} onCount={(c) => id && onCount(id, c)} />;
                   })}
                 </div>
-                <button type="button" onClick={() => scrollBy(-1)} aria-label="Précédent" className="absolute left-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-line hover:bg-stone-50 sm:flex"><Icon name="chevronLeft" className="h-5 w-5" /></button>
-                <button type="button" onClick={() => scrollBy(1)} aria-label="Suivant" className="absolute right-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-line hover:bg-stone-50 sm:flex"><Icon name="chevronRight" className="h-5 w-5" /></button>
+                <button type="button" onClick={() => scrollBy(-1)} aria-label="Précédent" className="absolute left-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-surface shadow-lg ring-1 ring-line hover:bg-stone-50 sm:flex"><Icon name="chevronLeft" className="h-5 w-5" /></button>
+                <button type="button" onClick={() => scrollBy(1)} aria-label="Suivant" className="absolute right-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-surface shadow-lg ring-1 ring-line hover:bg-stone-50 sm:flex"><Icon name="chevronRight" className="h-5 w-5" /></button>
               </>
             )
           ) : (
@@ -165,7 +165,7 @@ export function RecipePicker({
                   {mineFiltered.map((r) => {
                     const c = counts[r.id] ?? 0;
                     return (
-                      <div key={r.id} className={cx("flex items-center gap-3 rounded-2xl border bg-white p-2.5 transition", c > 0 ? "border-brand-300 bg-brand-50/60" : "border-line")}>
+                      <div key={r.id} className={cx("flex items-center gap-3 rounded-2xl border bg-surface p-2.5 transition", c > 0 ? "border-brand-300 bg-brand-50/60" : "border-line")}>
                         <button type="button" onClick={() => onCount(r.id, c ? 0 : 1)} className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-stone-100 text-2xl">
                           {r.image_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
@@ -188,7 +188,7 @@ export function RecipePicker({
           )}
         </div>
 
-        <footer className="flex items-center justify-between gap-3 border-t border-line bg-white px-5 py-3">
+        <footer className="flex items-center justify-between gap-3 border-t border-line bg-surface px-5 py-3">
           <p className="text-sm text-stone-500">
             <b className="text-stone-900">{total}</b> repas au menu
             {store && estimate > 0 && <> · ≈ <b className="text-stone-900">{formatEUR(estimate)}</b> chez {store}</>}
@@ -203,16 +203,16 @@ export function RecipePicker({
 function Stepper({ count, onChange }: { count: number; onChange: (n: number) => void }) {
   return (
     <div className="flex items-center gap-1">
-      <button type="button" onClick={() => onChange(Math.max(0, count - 1))} className="h-7 w-7 rounded-lg border border-line bg-white text-stone-500 hover:bg-stone-50" aria-label="Moins">−</button>
+      <button type="button" onClick={() => onChange(Math.max(0, count - 1))} className="h-7 w-7 rounded-lg border border-line bg-surface text-stone-500 hover:bg-stone-50" aria-label="Moins">−</button>
       <span className="w-5 text-center text-sm font-semibold">{count}</span>
-      <button type="button" onClick={() => onChange(count + 1)} className="h-7 w-7 rounded-lg border border-line bg-white text-stone-500 hover:bg-stone-50" aria-label="Plus">+</button>
+      <button type="button" onClick={() => onChange(count + 1)} className="h-7 w-7 rounded-lg border border-line bg-surface text-stone-500 hover:bg-stone-50" aria-label="Plus">+</button>
     </div>
   );
 }
 
 function DiscoverCard({ recipe, count, busy, onAdd, onCount }: { recipe: MarketingRecipe; count: number; busy: boolean; onAdd: () => void; onCount: (n: number) => void }) {
   return (
-    <article className={cx("flex h-full w-[82vw] max-w-[340px] shrink-0 snap-center flex-col overflow-hidden rounded-3xl border bg-white shadow-sm transition", count > 0 ? "border-brand-400 ring-2 ring-brand-200" : "border-line")}>
+    <article className={cx("flex h-full w-[82vw] max-w-[340px] shrink-0 snap-center flex-col overflow-hidden rounded-3xl border bg-surface shadow-sm transition", count > 0 ? "border-brand-400 ring-2 ring-brand-200" : "border-line")}>
       <div className="relative">
         <div className="flex aspect-video shrink-0 items-center justify-center overflow-hidden bg-stone-100 text-xs text-stone-300">
           {recipe.image ? (
@@ -222,7 +222,7 @@ function DiscoverCard({ recipe, count, busy, onAdd, onCount }: { recipe: Marketi
             "Photo à venir"
           )}
         </div>
-        <span className="absolute -bottom-5 left-4 z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 border-white bg-white text-2xl shadow-md">{recipe.icon}</span>
+        <span className="absolute -bottom-5 left-4 z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 border-surface bg-surface text-2xl shadow-md">{recipe.icon}</span>
         {count > 0 && <span className="absolute right-3 top-3 rounded-full bg-brand-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow">✓ Au menu</span>}
       </div>
       <div className="flex min-h-0 flex-1 flex-col px-4 pb-4 pt-7">

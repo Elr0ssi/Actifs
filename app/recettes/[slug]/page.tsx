@@ -38,7 +38,7 @@ export default function RecipeDetailPage({ params }: { params: { slug: string } 
                 <div className="flex h-full items-center justify-center text-sm text-stone-300">Photo à venir</div>
               )}
             </div>
-            <span className="absolute -bottom-4 left-5 z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 border-white bg-white text-2xl shadow-md">
+            <span className="absolute -bottom-4 left-5 z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 border-surface bg-surface text-2xl shadow-md">
               {recipe.icon}
             </span>
           </div>
@@ -99,7 +99,7 @@ export default function RecipeDetailPage({ params }: { params: { slug: string } 
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Ustensiles nécessaires</p>
                 <div className="flex flex-wrap gap-2">
                   {recipe.utensils.map((u) => (
-                    <span key={u} className="rounded-full border border-stone-200 bg-white px-3 py-1 text-sm text-stone-700">
+                    <span key={u} className="rounded-full border border-stone-200 bg-surface px-3 py-1 text-sm text-stone-700">
                       {u}
                     </span>
                   ))}

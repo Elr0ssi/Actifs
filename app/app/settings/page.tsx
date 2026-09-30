@@ -3,6 +3,9 @@ import { getAppContext } from "@/lib/data/context";
 import type { Profile } from "@/lib/types";
 import { updateProfile, updateHouseholdName, joinHousehold, changePassword } from "@/app/app/settings/actions";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { cookies } from "next/headers";
+import { AppearancePicker } from "@/components/app/appearance-picker";
+import { ACCENT_COOKIE, THEME_COOKIE, parseAccent, parseMode } from "@/lib/theme";
 
 export const metadata: Metadata = { title: "Paramètres" };
 
@@ -23,6 +26,12 @@ export default async function SettingsPage() {
         <h1 className="text-2xl font-bold tracking-tight text-stone-900">Paramètres</h1>
         <p className="mt-1 text-sm text-stone-500">Ton profil et ton foyer partagé.</p>
       </div>
+
+      <section className="card p-6">
+        <h2 className="mb-1 font-semibold text-stone-900">Apparence</h2>
+        <p className="mb-4 text-xs text-stone-500">Mode clair ou sombre et couleur d'accent, enregistrés sur cet appareil.</p>
+        <AppearancePicker mode={parseMode(cookies().get(THEME_COOKIE)?.value)} accent={parseAccent(cookies().get(ACCENT_COOKIE)?.value)} />
+      </section>
 
       <section className="card p-6">
         <h2 className="mb-4 font-semibold text-stone-900">Mon profil</h2>

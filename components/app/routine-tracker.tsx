@@ -55,7 +55,7 @@ export function RoutineTracker({ routines, doneKeys, today }: { routines: Routin
                       onClick={() => toggle(r.id, d)}
                       aria-pressed={on}
                       aria-label={`${r.title}, ${d}`}
-                      className={cx("mx-auto flex h-7 w-7 items-center justify-center rounded-lg border text-xs transition", on ? "border-brand-600 bg-brand-600 text-white" : "border-line bg-white text-transparent hover:border-brand-300 hover:text-brand-300")}
+                      className={cx("mx-auto flex h-7 w-7 items-center justify-center rounded-lg border text-xs transition", on ? "border-brand-600 bg-brand-600 text-white" : "border-line bg-surface text-transparent hover:border-brand-300 hover:text-brand-300")}
                     >
                       ✓
                     </button>

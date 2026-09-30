@@ -68,12 +68,12 @@ export function IngredientPicker({
                   value={p.qty ?? ""}
                   onChange={(e) => update(i, { qty: e.target.value === "" ? null : Number(e.target.value) })}
                   placeholder="Qté"
-                  className="w-20 rounded-lg border border-stone-200 bg-white px-2 py-1 text-right text-sm"
+                  className="w-20 rounded-lg border border-stone-200 bg-surface px-2 py-1 text-right text-sm"
                 />
                 <select
                   value={p.qtyUnit ?? "u"}
                   onChange={(e) => update(i, { qtyUnit: e.target.value as QtyUnit })}
-                  className="rounded-lg border border-stone-200 bg-white px-1.5 py-1 text-sm"
+                  className="rounded-lg border border-stone-200 bg-surface px-1.5 py-1 text-sm"
                 >
                   {QTY_UNITS.map((u) => <option key={u.v} value={u.v}>{u.l}</option>)}
                 </select>
@@ -86,7 +86,7 @@ export function IngredientPicker({
                       value={p.price ?? ""}
                       onChange={(e) => update(i, { price: e.target.value === "" ? null : Number(e.target.value) })}
                       placeholder="Prix"
-                      className="w-20 rounded-lg border border-stone-200 bg-white px-2 py-1 text-right text-sm"
+                      className="w-20 rounded-lg border border-stone-200 bg-surface px-2 py-1 text-right text-sm"
                     />
                     {priceSuffix(unitForQty(p.qtyUnit))} ({priceStore})
                   </label>
@@ -114,7 +114,7 @@ export function IngredientPicker({
           className="input"
         />
         {open && (matches.length > 0 || (q && !exact)) && (
-          <ul className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-xl border border-stone-100 bg-white p-1 shadow-lg">
+          <ul className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-xl border border-stone-100 bg-surface p-1 shadow-lg">
             {matches.map((m) => (
               <li key={m.id}>
                 <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => add(m.name)} className="flex w-full justify-between rounded-lg px-3 py-1.5 text-left text-sm hover:bg-stone-50">

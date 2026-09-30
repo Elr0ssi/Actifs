@@ -34,7 +34,7 @@ export function ToggleSwitch({
     >
       <span
         className={cx(
-          "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform",
+          "absolute top-0.5 h-4 w-4 rounded-full bg-surface shadow transition-transform",
           checked ? "translate-x-[18px]" : "translate-x-0.5"
         )}
       />

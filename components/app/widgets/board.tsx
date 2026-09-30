@@ -162,7 +162,8 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
               onDragLeave={() => setOverId((o) => (o === it.id ? null : o))}
               onDrop={(e) => { e.preventDefault(); dropOn(it.id); }}
               onDragEnd={() => { dragId.current = null; setOverId(null); }}
-              className={cx("relative min-w-0", spanClass(it.size, def.tall), editing && "cursor-grab", overId === it.id && "rounded-2xl ring-2 ring-brand-400 ring-offset-2 ring-offset-canvas")}
+              style={{ animationDelay: `${Math.min(idx, 10) * 55}ms` }}
+              className={cx("relative min-w-0 animate-rise", spanClass(it.size, def.tall), editing && "cursor-grab", overId === it.id && "rounded-2xl ring-2 ring-brand-400 ring-offset-2 ring-offset-canvas")}
             >
               <div className={cx("h-full", editing && "pointer-events-none select-none opacity-80")}>
                 <WidgetSizeContext.Provider value={it.size}>
@@ -170,14 +171,14 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
                 </WidgetSizeContext.Provider>
               </div>
               {editing && (
-                <div className="absolute inset-0 z-20 rounded-2xl border-2 border-dashed border-brand-300 bg-white/30">
-                  <div title={`${def.title} · glisse pour déplacer`} className="absolute left-1/2 top-1.5 -translate-x-1/2 rounded-md bg-white/95 px-2 py-0.5 text-stone-400 shadow-sm">
+                <div className="absolute inset-0 z-20 rounded-[20px] border-2 border-dashed border-brand-400/60 bg-surface/30 backdrop-blur-[1px]">
+                  <div title={`${def.title} · glisse pour déplacer`} className="absolute left-1/2 top-1.5 -translate-x-1/2 rounded-md bg-surface/95 px-2 py-0.5 text-stone-400 shadow-sm">
                     <Icon name="drag" className="h-3.5 w-3.5 rotate-90" />
                   </div>
-                  <button onClick={() => persist(items.filter((i) => i.id !== it.id))} title="Retirer" className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-stone-800 text-white shadow hover:bg-rose-600">
+                  <button onClick={() => persist(items.filter((i) => i.id !== it.id))} title="Retirer" className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-ink text-onink shadow hover:bg-rose-600">
                     <Icon name="close" className="h-3 w-3" />
                   </button>
-                  <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-xl bg-white/95 p-1 shadow-md">
+                  <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-xl bg-surface/95 p-1 shadow-md">
                     <button onClick={() => move(it.id, -1)} disabled={idx === 0} title="Avancer" className="rounded-md p-1 text-stone-500 hover:bg-stone-100 disabled:opacity-30"><Icon name="chevronLeft" className="h-3.5 w-3.5" /></button>
                     {def.sizes.map((s) => (
                       <button key={s} onClick={() => update(it.id, { size: s })} title={SIZE_LABEL[s]} className={cx("min-w-[26px] rounded-md px-1.5 py-0.5 text-[11px] font-bold", it.size === s ? "bg-brand-600 text-white" : "text-stone-500 hover:bg-stone-100")}>
@@ -218,8 +219,8 @@ function WidgetDrawer({ page, items, onAdd, onClose }: { page: WidgetPage; items
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-stone-900/20 lg:bg-transparent" onClick={onClose} aria-hidden />
-      <aside className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[380px] flex-col border-l border-line bg-canvas shadow-2xl">
+      <div className="fixed inset-0 z-40 animate-fade bg-black/20 lg:bg-transparent" onClick={onClose} aria-hidden />
+      <aside className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[380px] animate-slideIn flex-col border-l border-line bg-canvas shadow-2xl">
         <div className="flex items-center justify-between border-b border-line px-5 py-4">
           <div>
             <p className="text-sm font-bold text-stone-900">Ajouter un widget</p>
@@ -230,7 +231,7 @@ function WidgetDrawer({ page, items, onAdd, onClose }: { page: WidgetPage; items
         {allowed.length > 1 && (
           <div className="flex gap-1.5 overflow-x-auto border-b border-line px-5 py-3">
             {[{ key: "all" as const, label: "Tous" }, ...SECTIONS.filter((s) => allowed.includes(s.key))].map((s) => (
-              <button key={s.key} onClick={() => setSection(s.key)} className={cx("shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition", section === s.key ? "bg-stone-900 text-white" : "bg-white text-stone-500 hover:text-stone-800")}>
+              <button key={s.key} onClick={() => setSection(s.key)} className={cx("shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition", section === s.key ? "bg-ink text-onink" : "bg-surface text-stone-500 hover:text-stone-800")}>
                 {s.label}
               </button>
             ))}
@@ -241,7 +242,7 @@ function WidgetDrawer({ page, items, onAdd, onClose }: { page: WidgetPage; items
             const chosen = sizes[w.type] ?? w.defaultSize;
             const count = items.filter((i) => i.type === w.type).length;
             return (
-              <div key={w.type} className="rounded-2xl border border-line bg-white p-3.5">
+              <div key={w.type} className="rounded-2xl border border-line bg-surface p-3.5">
                 <div className="flex items-start gap-3">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600"><Icon name={w.icon} /></span>
                   <div className="min-w-0 flex-1">

@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { createClient, getSessionUser } from "@/lib/supabase/server";
+import { ACCENT_COOKIE, THEME_COOKIE, parseAccent, parseMode } from "@/lib/theme";
 
 export async function updateProfile(formData: FormData) {
   const displayName = String(formData.get("display_name") || "").trim();
@@ -42,4 +44,13 @@ export async function changePassword(formData: FormData) {
   const supabase = createClient();
   await supabase.auth.updateUser({ password });
   revalidatePath("/app/settings");
+}
+
+/** Apparence propre à l'appareil : mode (clair / sombre / auto) et couleur d'accent, gardés dans des cookies. */
+export async function setAppearance(mode: string | null, accent: string | null) {
+  const jar = cookies();
+  const opts = { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" as const };
+  if (mode !== null) jar.set(THEME_COOKIE, parseMode(mode), opts);
+  if (accent !== null) jar.set(ACCENT_COOKIE, parseAccent(accent), opts);
+  revalidatePath("/app", "layout");
 }

@@ -32,7 +32,7 @@ export function RecipesBrowser() {
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         <button
           onClick={() => setCategory(null)}
-          className={cx("rounded-full px-3.5 py-1.5 text-sm font-medium transition", category === null ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-600 hover:bg-stone-200")}
+          className={cx("rounded-full px-3.5 py-1.5 text-sm font-medium transition", category === null ? "bg-ink text-onink" : "bg-stone-100 text-stone-600 hover:bg-stone-200")}
         >
           Toutes
         </button>
@@ -40,7 +40,7 @@ export function RecipesBrowser() {
           <button
             key={c}
             onClick={() => setCategory(c === category ? null : c)}
-            className={cx("rounded-full px-3.5 py-1.5 text-sm font-medium transition", category === c ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-600 hover:bg-stone-200")}
+            className={cx("rounded-full px-3.5 py-1.5 text-sm font-medium transition", category === c ? "bg-ink text-onink" : "bg-stone-100 text-stone-600 hover:bg-stone-200")}
           >
             {c}
           </button>
@@ -52,7 +52,7 @@ export function RecipesBrowser() {
           onClick={() => setShowEquipment((v) => !v)}
           className={cx(
             "flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition",
-            equipment.length > 0 ? "border-brand-300 bg-brand-50 text-brand-700" : "border-stone-200 bg-white text-stone-500 hover:bg-stone-50"
+            equipment.length > 0 ? "border-brand-300 bg-brand-50 text-brand-700" : "border-stone-200 bg-surface text-stone-500 hover:bg-stone-50"
           )}
         >
           🔧 Mon équipement {equipment.length > 0 && `(${equipment.length})`}
@@ -72,7 +72,7 @@ export function RecipesBrowser() {
                 onClick={() => toggleEquipment(e.key)}
                 className={cx(
                   "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition",
-                  equipment.includes(e.key) ? "border-brand-400 bg-brand-100 text-brand-800" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-100"
+                  equipment.includes(e.key) ? "border-brand-400 bg-brand-100 text-brand-800" : "border-stone-200 bg-surface text-stone-600 hover:bg-stone-100"
                 )}
               >
                 <span>{e.icon}</span>

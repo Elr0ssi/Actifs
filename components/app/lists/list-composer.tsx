@@ -103,7 +103,7 @@ export function ListComposer({
               const c = counts[r.id] ?? 0;
               return (
                 <div key={r.id} className="flex items-center gap-3 rounded-2xl border border-brand-300 bg-brand-50/60 p-2">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-2xl">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface text-2xl">
                     {r.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={r.image_url} alt="" className="h-full w-full object-cover" />
@@ -116,9 +116,9 @@ export function ListComposer({
                     <p className="truncate text-xs text-stone-400">{r.itemCount} ingr.{r.estimate !== null && store ? ` · ≈ ${formatEUR(r.estimate)}` : ""}</p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button type="button" onClick={() => set(r.id, c - 1)} className="h-7 w-7 rounded-lg border border-line bg-white text-stone-500" aria-label="Moins">−</button>
+                    <button type="button" onClick={() => set(r.id, c - 1)} className="h-7 w-7 rounded-lg border border-line bg-surface text-stone-500" aria-label="Moins">−</button>
                     <span className="w-5 text-center text-sm font-semibold">{c}</span>
-                    <button type="button" onClick={() => set(r.id, c + 1)} className="h-7 w-7 rounded-lg border border-line bg-white text-stone-500" aria-label="Plus">+</button>
+                    <button type="button" onClick={() => set(r.id, c + 1)} className="h-7 w-7 rounded-lg border border-line bg-surface text-stone-500" aria-label="Plus">+</button>
                   </div>
                 </div>
               );

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { addDays } from "@/lib/finance-engine";
 import { cx } from "@/lib/utils";
+import { CountUp } from "@/components/app/count-up";
 import { WidgetShell, Empty } from "@/components/app/widgets/shell";
 import type { WidgetProps } from "@/components/app/widgets/types";
 
@@ -28,7 +29,7 @@ export function Projects({ data, size }: WidgetProps) {
                   <span className="tabular shrink-0 text-[11px] text-stone-500">{p.done}/{p.total} · <b className="text-stone-800">{pct} %</b></span>
                 </div>
                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-stone-100">
-                  <div className="h-full rounded-full bg-brand-500" style={{ width: `${pct}%` }} />
+                  <div className="fill-grow h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600" style={{ width: `${pct}%` }} />
                 </div>
               </li>
             );
@@ -46,7 +47,7 @@ export function VocabStats({ data }: WidgetProps) {
   const week = data.words.filter((w) => w.created_at.slice(0, 10) >= weekAgo).length;
   return (
     <WidgetShell icon="chart" title="Compteur de mots" href="/app/notes/vocabulaire">
-      <p className="tabular text-3xl font-bold text-stone-900">{data.wordsTotal}</p>
+      <p className="tabular text-3xl font-bold text-stone-900"><CountUp value={data.wordsTotal} kind="int" /></p>
       <p className="text-[11px] text-stone-500">mots enregistrés</p>
       <span className="mt-2 inline-block rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700">+{week} cette semaine</span>
     </WidgetShell>

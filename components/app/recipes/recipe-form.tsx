@@ -100,7 +100,7 @@ export function RecipeForm({
               setPreview(null);
               setFile(null);
             }}
-            className="absolute right-1.5 top-1.5 hidden rounded-full bg-white/90 px-2 py-0.5 text-[11px] text-stone-600 shadow group-hover:block"
+            className="absolute right-1.5 top-1.5 hidden rounded-full bg-surface/90 px-2 py-0.5 text-[11px] text-stone-600 shadow group-hover:block"
           >
             Retirer
           </button>

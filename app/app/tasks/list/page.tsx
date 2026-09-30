@@ -96,7 +96,7 @@ export default async function TasksPage() {
         <form action={createProject} className="flex flex-wrap items-center gap-2">
           <input name="icon" defaultValue="📁" className="input w-16 text-center" maxLength={2} />
           <input name="name" placeholder="Ex. Création boîte" className="input flex-1 min-w-[180px]" required />
-          <input name="color" type="color" defaultValue="#b05538" className="h-11 w-14 rounded-xl border border-stone-200" />
+          <input name="color" type="color" defaultValue="#8b5cf6" className="h-11 w-14 rounded-xl border border-stone-200" />
           <button className="btn-primary">Créer</button>
         </form>
       </div>

@@ -8,7 +8,7 @@ export function SiteHeader({ current }: { current?: "recettes" | "calculateurs" 
     </Link>
   );
   return (
-    <header className="sticky top-0 z-40 border-b border-stone-200/70 bg-white/70 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-stone-200/70 bg-surface/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/"><LogoWordmark className="text-lg" /></Link>
         <nav className="hidden items-center gap-8 text-sm font-medium text-stone-600 md:flex">

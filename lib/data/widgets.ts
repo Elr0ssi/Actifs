@@ -136,7 +136,7 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
     wordsTotal: wordsTotal ?? words?.length ?? 0,
     projects: (projects ?? []).map((p) => {
       const own = (projectTasks ?? []).filter((t) => t.project_id === p.id);
-      return { id: p.id, name: p.name, color: p.color ?? "#b05538", total: own.length, done: own.filter((t) => t.status === "done").length };
+      return { id: p.id, name: p.name, color: p.color ?? "#8b5cf6", total: own.length, done: own.filter((t) => t.status === "done").length };
     }),
   };
 }

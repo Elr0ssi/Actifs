@@ -31,7 +31,7 @@ export function InspirationBrowser() {
           onClick={() => setShowEquipment((v) => !v)}
           className={cx(
             "shrink-0 rounded-full border px-3.5 py-2 text-sm font-medium transition",
-            equipment.length > 0 ? "border-brand-300 bg-brand-50 text-brand-700" : "border-stone-200 bg-white text-stone-500 hover:bg-stone-50"
+            equipment.length > 0 ? "border-brand-300 bg-brand-50 text-brand-700" : "border-stone-200 bg-surface text-stone-500 hover:bg-stone-50"
           )}
         >
           🔧 Équipement {equipment.length > 0 && `(${equipment.length})`}
@@ -41,7 +41,7 @@ export function InspirationBrowser() {
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           onClick={() => setCategory(null)}
-          className={cx("rounded-full px-3 py-1 text-xs font-medium transition", category === null ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-600 hover:bg-stone-200")}
+          className={cx("rounded-full px-3 py-1 text-xs font-medium transition", category === null ? "bg-ink text-onink" : "bg-stone-100 text-stone-600 hover:bg-stone-200")}
         >
           Toutes
         </button>
@@ -49,7 +49,7 @@ export function InspirationBrowser() {
           <button
             key={c}
             onClick={() => setCategory(c === category ? null : c)}
-            className={cx("rounded-full px-3 py-1 text-xs font-medium transition", category === c ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-600 hover:bg-stone-200")}
+            className={cx("rounded-full px-3 py-1 text-xs font-medium transition", category === c ? "bg-ink text-onink" : "bg-stone-100 text-stone-600 hover:bg-stone-200")}
           >
             {c}
           </button>
@@ -66,7 +66,7 @@ export function InspirationBrowser() {
                 onClick={() => toggleEquipment(e.key)}
                 className={cx(
                   "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition",
-                  equipment.includes(e.key) ? "border-brand-400 bg-brand-100 text-brand-800" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-100"
+                  equipment.includes(e.key) ? "border-brand-400 bg-brand-100 text-brand-800" : "border-stone-200 bg-surface text-stone-600 hover:bg-stone-100"
                 )}
               >
                 <span>{e.icon}</span>
@@ -114,7 +114,7 @@ function InspirationCard({ recipe }: { recipe: MarketingRecipe }) {
             <div className="flex h-full items-center justify-center text-xs text-stone-300">Photo à venir</div>
           )}
         </div>
-        <span className="absolute -bottom-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-white text-lg shadow-md">
+        <span className="absolute -bottom-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 border-surface bg-surface text-lg shadow-md">
           {recipe.icon}
         </span>
       </div>

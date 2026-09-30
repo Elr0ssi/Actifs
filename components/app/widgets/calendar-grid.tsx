@@ -134,7 +134,7 @@ function Chip({ item }: { item: CalItem }) {
   const base = "flex min-w-0 items-center gap-1 rounded-[4px] px-1 text-[10px] leading-[17px]";
   if (item.tone === "task") {
     return (
-      <span className={cx(base, "border-l-2 bg-white/80", item.done ? "text-stone-300 line-through" : "text-stone-700")} style={{ borderLeftColor: item.color || "#d6cfc6" }} title={item.label}>
+      <span className={cx(base, "border-l-2 bg-surface/80", item.done ? "text-stone-300 line-through" : "text-stone-700")} style={{ borderLeftColor: item.color || "rgb(var(--stone-300))" }} title={item.label}>
         <span className="truncate">{item.label}</span>
       </span>
     );

@@ -28,13 +28,13 @@ export function RecipesTabs({
       <div className="flex gap-1 rounded-full border border-stone-200 bg-stone-100 p-1 sm:inline-flex">
         <button
           onClick={() => setTab("mine")}
-          className={cx("flex-1 rounded-full px-4 py-2 text-sm font-medium transition sm:flex-none", tab === "mine" ? "bg-white text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-800")}
+          className={cx("flex-1 rounded-full px-4 py-2 text-sm font-medium transition sm:flex-none", tab === "mine" ? "bg-surface text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-800")}
         >
           Mes recettes {recipes.length > 0 && `(${recipes.length})`}
         </button>
         <button
           onClick={() => setTab("inspiration")}
-          className={cx("flex-1 rounded-full px-4 py-2 text-sm font-medium transition sm:flex-none", tab === "inspiration" ? "bg-white text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-800")}
+          className={cx("flex-1 rounded-full px-4 py-2 text-sm font-medium transition sm:flex-none", tab === "inspiration" ? "bg-surface text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-800")}
         >
           🔍 Trouver des recettes
         </button>

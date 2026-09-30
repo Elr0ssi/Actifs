@@ -46,7 +46,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
             key={k.v}
             type="button"
             onClick={() => setKind(k.v)}
-            className={cx("rounded-lg py-1.5 transition", kind === k.v ? "bg-white text-stone-900 shadow-sm" : "text-stone-500")}
+            className={cx("rounded-lg py-1.5 transition", kind === k.v ? "bg-surface text-stone-900 shadow-sm" : "text-stone-500")}
           >
             {k.l}
           </button>
@@ -140,8 +140,8 @@ export function NewOperationButton({
     <>
       <button onClick={() => setOpen(true)} className={className ?? "btn-primary"}>{label}</button>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 p-4" onClick={() => setOpen(false)}>
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex animate-fade items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setOpen(false)}>
+          <div className="max-h-[90vh] w-full max-w-lg animate-modal overflow-y-auto rounded-3xl border border-line bg-surface p-6 shadow-lift" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-bold text-stone-900">Nouvelle opération</h3>
               <button onClick={() => setOpen(false)} className="text-stone-400 hover:text-stone-700">✕</button>

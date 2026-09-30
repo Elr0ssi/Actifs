@@ -2,75 +2,174 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-canvas text-stone-900 antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  ::selection {
+    background: rgb(var(--brand-500) / 0.25);
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--brand-500) / 0.65);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--stone-300)) transparent;
+  }
+
+  /* Cases à cocher maison : les natives font vieillot et ne suivent pas l'accent. */
+  input[type="checkbox"]:not(.sr-only) {
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-grid;
+    place-content: center;
+    flex-shrink: 0;
+    height: 1rem;
+    width: 1rem;
+    border-radius: 0.4rem;
+    border: 1.5px solid rgb(var(--stone-300));
+    background: rgb(var(--surface));
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.2s, box-shadow 0.2s;
+  }
+  input[type="checkbox"]:not(.sr-only):hover {
+    border-color: rgb(var(--brand-400));
+  }
+  input[type="checkbox"]:not(.sr-only):checked {
+    border-color: transparent;
+    background: linear-gradient(135deg, rgb(var(--brand-500)), rgb(var(--brand-600)));
+    box-shadow: 0 4px 10px -3px rgb(var(--brand-500) / 0.55);
+    animation: check 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  input[type="checkbox"]:not(.sr-only):checked::after {
+    content: "";
+    width: 0.3rem;
+    height: 0.55rem;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: translateY(-1px) rotate(45deg);
+  }
 }
 
-html {
-  scroll-behavior: smooth;
-  -webkit-tap-highlight-color: transparent;
+@layer components {
+  .glass {
+    @apply border border-line/60 bg-surface/70 shadow-soft backdrop-blur-xl;
+  }
+
+  .card {
+    @apply rounded-[20px] border border-line/70 bg-surface shadow-soft;
+  }
+  .card-hover {
+    @apply transition duration-300 hover:-translate-y-0.5 hover:shadow-lift;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-brand-500 to-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-glow transition duration-200 hover:-translate-y-px hover:brightness-110 active:translate-y-0 active:scale-[0.97] disabled:opacity-50 disabled:shadow-none;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-semibold text-stone-700 shadow-sm transition duration-200 hover:border-stone-300 hover:bg-stone-50 active:scale-[0.97];
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-50;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-line bg-surface px-3 py-2 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-brand-400 focus:ring-4 focus:ring-brand-500/15;
+  }
+
+  .label {
+    @apply text-xs font-medium uppercase tracking-wide text-stone-500;
+  }
+
+  .segmented {
+    @apply inline-flex rounded-xl bg-stone-100 p-0.5 text-xs font-medium;
+  }
+  .segmented > button,
+  .segmented > a {
+    @apply rounded-[10px] px-2.5 py-1 text-stone-500 transition duration-200 hover:text-stone-800;
+  }
+  .segmented > [data-active="true"] {
+    @apply bg-surface text-stone-900 shadow-soft hover:text-stone-900;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bg-grid {
+    background-image: linear-gradient(to right, rgb(var(--stone-400) / 0.12) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(var(--stone-400) / 0.12) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Halos de couleur flottants derrière l'application. */
+  .aurora {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .aurora > span {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(80px);
+    opacity: 0.55;
+    will-change: transform;
+  }
+  .dark .aurora > span,
+  .theme-auto .aurora > span {
+    opacity: 0.32;
+  }
+
+  /* Remplissages animés : la largeur reste pilotée par `style`, on n'anime que l'échelle. */
+  .fill-grow {
+    transform-origin: left center;
+    animation: grow 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.15s backwards;
+  }
+  .stroke-draw {
+    stroke-dasharray: 1;
+    animation: draw 1.3s cubic-bezier(0.22, 1, 0.36, 1) 0.1s backwards;
+  }
 }
 
-body {
-  @apply bg-canvas text-stone-900 antialiased;
+@keyframes check {
+  0% { transform: scale(0.7); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+@keyframes grow {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+@keyframes draw {
+  0% { stroke-dashoffset: 1; }
+  100% { stroke-dashoffset: 0; }
 }
 
-.glass {
-  @apply bg-white/70 backdrop-blur-xl border border-white/60 shadow-[0_8px_40px_-12px_rgba(90,50,30,0.15)];
-}
-
-.card {
-  @apply rounded-2xl border border-line bg-white shadow-[0_1px_2px_rgba(60,40,20,0.04)];
-}
-
-.btn-primary {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 active:scale-[0.98] disabled:opacity-50;
-}
-
-.btn-secondary {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-50 active:scale-[0.98];
-}
-
-.btn-ghost {
-  @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-50;
-}
-
-.input {
-  @apply w-full rounded-xl border border-line bg-white px-3 py-2 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-brand-400 focus:ring-4 focus:ring-brand-100;
-}
-
-.label {
-  @apply text-xs font-medium uppercase tracking-wide text-stone-500;
-}
-
-.segmented {
-  @apply inline-flex rounded-lg border border-line bg-stone-50 p-0.5 text-xs font-medium;
-}
-.segmented > button,
-.segmented > a {
-  @apply rounded-md px-2.5 py-1 text-stone-500 transition hover:text-stone-800;
-}
-.segmented > [data-active="true"] {
-  @apply bg-brand-600 text-white shadow-sm hover:text-white;
-}
-
-.tabular {
-  font-variant-numeric: tabular-nums;
-}
-
-.bg-grid {
-  background-image: linear-gradient(to right, rgba(120,100,80,0.10) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(120,100,80,0.10) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-
-@keyframes wiggle {
-  0%, 100% { transform: rotate(-0.25deg); }
-  50% { transform: rotate(0.25deg); }
-}
-.animate-wiggle {
-  animation: wiggle 0.35s ease-in-out infinite;
-}
 @media (prefers-reduced-motion: reduce) {
-  .animate-wiggle { animation: none; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

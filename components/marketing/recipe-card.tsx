@@ -14,7 +14,7 @@ export function RecipeCard({ recipe, size = "normal" }: { recipe: MarketingRecip
             <div className="flex h-full items-center justify-center text-xs text-stone-300">Photo à venir</div>
           )}
         </div>
-        <span className="absolute -bottom-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-white text-lg shadow-md">
+        <span className="absolute -bottom-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 border-surface bg-surface text-lg shadow-md">
           {recipe.icon}
         </span>
       </div>
