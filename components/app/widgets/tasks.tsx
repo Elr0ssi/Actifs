@@ -198,7 +198,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
         <button type="button" onClick={() => setOpts({ tasks: !showTasks })} className={chip(showTasks)}>Tâches</button>
         <button type="button" onClick={() => setOpts({ routines: !showRoutines })} className={chip(showRoutines)}>Routines</button>
       </div>
-      <div className={cx("grid h-full gap-4", wide && "lg:grid-cols-[minmax(0,1fr)_290px]")}>
+      <div className={cx("grid gap-4", wide && "lg:grid-cols-[minmax(0,1fr)_290px]")}>
         <div className="flex min-w-0 flex-col">
           <CalendarNav view={view} anchor={anchor} onView={changeView} onAnchor={setAnchor} onToday={() => { setAnchor(data.today); setSelected(data.today); }} />
           <CalendarGrid

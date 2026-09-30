@@ -174,7 +174,7 @@ export function FinCalendar({ data, size, opts, setOpts }: WidgetProps) {
       subtitle={wide ? "Revenus, dépenses et solde jour par jour" : undefined}
       right={<Segmented<Flow> value={flow} onChange={(v) => setOpts({ flow: v })} options={[{ v: "all", l: "Tout" }, { v: "in", l: "Entrées" }, { v: "out", l: "Sorties" }]} />}
     >
-      <div className={cx("grid h-full gap-4", wide && "lg:grid-cols-[minmax(0,1fr)_240px]")}>
+      <div className={cx("grid gap-4", wide && "lg:grid-cols-[minmax(0,1fr)_240px]")}>
         <div className="flex min-w-0 flex-col">
           <div className="mb-2 flex items-center justify-between">
             <button onClick={() => nav(-1)} className="rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-800"><Icon name="chevronLeft" /></button>

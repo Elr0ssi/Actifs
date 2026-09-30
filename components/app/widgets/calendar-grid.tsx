@@ -235,7 +235,7 @@ export function CalendarGrid({
       <div className="grid grid-cols-7 text-center text-[10px] font-medium text-stone-400">
         {DOW.map((d) => <div key={d} className="pb-1.5">{wide ? d : d[0]}</div>)}
       </div>
-      <div {...{ onPointerDown: nav.props.onPointerDown, style: nav.props.style }} className={cx("grid flex-1 auto-rows-fr grid-cols-7 overflow-hidden rounded-xl border border-line", nav.props.className)}>
+      <div {...{ onPointerDown: nav.props.onPointerDown, style: nav.props.style }} className={cx("grid grid-cols-7 overflow-hidden rounded-xl border border-line", nav.props.className)}>
         {days.map((d) => {
           const items = itemsFor(d);
           const outside = view === "month" && d.slice(0, 7) !== anchorMonth;

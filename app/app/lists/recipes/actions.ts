@@ -20,6 +20,7 @@ function readRecipe(formData: FormData) {
     name: String(formData.get("name") || "").trim(),
     category: String(formData.get("category") || "").trim() || "Repas",
     image_url: String(formData.get("image_url") || "") || null,
+    notes: String(formData.get("notes") || "").trim().slice(0, 10000) || null,
     picked: parsePicked(formData.get("ingredients")),
   };
 }

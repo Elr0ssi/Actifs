@@ -134,6 +134,32 @@ export function RecipeForm({
             }
           />
         </div>
+        <div>
+          <p className="label mb-1.5">Étapes &amp; notes</p>
+          <textarea
+            name="notes"
+            defaultValue={recipe?.notes ?? ""}
+            key={`n${resetKey}`}
+            rows={5}
+            placeholder={"- Préchauffer le four à 180 °C\n- Faire revenir l'oignon…\nUne ligne par étape."}
+            className="input min-h-[7rem] resize-y leading-relaxed"
+            onKeyDown={(e) => {
+              if (e.key !== "Enter" || e.shiftKey) return;
+              const el = e.currentTarget;
+              const before = el.value.slice(0, el.selectionStart);
+              const line = before.slice(before.lastIndexOf("\n") + 1);
+              if (!/^\s*[-•*] /.test(line)) return;
+              e.preventDefault();
+              if (/^\s*[-•*] $/.test(line)) {
+                // ligne vide avec juste une puce : on quitte la liste
+                el.setRangeText("", el.selectionStart - line.length, el.selectionStart, "end");
+                return;
+              }
+              el.setRangeText("\n- ", el.selectionStart, el.selectionEnd, "end");
+            }}
+          />
+          <button type="button" className="mt-1 text-xs text-brand-600 hover:underline" onClick={(e) => { const t = e.currentTarget.previousElementSibling as HTMLTextAreaElement; if (!t.value.trim()) t.value = "- "; t.focus(); t.setSelectionRange(t.value.length, t.value.length); }}>+ Commencer une liste à puces</button>
+        </div>
         {error && <p className="text-sm text-rose-600">{error}</p>}
         <div className="flex gap-2">
           <button disabled={pending} className="btn-primary">{pending ? "Enregistrement…" : recipe ? "Enregistrer" : "Créer la recette"}</button>

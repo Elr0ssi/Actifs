@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Recipe, RecipeItem } from "@/lib/types";
 import type { CatalogIngredient } from "@/lib/shopping";
 import { RecipeForm } from "@/components/app/recipes/recipe-form";
@@ -22,6 +22,24 @@ export function RecipesTabs({
   catalog: CatalogIngredient[];
 }) {
   const [tab, setTab] = useState<"mine" | "inspiration">("mine");
+  const [creating, setCreating] = useState(false);
+  const [q, setQ] = useState("");
+  const [cat, setCat] = useState<string | null>(null);
+  const [sort, setSort] = useState<"recent" | "az" | "fav" | "items">("recent");
+  const fold = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const shown = useMemo(() => {
+    const query = fold(q.trim());
+    const list = recipes.filter(
+      (r) => (!cat || r.category === cat) && (!query || fold(`${r.name} ${r.recipe_items.map((i) => i.label).join(" ")}`).includes(query))
+    );
+    const byName = (a: MyRecipe, b: MyRecipe) => a.name.localeCompare(b.name, "fr");
+    if (sort === "az") list.sort(byName);
+    else if (sort === "fav") list.sort((a, b) => Number(b.is_favorite) - Number(a.is_favorite) || byName(a, b));
+    else if (sort === "items") list.sort((a, b) => a.recipe_items.length - b.recipe_items.length || byName(a, b));
+    else list.sort((a, b) => b.created_at.localeCompare(a.created_at));
+    return list;
+  }, [recipes, q, cat, sort]);
+  const usedCats = [...new Set(recipes.map((r) => r.category).filter(Boolean) as string[])];
 
   return (
     <div>
@@ -41,15 +59,38 @@ export function RecipesTabs({
       </div>
 
       {tab === "mine" ? (
-        <div className="mt-6 space-y-8">
-          <div className="card p-5">
-            <h2 className="mb-4 text-sm font-semibold text-stone-700">Nouvelle recette</h2>
-            <RecipeForm householdId={householdId} categories={categories} catalog={catalog} />
+        <div className="mt-6 space-y-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher une recette ou un ingrédient…" className="input min-w-[12rem] flex-1" />
+            <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="input w-auto" aria-label="Trier">
+              <option value="recent">Plus récentes</option>
+              <option value="az">A → Z</option>
+              <option value="fav">Favoris d'abord</option>
+              <option value="items">Moins d'ingrédients</option>
+            </select>
+            <button onClick={() => setCreating(!creating)} className="btn-primary">{creating ? "Fermer" : "+ Nouvelle recette"}</button>
           </div>
+          {usedCats.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {[null, ...usedCats].map((c) => (
+                <button key={c ?? "all"} onClick={() => setCat(c === cat ? null : c)} className={cx("rounded-full px-3 py-1 text-xs font-medium transition", cat === c ? "bg-ink text-onink" : "bg-stone-100 text-stone-600 hover:bg-stone-200")}>
+                  {c ?? "Toutes"}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {creating && (
+            <div className="card animate-rise p-5">
+              <h2 className="mb-4 text-sm font-semibold text-stone-700">Nouvelle recette</h2>
+              <RecipeForm householdId={householdId} categories={categories} catalog={catalog} onDone={() => setCreating(false)} />
+            </div>
+          )}
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {recipes.length === 0 && <p className="text-sm text-stone-400">Aucune recette pour l'instant. Crée-en une, ou pioche dans "Trouver des recettes".</p>}
-            {recipes.map((r) => (
+            {recipes.length === 0 && <p className="text-sm text-stone-400">Aucune recette pour l'instant. Crée-en une avec « + Nouvelle recette », ou pioche dans "Trouver des recettes".</p>}
+            {recipes.length > 0 && shown.length === 0 && <p className="text-sm text-stone-400">Aucune recette ne correspond.</p>}
+            {shown.map((r) => (
               <RecipeCard key={r.id} recipe={r} householdId={householdId} categories={categories} catalog={catalog} />
             ))}
           </div>
