@@ -70,6 +70,9 @@ export interface CalItem {
   /** Couleur du projet, pour les tâches. */
   color?: string;
   amount?: string;
+  time?: string;
+  /** Si présent, une pastille permet de cocher / décocher directement dans la case du calendrier. */
+  onToggle?: () => void;
 }
 
 /** Plage de jours réellement affichée pour une vue et une date d'ancrage. */
@@ -130,20 +133,48 @@ export function CalendarNav({
   );
 }
 
+function Check({ done, onToggle, label }: { done?: boolean; onToggle: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      aria-label={`${done ? "Décocher" : "Cocher"} : ${label}`}
+      aria-pressed={!!done}
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggle();
+      }}
+      className={cx(
+        "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border text-[8px] font-bold leading-none transition",
+        done ? "border-transparent bg-emerald-500 text-white" : "border-stone-300 bg-surface text-transparent hover:border-emerald-500 hover:text-emerald-500"
+      )}
+    >
+      ✓
+    </button>
+  );
+}
+
+const tint = (color?: string) => (color && color.startsWith("#") ? `${color}1f` : "rgb(var(--brand-500) / 0.1)");
+
 function Chip({ item }: { item: CalItem }) {
-  const base = "flex min-w-0 items-center gap-1 rounded-[4px] px-1 text-[10px] leading-[17px]";
+  const base = "flex min-w-0 items-center gap-1 rounded-md px-1 py-px text-[10px] leading-[16px]";
   if (item.tone === "task") {
     return (
-      <span className={cx(base, "border-l-2 bg-surface/80", item.done ? "text-stone-300 line-through" : "text-stone-700")} style={{ borderLeftColor: item.color || "rgb(var(--stone-300))" }} title={item.label}>
-        <span className="truncate">{item.label}</span>
+      <span
+        className={cx(base, "border-l-2", item.done && "opacity-60")}
+        style={{ borderLeftColor: item.color || "rgb(var(--brand-500))", background: tint(item.color) }}
+        title={item.label}
+      >
+        {item.onToggle && <Check done={item.done} onToggle={item.onToggle} label={item.label} />}
+        {item.time && <span className="shrink-0 tabular text-stone-400">{item.time}</span>}
+        <span className={cx("truncate", item.done ? "text-stone-400 line-through" : "text-stone-700")}>{item.label}</span>
       </span>
     );
   }
   if (item.tone === "routine") {
     return (
-      <span className={cx(base, "bg-emerald-50", item.done ? "text-emerald-400 line-through" : "text-emerald-700")} title={item.label}>
-        <span className="shrink-0">{item.done ? "✓" : "↻"}</span>
-        <span className="truncate">{item.label}</span>
+      <span className={cx(base, "bg-emerald-500/10", item.done && "opacity-70")} title={item.label}>
+        {item.onToggle ? <Check done={item.done} onToggle={item.onToggle} label={item.label} /> : <span className="shrink-0 text-emerald-600">↻</span>}
+        <span className={cx("truncate", item.done ? "text-emerald-600/70 line-through" : "text-emerald-700")}>{item.label}</span>
       </span>
     );
   }
@@ -152,6 +183,24 @@ function Chip({ item }: { item: CalItem }) {
       <span className="truncate font-normal text-stone-500">{item.label}</span>
       <span className="tabular shrink-0">{item.amount}</span>
     </span>
+  );
+}
+
+/** Ligne de détail (panneau du jour) : case à cocher pilotée par le parent pour rester synchronisée avec le calendrier. */
+export function CheckRow({ checked, onChange, label, sub, disabled, dot }: { checked: boolean; onChange: () => void; label: string; sub?: string; disabled?: boolean; dot?: string }) {
+  return (
+    <label className={cx("flex items-start gap-2.5 rounded-lg px-1.5 py-1 transition", disabled ? "cursor-default opacity-70" : "cursor-pointer hover:bg-stone-50")}>
+      <input type="checkbox" checked={checked} disabled={disabled} onChange={onChange} className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+      <span className="min-w-0 flex-1">
+        <span className={cx("block truncate text-[13px] font-medium", checked ? "text-stone-400 line-through" : "text-stone-800")}>{label}</span>
+        {sub && (
+          <span className="flex items-center gap-1.5 truncate text-[11px] text-stone-400">
+            {dot && <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: dot }} />}
+            {sub}
+          </span>
+        )}
+      </span>
+    </label>
   );
 }
 
@@ -191,12 +240,14 @@ export function CalendarGrid({
           const items = itemsFor(d);
           const outside = view === "month" && d.slice(0, 7) !== anchorMonth;
           return (
-            <button
+            <div
               key={d}
-              type="button"
+              role="button"
+              tabIndex={0}
               onClick={() => { if (!nav.consumeClick()) onSelect(d); }}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(d); } }}
               className={cx(
-                "flex min-w-0 flex-col gap-0.5 border-b border-r border-line/70 p-1 text-left transition hover:bg-brand-50/50",
+                "flex min-w-0 cursor-pointer flex-col gap-0.5 border-b border-r border-line/70 p-1 text-left transition hover:bg-brand-50/50",
                 wide ? (view === "week" ? "min-h-[64px] sm:min-h-[240px]" : "min-h-[52px] sm:min-h-[84px]") : "min-h-[44px]",
                 wide ? "items-center sm:items-stretch" : "items-center",
                 outside && "bg-stone-50/70",
@@ -219,7 +270,7 @@ export function CalendarGrid({
                   ))}
                 </span>
               )}
-            </button>
+            </div>
           );
         })}
       </div>

@@ -7,7 +7,8 @@ import { createTask } from "@/app/app/tasks/actions";
 import { Icon } from "@/components/app/icons";
 import { WidgetShell, Empty, Segmented } from "@/components/app/widgets/shell";
 import { PRIORITY_RANK, fmtLong, fmtShort, isDone } from "@/components/app/widgets/helpers";
-import { CalendarGrid, CalendarNav, calShift, type CalItem, type CalView } from "@/components/app/widgets/calendar-grid";
+import { CalendarGrid, CalendarNav, CheckRow, calShift, type CalItem, type CalView } from "@/components/app/widgets/calendar-grid";
+import { useAgendaToggles } from "@/components/app/widgets/agenda-state";
 import type { WidgetProps } from "@/components/app/widgets/types";
 import type { Task } from "@/lib/types";
 
@@ -122,7 +123,7 @@ export function TasksList({ data, size }: WidgetProps) {
   );
 }
 
-/* ---------- Calendrier des tâches (uniquement tâches et projets) ---------- */
+/* ---------- Agenda : tâches + routines, façon Google Agenda ---------- */
 
 export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
   const [selected, setSelected] = useState(data.today);
@@ -132,6 +133,9 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
   const [formKey, setFormKey] = useState(0);
   const [adding, setAdding] = useState(false);
   const [pending, start] = useTransition();
+  const showTasks = opts.tasks !== false;
+  const showRoutines = opts.routines !== false;
+  const toggles = useAgendaToggles(data);
   const projectOf = useMemo(() => new Map(data.projects.map((p) => [p.id, p])), [data.projects]);
 
   const byDate = useMemo(() => {
@@ -140,25 +144,47 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
       if (!t.due_date || (projectFilter && t.project_id !== projectFilter)) continue;
       map.set(t.due_date, [...(map.get(t.due_date) ?? []), t]);
     }
+    for (const list of map.values()) list.sort((a, b) => (a.due_time ?? "99:99").localeCompare(b.due_time ?? "99:99"));
     return map;
   }, [data.tasks, projectFilter]);
 
-  const itemsFor = (d: string): CalItem[] =>
-    (byDate.get(d) ?? []).map((t) => ({ key: t.id, label: t.title, tone: "task", done: isDone(t), color: (t.project_id && projectOf.get(t.project_id)?.color) || undefined }));
+  const itemsFor = (d: string): CalItem[] => {
+    const items: CalItem[] = [];
+    if (showTasks) {
+      for (const t of byDate.get(d) ?? [])
+        items.push({
+          key: t.id,
+          label: t.title,
+          tone: "task",
+          done: toggles.taskDone(t),
+          color: (t.project_id && projectOf.get(t.project_id)?.color) || undefined,
+          time: t.due_time?.slice(0, 5),
+          onToggle: () => toggles.toggleTask(t),
+        });
+    }
+    if (showRoutines) {
+      for (const r of toggles.routinesOn(d))
+        items.push({ key: `r${r.id}`, label: r.title, tone: "routine", done: toggles.routineDone(r.id, d), onToggle: d <= data.today ? () => toggles.toggleRoutine(r.id, d) : undefined });
+    }
+    return items;
+  };
 
   const changeView = (v: CalView) => {
     setView(v);
     setOpts({ view: v });
   };
+  const chip = (on: boolean) => cx("rounded-full border px-2.5 py-1 text-[11px] font-medium transition", on ? "border-brand-300 bg-brand-500/10 text-brand-700" : "border-line bg-surface text-stone-400 hover:text-stone-700");
   const wide = size !== "m";
-  const dayTasks = byDate.get(selected) ?? [];
-  const overdue = selected === data.today ? data.tasks.filter((t) => !isDone(t) && t.due_date && t.due_date < data.today && (!projectFilter || t.project_id === projectFilter)) : [];
+  const dayTasks = showTasks ? byDate.get(selected) ?? [] : [];
+  const dayRoutines = showRoutines ? toggles.routinesOn(selected) : [];
+  const overdue = showTasks && selected === data.today ? data.tasks.filter((t) => !toggles.taskDone(t) && t.due_date && t.due_date < data.today && (!projectFilter || t.project_id === projectFilter)) : [];
+  const empty = dayTasks.length + dayRoutines.length + overdue.length === 0;
 
   return (
     <WidgetShell
       icon="calendar"
-      title="Calendrier des tâches"
-      subtitle={wide ? "Clique sur un jour pour voir et ajouter tes tâches" : undefined}
+      title="Agenda"
+      subtitle={wide ? "Tes tâches et tes routines au même endroit : coche directement dans le calendrier" : undefined}
       right={
         data.projects.length > 0 ? (
           <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className="max-w-[130px] rounded-md border border-line bg-surface px-1.5 py-1 text-[11px] text-stone-600">
@@ -168,15 +194,13 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
         ) : undefined
       }
     >
-      <div className={cx("grid h-full gap-4", wide && "lg:grid-cols-[minmax(0,1fr)_280px]")}>
+      <div className="mb-3 flex flex-wrap items-center gap-1.5">
+        <button type="button" onClick={() => setOpts({ tasks: !showTasks })} className={chip(showTasks)}>Tâches</button>
+        <button type="button" onClick={() => setOpts({ routines: !showRoutines })} className={chip(showRoutines)}>Routines</button>
+      </div>
+      <div className={cx("grid h-full gap-4", wide && "lg:grid-cols-[minmax(0,1fr)_290px]")}>
         <div className="flex min-w-0 flex-col">
-          <CalendarNav
-            view={view}
-            anchor={anchor}
-            onView={changeView}
-            onAnchor={setAnchor}
-            onToday={() => { setAnchor(data.today); setSelected(data.today); }}
-          />
+          <CalendarNav view={view} anchor={anchor} onView={changeView} onAnchor={setAnchor} onToday={() => { setAnchor(data.today); setSelected(data.today); }} />
           <CalendarGrid
             view={view}
             anchor={anchor}
@@ -189,38 +213,66 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
           />
         </div>
 
-        <div className={cx("min-w-0 rounded-xl border border-line bg-stone-50/50 p-3", pending && "opacity-60")}>
+        <div className={cx("min-w-0 rounded-xl border border-line bg-stone-50/60 p-3", (pending || toggles.pending) && "opacity-70")}>
           <p className="text-[12px] font-semibold capitalize text-stone-800">{fmtLong(selected)}</p>
           {overdue.length > 0 && (
             <div className="mt-2">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-rose-500">En retard</p>
-              {overdue.map((t) => <TaskRow key={t.id} task={t} today={data.today} project={t.project_id ? projectOf.get(t.project_id) : undefined} />)}
+              {overdue.map((t) => <CheckRow key={t.id} checked={toggles.taskDone(t)} onChange={() => toggles.toggleTask(t)} label={t.title} sub={`En retard · ${fmtShort(t.due_date!)}`} dot={(t.project_id && projectOf.get(t.project_id)?.color) || undefined} />)}
             </div>
           )}
-          <div className="mt-2">
-            {dayTasks.length === 0 && overdue.length === 0 && <p className="text-[11px] text-stone-400">Aucune tâche ce jour-là.</p>}
-            {dayTasks.map((t) => <TaskRow key={t.id} task={t} today={data.today} project={t.project_id ? projectOf.get(t.project_id) : undefined} />)}
-          </div>
+          {dayTasks.length > 0 && (
+            <div className="mt-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400">Tâches</p>
+              {dayTasks.map((t) => (
+                <CheckRow
+                  key={t.id}
+                  checked={toggles.taskDone(t)}
+                  onChange={() => toggles.toggleTask(t)}
+                  label={t.title}
+                  sub={[t.due_time?.slice(0, 5), t.project_id ? projectOf.get(t.project_id)?.name : null].filter(Boolean).join(" · ") || undefined}
+                  dot={(t.project_id && projectOf.get(t.project_id)?.color) || undefined}
+                />
+              ))}
+            </div>
+          )}
+          {dayRoutines.length > 0 && (
+            <div className="mt-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400">Routines</p>
+              {dayRoutines.map((r) => (
+                <CheckRow
+                  key={r.id}
+                  checked={toggles.routineDone(r.id, selected)}
+                  onChange={() => toggles.toggleRoutine(r.id, selected)}
+                  label={r.title}
+                  sub={selected > data.today ? "Prévue" : r.category ?? undefined}
+                  disabled={selected > data.today}
+                />
+              ))}
+            </div>
+          )}
+          {empty && <p className="mt-2 text-[11px] text-stone-400">Journée libre.</p>}
+
           {!adding ? (
             <button type="button" onClick={() => setAdding(true)} className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-line py-2 text-[12px] font-medium text-stone-500 transition hover:border-brand-300 hover:text-brand-700">
               <Icon name="plus" className="h-3.5 w-3.5" />Ajouter une tâche ce jour-là
             </button>
           ) : (
-          <form key={formKey} action={(fd) => start(async () => { await createTask(fd); setFormKey((k) => k + 1); setAdding(false); })} className="mt-3 space-y-1.5 border-t border-line pt-3">
-            <input type="hidden" name="due_date" value={selected} />
-            <input name="title" placeholder="Nouvelle tâche ce jour-là…" className="input py-1.5 text-xs" required autoFocus />
-            <div className="grid grid-cols-2 gap-1.5">
-              <input name="due_time" type="time" className="input min-w-0 py-1 text-xs" aria-label="Heure" />
-              <select key={projectFilter} name="project_id" defaultValue={projectFilter} className="input min-w-0 py-1 text-xs" aria-label="Projet">
-                <option value="">Sans projet</option>
-                {data.projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-            </div>
-            <div className="flex gap-1.5">
-              <button className="btn-primary flex-1 py-1.5 text-xs"><Icon name="plus" className="h-3.5 w-3.5" />Ajouter</button>
-              <button type="button" onClick={() => setAdding(false)} className="btn-secondary px-3 py-1.5 text-xs">Annuler</button>
-            </div>
-          </form>
+            <form key={formKey} action={(fd) => start(async () => { await createTask(fd); setFormKey((k) => k + 1); setAdding(false); })} className="mt-3 space-y-1.5 border-t border-line pt-3">
+              <input type="hidden" name="due_date" value={selected} />
+              <input name="title" placeholder="Nouvelle tâche ce jour-là…" className="input py-1.5 text-xs" required autoFocus />
+              <div className="grid grid-cols-2 gap-1.5">
+                <input name="due_time" type="time" className="input min-w-0 py-1 text-xs" aria-label="Heure" />
+                <select key={projectFilter} name="project_id" defaultValue={projectFilter} className="input min-w-0 py-1 text-xs" aria-label="Projet">
+                  <option value="">Sans projet</option>
+                  {data.projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+              <div className="flex gap-1.5">
+                <button className="btn-primary flex-1 py-1.5 text-xs"><Icon name="plus" className="h-3.5 w-3.5" />Ajouter</button>
+                <button type="button" onClick={() => setAdding(false)} className="btn-secondary px-3 py-1.5 text-xs">Annuler</button>
+              </div>
+            </form>
           )}
         </div>
       </div>

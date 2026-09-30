@@ -12,7 +12,8 @@ import { CountUp } from "@/components/app/count-up";
 import { Icon } from "@/components/app/icons";
 import { WidgetShell, Empty, Segmented } from "@/components/app/widgets/shell";
 import { DOW, eur0, fmtLong, fmtShort, routineStreak, scheduledOn, weekday } from "@/components/app/widgets/helpers";
-import { CalendarGrid, CalendarNav, calRange, calShift, type CalItem, type CalView } from "@/components/app/widgets/calendar-grid";
+import { useAgendaToggles } from "@/components/app/widgets/agenda-state";
+import { CheckRow, CalendarGrid, CalendarNav, calRange, calShift, type CalItem, type CalView } from "@/components/app/widgets/calendar-grid";
 import { TaskRow } from "@/components/app/widgets/tasks";
 import type { WidgetProps } from "@/components/app/widgets/types";
 import type { Task } from "@/lib/types";
@@ -113,7 +114,7 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
   const showTasks = opts.tasks !== false;
   const showRoutines = opts.routines !== false;
   const [view, setView] = useState<CalView>((opts.view as CalView) ?? "month");
-  const done = useLogIndex(data);
+  const ag = useAgendaToggles(data);
   const [selected, setSelected] = useState(data.today);
   const [anchor, setAnchor] = useState(data.today);
   const projectOf = useMemo(() => new Map(data.projects.map((p) => [p.id, p])), [data.projects]);
@@ -129,10 +130,10 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
   const itemsFor = (d: string): CalItem[] => {
     const items: CalItem[] = [];
     if (showTasks) {
-      for (const t of tasksBy.get(d) ?? []) items.push({ key: `t${t.id}`, label: t.title, tone: "task", done: t.status === "done", color: (t.project_id && projectOf.get(t.project_id)?.color) || undefined });
+      for (const t of tasksBy.get(d) ?? []) items.push({ key: `t${t.id}`, label: t.title, tone: "task", done: ag.taskDone(t), color: (t.project_id && projectOf.get(t.project_id)?.color) || undefined, time: t.due_time?.slice(0, 5), onToggle: () => ag.toggleTask(t) });
     }
     if (showRoutines) {
-      for (const r of data.routines) if (scheduledOn(r, d)) items.push({ key: `r${r.id}`, label: r.title, tone: "routine", done: done.has(`${r.id}_${d}`) });
+      for (const r of ag.routinesOn(d)) items.push({ key: `r${r.id}`, label: r.title, tone: "routine", done: ag.routineDone(r.id, d), onToggle: d <= data.today ? () => ag.toggleRoutine(r.id, d) : undefined });
     }
     const occ = finBy.get(d) ?? [];
     if (view === "week") {
@@ -145,11 +146,11 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
   };
 
   const selTasks = showTasks ? tasksBy.get(selected) ?? [] : [];
-  const selRoutines = showRoutines ? data.routines.filter((r) => scheduledOn(r, selected)) : [];
+  const selRoutines = showRoutines ? ag.routinesOn(selected) : [];
   const selFin = finBy.get(selected) ?? [];
 
   return (
-    <WidgetShell icon="calendar" title="Calendrier" subtitle={wide ? "Tâches, routines et argent au même endroit" : undefined} href="/app/tasks/calendar" hrefLabel="Ouvrir">
+    <WidgetShell icon="calendar" title="Agenda" subtitle={wide ? "Tâches, routines et argent au même endroit" : undefined} href="/app/tasks/calendar" hrefLabel="Ouvrir">
       <div className="mb-3 flex flex-wrap items-center gap-1.5">
         <button onClick={() => setOpts({ tasks: !showTasks })} className={chip(showTasks)}>Tâches</button>
         <button onClick={() => setOpts({ routines: !showRoutines })} className={chip(showRoutines)}>Routines</button>
@@ -175,17 +176,15 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
           {selTasks.length > 0 && (
             <div className="mt-2">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400">Tâches</p>
-              {selTasks.map((t) => <TaskRow key={t.id} task={t} today={data.today} project={t.project_id ? projectOf.get(t.project_id) : undefined} />)}
+              {selTasks.map((t) => <CheckRow key={t.id} checked={ag.taskDone(t)} onChange={() => ag.toggleTask(t)} label={t.title} sub={t.due_time?.slice(0, 5)} dot={(t.project_id && projectOf.get(t.project_id)?.color) || undefined} />)}
             </div>
           )}
           {selRoutines.length > 0 && (
             <div className="mt-2">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400">Routines</p>
-              {selected <= data.today
-                ? selRoutines.map((r) => (
-                    <ToggleCheckbox key={`${r.id}-${selected}`} initialChecked={done.has(`${r.id}_${selected}`)} onToggle={toggleRoutineLog.bind(null, r.id, selected)} label={r.title} strikeThrough={false} />
-                  ))
-                : selRoutines.map((r) => <p key={r.id} className="truncate px-2 py-1 text-[12px] text-stone-600">{r.title}</p>)}
+              {selRoutines.map((r) => (
+                <CheckRow key={r.id} checked={ag.routineDone(r.id, selected)} onChange={() => ag.toggleRoutine(r.id, selected)} label={r.title} disabled={selected > data.today} sub={selected > data.today ? "À venir" : undefined} />
+              ))}
             </div>
           )}
           {selFin.length > 0 && (

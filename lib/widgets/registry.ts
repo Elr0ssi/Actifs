@@ -80,7 +80,7 @@ export const WIDGETS: WidgetDef[] = [
   { type: "tasks-stat", section: "tasks", title: "Compteur de tâches", description: "Tâches en cours et en retard.", icon: "tasks", sizes: ["s"], defaultSize: "s" },
   { type: "projects", section: "tasks", title: "Projets", description: "Avancement de chaque projet, en tâches terminées.", icon: "target", sizes: ["s", "m", "l"], defaultSize: "m" },
   { type: "routines-today", section: "routines", title: "Routines du jour", description: "Coche tes routines d'aujourd'hui.", icon: "repeat", sizes: ["s", "m"], defaultSize: "s" },
-  { type: "tasks-calendar", section: "tasks", title: "Calendrier des tâches", description: "Un calendrier cliquable avec uniquement tes tâches et tes projets.", icon: "calendar", sizes: ["m", "l", "xl"], defaultSize: "l", tall: true },
+  { type: "tasks-calendar", section: "tasks", title: "Agenda", description: "Un calendrier cliquable avec uniquement tes tâches et tes projets.", icon: "calendar", sizes: ["m", "l", "xl"], defaultSize: "l", tall: true },
   { type: "routines-week", section: "routines", title: "Courbe des routines", description: "Ta réussite dans le temps, par jour, semaine, mois ou année.", icon: "trend", sizes: ["m", "l", "xl"], defaultSize: "l" },
   { type: "lists-shopping", section: "courses", title: "Liste de courses", description: "Les articles qu'il reste à acheter.", icon: "cart", sizes: ["s", "m"], defaultSize: "s" },
   { type: "menu-week", section: "courses", title: "Menu de la semaine", description: "Les recettes que tu as choisies pour la semaine.", icon: "chef", sizes: ["s", "m", "l"], defaultSize: "m" },
