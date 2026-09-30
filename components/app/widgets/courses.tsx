@@ -10,6 +10,8 @@ import { WidgetShell, Empty } from "@/components/app/widgets/shell";
 import { eur0, fmtShort, mondayOf } from "@/components/app/widgets/helpers";
 import type { WidgetProps } from "@/components/app/widgets/types";
 import { MenuEditor } from "@/components/app/widgets/menu-editor";
+import { MenuRecipeView } from "@/components/app/widgets/menu-recipe-view";
+import { removeMenuItem } from "@/app/app/menu-actions";
 import type { WidgetList } from "@/lib/data/widgets";
 
 const BUDGET_CATEGORY = "Alimentation / Courses";
@@ -23,12 +25,14 @@ export function MenuWeek({ data }: WidgetProps) {
   const realToday = data.realToday ?? data.today;
   const weekStart = mondayOf(realToday);
   const [editDay, setEditDay] = useState<string | null>(null);
+  const [viewDay, setViewDay] = useState<{ day: string; id: string } | null>(null);
+  const [hidden, setHidden] = useState<string[]>([]);
   const scroller = useRef<HTMLDivElement>(null);
   const days = useMemo(() => Array.from({ length: 14 }, (_, i) => addDays(weekStart, i)), [weekStart]);
   const byName = useMemo(() => new Map(RECIPES.map((r) => [r.name.toLowerCase(), r])), []);
   const mineByName = useMemo(() => new Map(data.myRecipes.map((r) => [r.name.toLowerCase(), r])), [data.myRecipes]);
-  const mealsOn = (d: string) => data.menu.filter((m) => m.day === d);
-  const upcoming = data.menu.filter((m) => m.day >= realToday).length;
+  const mealsOn = (d: string) => data.menu.filter((m) => m.day === d && !hidden.includes(m.id));
+  const upcoming = data.menu.filter((m) => m.day >= realToday && !hidden.includes(m.id)).length;
   const planned = useMemo(() => {
     const names = new Set(data.menu.filter((m) => m.day >= weekStart && m.day <= addDays(weekStart, 6)).map((m) => m.name.toLowerCase()));
     const out = new Map<string, string>();
@@ -85,7 +89,7 @@ export function MenuWeek({ data }: WidgetProps) {
               <button
                 key={d}
                 type="button"
-                onClick={() => { if (drag.current.moved) { drag.current.moved = false; return; } setEditDay(d); }}
+                onClick={() => { if (drag.current.moved) { drag.current.moved = false; return; } if (first) setViewDay({ day: d, id: first.id }); else setEditDay(d); }}
                 draggable={false}
                 className={cx("group w-[150px] shrink-0 rounded-2xl border p-2.5 text-left transition hover:shadow-soft", isToday ? "border-brand-300 bg-brand-50/40" : "border-line bg-surface")}
               >
@@ -133,6 +137,22 @@ export function MenuWeek({ data }: WidgetProps) {
           <span>Aucun repas prévu à partir du {nextWord}.</span>
           <button type="button" onClick={() => setEditDay(realToday)} className="rounded-lg border border-brand-300 bg-surface px-3 py-1.5 font-semibold text-brand-700 hover:bg-brand-50">Planifier des repas</button>
         </div>
+      )}
+      {viewDay && (
+        <MenuRecipeView
+          data={data}
+          meals={mealsOn(viewDay.day)}
+          activeId={viewDay.id}
+          dayLabel={new Date(`${viewDay.day}T00:00:00Z`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })}
+          onSelect={(id) => setViewDay({ day: viewDay.day, id })}
+          onClose={() => setViewDay(null)}
+          onPlan={() => { const d = viewDay.day; setViewDay(null); setEditDay(d); }}
+          onRemove={(id) => {
+            setHidden((h) => [...h, id]);
+            void removeMenuItem(id);
+            if (mealsOn(viewDay.day).filter((m) => m.id !== id).length === 0) setViewDay(null);
+          }}
+        />
       )}
       {editDay && <MenuEditor data={data} weekStart={weekStart} initialDay={editDay} onClose={() => setEditDay(null)} />}
     </WidgetShell>

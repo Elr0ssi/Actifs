@@ -1,0 +1,126 @@
+"use client";
+
+import { createPortal } from "react-dom";
+import { RECIPES } from "@/lib/marketing/recipes";
+import { Inline } from "@/components/app/notes/inline";
+import { stepsOf } from "@/components/app/recipes/recipe-card";
+import type { WidgetData } from "@/lib/data/widgets";
+
+export interface MealRef {
+  id: string;
+  name: string;
+  icon: string | null;
+}
+
+/** Fiche d'un repas planifié, en consultation : ingrédients et étapes, comme dans « Mes recettes ». */
+export function MenuRecipeView({
+  data,
+  meals,
+  activeId,
+  dayLabel,
+  onSelect,
+  onClose,
+  onPlan,
+  onRemove,
+}: {
+  data: WidgetData;
+  meals: MealRef[];
+  activeId: string;
+  dayLabel: string;
+  onSelect: (id: string) => void;
+  onClose: () => void;
+  onPlan: () => void;
+  onRemove: (id: string) => void;
+}) {
+  const meal = meals.find((m) => m.id === activeId) ?? meals[0];
+  if (!meal) return null;
+  const idea = RECIPES.find((r) => r.name.toLowerCase() === meal.name.toLowerCase());
+  const mine = data.myRecipes.find((r) => r.name.toLowerCase() === meal.name.toLowerCase());
+
+  const image = idea?.image ?? mine?.image_url ?? null;
+  const category = idea?.category ?? mine?.category ?? null;
+  const ingredients: { label: string; quantity?: string | null }[] = mine && mine.items.length ? mine.items : idea ? idea.ingredients.map((label) => ({ label })) : [];
+  const steps = mine && stepsOf(mine.notes).length ? stepsOf(mine.notes) : idea ? idea.steps : [];
+  const found = !!(idea || mine);
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-6" onClick={onClose}>
+      <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-surface shadow-2xl sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+        {image && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={image} alt={meal.name} className="aspect-video w-full object-cover" />
+        )}
+        <div className="p-6">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold capitalize text-brand-700">{dayLabel}</p>
+              <h2 className="mt-1 text-2xl font-bold tracking-tight text-stone-900">{meal.icon ?? idea?.icon ?? "🍽️"} {meal.name}</h2>
+              {idea?.desc && <p className="mt-1 text-sm text-stone-500">{idea.desc}</p>}
+            </div>
+            <button onClick={onClose} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label="Fermer">✕</button>
+          </div>
+
+          {meals.length > 1 && (
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {meals.map((m) => (
+                <button key={m.id} onClick={() => onSelect(m.id)} className={m.id === meal.id ? "rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white" : "rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600 hover:bg-stone-200"}>
+                  {m.icon ?? "🍽️"} {m.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-4 flex flex-wrap gap-2 text-xs text-stone-600">
+            {category && <span className="rounded-full bg-brand-50 px-2.5 py-1 font-medium text-brand-700">{category}</span>}
+            {idea && <span className="rounded-full bg-stone-100 px-2.5 py-1">⏱ {idea.time}</span>}
+            {idea && <span className="rounded-full bg-stone-100 px-2.5 py-1">🍽 {idea.servings} pers.</span>}
+            {idea && <span className="rounded-full bg-stone-100 px-2.5 py-1">{idea.difficulty}</span>}
+          </div>
+
+          {!found ? (
+            <p className="mt-5 rounded-xl bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">
+              Ce repas n'est lié à aucune recette enregistrée. Crée-la dans <a href="/app/lists/recipes" className="font-medium text-brand-600 hover:underline">Mes recettes</a> avec le même nom pour retrouver ici ses ingrédients et ses étapes.
+            </p>
+          ) : (
+            <>
+              <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Ingrédients ({ingredients.length})</h3>
+              {ingredients.length === 0 ? (
+                <p className="text-sm text-stone-400">Aucun ingrédient renseigné.</p>
+              ) : (
+                <ul className="grid gap-x-6 gap-y-1 text-sm text-stone-700 sm:grid-cols-2">
+                  {ingredients.map((i, k) => <li key={k}>• {i.label}{i.quantity && <span className="text-stone-400"> — {i.quantity}</span>}</li>)}
+                </ul>
+              )}
+              {idea && idea.utensils.length > 0 && (
+                <>
+                  <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Ustensiles</h3>
+                  <p className="text-sm text-stone-600">{idea.utensils.join(" · ")}</p>
+                </>
+              )}
+              <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Préparation</h3>
+              {steps.length === 0 ? (
+                <p className="text-sm text-stone-400">Pas encore d'étapes pour cette recette.</p>
+              ) : (
+                <ol className="space-y-2.5">
+                  {steps.map((line, i) => (
+                    <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-stone-800">
+                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-50 text-xs font-bold text-brand-700">{i + 1}</span>
+                      <span><Inline text={line} /></span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </>
+          )}
+
+          <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-line pt-4">
+            <button onClick={onPlan} className="btn-secondary">Modifier le menu de ce jour</button>
+            <button onClick={onClose} className="btn-primary">Fermer</button>
+            <button onClick={() => onRemove(meal.id)} className="ml-auto text-xs text-stone-400 hover:text-rose-600">Retirer du menu</button>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
