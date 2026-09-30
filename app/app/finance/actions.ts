@@ -40,6 +40,7 @@ function parseOperation(formData: FormData) {
     end_date: String(formData.get("end_date") || "") || null,
     note: String(formData.get("note") || "").trim() || null,
     account: String(formData.get("account") || "").trim() || null,
+    weekend_rule: ["next", "prev"].includes(String(formData.get("weekend_rule"))) ? String(formData.get("weekend_rule")) : "none",
   };
   if (kind === "income") {
     return { table: "income" as const, row: { ...common, expected_date: start, recurring: frequency !== "once" } };
@@ -163,5 +164,18 @@ export async function saveTaxProfile(year: number, formData: FormData) {
   const { supabase, householdId } = await ctx();
   if (!householdId) return;
   await supabase.from("tax_profiles").upsert({ household_id: householdId, year, inputs, provision_manual: provisionManual, updated_at: new Date().toISOString() }, { onConflict: "household_id,year" });
+  refresh();
+}
+
+/** Déplace une seule occurrence à une autre date (newDate) ou la remet à sa place prévue (newDate = null). */
+export async function moveOccurrence(table: OpTable, id: string, rawDate: string, newDate: string | null) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(rawDate) || (newDate !== null && !/^\d{4}-\d{2}-\d{2}$/.test(newDate))) return;
+  const { supabase, householdId } = await ctx();
+  if (!householdId) return;
+  const { data } = await supabase.from(tableName(table)).select("moved_dates").eq("id", id).eq("household_id", householdId).single();
+  const moved: Record<string, string> = { ...(data?.moved_dates ?? {}) };
+  if (newDate && newDate !== rawDate) moved[rawDate] = newDate;
+  else delete moved[rawDate];
+  await supabase.from(tableName(table)).update({ moved_dates: moved }).eq("id", id).eq("household_id", householdId);
   refresh();
 }

@@ -4,6 +4,7 @@
 export type OpKind = "income" | "fixed" | "variable" | "savings";
 export type OpFrequency = "once" | "daily" | "weekly" | "monthly" | "yearly";
 export type OpTable = "charge" | "income";
+export type WeekendRule = "none" | "next" | "prev";
 
 export interface FinOp {
   id: string;
@@ -19,6 +20,10 @@ export interface FinOp {
   start: string;
   end: string | null;
   skipped: string[];
+  /** Report automatique quand la date tombe un week-end : lundi suivant ("next"), vendredi précédent ("prev") ou rien. */
+  weekendRule: WeekendRule;
+  /** Déplacements ponctuels : date prévue par la récurrence → date réelle choisie à la main. */
+  moved: Record<string, string>;
   active: boolean;
   note: string | null;
   account: string | null;
@@ -63,9 +68,39 @@ export function signOf(op: FinOp) {
   return op.kind === "income" ? 1 : -1;
 }
 
-/** All occurrence dates of an operation within [from, to], honoring interval, weekdays, month days, end date and skipped dates. */
-export function occurrencesOf(op: FinOp, from: string, to: string): string[] {
+export function shiftWeekend(date: string, rule: WeekendRule) {
+  if (rule === "none") return date;
+  const dow = new Date(toMs(date)).getUTCDay();
+  if (dow === 6) return addDays(date, rule === "next" ? 2 : -1);
+  if (dow === 0) return addDays(date, rule === "next" ? 1 : -2);
+  return date;
+}
+
+/** Dates réelles d'une opération (après report du week-end et déplacements manuels), avec la date prévue d'origine. */
+export function occurrenceEntries(op: FinOp, from: string, to: string): { raw: string; date: string }[] {
   if (!op.active) return [];
+  const pad = 4;
+  const rawFrom = addDays(from, -pad);
+  const rawTo = addDays(to, pad);
+  const out: { raw: string; date: string }[] = [];
+  for (const raw of rawOccurrences(op, rawFrom, rawTo)) {
+    const date = op.moved[raw] ?? shiftWeekend(raw, op.weekendRule);
+    if (date >= from && date <= to) out.push({ raw, date });
+  }
+  // Une occurrence déplacée loin de sa date prévue peut venir d'en dehors de la fenêtre.
+  for (const [raw, date] of Object.entries(op.moved)) {
+    if ((raw < rawFrom || raw > rawTo) && date >= from && date <= to && !(op.end && raw > op.end) && raw >= op.start) out.push({ raw, date });
+  }
+  const skipped = new Set(op.skipped);
+  return out.filter((e) => !skipped.has(e.date)).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/** All occurrence dates of an operation within [from, to], honoring interval, weekdays, month days, end date, weekend rule, manual moves and skipped dates. */
+export function occurrencesOf(op: FinOp, from: string, to: string): string[] {
+  return occurrenceEntries(op, from, to).map((e) => e.date);
+}
+
+function rawOccurrences(op: FinOp, from: string, to: string): string[] {
   const lo = op.start > from ? op.start : from;
   const hi = op.end && op.end < to ? op.end : to;
   if (lo > hi) return [];
@@ -112,8 +147,7 @@ export function occurrencesOf(op: FinOp, from: string, to: string): string[] {
       if (date >= lo) out.push(date);
     }
   }
-  const skipped = new Set(op.skipped);
-  return out.filter((d) => !skipped.has(d)).sort();
+  return out.sort();
 }
 
 /** Occurrences the user chose to ignore — kept visible (struck through) so they can be restored. */
@@ -310,6 +344,8 @@ export function chargeRowToOp(r: Record<string, any>): FinOp {
     start: r.next_date,
     end: r.end_date ?? null,
     skipped: r.skipped_dates ?? [],
+    weekendRule: (["next", "prev"].includes(r.weekend_rule) ? r.weekend_rule : "none") as WeekendRule,
+    moved: r.moved_dates && typeof r.moved_dates === "object" ? r.moved_dates : {},
     active: r.active ?? true,
     note: r.note ?? null,
     account: r.account ?? null,
@@ -331,6 +367,8 @@ export function incomeRowToOp(r: Record<string, any>): FinOp {
     start: r.expected_date,
     end: r.end_date ?? null,
     skipped: r.skipped_dates ?? [],
+    weekendRule: (["next", "prev"].includes(r.weekend_rule) ? r.weekend_rule : "none") as WeekendRule,
+    moved: r.moved_dates && typeof r.moved_dates === "object" ? r.moved_dates : {},
     active: r.active ?? true,
     note: r.note ?? null,
     account: r.account ?? null,

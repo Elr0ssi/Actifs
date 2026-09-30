@@ -16,17 +16,18 @@ const refresh = () => {
   revalidatePath("/app", "layout");
 };
 
-/** Ajoute des repas au menu de la semaine (sans toucher aux listes de courses). Les doublons du même nom sont ignorés. */
-export async function addMenuItems(weekStart: string, meals: { name: string; icon: string | null }[]) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(weekStart)) return;
+/** Ajoute des repas à un jour du menu (sans toucher aux listes de courses). Un même repas n'est pas ajouté deux fois le même jour. */
+export async function addMenuItems(day: string, meals: { name: string; icon: string | null }[]) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return;
   const { supabase, householdId, userId } = await ctx();
   if (!householdId || meals.length === 0) return;
-  const { data: existing } = await supabase.from("menu_items").select("name").eq("household_id", householdId).eq("week_start", weekStart);
+  const monday = new Date(Date.parse(`${day}T00:00:00Z`) - ((new Date(`${day}T00:00:00Z`).getUTCDay() + 6) % 7) * 86_400_000).toISOString().slice(0, 10);
+  const { data: existing } = await supabase.from("menu_items").select("name").eq("household_id", householdId).eq("day", day);
   const have = new Set((existing ?? []).map((e) => e.name.toLowerCase()));
   const rows = meals
     .filter((m) => m.name.trim() && !have.has(m.name.trim().toLowerCase()))
     .slice(0, 50)
-    .map((m) => ({ household_id: householdId, week_start: weekStart, name: m.name.trim().slice(0, 120), icon: m.icon?.slice(0, 8) ?? null, created_by: userId }));
+    .map((m) => ({ household_id: householdId, week_start: monday, day, name: m.name.trim().slice(0, 120), icon: m.icon?.slice(0, 8) ?? null, created_by: userId }));
   if (rows.length) await supabase.from("menu_items").insert(rows);
   refresh();
 }

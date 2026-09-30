@@ -84,7 +84,7 @@ export const WIDGETS: WidgetDef[] = [
   { type: "tasks-calendar", section: "tasks", title: "Agenda", description: "Un calendrier cliquable avec uniquement tes tâches et tes projets.", icon: "calendar", sizes: ["m", "l", "xl"], defaultSize: "l", tall: true },
   { type: "routines-week", section: "routines", title: "Courbe des routines", description: "Ta réussite dans le temps, par jour, semaine, mois ou année.", icon: "trend", sizes: ["m", "l", "xl"], defaultSize: "l" },
   { type: "lists-shopping", section: "courses", title: "Liste de courses", description: "Les articles qu'il reste à acheter.", icon: "cart", sizes: ["s", "m"], defaultSize: "s" },
-  { type: "menu-week", section: "courses", title: "Menu de la semaine", description: "Les recettes que tu as choisies pour la semaine.", icon: "chef", sizes: ["s", "m", "l"], defaultSize: "m" },
+  { type: "menu-week", section: "courses", title: "Repas de la semaine", description: "Les recettes que tu as choisies pour la semaine.", icon: "chef", sizes: ["s", "m", "l"], defaultSize: "m" },
   { type: "courses-budget", section: "courses", title: "Budget courses", description: "Ce que tes courses coûtent ce mois-ci face au budget que tu leur alloues.", icon: "wallet", sizes: ["s", "m"], defaultSize: "s" },
   { type: "courses-last", section: "courses", title: "Dernière course", description: "Montant de ta dernière course et prix moyen par repas.", icon: "cart", sizes: ["s"], defaultSize: "s" },
   { type: "lists-overview", section: "courses", title: "Listes en cours", description: "Tes listes en cours avec leur avancement et leur montant.", icon: "list", sizes: ["s", "m"], defaultSize: "m" },

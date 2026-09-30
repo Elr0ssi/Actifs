@@ -5,7 +5,7 @@ import type { WidgetData } from "@/lib/data/widgets";
 export function sampleWidgetData(today: string): WidgetData {
   const op = (id: string, name: string, kind: FinOp["kind"], amount: number, day: number, category: string): FinOp => ({
     id, table: kind === "income" ? "income" : "charge", kind, name, amount, category, frequency: "monthly", interval: 1,
-    weekdays: [], monthDays: [day], start: addDays(today, -200), end: null, skipped: [], active: true, note: null, account: "Courant",
+    weekdays: [], monthDays: [day], start: addDays(today, -200), end: null, skipped: [], weekendRule: "none", moved: {}, active: true, note: null, account: "Courant",
   });
   const monday = addDays(today, -((new Date(`${today}T00:00:00Z`).getUTCDay() + 6) % 7));
   const stamp = `${addDays(today, -30)}T08:00:00Z`;
@@ -54,8 +54,9 @@ export function sampleWidgetData(today: string): WidgetData {
       },
     ],
     menu: [
-      { id: "m1", name: "Poulet rôti", icon: "🍗", weekStart: monday },
-      { id: "m2", name: "Pâtes tomate", icon: "🍝", weekStart: monday },
+      { id: "m1", name: "Poulet rôti", icon: "🍗", day: monday },
+      { id: "m2", name: "Pâtes tomate basilic", icon: "🍝", day: addDays(monday, 1) },
+      { id: "m3", name: "Chili sin carne", icon: "🌶️", day: addDays(monday, 3) },
     ],
     myRecipes: [],
     notes: [

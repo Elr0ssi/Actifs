@@ -114,6 +114,16 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
             {freq === "monthly" && (
               <input name="month_days" defaultValue={op?.monthDays.join(", ")} placeholder="Jour(s) du mois, ex. 5 ou 15, 30 (vide = date de début)" className="input" />
             )}
+            {(freq === "monthly" || freq === "yearly") && (
+              <label className="block text-xs text-stone-500">
+                Si la date tombe un week-end
+                <select key={kind} name="weekend_rule" defaultValue={op?.weekendRule ?? (kind === "income" ? "next" : "none")} className="input mt-1">
+                  <option value="none">Ne pas décaler</option>
+                  <option value="next">Reporter au lundi suivant</option>
+                  <option value="prev">Avancer au vendredi précédent</option>
+                </select>
+              </label>
+            )}
           </div>
         )}
       </div>

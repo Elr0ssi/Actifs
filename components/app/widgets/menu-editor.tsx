@@ -2,30 +2,28 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
+import { addDays } from "@/lib/finance-engine";
 import { addMenuItems, removeMenuItem } from "@/app/app/menu-actions";
 import { RECIPES } from "@/lib/marketing/recipes";
 import { cx } from "@/lib/utils";
+import { DOW } from "@/components/app/widgets/helpers";
 import type { WidgetData } from "@/lib/data/widgets";
-
-export interface MenuEntry {
-  key: string;
-  name: string;
-  icon: string | null;
-  /** Présent pour les repas ajoutés à la main : ceux qui viennent d'une liste de courses ne se retirent pas ici. */
-  id?: string;
-}
 
 const fold = (t: string) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const iconFor = (name: string) => RECIPES.find((r) => r.name.toLowerCase() === name.toLowerCase())?.icon ?? null;
 
-export function MenuEditor({ data, weekStart, entries, onClose }: { data: WidgetData; weekStart: string; entries: MenuEntry[]; onClose: () => void }) {
+export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: WidgetData; weekStart: string; initialDay: string; onClose: () => void }) {
   const [pending, start] = useTransition();
+  const [day, setDay] = useState(initialDay);
   const [q, setQ] = useState("");
-  const [optimistic, setOptimistic] = useState<{ name: string; icon: string | null }[]>([]);
+  const [optimistic, setOptimistic] = useState<{ name: string; icon: string | null; day: string }[]>([]);
   const [removed, setRemoved] = useState<string[]>([]);
+  const days = Array.from({ length: 14 }, (_, i) => addDays(weekStart, i));
 
-  const inMenu = new Set([...entries.map((e) => e.name.toLowerCase()), ...optimistic.map((o) => o.name.toLowerCase())]);
-  const visible = entries.filter((e) => !(e.id && removed.includes(e.id)));
+  const dayItems = data.menu.filter((m) => m.day === day && !removed.includes(m.id));
+  const dayOpt = optimistic.filter((o) => o.day === day);
+  const inDay = new Set([...dayItems.map((m) => m.name.toLowerCase()), ...dayOpt.map((o) => o.name.toLowerCase())]);
+  const countOn = (d: string) => data.menu.filter((m) => m.day === d && !removed.includes(m.id)).length + optimistic.filter((o) => o.day === d).length;
 
   const lastCourse = useMemo(
     () => data.lists.filter((l) => l.type === "shopping" && l.recipes.length > 0).sort((a, b) => b.date.localeCompare(a.date))[0] ?? null,
@@ -33,16 +31,16 @@ export function MenuEditor({ data, weekStart, entries, onClose }: { data: Widget
   );
 
   const add = (meals: { name: string; icon: string | null }[]) => {
-    const fresh = meals.filter((m) => !inMenu.has(m.name.toLowerCase()));
+    const fresh = meals.filter((m) => !inDay.has(m.name.toLowerCase()));
     if (!fresh.length) return;
-    setOptimistic((o) => [...o, ...fresh]);
-    start(() => addMenuItems(weekStart, fresh));
+    setOptimistic((o) => [...o, ...fresh.map((m) => ({ ...m, day }))]);
+    start(() => addMenuItems(day, fresh));
   };
 
   const query = fold(q.trim());
-  const mine = data.myRecipes.filter((r) => !inMenu.has(r.name.toLowerCase()) && (!query || fold(r.name).includes(query))).slice(0, 8);
-  const ideas = RECIPES.filter((r) => !inMenu.has(r.name.toLowerCase()) && (!query || fold(`${r.name} ${r.category}`).includes(query))).slice(0, query ? 10 : 6);
-
+  const mine = data.myRecipes.filter((r) => !inDay.has(r.name.toLowerCase()) && (!query || fold(r.name).includes(query))).slice(0, 8);
+  const ideas = RECIPES.filter((r) => !inDay.has(r.name.toLowerCase()) && (!query || fold(`${r.name} ${r.category}`).includes(query))).slice(0, query ? 10 : 6);
+  const label = (d: string) => `${DOW[(new Date(`${d}T00:00:00Z`).getUTCDay() + 6) % 7]} ${Number(d.slice(8))}`;
   const chip = "flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-[12px] font-medium text-stone-700 transition hover:border-brand-300 hover:bg-brand-50";
 
   return createPortal(
@@ -50,30 +48,33 @@ export function MenuEditor({ data, weekStart, entries, onClose }: { data: Widget
       <div className={cx("max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-t-3xl bg-surface p-6 shadow-2xl sm:rounded-3xl", pending && "opacity-90")} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold tracking-tight text-stone-900">Menu de la semaine</h2>
-            <p className="text-xs text-stone-500">Ajoute des repas sans les mettre dans une liste de courses : utile quand tu as déjà les ingrédients.</p>
+            <h2 className="text-lg font-bold tracking-tight text-stone-900">Planifier les repas</h2>
+            <p className="text-xs text-stone-500">Choisis un jour, puis ajoute des repas. Rien n'est ajouté à tes listes de courses.</p>
           </div>
           <button onClick={onClose} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label="Fermer">✕</button>
         </div>
 
-        <Section title={`Au menu (${visible.length + optimistic.length})`}>
-          {visible.length + optimistic.length === 0 ? (
-            <p className="text-xs text-stone-400">Rien pour l'instant.</p>
+        <div className="-mx-1 mt-4 flex gap-1.5 overflow-x-auto px-1 pb-1">
+          {days.map((d) => (
+            <button key={d} onClick={() => setDay(d)} className={cx("relative shrink-0 rounded-xl border px-3 py-1.5 text-[12px] font-semibold transition", d === day ? "border-brand-500 bg-brand-600 text-white" : "border-line text-stone-600 hover:bg-stone-100")}>
+              {label(d)}
+              {countOn(d) > 0 && <span className={cx("absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px]", d === day ? "bg-white text-brand-700" : "bg-brand-600 text-white")}>{countOn(d)}</span>}
+            </button>
+          ))}
+        </div>
+
+        <Section title={`Au menu · ${label(day)}`}>
+          {dayItems.length + dayOpt.length === 0 ? (
+            <p className="text-xs text-stone-400">Rien de prévu ce jour-là.</p>
           ) : (
             <div className="flex flex-wrap gap-1.5">
-              {visible.map((e) => (
-                <span key={e.key} className="flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1.5 text-[12px] font-medium text-brand-800">
-                  {e.icon ?? "🍽️"} {e.name}
-                  {e.id ? (
-                    <button aria-label={`Retirer ${e.name}`} onClick={() => { setRemoved((r) => [...r, e.id as string]); start(() => removeMenuItem(e.id as string)); }} className="text-brand-500 hover:text-rose-600">✕</button>
-                  ) : (
-                    <span title="Vient d'une liste de courses" className="text-[10px] text-brand-500">🛒</span>
-                  )}
+              {dayItems.map((m) => (
+                <span key={m.id} className="flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1.5 text-[12px] font-medium text-brand-800">
+                  {m.icon ?? "🍽️"} {m.name}
+                  <button aria-label={`Retirer ${m.name}`} onClick={() => { setRemoved((r) => [...r, m.id]); start(() => removeMenuItem(m.id)); }} className="text-brand-500 hover:text-rose-600">✕</button>
                 </span>
               ))}
-              {optimistic.map((o) => (
-                <span key={`o${o.name}`} className="rounded-full bg-brand-50 px-3 py-1.5 text-[12px] font-medium text-brand-800">{o.icon ?? "🍽️"} {o.name}</span>
-              ))}
+              {dayOpt.map((o) => <span key={`o${o.name}`} className="rounded-full bg-brand-50 px-3 py-1.5 text-[12px] font-medium text-brand-800">{o.icon ?? "🍽️"} {o.name}</span>)}
             </div>
           )}
         </Section>
@@ -85,7 +86,7 @@ export function MenuEditor({ data, weekStart, entries, onClose }: { data: Widget
           >
             <div className="flex flex-wrap gap-1.5">
               {lastCourse.recipes.map((r) => {
-                const on = inMenu.has(r.name.toLowerCase());
+                const on = inDay.has(r.name.toLowerCase());
                 return (
                   <button key={r.name} disabled={on} onClick={() => add([{ name: r.name, icon: r.icon }])} className={cx(chip, on && "cursor-default border-transparent bg-stone-100 text-stone-400 hover:bg-stone-100")}>
                     {r.icon ?? "🍽️"} {r.name} {on ? "✓" : "+"}
