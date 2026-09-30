@@ -27,6 +27,8 @@ export interface FinOp {
   active: boolean;
   note: string | null;
   account: string | null;
+  /** Renseigné pour un paiement réel reçu du Wallet (et non une opération planifiée). */
+  txn?: { id: string; time: string | null; card: string | null };
 }
 
 export interface Occurrence {

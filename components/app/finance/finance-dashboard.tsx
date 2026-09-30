@@ -241,7 +241,7 @@ function OccList({ items, onSkip, onDelete }: { items: Occurrence[]; onSkip?: (o
         <li key={i} className="group flex items-center gap-2 text-[12px]" title={tooltip(o)}>
           <span className="w-12 shrink-0 whitespace-nowrap text-[11px] text-stone-400">{fmtShort(o.date)}</span>
           <span className={cx("h-2 w-2 shrink-0 rounded-full", KIND_STYLE[o.op.kind].dot)} />
-          <span className="min-w-0 flex-1 truncate text-stone-700">{o.op.name}</span>
+          <span className="min-w-0 flex-1 truncate text-stone-700">{o.op.name}{o.op.txn && <span className="text-stone-400"> · {o.op.txn.time ?? "carte"}{o.op.txn.card ? ` · ${o.op.txn.card}` : ""}</span>}</span>
           {(onSkip || onDelete) && (
             <button
               onClick={() => (o.op.frequency !== "once" ? onSkip?.(o) : onDelete?.(o))}

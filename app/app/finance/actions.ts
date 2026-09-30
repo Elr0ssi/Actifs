@@ -78,7 +78,13 @@ export async function toggleOperationActive(table: OpTable, id: string, active: 
 }
 
 export async function deleteOperation(table: OpTable, id: string) {
-  const { supabase } = await ctx();
+  const { supabase, householdId } = await ctx();
+  if (id.startsWith("txn:")) {
+    // Paiement reçu du Wallet
+    if (householdId) await supabase.from("transactions").delete().eq("id", id.slice(4)).eq("household_id", householdId);
+    refresh();
+    return;
+  }
   await supabase.from(tableName(table)).delete().eq("id", id);
   refresh();
 }
@@ -178,4 +184,38 @@ export async function moveOccurrence(table: OpTable, id: string, rawDate: string
   else delete moved[rawDate];
   await supabase.from(tableName(table)).update({ moved_dates: moved }).eq("id", id).eq("household_id", householdId);
   refresh();
+}
+
+export async function setTransactionCategory(id: string, category: string) {
+  const { supabase, householdId } = await ctx();
+  if (!householdId) return;
+  await supabase.from("transactions").update({ category: category.slice(0, 60) }).eq("id", id).eq("household_id", householdId);
+  refresh();
+  revalidatePath("/app/finance/paiements");
+}
+
+export async function deleteTransaction(id: string) {
+  const { supabase, householdId } = await ctx();
+  if (!householdId) return;
+  await supabase.from("transactions").delete().eq("id", id).eq("household_id", householdId);
+  refresh();
+  revalidatePath("/app/finance/paiements");
+}
+
+/** Paiement de démonstration pour vérifier que tout est branché. */
+export async function addTestPayment() {
+  const { supabase, householdId, userId } = await ctx();
+  if (!householdId) return;
+  const now = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date());
+  const [date, time] = now.split(" ");
+  await supabase.from("transactions").insert({ household_id: householdId, label: "Paiement test", merchant: "Paiement test", amount: 1, kind: "expense", txn_date: date, txn_time: time, card: "Test", category: "Autre", source: "wallet", created_by: userId });
+  refresh();
+  revalidatePath("/app/finance/paiements");
+}
+
+export async function regenerateWalletToken() {
+  const { supabase, householdId } = await ctx();
+  if (!householdId) return;
+  await supabase.from("households").update({ wallet_token: crypto.randomUUID() }).eq("id", householdId);
+  revalidatePath("/app/finance/paiements");
 }

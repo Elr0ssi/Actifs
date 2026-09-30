@@ -249,7 +249,7 @@ function DayDetail({ date, ops, anchor, flow }: { date: string; ops: NonNullable
           {occ.map((o, i) => (
             <li key={i} className="group flex items-center gap-2 text-[12px]" title={KIND_LABEL[o.op.kind]}>
               <span className={cx("h-1.5 w-1.5 shrink-0 rounded-full", KIND_STYLE[o.op.kind].dot)} />
-              <span className="min-w-0 flex-1 truncate text-stone-700">{o.op.name}</span>
+              <span className="min-w-0 flex-1 truncate text-stone-700">{o.op.name}{o.op.txn && <span className="text-stone-400"> · {o.op.txn.time ?? "carte"}{o.op.txn.card ? ` · ${o.op.txn.card}` : ""}</span>}</span>
               <button onClick={() => remove(o)} title={o.op.frequency === "once" ? "Supprimer" : "Ignorer cette occurrence"} className="hidden text-stone-300 hover:text-rose-600 group-hover:block">
                 <Icon name="close" className="h-3 w-3" />
               </button>
@@ -348,7 +348,7 @@ function UpcomingList({ data, size, income }: WidgetProps & { income: boolean })
                 <Icon name={income ? "arrowIn" : "arrowOut"} className="h-3 w-3" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-medium text-stone-800">{o.op.name}</span>
+                <span className="block truncate font-medium text-stone-800">{o.op.name}{o.op.txn?.time && <span className="font-normal text-stone-400"> · {o.op.txn.time}</span>}</span>
                 <span className="block text-[10px] text-stone-400">{fmtShort(o.date)}</span>
               </span>
               <span className={cx("tabular shrink-0 font-semibold", income ? "text-emerald-600" : "text-rose-600")}>{income ? "+" : "-"}{formatEUR(o.op.amount)}</span>

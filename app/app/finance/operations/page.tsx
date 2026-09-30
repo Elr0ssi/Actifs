@@ -12,7 +12,7 @@ const ORDER: OpKind[] = ["income", "fixed", "variable", "savings"];
 export default async function OperationsPage({ searchParams }: { searchParams: { tri?: string } }) {
   const data = await loadFinanceData();
   if (!data) return null;
-  const { ops } = data;
+  const ops = data.ops.filter((o) => !o.txn);
   const today = todayISO();
   const byDate = searchParams.tri === "date";
 
