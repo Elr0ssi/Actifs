@@ -11,6 +11,8 @@ import { ToggleCheckbox } from "@/components/app/toggle-checkbox";
 import { Icon } from "@/components/app/icons";
 import { WidgetShell, Empty, Segmented } from "@/components/app/widgets/shell";
 import { DOW, eur0, fmtLong, fmtShort, scheduledOn, weekday } from "@/components/app/widgets/helpers";
+import { CalendarGrid, CalendarNav, calRange, type CalItem, type CalView } from "@/components/app/widgets/calendar-grid";
+import { TaskRow } from "@/components/app/widgets/tasks";
 import type { WidgetProps } from "@/components/app/widgets/types";
 import type { Task } from "@/lib/types";
 
@@ -95,21 +97,37 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
   const fin = (opts.fin as FinFilter) ?? "all";
   const showTasks = opts.tasks !== false;
   const showRoutines = opts.routines !== false;
+  const [view, setView] = useState<CalView>((opts.view as CalView) ?? "month");
   const done = useLogIndex(data);
   const [selected, setSelected] = useState(data.today);
-  const [cursor, setCursor] = useState({ y: Number(data.today.slice(0, 4)), m: Number(data.today.slice(5, 7)) - 1 });
-  const { start, end } = monthBounds(cursor.y, cursor.m);
-  const gridStart = addDays(start, -((weekday(start) + 6) % 7));
-  const gridEnd = addDays(end, (7 - weekday(end)) % 7);
-  const { tasksBy, finBy } = useDayIndex(data, gridStart, gridEnd, fin);
-  const days: string[] = [];
-  for (let d = gridStart; d <= gridEnd; d = addDays(d, 1)) days.push(d);
-  const nav = (delta: number) => {
-    const d = new Date(Date.UTC(cursor.y, cursor.m + delta, 1));
-    setCursor({ y: d.getUTCFullYear(), m: d.getUTCMonth() });
-  };
+  const [anchor, setAnchor] = useState(data.today);
+  const projectOf = useMemo(() => new Map(data.projects.map((p) => [p.id, p])), [data.projects]);
+  const { from, to } = calRange(view, anchor);
+  const { tasksBy, finBy } = useDayIndex(data, from, to, fin);
   const wide = size !== "m";
   const chip = (on: boolean) => cx("rounded-full border px-2.5 py-1 text-[11px] font-medium transition", on ? "border-brand-300 bg-brand-50 text-brand-700" : "border-line bg-white text-stone-400 hover:text-stone-700");
+  const changeView = (v: CalView) => {
+    setView(v);
+    setOpts({ view: v });
+  };
+
+  const itemsFor = (d: string): CalItem[] => {
+    const items: CalItem[] = [];
+    if (showTasks) {
+      for (const t of tasksBy.get(d) ?? []) items.push({ key: `t${t.id}`, label: t.title, tone: "task", done: t.status === "done", color: (t.project_id && projectOf.get(t.project_id)?.color) || undefined });
+    }
+    if (showRoutines) {
+      for (const r of data.routines) if (scheduledOn(r, d)) items.push({ key: `r${r.id}`, label: r.title, tone: "routine", done: done.has(`${r.id}_${d}`) });
+    }
+    const occ = finBy.get(d) ?? [];
+    if (view === "week") {
+      for (const [i, o] of occ.entries()) items.push({ key: `f${o.op.id}${i}`, label: o.op.name, tone: o.signed > 0 ? "in" : "out", amount: `${o.signed > 0 ? "+" : "-"}${eur0(Math.abs(o.signed))}` });
+    } else if (occ.length > 0) {
+      const net = occ.reduce((s, o) => s + o.signed, 0);
+      items.push({ key: `f${d}`, label: occ.length > 1 ? `${occ.length} flux` : occ[0].op.name, tone: net >= 0 ? "in" : "out", amount: `${net >= 0 ? "+" : "-"}${eur0(Math.abs(net))}` });
+    }
+    return items;
+  };
 
   const selTasks = showTasks ? tasksBy.get(selected) ?? [] : [];
   const selRoutines = showRoutines ? data.routines.filter((r) => scheduledOn(r, selected)) : [];
@@ -122,53 +140,18 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
         <button onClick={() => setOpts({ routines: !showRoutines })} className={chip(showRoutines)}>Routines</button>
         <Segmented<FinFilter> value={fin} onChange={(v) => setOpts({ fin: v })} options={[{ v: "all", l: "Tous flux" }, { v: "in", l: "Entrées" }, { v: "out", l: "Sorties" }, { v: "off", l: "Sans argent" }]} />
       </div>
-      <div className={cx("grid gap-4", wide && "lg:grid-cols-[minmax(0,1fr)_240px]")}>
+      <div className={cx("grid gap-4", wide && "lg:grid-cols-[minmax(0,1fr)_260px]")}>
         <div className="flex min-w-0 flex-col">
-          <div className="mb-2 flex items-center justify-between">
-            <button onClick={() => nav(-1)} className="rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-800"><Icon name="chevronLeft" /></button>
-            <p className="text-[13px] font-semibold text-stone-800">{MONTHS_FR[cursor.m]} {cursor.y}</p>
-            <button onClick={() => nav(1)} className="rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-800"><Icon name="chevronRight" /></button>
-          </div>
-          <div className="grid grid-cols-7 text-center text-[10px] font-medium text-stone-400">
-            {DOW.map((d) => <div key={d} className="pb-1.5">{wide ? d : d[0]}</div>)}
-          </div>
-          <div className="grid grid-cols-7 overflow-hidden rounded-xl border border-line">
-            {days.map((d) => {
-              const outside = d < start || d > end;
-              const tasks = showTasks ? tasksBy.get(d) ?? [] : [];
-              const routines = showRoutines ? data.routines.filter((r) => scheduledOn(r, d)) : [];
-              const routinesDone = routines.filter((r) => done.has(`${r.id}_${d}`)).length;
-              const occ = finBy.get(d) ?? [];
-              const net = occ.reduce((s, o) => s + o.signed, 0);
-              return (
-                <button
-                  key={d}
-                  onClick={() => { setSelected(d); if (outside) setCursor({ y: Number(d.slice(0, 4)), m: Number(d.slice(5, 7)) - 1 }); }}
-                  className={cx(
-                    "flex min-w-0 flex-col items-center gap-0.5 border-b border-r border-line/70 px-0.5 py-1.5 transition hover:bg-brand-50/50",
-                    wide ? "min-h-[58px]" : "min-h-[40px]",
-                    outside && "bg-stone-50/70",
-                    d === selected && "bg-brand-50 ring-1 ring-inset ring-brand-300"
-                  )}
-                >
-                  <span className={cx("flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-medium", d === data.today ? "bg-brand-600 text-white" : outside ? "text-stone-300" : "text-stone-700")}>
-                    {Number(d.slice(-2))}
-                  </span>
-                  <span className="flex gap-0.5">
-                    {tasks.length > 0 && <span className="h-1.5 w-1.5 rounded-full bg-sky-500" title={`${tasks.length} tâche(s)`} />}
-                    {routines.length > 0 && d <= data.today && <span className={cx("h-1.5 w-1.5 rounded-full", routinesDone === routines.length ? "bg-emerald-500" : "bg-emerald-200")} />}
-                  </span>
-                  {wide && occ.length > 0 && <span className={cx("tabular hidden max-w-full truncate text-[10px] font-semibold sm:block", net >= 0 ? "text-emerald-600" : "text-rose-600")}>{net >= 0 ? "+" : "-"}{eur0(Math.abs(net))}</span>}
-                  {occ.length > 0 && <span className={cx("h-1 w-3 rounded-full", wide && "sm:hidden", net >= 0 ? "bg-emerald-400" : "bg-rose-400")} />}
-                </button>
-              );
-            })}
-          </div>
-          <div className="mt-2 flex flex-wrap gap-3 text-[10px] text-stone-400">
-            <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-sky-500" />Tâches</span>
-            <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Routines faites</span>
-            <span className="flex items-center gap-1"><span className="h-1 w-3 rounded-full bg-rose-400" />Flux d'argent</span>
-          </div>
+          <CalendarNav view={view} anchor={anchor} onView={changeView} onAnchor={setAnchor} onToday={() => { setAnchor(data.today); setSelected(data.today); }} />
+          <CalendarGrid
+            view={view}
+            anchor={anchor}
+            today={data.today}
+            selected={selected}
+            wide={wide}
+            itemsFor={itemsFor}
+            onSelect={(d) => { setSelected(d); if (view === "month" && d.slice(0, 7) !== anchor.slice(0, 7)) setAnchor(d); }}
+          />
         </div>
         <div className="min-w-0 rounded-xl border border-line bg-stone-50/50 p-3">
           <p className="text-[12px] font-semibold capitalize text-stone-800">{fmtLong(selected)}</p>
@@ -176,9 +159,7 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
           {selTasks.length > 0 && (
             <div className="mt-2">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400">Tâches</p>
-              {selTasks.map((t) => (
-                <ToggleCheckbox key={`${t.id}-${t.status}`} initialChecked={t.status === "done"} onToggle={toggleTaskStatus.bind(null, t.id)} label={t.title} sublabel={t.due_time?.slice(0, 5) ?? undefined} />
-              ))}
+              {selTasks.map((t) => <TaskRow key={t.id} task={t} today={data.today} project={t.project_id ? projectOf.get(t.project_id) : undefined} />)}
             </div>
           )}
           {selRoutines.length > 0 && (

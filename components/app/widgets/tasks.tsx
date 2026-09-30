@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { addDays, monthBounds } from "@/lib/finance-engine";
-import { cx, MONTHS_FR } from "@/lib/utils";
+import { cx } from "@/lib/utils";
 import { toggleTaskStatus, quickAddTask } from "@/app/app/actions";
 import { createTask } from "@/app/app/tasks/actions";
 import { Icon } from "@/components/app/icons";
 import { WidgetShell, Empty, Segmented } from "@/components/app/widgets/shell";
-import { DOW, PRIORITY_RANK, fmtLong, fmtShort, isDone, mondayOf } from "@/components/app/widgets/helpers";
+import { PRIORITY_RANK, fmtLong, fmtShort, isDone } from "@/components/app/widgets/helpers";
+import { CalendarGrid, CalendarNav, type CalItem, type CalView } from "@/components/app/widgets/calendar-grid";
 import type { WidgetProps } from "@/components/app/widgets/types";
 import type { Task } from "@/lib/types";
 
@@ -124,19 +124,14 @@ export function TasksList({ data, size }: WidgetProps) {
 
 /* ---------- Calendrier des tâches (uniquement tâches et projets) ---------- */
 
-export function TasksCalendar({ data, size }: WidgetProps) {
+export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
   const [selected, setSelected] = useState(data.today);
-  const [cursor, setCursor] = useState({ y: Number(data.today.slice(0, 4)), m: Number(data.today.slice(5, 7)) - 1 });
+  const [anchor, setAnchor] = useState(data.today);
+  const [view, setView] = useState<CalView>((opts.view as CalView) ?? "month");
   const [projectFilter, setProjectFilter] = useState("");
   const [formKey, setFormKey] = useState(0);
   const [pending, start] = useTransition();
   const projectOf = useMemo(() => new Map(data.projects.map((p) => [p.id, p])), [data.projects]);
-
-  const { start: mStart, end: mEnd } = monthBounds(cursor.y, cursor.m);
-  const gridStart = mondayOf(mStart);
-  const gridEnd = addDays(mondayOf(mEnd), 6);
-  const days: string[] = [];
-  for (let d = gridStart; d <= gridEnd; d = addDays(d, 1)) days.push(d);
 
   const byDate = useMemo(() => {
     const map = new Map<string, Task[]>();
@@ -147,9 +142,12 @@ export function TasksCalendar({ data, size }: WidgetProps) {
     return map;
   }, [data.tasks, projectFilter]);
 
-  const nav = (delta: number) => {
-    const d = new Date(Date.UTC(cursor.y, cursor.m + delta, 1));
-    setCursor({ y: d.getUTCFullYear(), m: d.getUTCMonth() });
+  const itemsFor = (d: string): CalItem[] =>
+    (byDate.get(d) ?? []).map((t) => ({ key: t.id, label: t.title, tone: "task", done: isDone(t), color: (t.project_id && projectOf.get(t.project_id)?.color) || undefined }));
+
+  const changeView = (v: CalView) => {
+    setView(v);
+    setOpts({ view: v });
   };
   const wide = size !== "m";
   const dayTasks = byDate.get(selected) ?? [];
@@ -171,61 +169,22 @@ export function TasksCalendar({ data, size }: WidgetProps) {
     >
       <div className={cx("grid h-full gap-4", wide && "lg:grid-cols-[minmax(0,1fr)_280px]")}>
         <div className="flex min-w-0 flex-col">
-          <div className="mb-2 flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <button onClick={() => nav(-1)} className="rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label="Mois précédent"><Icon name="chevronLeft" /></button>
-              <p className="min-w-[120px] text-center text-[13px] font-semibold text-stone-800">{MONTHS_FR[cursor.m]} {cursor.y}</p>
-              <button onClick={() => nav(1)} className="rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label="Mois suivant"><Icon name="chevronRight" /></button>
-            </div>
-            <button
-              onClick={() => { setSelected(data.today); setCursor({ y: Number(data.today.slice(0, 4)), m: Number(data.today.slice(5, 7)) - 1 }); }}
-              className="btn-secondary px-2.5 py-1 text-[11px]"
-            >
-              Aujourd'hui
-            </button>
-          </div>
-          <div className="grid grid-cols-7 text-center text-[10px] font-medium text-stone-400">
-            {DOW.map((d) => <div key={d} className="pb-1.5">{wide ? d : d[0]}</div>)}
-          </div>
-          <div className="grid flex-1 auto-rows-fr grid-cols-7 overflow-hidden rounded-xl border border-line">
-            {days.map((d) => {
-              const tasks = byDate.get(d) ?? [];
-              const outside = d < mStart || d > mEnd;
-              const open = tasks.filter((t) => !isDone(t)).length;
-              return (
-                <button
-                  key={d}
-                  onClick={() => { setSelected(d); if (outside) setCursor({ y: Number(d.slice(0, 4)), m: Number(d.slice(5, 7)) - 1 }); }}
-                  className={cx(
-                    "flex min-w-0 flex-col items-stretch gap-0.5 border-b border-r border-line/70 p-1 text-left transition hover:bg-brand-50/50",
-                    wide ? "min-h-[76px]" : "min-h-[44px] items-center",
-                    outside && "bg-stone-50/70",
-                    d === selected && "bg-brand-50 ring-1 ring-inset ring-brand-300"
-                  )}
-                >
-                  <span className={cx("flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-medium", d === data.today ? "bg-brand-600 text-white" : outside ? "text-stone-300" : "text-stone-700")}>
-                    {Number(d.slice(-2))}
-                  </span>
-                  {wide ? (
-                    <>
-                      {tasks.slice(0, 2).map((t) => (
-                        <span
-                          key={t.id}
-                          className={cx("truncate rounded-[4px] border-l-2 bg-white/80 px-1 text-[10px] leading-[16px]", isDone(t) ? "text-stone-300 line-through" : "text-stone-700")}
-                          style={{ borderLeftColor: (t.project_id && projectOf.get(t.project_id)?.color) || "#d6cfc6" }}
-                        >
-                          {t.title}
-                        </span>
-                      ))}
-                      {tasks.length > 2 && <span className="text-[10px] text-stone-400">+{tasks.length - 2}</span>}
-                    </>
-                  ) : (
-                    tasks.length > 0 && <span className={cx("h-1.5 w-1.5 rounded-full", open ? "bg-brand-500" : "bg-stone-300")} />
-                  )}
-                </button>
-              );
-            })}
-          </div>
+          <CalendarNav
+            view={view}
+            anchor={anchor}
+            onView={changeView}
+            onAnchor={setAnchor}
+            onToday={() => { setAnchor(data.today); setSelected(data.today); }}
+          />
+          <CalendarGrid
+            view={view}
+            anchor={anchor}
+            today={data.today}
+            selected={selected}
+            wide={wide}
+            itemsFor={itemsFor}
+            onSelect={(d) => { setSelected(d); if (view === "month" && d.slice(0, 7) !== anchor.slice(0, 7)) setAnchor(d); }}
+          />
         </div>
 
         <div className={cx("min-w-0 rounded-xl border border-line bg-stone-50/50 p-3", pending && "opacity-60")}>

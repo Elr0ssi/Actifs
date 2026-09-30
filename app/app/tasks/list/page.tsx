@@ -81,7 +81,7 @@ export default async function TasksPage() {
                 <ToggleCheckbox
                   key={r.id}
                   initialChecked={doneRoutineIds.has(r.id)}
-                  onToggle={(checked) => toggleRoutineLog(r.id, today, checked)}
+                  onToggle={toggleRoutineLog.bind(null, r.id, today)}
                   label={r.title}
                   sublabel={r.category ?? undefined}
                 />
