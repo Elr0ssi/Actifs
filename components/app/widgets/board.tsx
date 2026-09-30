@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { saveWidgetLayout } from "@/app/app/widget-actions";
 import {
   DEFAULT_LAYOUTS,
@@ -20,6 +20,7 @@ import {
 import type { WidgetData } from "@/lib/data/widgets";
 import { cx, MONTHS_FR } from "@/lib/utils";
 import { monthBounds } from "@/lib/finance-engine";
+import { sampleWidgetData } from "@/lib/widgets/sample";
 import { Icon } from "@/components/app/icons";
 import { WidgetPageContext, WidgetSizeContext } from "@/components/app/widgets/shell";
 import { Projects, VocabQuiz, VocabStats } from "@/components/app/widgets/sections";
@@ -194,7 +195,7 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
         })}
       </div>
 
-      {drawer && <WidgetDrawer page={page} items={items} onAdd={add} onClose={() => setDrawer(false)} />}
+      {drawer && <WidgetDrawer page={page} today={data.realToday ?? data.today} items={items} onAdd={add} onClose={() => setDrawer(false)} />}
     </div>
     </WidgetPageContext.Provider>
   );
@@ -210,12 +211,46 @@ function SizePreview({ size }: { size: WidgetSize }) {
   );
 }
 
-function WidgetDrawer({ page, items, onAdd, onClose }: { page: WidgetPage; items: WidgetItem[]; onAdd: (t: WidgetType, s: WidgetSize) => void; onClose: () => void }) {
+const PREVIEW_COLS: Record<WidgetSize, number> = { s: 1, m: 2, l: 3, xl: 4 };
+const PREVIEW_W = 316;
+
+/** Vrai rendu du widget (données d'exemple), réduit et non cliquable, à la largeur qu'il aurait sur la page. */
+function WidgetPreview({ type, size, data }: { type: WidgetType; size: WidgetSize; data: WidgetData }) {
+  const Comp = RENDER[type];
+  const cols = PREVIEW_COLS[size];
+  const full = 290 * cols + 16 * (cols - 1);
+  const scale = Math.min(1, PREVIEW_W / full);
+  const inner = useRef<HTMLDivElement>(null);
+  const [h, setH] = useState(200);
+  useEffect(() => {
+    const el = inner.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setH(el.offsetHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <div className="relative mt-3 overflow-hidden rounded-xl border border-line bg-canvas" style={{ height: Math.min(h * scale + 16, 200) }} aria-hidden>
+      <div className="pointer-events-none absolute left-2 top-2 origin-top-left select-none" style={{ width: full, transform: `scale(${scale * 0.96})` }}>
+        <div ref={inner}>
+          <WidgetSizeContext.Provider value={size}>
+            <Comp data={data} size={size} opts={{}} setOpts={() => {}} />
+          </WidgetSizeContext.Provider>
+        </div>
+      </div>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-canvas to-transparent" />
+      <span className="absolute right-1.5 top-1.5 rounded-full bg-surface/90 px-1.5 py-px text-[9px] font-medium text-stone-400">exemple</span>
+    </div>
+  );
+}
+
+function WidgetDrawer({ page, today, items, onAdd, onClose }: { page: WidgetPage; today: string; items: WidgetItem[]; onAdd: (t: WidgetType, s: WidgetSize) => void; onClose: () => void }) {
   const allowed = PAGE_SECTIONS[page];
   const [section, setSection] = useState<WidgetSection | "all">("all");
   const [sizes, setSizes] = useState<Partial<Record<WidgetType, WidgetSize>>>({});
   const [justAdded, setJustAdded] = useState<WidgetType | null>(null);
   const list = WIDGETS.filter((w) => allowed.includes(w.section) && (section === "all" || w.section === section));
+  const sample = useMemo(() => sampleWidgetData(today), [today]);
 
   return (
     <>
@@ -253,6 +288,7 @@ function WidgetDrawer({ page, items, onAdd, onClose }: { page: WidgetPage; items
                     <p className="mt-0.5 text-[11px] leading-snug text-stone-500">{w.description}</p>
                   </div>
                 </div>
+                <WidgetPreview type={w.type} size={chosen} data={sample} />
                 <div className="mt-3 flex items-center justify-between gap-2">
                   <div className="flex gap-1">
                     {w.sizes.map((s) => (
