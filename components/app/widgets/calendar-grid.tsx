@@ -5,9 +5,9 @@ import { addDays, monthBounds } from "@/lib/finance-engine";
 import { cx, MONTHS_FR } from "@/lib/utils";
 import { Icon } from "@/components/app/icons";
 import { Segmented } from "@/components/app/widgets/shell";
-import { DOW, fmtShort, mondayOf } from "@/components/app/widgets/helpers";
+import { DOW, fmtLong, fmtShort, mondayOf } from "@/components/app/widgets/helpers";
 
-export type CalView = "month" | "week";
+export type CalView = "month" | "week" | "day";
 
 /**
  * Maintenir le clic (ou le doigt) et glisser à gauche / droite pour changer de période, comme un carrousel.
@@ -73,10 +73,13 @@ export interface CalItem {
   time?: string;
   /** Si présent, une pastille permet de cocher / décocher directement dans la case du calendrier. */
   onToggle?: () => void;
+  /** Si présent, la pastille peut être glissée sur un autre jour du mois. */
+  dragId?: string;
 }
 
 /** Plage de jours réellement affichée pour une vue et une date d'ancrage. */
 export function calRange(view: CalView, anchor: string) {
+  if (view === "day") return { from: anchor, to: anchor };
   if (view === "week") {
     const from = mondayOf(anchor);
     return { from, to: addDays(from, 6) };
@@ -88,6 +91,7 @@ export function calRange(view: CalView, anchor: string) {
 }
 
 export function calTitle(view: CalView, anchor: string) {
+  if (view === "day") return fmtLong(anchor);
   if (view === "week") {
     const { from, to } = calRange("week", anchor);
     return `${fmtShort(from)} – ${fmtShort(to)}`;
@@ -96,6 +100,7 @@ export function calTitle(view: CalView, anchor: string) {
 }
 
 export function calShift(view: CalView, anchor: string, delta: number) {
+  if (view === "day") return addDays(anchor, delta);
   if (view === "week") return addDays(anchor, 7 * delta);
   const d = new Date(Date.UTC(Number(anchor.slice(0, 4)), Number(anchor.slice(5, 7)) - 1 + delta, 1));
   return d.toISOString().slice(0, 10);
@@ -107,7 +112,9 @@ export function CalendarNav({
   onView,
   onAnchor,
   onToday,
+  views = ["month", "week"],
 }: {
+  views?: CalView[];
   view: CalView;
   anchor: string;
   onView: (v: CalView) => void;
@@ -127,7 +134,7 @@ export function CalendarNav({
       </div>
       <div className="flex items-center gap-2">
         <button type="button" onClick={onToday} className="btn-secondary px-2.5 py-1 text-[11px]">Aujourd'hui</button>
-        <Segmented<CalView> value={view} onChange={onView} options={[{ v: "month", l: "Mois" }, { v: "week", l: "Semaine" }]} />
+        <Segmented<CalView> value={view} onChange={onView} options={[{ v: "day" as CalView, l: "Jour" }, { v: "week" as CalView, l: "Semaine" }, { v: "month" as CalView, l: "Mois" }].filter((o) => views.includes(o.v))} />
       </div>
     </div>
   );
@@ -155,12 +162,14 @@ function Check({ done, onToggle, label }: { done?: boolean; onToggle: () => void
 
 const tint = (color?: string) => (color && color.startsWith("#") ? `${color}1f` : "rgb(var(--brand-500) / 0.1)");
 
-function Chip({ item }: { item: CalItem }) {
+export function Chip({ item }: { item: CalItem }) {
   const base = "flex min-w-0 items-center gap-1 rounded-md px-1 py-px text-[10px] leading-[16px]";
   if (item.tone === "task") {
     return (
       <span
-        className={cx(base, "border-l-2", item.done && "opacity-60")}
+        draggable={!!item.dragId}
+        onDragStart={(e) => { if (item.dragId) { e.dataTransfer.setData("text/task-id", item.dragId); e.dataTransfer.effectAllowed = "move"; } }}
+        className={cx(base, "border-l-2", item.dragId && "cursor-grab active:cursor-grabbing", item.done && "opacity-60")}
         style={{ borderLeftColor: item.color || "rgb(var(--brand-500))", background: tint(item.color) }}
         title={item.label}
       >
@@ -213,7 +222,9 @@ export function CalendarGrid({
   itemsFor,
   onSelect,
   onShift,
+  onDropItem,
 }: {
+  onDropItem?: (day: string, id: string) => void;
   view: CalView;
   anchor: string;
   today: string;
@@ -245,6 +256,11 @@ export function CalendarGrid({
               role="button"
               tabIndex={0}
               onClick={() => { if (!nav.consumeClick()) onSelect(d); }}
+              onDragOver={(e) => { if (onDropItem) e.preventDefault(); }}
+              onDrop={(e) => {
+                const id = e.dataTransfer.getData("text/task-id");
+                if (onDropItem && id) { e.preventDefault(); onDropItem(d, id); }
+              }}
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(d); } }}
               className={cx(
                 "flex min-w-0 cursor-pointer flex-col gap-0.5 border-b border-r border-line/70 p-1 text-left transition hover:bg-brand-50/50",

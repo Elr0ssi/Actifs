@@ -38,8 +38,8 @@ export function sampleWidgetData(today: string): WidgetData {
     },
     tasks: [
       task("t1", "Rendez-vous dentiste", 0, "p1", "todo", "14:30"),
-      task("t2", "Envoyer le devis", 1, "p1"),
-      task("t3", "Réserver le week-end", 2, "p2"),
+      task("t2", "Envoyer le devis", 1, "p1", "todo", "10:00"),
+      task("t3", "Réserver le week-end", 2, "p2", "todo", "15:00"),
       task("t4", "Appeler la banque", -1, null),
       task("t5", "Ranger le bureau", 4, null),
       task("t6", "Payer l'assurance", -2, null, "done"),

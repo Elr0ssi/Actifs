@@ -21,6 +21,7 @@ export interface Task {
   status: TaskStatus;
   due_date: string | null;
   due_time: string | null;
+  due_end?: string | null;
   assigned_to: string | null;
   created_by: string | null;
   created_at: string;

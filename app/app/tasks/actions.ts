@@ -36,6 +36,7 @@ export async function createTask(formData: FormData) {
   const priority = String(formData.get("priority") || "medium") as TaskPriority;
   const dueDate = String(formData.get("due_date") || "") || null;
   const dueTime = String(formData.get("due_time") || "") || null;
+  const dueEnd = dueTime && String(formData.get("due_end") || "") > dueTime ? String(formData.get("due_end")) : null;
   if (!title) return;
   const { supabase, householdId, userId } = await getHouseholdId();
   if (!householdId) return;
@@ -46,6 +47,7 @@ export async function createTask(formData: FormData) {
     priority,
     due_date: dueDate,
     due_time: dueTime,
+    due_end: dueEnd,
     status: "todo",
     created_by: userId,
   });
@@ -56,6 +58,26 @@ export async function createTask(formData: FormData) {
 export async function deleteTask(taskId: string) {
   const { supabase } = await getHouseholdId();
   await supabase.from("tasks").delete().eq("id", taskId);
+  revalidatePath("/app/tasks", "layout");
+  revalidatePath("/app");
+}
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE = /^\d{2}:\d{2}$/;
+
+/** Enregistre un rendez-vous / une tâche placée dans l'agenda (jour, heure de début et de fin) et ses infos principales. */
+export async function saveTask(taskId: string, v: { title?: string; project_id?: string | null; due_date?: string | null; due_time?: string | null; due_end?: string | null }) {
+  const { supabase, householdId } = await getHouseholdId();
+  if (!householdId) return;
+  const patch: Record<string, string | null> = {};
+  if (typeof v.title === "string" && v.title.trim()) patch.title = v.title.trim().slice(0, 300);
+  if (v.project_id !== undefined) patch.project_id = v.project_id || null;
+  if (v.due_date !== undefined) patch.due_date = v.due_date && DATE_RE.test(v.due_date) ? v.due_date : null;
+  if (v.due_time !== undefined) patch.due_time = v.due_time && TIME_RE.test(v.due_time) ? v.due_time : null;
+  if (v.due_end !== undefined) patch.due_end = v.due_end && TIME_RE.test(v.due_end) ? v.due_end : null;
+  if (patch.due_time === null) patch.due_end = null;
+  if (patch.due_time && patch.due_end && patch.due_end <= patch.due_time) patch.due_end = null;
+  await supabase.from("tasks").update(patch).eq("id", taskId).eq("household_id", householdId);
   revalidatePath("/app/tasks", "layout");
   revalidatePath("/app");
 }

@@ -3,11 +3,14 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { cx } from "@/lib/utils";
 import { toggleTaskStatus, quickAddTask } from "@/app/app/actions";
-import { createTask } from "@/app/app/tasks/actions";
+import { createTask, deleteTask, saveTask } from "@/app/app/tasks/actions";
 import { Icon } from "@/components/app/icons";
 import { WidgetShell, Empty, Segmented } from "@/components/app/widgets/shell";
 import { PRIORITY_RANK, fmtLong, fmtShort, isDone } from "@/components/app/widgets/helpers";
-import { CalendarGrid, CalendarNav, CheckRow, calShift, type CalItem, type CalView } from "@/components/app/widgets/calendar-grid";
+import { CalendarGrid, CalendarNav, CheckRow, calRange, calShift, type CalItem, type CalView } from "@/components/app/widgets/calendar-grid";
+import { TimeGrid, fmtMin, type TimeEvent } from "@/components/app/widgets/time-grid";
+import { TaskEditor, type EditorValues } from "@/components/app/widgets/task-editor";
+import { addDays } from "@/lib/finance-engine";
 import { useAgendaToggles } from "@/components/app/widgets/agenda-state";
 import type { WidgetProps } from "@/components/app/widgets/types";
 import type { Task } from "@/lib/types";
@@ -128,39 +131,70 @@ export function TasksList({ data, size }: WidgetProps) {
 export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
   const [selected, setSelected] = useState(data.today);
   const [anchor, setAnchor] = useState(data.today);
-  const [view, setView] = useState<CalView>((opts.view as CalView) ?? "month");
+  const [view, setView] = useState<CalView>(opts.view === "day" || opts.view === "week" || opts.view === "month" ? opts.view : "week");
   const [projectFilter, setProjectFilter] = useState("");
   const [formKey, setFormKey] = useState(0);
   const [adding, setAdding] = useState(false);
   const [pending, start] = useTransition();
+  type Sched = { date: string | null; time: string | null; end: string | null };
+  const [sched, setSched] = useState<Record<string, Sched>>({});
+  const [editor, setEditor] = useState<{ id?: string; values: EditorValues } | null>(null);
+  useEffect(() => setSched({}), [data.tasks]);
   const showTasks = opts.tasks !== false;
   const showRoutines = opts.routines !== false;
   const toggles = useAgendaToggles(data);
   const projectOf = useMemo(() => new Map(data.projects.map((p) => [p.id, p])), [data.projects]);
 
+  const schedOf = (t: Task): Sched => sched[t.id] ?? { date: t.due_date, time: t.due_time ? t.due_time.slice(0, 5) : null, end: t.due_end ? t.due_end.slice(0, 5) : null };
+  const toMin = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
+
   const byDate = useMemo(() => {
     const map = new Map<string, Task[]>();
     for (const t of data.tasks) {
-      if (!t.due_date || (projectFilter && t.project_id !== projectFilter)) continue;
-      map.set(t.due_date, [...(map.get(t.due_date) ?? []), t]);
+      const date = sched[t.id] ? sched[t.id].date : t.due_date;
+      if (!date || (projectFilter && t.project_id !== projectFilter)) continue;
+      map.set(date, [...(map.get(date) ?? []), t]);
     }
-    for (const list of map.values()) list.sort((a, b) => (a.due_time ?? "99:99").localeCompare(b.due_time ?? "99:99"));
+    for (const list of map.values()) list.sort((a, b) => ((sched[a.id]?.time ?? a.due_time) ?? "99:99").localeCompare((sched[b.id]?.time ?? b.due_time) ?? "99:99"));
     return map;
-  }, [data.tasks, projectFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.tasks, projectFilter, sched]);
 
+  const persist = (id: string, next: Sched) => {
+    setSched((s) => ({ ...s, [id]: next }));
+    start(() => saveTask(id, { due_date: next.date, due_time: next.time, due_end: next.end }));
+  };
+  const eventFor = (t: Task): TimeEvent | null => {
+    const sc = schedOf(t);
+    if (!sc.date || !sc.time) return null;
+    const startMin = toMin(sc.time);
+    const endMin = sc.end && toMin(sc.end) > startMin ? toMin(sc.end) : Math.min(1440, startMin + 60);
+    return { id: t.id, day: sc.date, startMin, endMin, title: t.title, color: (t.project_id && projectOf.get(t.project_id)?.color) || undefined, done: toggles.taskDone(t) };
+  };
+  const openCreate = (date: string, startMin?: number, endMin?: number) =>
+    setEditor({ values: { title: "", date, start: startMin === undefined ? "" : fmtMin(startMin), end: endMin === undefined ? "" : fmtMin(endMin), projectId: projectFilter } });
+  const openEdit = (t: Task) => {
+    const sc = schedOf(t);
+    setEditor({ id: t.id, values: { title: t.title, date: sc.date ?? data.today, start: sc.time ?? "", end: sc.end ?? "", projectId: t.project_id ?? "" } });
+  };
+
+  const timeView = view === "day" || view === "week";
   const itemsFor = (d: string): CalItem[] => {
     const items: CalItem[] = [];
     if (showTasks) {
-      for (const t of byDate.get(d) ?? [])
+      for (const t of byDate.get(d) ?? []) {
+        if (timeView && schedOf(t).time) continue; // affichées dans la grille horaire
         items.push({
           key: t.id,
           label: t.title,
           tone: "task",
           done: toggles.taskDone(t),
           color: (t.project_id && projectOf.get(t.project_id)?.color) || undefined,
-          time: t.due_time?.slice(0, 5),
+          time: schedOf(t).time ?? undefined,
           onToggle: () => toggles.toggleTask(t),
+          dragId: t.id,
         });
+      }
     }
     if (showRoutines) {
       for (const r of toggles.routinesOn(d))
@@ -186,34 +220,53 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
       title="Agenda"
       subtitle={wide ? "Tes tâches et tes routines au même endroit : coche directement dans le calendrier" : undefined}
       right={
-        data.projects.length > 0 ? (
+        <div className="flex items-center gap-1.5">
+          <button type="button" onClick={() => openCreate(timeView && view === "day" ? anchor : selected)} className="btn-primary px-2.5 py-1 text-[11px]"><Icon name="plus" className="h-3 w-3" />Tâche</button>
+          {data.projects.length > 0 && (
           <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className="max-w-[130px] rounded-md border border-line bg-surface px-1.5 py-1 text-[11px] text-stone-600">
             <option value="">Tous les projets</option>
             {data.projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
-        ) : undefined
+          )}
+        </div>
       }
     >
       <div className="mb-3 flex flex-wrap items-center gap-1.5">
         <button type="button" onClick={() => setOpts({ tasks: !showTasks })} className={chip(showTasks)}>Tâches</button>
         <button type="button" onClick={() => setOpts({ routines: !showRoutines })} className={chip(showRoutines)}>Routines</button>
       </div>
-      <div className={cx("grid gap-4", wide && "lg:grid-cols-[minmax(0,1fr)_290px]")}>
+      <div className={cx("grid gap-4", wide && !timeView && "lg:grid-cols-[minmax(0,1fr)_290px]")}>
         <div className="flex min-w-0 flex-col">
-          <CalendarNav view={view} anchor={anchor} onView={changeView} onAnchor={setAnchor} onToday={() => { setAnchor(data.today); setSelected(data.today); }} />
-          <CalendarGrid
-            view={view}
-            anchor={anchor}
-            today={data.today}
-            selected={selected}
-            wide={wide}
-            itemsFor={itemsFor}
-            onSelect={(d) => { setSelected(d); if (view === "month" && d.slice(0, 7) !== anchor.slice(0, 7)) setAnchor(d); }}
-            onShift={(delta) => setAnchor((a) => calShift(view, a, delta))}
-          />
+          <CalendarNav view={view} anchor={anchor} views={["day", "week", "month"]} onView={changeView} onAnchor={setAnchor} onToday={() => { setAnchor(data.today); setSelected(data.today); }} />
+          {timeView ? (
+            <TimeGrid
+              days={(() => { const { from, to } = calRange(view, anchor); const out: string[] = []; for (let d = from; d <= to; d = addDays(d, 1)) out.push(d); return out; })()}
+              today={data.today}
+              events={showTasks ? (data.tasks.map((t) => (projectFilter && t.project_id !== projectFilter ? null : eventFor(t))).filter(Boolean) as TimeEvent[]) : []}
+              allDay={itemsFor}
+              onPickDay={(d) => { setSelected(d); setAnchor(d); changeView("day"); }}
+              onCreate={(d, s0, e0) => openCreate(d, s0, e0)}
+              onMove={(id, d, s0, e0) => persist(id, { date: d, time: fmtMin(s0), end: fmtMin(e0) })}
+              onResize={(id, e0) => { const t = data.tasks.find((x) => x.id === id); if (t) persist(id, { ...schedOf(t), end: fmtMin(e0) }); }}
+              onOpen={(id) => { const t = data.tasks.find((x) => x.id === id); if (t) openEdit(t); }}
+              onToggle={(id) => { const t = data.tasks.find((x) => x.id === id); if (t) toggles.toggleTask(t); }}
+            />
+          ) : (
+            <CalendarGrid
+              view={view}
+              anchor={anchor}
+              today={data.today}
+              selected={selected}
+              wide={wide}
+              itemsFor={itemsFor}
+              onSelect={(d) => { setSelected(d); if (d.slice(0, 7) !== anchor.slice(0, 7)) setAnchor(d); }}
+              onShift={(delta) => setAnchor((a) => calShift(view, a, delta))}
+              onDropItem={(d, id) => { const t = data.tasks.find((x) => x.id === id); if (t) persist(id, { ...schedOf(t), date: d }); }}
+            />
+          )}
         </div>
 
-        <div className={cx("min-w-0 rounded-xl border border-line bg-stone-50/60 p-3", (pending || toggles.pending) && "opacity-70")}>
+        {!timeView && <div className={cx("min-w-0 rounded-xl border border-line bg-stone-50/60 p-3", (pending || toggles.pending) && "opacity-70")}>
           <p className="text-[12px] font-semibold capitalize text-stone-800">{fmtLong(selected)}</p>
           {overdue.length > 0 && (
             <div className="mt-2">
@@ -274,8 +327,35 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
               </div>
             </form>
           )}
-        </div>
+        </div>}
       </div>
+      {editor && (
+        <TaskEditor
+          mode={editor.id ? "edit" : "create"}
+          initial={editor.values}
+          projects={data.projects}
+          saving={pending}
+          onClose={() => setEditor(null)}
+          onDelete={editor.id ? () => { const id = editor.id as string; setEditor(null); if (confirm("Supprimer cette tâche ?")) start(() => deleteTask(id)); } : undefined}
+          onSave={(v) => {
+            const values = v;
+            setEditor(null);
+            if (editor.id) {
+              const id = editor.id;
+              setSched((m) => ({ ...m, [id]: { date: values.date, time: values.start || null, end: values.start ? values.end || null : null } }));
+              start(() => saveTask(id, { title: values.title, project_id: values.projectId || null, due_date: values.date, due_time: values.start || null, due_end: values.end || null }));
+            } else {
+              const fd = new FormData();
+              fd.set("title", values.title);
+              fd.set("due_date", values.date);
+              if (values.start) fd.set("due_time", values.start);
+              if (values.start && values.end) fd.set("due_end", values.end);
+              if (values.projectId) fd.set("project_id", values.projectId);
+              start(() => createTask(fd));
+            }
+          }}
+        />
+      )}
     </WidgetShell>
   );
 }
