@@ -10,6 +10,8 @@ export interface EditorValues {
   start: string;
   end: string;
   projectId: string;
+  notes: string;
+  priority: "low" | "medium" | "high";
 }
 
 /** Fenêtre de création / modification d'un rendez-vous ou d'une tâche placée dans l'agenda. */
@@ -37,7 +39,7 @@ export function TaskEditor({
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-6" onClick={onClose}>
       <form
-        className={cx("w-full max-w-md rounded-t-3xl bg-surface p-6 shadow-2xl sm:rounded-3xl", saving && "opacity-80")}
+        className={cx("max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-surface p-6 shadow-2xl sm:rounded-3xl", saving && "opacity-80")}
         onClick={(e) => e.stopPropagation()}
         onSubmit={(e) => {
           e.preventDefault();
@@ -46,14 +48,14 @@ export function TaskEditor({
         }}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold tracking-tight text-stone-900">{mode === "create" ? "Nouvelle tâche" : "Modifier la tâche"}</h2>
+          <h2 className="text-lg font-bold tracking-tight text-stone-900">{mode === "create" ? "Nouvelle tâche" : "Tâche"}</h2>
           <button type="button" onClick={onClose} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label="Fermer">✕</button>
         </div>
         <input value={v.title} onChange={(e) => set({ title: e.target.value })} placeholder="Titre (ex. Salle de sport, Appel client…)" className="input mt-4 py-2.5 text-base font-medium" autoFocus required />
         <div className="mt-3 grid grid-cols-3 gap-2">
           <label className="col-span-3 text-xs text-stone-500 sm:col-span-1">
             Jour
-            <input type="date" value={v.date} onChange={(e) => set({ date: e.target.value })} className="input mt-1" required />
+            <input type="date" value={v.date} onChange={(e) => set({ date: e.target.value })} className="input mt-1" />
           </label>
           <label className="text-xs text-stone-500">
             Début
@@ -66,6 +68,18 @@ export function TaskEditor({
         </div>
         {badRange && <p className="mt-1 text-xs text-rose-600">L'heure de fin doit être après le début.</p>}
         {!v.start && <p className="mt-1 text-[11px] text-stone-400">Sans heure, la tâche apparaît en haut de la journée.</p>}
+        <label className="mt-3 block text-xs text-stone-500">
+          Notes
+          <textarea value={v.notes} onChange={(e) => set({ notes: e.target.value })} rows={4} placeholder="Détails, étapes, liens… (facultatif)" className="input mt-1 min-h-[6rem] resize-y leading-relaxed" />
+        </label>
+        <div className="mt-3 text-xs text-stone-500">
+          Priorité
+          <div className="mt-1 grid grid-cols-3 gap-1 rounded-xl bg-stone-100 p-1 text-xs font-medium">
+            {([["low", "Basse"], ["medium", "Normale"], ["high", "Haute"]] as const).map(([k, l]) => (
+              <button key={k} type="button" onClick={() => set({ priority: k })} className={cx("rounded-lg py-1.5 transition", v.priority === k ? "bg-surface text-stone-900 shadow-sm" : "text-stone-500")}>{l}</button>
+            ))}
+          </div>
+        </div>
         {projects.length > 0 && (
           <label className="mt-3 block text-xs text-stone-500">
             Projet

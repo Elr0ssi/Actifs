@@ -36,6 +36,7 @@ export async function createTask(formData: FormData) {
   const priority = String(formData.get("priority") || "medium") as TaskPriority;
   const dueDate = String(formData.get("due_date") || "") || null;
   const dueTime = String(formData.get("due_time") || "") || null;
+  const description = String(formData.get("description") || "").trim().slice(0, 10000) || null;
   const dueEnd = dueTime && String(formData.get("due_end") || "") > dueTime ? String(formData.get("due_end")) : null;
   if (!title) return;
   const { supabase, householdId, userId } = await getHouseholdId();
@@ -48,6 +49,7 @@ export async function createTask(formData: FormData) {
     due_date: dueDate,
     due_time: dueTime,
     due_end: dueEnd,
+    description,
     status: "todo",
     created_by: userId,
   });
@@ -66,11 +68,13 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^\d{2}:\d{2}$/;
 
 /** Enregistre un rendez-vous / une tâche placée dans l'agenda (jour, heure de début et de fin) et ses infos principales. */
-export async function saveTask(taskId: string, v: { title?: string; project_id?: string | null; due_date?: string | null; due_time?: string | null; due_end?: string | null }) {
+export async function saveTask(taskId: string, v: { description?: string | null; priority?: string; title?: string; project_id?: string | null; due_date?: string | null; due_time?: string | null; due_end?: string | null }) {
   const { supabase, householdId } = await getHouseholdId();
   if (!householdId) return;
   const patch: Record<string, string | null> = {};
   if (typeof v.title === "string" && v.title.trim()) patch.title = v.title.trim().slice(0, 300);
+  if (v.description !== undefined) patch.description = v.description?.trim() ? v.description.trim().slice(0, 10000) : null;
+  if (v.priority && ["low", "medium", "high"].includes(v.priority)) patch.priority = v.priority;
   if (v.project_id !== undefined) patch.project_id = v.project_id || null;
   if (v.due_date !== undefined) patch.due_date = v.due_date && DATE_RE.test(v.due_date) ? v.due_date : null;
   if (v.due_time !== undefined) patch.due_time = v.due_time && TIME_RE.test(v.due_time) ? v.due_time : null;

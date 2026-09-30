@@ -17,7 +17,7 @@ import type { Task } from "@/lib/types";
 
 type Project = { id: string; name: string; color: string };
 
-export function TaskRow({ task, today, project, onTouch }: { task: Task; today: string; project?: Project; onTouch?: (id: string) => void }) {
+export function TaskRow({ task, today, project, onTouch, onOpen }: { task: Task; today: string; project?: Project; onTouch?: (id: string) => void; onOpen?: (t: Task) => void }) {
   const [done, setDone] = useState(isDone(task));
   const [, start] = useTransition();
   useEffect(() => setDone(isDone(task)), [task]);
@@ -33,21 +33,31 @@ export function TaskRow({ task, today, project, onTouch }: { task: Task; today: 
           : task.priority === "high"
             ? "Priorité haute"
             : "";
+  const toggle = () => {
+    const next = !done;
+    setDone(next);
+    onTouch?.(task.id);
+    start(() => toggleTaskStatus(task.id, next));
+  };
   return (
-    <label className="flex cursor-pointer items-start gap-2.5 rounded-lg px-1.5 py-1 transition hover:bg-stone-50">
-      <input
-        type="checkbox"
-        checked={done}
-        onChange={(e) => {
-          const next = e.target.checked;
-          setDone(next);
-          onTouch?.(task.id);
-          start(() => toggleTaskStatus(task.id, next));
-        }}
-        className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border-stone-300 accent-brand-600"
-      />
-      <span className="min-w-0 flex-1">
-        <span className={cx("block truncate text-[13px] font-medium", done ? "text-stone-400 line-through" : "text-stone-800")}>{task.title}</span>
+    <div className="group flex items-start gap-2.5 rounded-lg px-1.5 py-1 transition hover:bg-stone-50">
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={done ? "Marquer comme à faire" : "Marquer comme faite"}
+        aria-pressed={done}
+        className={cx(
+          "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[9px] font-bold leading-none transition",
+          done ? "border-transparent bg-emerald-500 text-white" : "border-stone-300 bg-surface text-transparent hover:border-emerald-500 hover:text-emerald-500"
+        )}
+      >
+        ✓
+      </button>
+      <button type="button" onClick={() => onOpen?.(task)} className="min-w-0 flex-1 text-left" title="Ouvrir la tâche">
+        <span className={cx("flex items-center gap-1.5 truncate text-[13px] font-medium", done ? "text-stone-400 line-through" : "text-stone-800")}>
+          <span className="truncate">{task.title}</span>
+          {task.description && <span title="Contient des notes" className="shrink-0 text-[10px] text-stone-300">📝</span>}
+        </span>
         {(project || sub) && (
           <span className={cx("flex items-center gap-1.5 truncate text-[11px]", late ? "text-rose-500" : "text-stone-400")}>
             {project && (
@@ -60,8 +70,8 @@ export function TaskRow({ task, today, project, onTouch }: { task: Task; today: 
             {sub && <span className="truncate">{sub}</span>}
           </span>
         )}
-      </span>
-    </label>
+      </button>
+    </div>
   );
 }
 
@@ -74,6 +84,7 @@ export function TasksList({ data, size }: WidgetProps) {
   const [touched, setTouched] = useState<Set<string>>(new Set());
   const [draft, setDraft] = useState("");
   const [pending, start] = useTransition();
+  const [open, setOpen] = useState<Task | null>(null);
   const projectOf = useMemo(() => new Map(data.projects.map((p) => [p.id, p])), [data.projects]);
 
   const switchTab = (t: Tab) => {
@@ -113,7 +124,7 @@ export function TasksList({ data, size }: WidgetProps) {
       ) : (
         <div className={cx("grid gap-x-4", size === "l" && "sm:grid-cols-2")}>
           {rows.slice(0, limit).map((t) => (
-            <TaskRow key={t.id} task={t} today={data.today} project={t.project_id ? projectOf.get(t.project_id) : undefined} onTouch={(id) => setTouched((s) => new Set(s).add(id))} />
+            <TaskRow key={t.id} task={t} today={data.today} project={t.project_id ? projectOf.get(t.project_id) : undefined} onTouch={(id) => setTouched((s) => new Set(s).add(id))} onOpen={setOpen} />
           ))}
         </div>
       )}
@@ -122,6 +133,21 @@ export function TasksList({ data, size }: WidgetProps) {
         <input name="title" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Ajouter une tâche pour aujourd'hui…" className="input py-1.5 text-xs" />
         <button disabled={!draft.trim()} className="btn-primary shrink-0 px-2.5 py-1.5"><Icon name="plus" /></button>
       </form>
+      {open && (
+        <TaskEditor
+          mode="edit"
+          initial={{ title: open.title, date: open.due_date ?? "", start: open.due_time?.slice(0, 5) ?? "", end: open.due_end?.slice(0, 5) ?? "", projectId: open.project_id ?? "", notes: open.description ?? "", priority: open.priority }}
+          projects={data.projects}
+          saving={pending}
+          onClose={() => setOpen(null)}
+          onDelete={() => { const id = open.id; setOpen(null); if (confirm("Supprimer cette tâche ?")) start(() => deleteTask(id)); }}
+          onSave={(v) => {
+            const id = open.id;
+            setOpen(null);
+            start(() => saveTask(id, { title: v.title, project_id: v.projectId || null, due_date: v.date || null, due_time: v.start || null, due_end: v.end || null, description: v.notes, priority: v.priority }));
+          }}
+        />
+      )}
     </WidgetShell>
   );
 }
@@ -173,10 +199,10 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
     return { id: t.id, day: sc.date, startMin, endMin, title: t.title, color: (t.project_id && projectOf.get(t.project_id)?.color) || undefined, done: toggles.taskDone(t) };
   };
   const openCreate = (date: string, startMin?: number, endMin?: number) =>
-    setEditor({ values: { title: "", date, start: startMin === undefined ? "" : fmtMin(startMin), end: endMin === undefined ? "" : fmtMin(endMin), projectId: projectFilter } });
+    setEditor({ values: { title: "", date, start: startMin === undefined ? "" : fmtMin(startMin), end: endMin === undefined ? "" : fmtMin(endMin), projectId: projectFilter, notes: "", priority: "medium" } });
   const openEdit = (t: Task) => {
     const sc = schedOf(t);
-    setEditor({ id: t.id, values: { title: t.title, date: sc.date ?? data.today, start: sc.time ?? "", end: sc.end ?? "", projectId: t.project_id ?? "" } });
+    setEditor({ id: t.id, values: { title: t.title, date: sc.date ?? data.today, start: sc.time ?? "", end: sc.end ?? "", projectId: t.project_id ?? "", notes: t.description ?? "", priority: t.priority } });
   };
 
   const timeView = view === "day" || view === "week";
@@ -279,7 +305,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
           {overdue.length > 0 && (
             <div className="mt-2">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-rose-500">En retard</p>
-              {overdue.map((t) => <CheckRow key={t.id} checked={toggles.taskDone(t)} onChange={() => toggles.toggleTask(t)} label={t.title} sub={`En retard · ${fmtShort(t.due_date!)}`} dot={(t.project_id && projectOf.get(t.project_id)?.color) || undefined} />)}
+              {overdue.map((t) => <CheckRow key={t.id} onOpen={() => openEdit(t)} checked={toggles.taskDone(t)} onChange={() => toggles.toggleTask(t)} label={t.title} sub={`En retard · ${fmtShort(t.due_date!)}`} dot={(t.project_id && projectOf.get(t.project_id)?.color) || undefined} />)}
             </div>
           )}
           {dayTasks.length > 0 && (
@@ -288,6 +314,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
               {dayTasks.map((t) => (
                 <CheckRow
                   key={t.id}
+                  onOpen={() => openEdit(t)}
                   checked={toggles.taskDone(t)}
                   onChange={() => toggles.toggleTask(t)}
                   label={t.title}
@@ -351,7 +378,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
             if (editor.id) {
               const id = editor.id;
               setSched((m) => ({ ...m, [id]: { date: values.date, time: values.start || null, end: values.start ? values.end || null : null } }));
-              start(() => saveTask(id, { title: values.title, project_id: values.projectId || null, due_date: values.date, due_time: values.start || null, due_end: values.end || null }));
+              start(() => saveTask(id, { title: values.title, project_id: values.projectId || null, due_date: values.date, due_time: values.start || null, due_end: values.end || null, description: values.notes, priority: values.priority }));
             } else {
               const fd = new FormData();
               fd.set("title", values.title);
@@ -359,6 +386,8 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
               if (values.start) fd.set("due_time", values.start);
               if (values.start && values.end) fd.set("due_end", values.end);
               if (values.projectId) fd.set("project_id", values.projectId);
+              if (values.notes) fd.set("description", values.notes);
+              fd.set("priority", values.priority);
               start(() => createTask(fd));
             }
           }}

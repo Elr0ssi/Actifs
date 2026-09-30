@@ -196,19 +196,31 @@ export function Chip({ item }: { item: CalItem }) {
 }
 
 /** Ligne de détail (panneau du jour) : case à cocher pilotée par le parent pour rester synchronisée avec le calendrier. */
-export function CheckRow({ checked, onChange, label, sub, disabled, dot }: { checked: boolean; onChange: () => void; label: string; sub?: string; disabled?: boolean; dot?: string }) {
+export function CheckRow({ checked, onChange, label, sub, disabled, dot, onOpen }: { checked: boolean; onChange: () => void; label: string; sub?: string; disabled?: boolean; dot?: string; onOpen?: () => void }) {
+  const text = (
+    <>
+      <span className={cx("block truncate text-[13px] font-medium", checked ? "text-stone-400 line-through" : "text-stone-800")}>{label}</span>
+      {sub && (
+        <span className="flex items-center gap-1.5 truncate text-[11px] text-stone-400">
+          {dot && <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: dot }} />}
+          {sub}
+        </span>
+      )}
+    </>
+  );
+  // Avec onOpen : la case coche, le texte ouvre la fiche.
+  if (onOpen) {
+    return (
+      <div className="flex items-start gap-2.5 rounded-lg px-1.5 py-1 transition hover:bg-stone-50">
+        <input type="checkbox" checked={checked} disabled={disabled} onChange={onChange} aria-label={`Cocher : ${label}`} className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        <button type="button" onClick={onOpen} className="min-w-0 flex-1 text-left" title="Ouvrir la tâche">{text}</button>
+      </div>
+    );
+  }
   return (
     <label className={cx("flex items-start gap-2.5 rounded-lg px-1.5 py-1 transition", disabled ? "cursor-default opacity-70" : "cursor-pointer hover:bg-stone-50")}>
       <input type="checkbox" checked={checked} disabled={disabled} onChange={onChange} className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-      <span className="min-w-0 flex-1">
-        <span className={cx("block truncate text-[13px] font-medium", checked ? "text-stone-400 line-through" : "text-stone-800")}>{label}</span>
-        {sub && (
-          <span className="flex items-center gap-1.5 truncate text-[11px] text-stone-400">
-            {dot && <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: dot }} />}
-            {sub}
-          </span>
-        )}
-      </span>
+      <span className="min-w-0 flex-1">{text}</span>
     </label>
   );
 }
