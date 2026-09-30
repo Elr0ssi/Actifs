@@ -7,6 +7,7 @@ export function sampleWidgetData(today: string): WidgetData {
     id, table: kind === "income" ? "income" : "charge", kind, name, amount, category, frequency: "monthly", interval: 1,
     weekdays: [], monthDays: [day], start: addDays(today, -200), end: null, skipped: [], active: true, note: null, account: "Courant",
   });
+  const monday = addDays(today, -((new Date(`${today}T00:00:00Z`).getUTCDay() + 6) % 7));
   const stamp = `${addDays(today, -30)}T08:00:00Z`;
   const task = (id: string, title: string, off: number, project: string | null, status: "todo" | "done" = "todo", time: string | null = null) => ({
     id, household_id: "x", project_id: project, title, description: null, priority: "medium" as const, status, due_date: addDays(today, off),
@@ -52,6 +53,11 @@ export function sampleWidgetData(today: string): WidgetData {
         recipes: [{ name: "Poulet rôti", icon: "🍗", count: 1 }, { name: "Pâtes tomate", icon: "🍝", count: 2 }],
       },
     ],
+    menu: [
+      { id: "m1", name: "Poulet rôti", icon: "🍗", weekStart: monday },
+      { id: "m2", name: "Pâtes tomate", icon: "🍝", weekStart: monday },
+    ],
+    myRecipes: [],
     notes: [
       { id: "n1", title: "Idées de voyage", icon: "✈️", search: "Lisbonne, Porto, road trip en Algarve au printemps…", updated_at: stamp },
       { id: "n2", title: "Compte rendu réunion", icon: "💼", search: "Points clés : budget validé, prochaine étape lundi.", updated_at: stamp },

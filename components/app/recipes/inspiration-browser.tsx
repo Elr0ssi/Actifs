@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import Link from "next/link";
+import { createPortal } from "react-dom";
 import { CATEGORIES, EQUIPMENT, RECIPES, filterRecipes, type MarketingRecipe } from "@/lib/marketing/recipes";
 import { setInspirationFavorite } from "@/app/app/lists/recipes/actions";
 import { cx } from "@/lib/utils";
@@ -102,6 +102,12 @@ export function InspirationBrowser({ favoriteKeys }: { favoriteKeys: { slugs: st
 function InspirationCard({ recipe, initialFav }: { recipe: MarketingRecipe; initialFav: boolean }) {
   const [pending, start] = useTransition();
   const [fav, setFav] = useState(initialFav);
+  const [open, setOpen] = useState(false);
+  const toggleFav = () => {
+    const next = !fav;
+    setFav(next);
+    start(() => setInspirationFavorite(recipe.slug, next));
+  };
 
   return (
     <div className="card flex flex-col overflow-hidden p-0">
@@ -126,23 +132,68 @@ function InspirationCard({ recipe, initialFav }: { recipe: MarketingRecipe; init
         <h3 className="mt-2 text-sm font-semibold text-stone-900">{recipe.name}</h3>
         <p className="mt-1 flex-1 text-xs text-stone-500">{recipe.desc}</p>
         <div className="mt-3 flex items-center gap-2">
-          <Link href={`/recettes/${recipe.slug}`} target="_blank" className="btn-secondary py-1.5 text-xs">
+          <button onClick={() => setOpen(true)} className="btn-secondary py-1.5 text-xs">
             Voir la recette
-          </Link>
+          </button>
           <button
             disabled={pending}
             aria-pressed={fav}
-            onClick={() => {
-              const next = !fav;
-              setFav(next);
-              start(() => setInspirationFavorite(recipe.slug, next));
-            }}
+            onClick={toggleFav}
             className={cx("ml-auto rounded-xl px-3 py-1.5 text-xs font-medium transition", fav ? "bg-amber-500/15 text-amber-700 hover:bg-amber-500/25" : "btn-primary")}
           >
             {fav ? "★ Dans mes favoris" : "☆ Ajouter aux favoris"}
           </button>
         </div>
       </div>
+      {open && createPortal(
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-6" onClick={() => setOpen(false)}>
+          <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-surface shadow-2xl sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+            {recipe.image && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={recipe.image} alt={recipe.name} className="aspect-video w-full object-cover" />
+            )}
+            <div className="p-6">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700">{recipe.icon} {recipe.category}</span>
+                  <h2 className="mt-2 text-2xl font-bold tracking-tight text-stone-900">{recipe.name}</h2>
+                  <p className="mt-1 text-sm text-stone-500">{recipe.desc}</p>
+                </div>
+                <button onClick={() => setOpen(false)} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label="Fermer">✕</button>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs text-stone-600">
+                <span className="rounded-full bg-stone-100 px-2.5 py-1">⏱ {recipe.time}</span>
+                <span className="rounded-full bg-stone-100 px-2.5 py-1">🍽 {recipe.servings} pers.</span>
+                <span className="rounded-full bg-stone-100 px-2.5 py-1">{recipe.difficulty}</span>
+              </div>
+              <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Ingrédients</h3>
+              <ul className="grid gap-x-6 gap-y-1 text-sm text-stone-700 sm:grid-cols-2">
+                {recipe.ingredients.map((i) => <li key={i}>• {i}</li>)}
+              </ul>
+              {recipe.utensils.length > 0 && (
+                <>
+                  <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Ustensiles</h3>
+                  <p className="text-sm text-stone-600">{recipe.utensils.join(" · ")}</p>
+                </>
+              )}
+              <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Préparation</h3>
+              <ol className="space-y-2.5">
+                {recipe.steps.map((line, i) => (
+                  <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-stone-800">
+                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-50 text-xs font-bold text-brand-700">{i + 1}</span>
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ol>
+              <div className="mt-6 flex items-center gap-2 border-t border-line pt-4">
+                <button onClick={toggleFav} disabled={pending} className={fav ? "btn-secondary" : "btn-primary"}>{fav ? "★ Dans mes favoris" : "☆ Ajouter aux favoris"}</button>
+                <button onClick={() => setOpen(false)} className="btn-secondary ml-auto">Fermer</button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

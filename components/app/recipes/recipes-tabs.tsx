@@ -95,13 +95,27 @@ export function RecipesTabs({
             </div>
           )}
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {mine.length === 0 && <p className="text-sm text-stone-400">Aucune recette pour l'instant. Crée-en une avec « + Nouvelle recette », ou mets en favori celles de « Trouver des recettes ».</p>}
-            {mine.length > 0 && shown.length === 0 && <p className="text-sm text-stone-400">Aucune recette ne correspond.</p>}
-            {shown.map((r) => (
-              <RecipeCard key={r.id} recipe={r} householdId={householdId} categories={categories} catalog={catalog} />
-            ))}
-          </div>
+          {mine.length === 0 && <p className="text-sm text-stone-400">Aucune recette pour l'instant. Crée-en une avec « + Nouvelle recette », ou mets en favori celles de « Trouver des recettes ».</p>}
+          {mine.length > 0 && shown.length === 0 && <p className="text-sm text-stone-400">Aucune recette ne correspond.</p>}
+          {[
+            { title: "Mes créations", icon: "✍️", list: shown.filter((r) => !r.source_slug) },
+            { title: "Mes favorites", icon: "★", list: shown.filter((r) => !!r.source_slug) },
+          ].map((sec) =>
+            sec.list.length === 0 ? null : (
+              <section key={sec.title}>
+                <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-stone-700">
+                  <span>{sec.icon}</span>
+                  {sec.title}
+                  <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-stone-500">{sec.list.length}</span>
+                </h2>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {sec.list.map((r) => (
+                    <RecipeCard key={r.id} recipe={r} householdId={householdId} categories={categories} catalog={catalog} />
+                  ))}
+                </div>
+              </section>
+            )
+          )}
         </div>
       ) : (
         <div className="mt-6">

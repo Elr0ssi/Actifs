@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { addDays, expand, monthBounds } from "@/lib/finance-engine";
 import { cx } from "@/lib/utils";
@@ -8,6 +8,7 @@ import { CountUp } from "@/components/app/count-up";
 import { WidgetShell, Empty } from "@/components/app/widgets/shell";
 import { eur0, fmtShort, mondayOf } from "@/components/app/widgets/helpers";
 import type { WidgetProps } from "@/components/app/widgets/types";
+import { MenuEditor, type MenuEntry } from "@/components/app/widgets/menu-editor";
 import type { WidgetList } from "@/lib/data/widgets";
 
 const BUDGET_CATEGORY = "Alimentation / Courses";
@@ -16,37 +17,38 @@ const shopping = (lists: WidgetList[]) => lists.filter((l) => l.type === "shoppi
 /* ---------- Menu de la semaine ---------- */
 
 export function MenuWeek({ data, size }: WidgetProps) {
-  const weekStart = mondayOf(data.today);
+  const weekStart = mondayOf(data.realToday ?? data.today);
+  const [editing, setEditing] = useState(false);
   const menu = useMemo(() => {
-    const lists = shopping(data.lists);
-    const inWeek = lists.filter((l) => l.weekStart && l.weekStart >= weekStart && l.weekStart <= addDays(weekStart, 6));
-    const source = inWeek.length ? inWeek : lists.filter((l) => !l.archived).slice(0, 1);
-    const merged = new Map<string, { name: string; icon: string | null; count: number }>();
-    for (const l of source) {
-      for (const r of l.recipes) {
-        const cur = merged.get(r.name);
-        merged.set(r.name, { name: r.name, icon: cur?.icon ?? r.icon, count: (cur?.count ?? 0) + r.count });
-      }
+    const merged = new Map<string, MenuEntry>();
+    for (const m of data.menu.filter((x) => x.weekStart === weekStart)) merged.set(m.name.toLowerCase(), { key: m.id, id: m.id, name: m.name, icon: m.icon });
+    for (const l of shopping(data.lists)) {
+      if (!l.weekStart || l.weekStart < weekStart || l.weekStart > addDays(weekStart, 6)) continue;
+      for (const r of l.recipes) if (!merged.has(r.name.toLowerCase())) merged.set(r.name.toLowerCase(), { key: `l${r.name}`, name: r.name, icon: r.icon });
     }
     return [...merged.values()];
-  }, [data.lists, weekStart]);
-  const meals = menu.reduce((s, r) => s + r.count, 0);
+  }, [data.lists, data.menu, weekStart]);
 
   return (
-    <WidgetShell icon="chef" title="Menu de la semaine" subtitle={meals ? `${meals} repas · semaine du ${fmtShort(weekStart)}` : `Semaine du ${fmtShort(weekStart)}`}>
+    <WidgetShell
+      icon="chef"
+      title="Menu de la semaine"
+      subtitle={menu.length ? `${menu.length} repas · semaine du ${fmtShort(weekStart)}` : `Semaine du ${fmtShort(weekStart)}`}
+      right={<button type="button" onClick={() => setEditing(true)} className="btn-secondary px-2.5 py-1 text-[11px]">{menu.length ? "Modifier" : "+ Ajouter"}</button>}
+    >
       {menu.length === 0 ? (
-        <Empty>Aucun menu pour l'instant : crée une liste de courses et choisis tes recettes.</Empty>
+        <Empty>Aucun repas prévu. Touche « Ajouter » pour composer ton menu, avec ou sans liste de courses.</Empty>
       ) : (
         <ul className={cx("grid gap-2", size === "m" && "sm:grid-cols-2", size === "l" && "sm:grid-cols-3")}>
           {menu.map((r) => (
-            <li key={r.name} className="flex min-w-0 items-center gap-2.5 rounded-xl border border-line px-2.5 py-2">
+            <li key={r.key} className="flex min-w-0 items-center gap-2.5 rounded-xl border border-line px-2.5 py-2">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-base">{r.icon ?? "🍽️"}</span>
               <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-stone-800">{r.name}</span>
-              {r.count > 1 && <span className="tabular shrink-0 rounded-full bg-stone-100 px-1.5 py-0.5 text-[10px] font-semibold text-stone-500">×{r.count}</span>}
             </li>
           ))}
         </ul>
       )}
+      {editing && <MenuEditor data={data} weekStart={weekStart} entries={menu} onClose={() => setEditing(false)} />}
     </WidgetShell>
   );
 }

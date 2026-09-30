@@ -34,6 +34,9 @@ export interface WidgetData {
   routines: Routine[];
   logs: RoutineLog[];
   lists: WidgetList[];
+  /** Menu de la semaine saisi à la main (en plus des recettes des listes de courses de la semaine). */
+  menu: { id: string; name: string; icon: string | null; weekStart: string }[];
+  myRecipes: { name: string; category: string | null }[];
   notes: { id: string; title: string; icon: string | null; search: string; updated_at: string }[];
   words: { id: string; french: string; english: string; created_at: string }[];
   wordsTotal: number;
@@ -67,8 +70,9 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
   const today = todayISO();
   const from = addDays(today, -62);
   const to = addDays(today, 124);
+  const weekStart = addDays(today, -((new Date(`${today}T00:00:00Z`).getUTCDay() + 6) % 7));
 
-  const [finance, { data: tasks }, { data: routines }, logs, { data: lists }, { data: words, count: wordsTotal }, { data: projects }, { data: projectTasks }, { data: notes }] = await Promise.all([
+  const [finance, { data: tasks }, { data: routines }, logs, { data: lists }, { data: words, count: wordsTotal }, { data: projects }, { data: projectTasks }, { data: notes }, { data: menu }, { data: myRecipes }] = await Promise.all([
     loadFinanceData(),
     supabase
       .from("tasks")
@@ -92,6 +96,8 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
     supabase.from("projects").select("id, name, color").eq("household_id", householdId).eq("archived", false).order("created_at"),
     supabase.from("tasks").select("project_id, status").eq("household_id", householdId).not("project_id", "is", null),
     supabase.from("notes").select("id, title, icon, search, updated_at").eq("household_id", householdId).order("updated_at", { ascending: false }).limit(8),
+    supabase.from("menu_items").select("id, name, icon, week_start").eq("household_id", householdId).eq("week_start", weekStart).order("created_at"),
+    supabase.from("recipes").select("name, category").eq("household_id", householdId).order("name").limit(300),
   ]);
 
   type ListRow = {
@@ -134,6 +140,8 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
       items: [...l.list_items].sort((a, b) => a.position - b.position).map(({ id, label, quantity, checked }) => ({ id, label, quantity, checked })),
       recipes: l.list_recipes ?? [],
     })),
+    menu: (menu ?? []).map((m) => ({ id: m.id, name: m.name, icon: m.icon, weekStart: m.week_start })),
+    myRecipes: myRecipes ?? [],
     notes: (notes ?? []).map((n) => ({ ...n, search: n.search.slice(0, 160) })),
     words: words ?? [],
     wordsTotal: wordsTotal ?? words?.length ?? 0,
