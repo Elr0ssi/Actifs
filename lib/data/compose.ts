@@ -1,5 +1,6 @@
 import type { createClient } from "@/lib/supabase/server";
 import { buildMatcher, parseIngredientLine, toCatalogQty } from "@/lib/ingredient-parse";
+import { roundToPack } from "@/lib/packs";
 import { lineCost, priceMap, type CatalogIngredient, type IngredientUnit, type QtyUnit } from "@/lib/shopping";
 
 type Client = ReturnType<typeof createClient>;
@@ -10,6 +11,10 @@ export interface ComposeLine {
   ingredient_id: string | null;
   qty: number | null;
   unit: QtyUnit;
+  /** Besoin réel avant arrondi au conditionnement vendu (même unité que qty). */
+  need: number | null;
+  /** Conditionnement retenu, ex. « filet de 1 kg ». */
+  pack: string | null;
   /** Prix de référence de l'ingrédient chez l'enseigne (par kg, L ou pièce), pour recalculer quand on change la quantité. */
   unitPrice: number | null;
   catalogUnit: IngredientUnit | null;
@@ -105,11 +110,20 @@ export async function buildRecipeLines(
     let qty = a.qty;
     let unit = a.unit;
     if (c && qty !== null) {
-      const conv = toCatalogQty(qty, unit, a.label, c);
-      qty = conv.qty;
+      const neg = qty < 0;
+      const conv = toCatalogQty(Math.abs(qty), unit, a.label, c);
+      qty = neg ? -(conv.qty ?? 0) : conv.qty;
       unit = conv.unit;
     }
-    if (qty !== null) qty = unit === "u" ? Math.round(qty * 10) / 10 : Math.round(qty);
+    if (qty !== null) qty = unit === "u" ? Math.round(qty * 100) / 100 : Math.round(qty * 100) / 100;
+    // Besoin brut, puis arrondi au format vendu en magasin (1 kg d'oignons, paquet de 500 g de pâtes…).
+    const need = qty;
+    let pack: string | null = null;
+    if (qty !== null && c && sign > 0) {
+      const r = roundToPack(qty, unit, c.name);
+      qty = r.qty;
+      pack = r.label;
+    }
     const unitPrice = c ? prices.get(c.id) ?? null : null;
     lines.push({
       key,
@@ -117,6 +131,8 @@ export async function buildRecipeLines(
       ingredient_id: a.ingredient_id,
       qty,
       unit,
+      need,
+      pack,
       unitPrice,
       catalogUnit: c?.unit ?? null,
       cost: c ? lineCost(qty, unit, c.unit, unitPrice) : null,

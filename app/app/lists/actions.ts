@@ -7,6 +7,7 @@ import { ensureIngredients, parsePicked } from "@/lib/data/ingredients";
 import { defaultQtyUnit, formatQty, lineCost, priceMap, type IngredientUnit } from "@/lib/shopping";
 import { RECIPES } from "@/lib/marketing/recipes";
 import { buildRecipeLines, type ComposeLine } from "@/lib/data/compose";
+import { roundToPack } from "@/lib/packs";
 
 const ICON_BY_NAME = new Map(RECIPES.map((r) => [r.name.toLowerCase(), r.icon]));
 
@@ -53,33 +54,40 @@ async function storePrices(supabase: ReturnType<typeof createClient>, store: str
   return priceMap((data ?? []) as Parameters<typeof priceMap>[0], store);
 }
 
-type FinalLine = { label: string; ingredient_id: string | null; qty: number | null; unit: string | null; source: string };
+type FinalLine = { label: string; ingredient_id: string | null; qty: number | null; unit: string | null; source: string; need?: number | null };
 
 /** Fusionne des lignes dans une liste (même ingrédient + même unité). `sign` = -1 pour retirer une quantité. */
 async function applyLines(supabase: ReturnType<typeof createClient>, listId: string, lines: FinalLine[], store: string | null, sign = 1) {
   const [{ data: existing }, prices, { data: units }] = await Promise.all([
     supabase.from("list_items").select("*").eq("list_id", listId),
     storePrices(supabase, store),
-    supabase.from("ingredients").select("id, unit").in("id", [...new Set(lines.map((l) => l.ingredient_id).filter((x): x is string => !!x))]),
+    supabase.from("ingredients").select("id, unit, name").in("id", [...new Set(lines.map((l) => l.ingredient_id).filter((x): x is string => !!x))]),
   ]);
   const unitOf = new Map((units ?? []).map((u) => [u.id as string, u.unit as IngredientUnit]));
+  const nameOf = new Map((units ?? []).map((u) => [u.id as string, u.name as string]));
   const items = [...(existing ?? [])];
   let position = items.length;
   for (const line of lines) {
     const match = items.find(
       (i) => (i.ingredient_id ? i.ingredient_id === line.ingredient_id : String(i.label).toLowerCase() === line.label.trim().toLowerCase()) && (i.qty_unit ?? null) === (line.unit ?? null)
     );
-    const add = line.qty === null || line.qty === undefined ? (sign > 0 ? 1 : 0) : line.qty * sign;
-    const qty = (match?.qty ? Number(match.qty) : 0) + add;
-    if (match && qty <= 0.0001) {
+    const hasNeed = line.need !== undefined && line.need !== null && line.ingredient_id !== null;
+    const delta = hasNeed ? (line.need as number) * sign : line.qty === null || line.qty === undefined ? (sign > 0 ? 1 : 0) : line.qty * sign;
+    // On cumule le besoin réel (pas les quantités déjà arrondies), puis on arrondit une seule fois au format vendu.
+    const prevNeed = match ? (match.need_qty !== null && match.need_qty !== undefined ? Number(match.need_qty) : match.qty ? Number(match.qty) : 0) : 0;
+    const totalNeed = prevNeed + delta;
+    let qty = totalNeed;
+    if (hasNeed && qty > 0.0001 && line.unit !== "u" && line.ingredient_id) qty = roundToPack(totalNeed, line.unit ?? "g", nameOf.get(line.ingredient_id) ?? line.label).qty;
+    else if (hasNeed && qty > 0.0001 && line.unit === "u") qty = Math.ceil(totalNeed - 1e-9);
+    if (match && totalNeed <= 0.0001) {
       await supabase.from("list_items").delete().eq("id", match.id);
       items.splice(items.indexOf(match), 1);
       continue;
     }
-    if (qty <= 0) continue;
+    if (totalNeed <= 0) continue;
     const unit = unitOf.get(line.ingredient_id ?? "") ?? "unit";
     const price = line.ingredient_id ? lineCost(qty, line.unit, unit, prices.get(line.ingredient_id)) : null;
-    const row = { qty, qty_unit: line.unit, quantity: formatQty(qty, line.unit), price, count: 1 };
+    const row = { qty, qty_unit: line.unit, quantity: formatQty(qty, line.unit), price, count: 1, need_qty: totalNeed };
     if (match) {
       const source = sign > 0 ? [...new Set([...(match.source ? String(match.source).split(", ") : []), line.source].filter(Boolean))].join(", ") : match.source;
       await supabase.from("list_items").update({ ...row, ...(sign > 0 ? { checked: false } : {}), source }).eq("id", match.id);
@@ -103,7 +111,7 @@ export async function previewCompose(listId: string, recipes: { id: string; serv
 /** Ajoute les recettes choisies (pour N personnes chacune, quantités éventuellement corrigées à la main) et les produits en plus. */
 export async function composeList(listId: string, formData: FormData) {
   const recipes: { id: string; servings: number }[] = (JSON.parse(String(formData.get("recipes") || "[]")) as { id: string; servings?: number; count?: number }[]).map((r) => ({ id: r.id, servings: Math.max(1, Math.round(r.servings ?? r.count ?? 1)) }));
-  let reviewed: { label: string; ingredient_id: string | null; qty: number | null; unit: string | null; sources: string[] }[] | null = null;
+  let reviewed: { label: string; ingredient_id: string | null; qty: number | null; unit: string | null; sources: string[]; need?: number | null }[] | null = null;
   try {
     const raw = JSON.parse(String(formData.get("lines") || "null"));
     if (Array.isArray(raw)) reviewed = raw;
@@ -129,10 +137,22 @@ export async function composeList(listId: string, formData: FormData) {
     label: l.label,
     ingredient_id: l.ingredient_id,
     qty: l.qty === null || l.qty === undefined ? null : Number(l.qty),
-    unit: ("unit" in l ? (l as ComposeLine).unit : (l as { unit: string | null }).unit) ?? null,
+    unit: (l as { unit: string | null }).unit ?? null,
     source: (l.sources ?? []).join(", "),
+    need: (l as { need?: number | null }).need ?? null,
   }));
-  const extraLines: FinalLine[] = extras.map((e) => ({ label: e.name, ingredient_id: ids.get(e.name.trim().toLowerCase())?.id ?? null, qty: e.qty ?? 1, unit: e.qtyUnit ?? null, source: "Extra" }));
+  const extraLines: FinalLine[] = extras.map((e) => {
+    const id = ids.get(e.name.trim().toLowerCase())?.id ?? null;
+    let qty = e.qty ?? null;
+    let unit: string | null = e.qtyUnit ?? null;
+    // Produits au poids / au litre : on part du besoin et on arrondit au format vendu (un brique de lait, un paquet de pâtes…).
+    if (id && unit && ["g", "kg", "ml", "l"].includes(unit)) {
+      let q = qty ?? 1;
+      if (unit === "kg") { q *= 1000; unit = "g"; } else if (unit === "l") { q *= 1000; unit = "ml"; }
+      return { label: e.name, ingredient_id: id, qty: q, unit, source: "Extra", need: q };
+    }
+    return { label: e.name, ingredient_id: id, qty: qty ?? 1, unit, source: "Extra" };
+  });
   await applyLines(supabase, listId, [...recipeLines, ...extraLines], store);
 
   if (built.metas.length) {
@@ -162,7 +182,7 @@ export async function setListRecipePeople(listId: string, listRecipeId: string, 
   const old = row.servings ?? row.count * base;
   if (target === old) return;
   const { lines } = await buildRecipeLines(supabase, [{ id: row.recipe_id, servings: Math.abs(target - old) }], list?.store ?? null, target > old ? 1 : -1);
-  await applyLines(supabase, listId, lines.map((l) => ({ label: l.label, ingredient_id: l.ingredient_id, qty: l.qty, unit: l.unit, source: l.sources.join(", ") })), list?.store ?? null, 1);
+  await applyLines(supabase, listId, lines.map((l) => ({ label: l.label, ingredient_id: l.ingredient_id, qty: l.qty, unit: l.unit, source: l.sources.join(", "), need: l.need })), list?.store ?? null, 1);
   await supabase.from("list_recipes").update({ servings: target, count: 1 }).eq("id", row.id);
   refresh();
 }
@@ -182,7 +202,7 @@ export async function updateListItemQty(listId: string, itemId: string, qty: num
     const [{ data: ing }, prices] = await Promise.all([supabase.from("ingredients").select("unit").eq("id", item.ingredient_id).single(), storePrices(supabase, list?.store ?? null)]);
     price = lineCost(q, unit, (ing?.unit as IngredientUnit) ?? "unit", prices.get(item.ingredient_id));
   }
-  await supabase.from("list_items").update({ qty: q, qty_unit: unit, quantity: formatQty(q, unit), price }).eq("id", itemId);
+  await supabase.from("list_items").update({ qty: q, qty_unit: unit, quantity: formatQty(q, unit), price, need_qty: q }).eq("id", itemId);
   refresh();
 }
 
