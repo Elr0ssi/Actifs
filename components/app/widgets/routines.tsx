@@ -18,6 +18,8 @@ interface Point {
   pct: number | null;
 }
 
+const MONTH_TICK = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
+
 const GRANS: { v: Gran; l: string }[] = [
   { v: "day", l: "Jour" },
   { v: "week", l: "Semaine" },
@@ -59,7 +61,7 @@ function buckets(gran: Gran, today: string, off: number) {
     for (let k = 0; k < 12; k++) {
       const from = new Date(Date.UTC(yr, k, 1)).toISOString().slice(0, 10);
       const to = new Date(Date.UTC(yr, k + 1, 0)).toISOString().slice(0, 10);
-      out.push({ key: from, label: `${MONTHS_FR[k]} ${yr}`, tick: MONTHS_FR[k].slice(0, 3).toLowerCase() + ".", from, to });
+      out.push({ key: from, label: `${MONTHS_FR[k]} ${yr}`, tick: MONTH_TICK[k], from, to });
     }
     title = String(yr);
   }
@@ -87,6 +89,8 @@ export function RoutinesCurve({ data, size, opts, setOpts }: WidgetProps) {
           for (const r of data.routines) {
             const logged = done.has(`${r.id}_${d}`);
             if (!scheduledOn(r, d) || (r.created_at.slice(0, 10) > d && !logged)) continue;
+            // La journée en cours n'est pas finie : une routine pas encore cochée ne compte pas comme manquée.
+            if (d === data.today && !logged) continue;
             due++;
             if (logged) ok++;
           }
@@ -175,20 +179,21 @@ export function RoutinesCurve({ data, size, opts, setOpts }: WidgetProps) {
               {[100, 50, 0].map((v) => (
                 <div key={v} className={cx("absolute inset-x-0 border-t", v === 0 ? "border-stone-300" : "border-dashed border-line")} style={{ top: `${100 - v}%` }} />
               ))}
-              <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible">
-                {segments.filter((s) => s.length > 1).map((s, k) => <path key={`a${k}`} d={area(s)} fill="rgb(var(--brand-500))" fillOpacity={0.12} className="animate-fade" />)}
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="reveal-x absolute inset-0 h-full w-full overflow-visible">
+                {segments.filter((s) => s.length > 1).map((s, k) => <path key={`a${k}`} d={area(s)} fill="rgb(var(--brand-500))" fillOpacity={0.16} />)}
                 {segments.filter((s) => s.length > 1).map((s, k) => (
-                  <path key={`l${k}`} d={path(s)} pathLength={1} className="stroke-draw" fill="none" stroke="rgb(var(--brand-600))" strokeWidth={2.25} strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                  <path key={`l${k}`} d={path(s)} fill="none" stroke="rgb(var(--brand-600))" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
                 ))}
                 {hover !== null && <line x1={xPct(hover)} x2={xPct(hover)} y1={0} y2={100} stroke="rgb(var(--brand-600))" strokeOpacity={0.3} strokeWidth={1} vectorEffect="non-scaling-stroke" />}
               </svg>
               {points.map((p, i) =>
                 p.pct === null ? null : (
-                  <span
-                    key={p.key}
-                    className={cx("absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface bg-brand-600 transition-all", hover === i ? "h-3 w-3" : n > 14 ? "h-1.5 w-1.5 border" : "h-2 w-2")}
-                    style={{ left: `${xPct(i)}%`, top: `${100 - p.pct}%` }}
-                  />
+                  <span key={p.key} className="absolute" style={{ left: `${xPct(i)}%`, top: `${100 - p.pct}%` }}>
+                    <span className={cx("absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface bg-brand-600 shadow transition-all", hover === i ? "h-4 w-4" : n > 14 ? "h-2 w-2 border" : "h-3 w-3")} />
+                    {n <= 12 && (
+                      <span className={cx("tabular absolute -translate-x-1/2 whitespace-nowrap text-[10px] font-semibold text-brand-700", p.pct > 80 ? "top-2" : "-top-6")}>{p.pct}%</span>
+                    )}
+                  </span>
                 )
               )}
             </div>
