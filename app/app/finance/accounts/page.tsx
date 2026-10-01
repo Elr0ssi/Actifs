@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { loadFinanceData, ACCOUNTS } from "@/lib/data/finance";
 import { formatEUR, todayISO } from "@/lib/utils";
 import { updateBalanceAnchor, updateGoal } from "@/app/app/finance/actions";
+import { BalanceHistory } from "@/components/app/finance/balance-history";
 import { SubmitButton } from "@/components/ui/submit-button";
 
 export const metadata: Metadata = { title: "Finance — Comptes" };
@@ -59,22 +60,7 @@ export default async function AccountsPage() {
               <SubmitButton className="btn-primary shrink-0 px-2.5 py-1 text-xs">OK</SubmitButton>
             </form>
 
-            {acc.history.length > 0 && (
-              <details className="text-xs">
-                <summary className="cursor-pointer text-stone-400">Historique ({acc.history.length})</summary>
-                <ul className="mt-2 space-y-1">
-                  {[...acc.history].reverse().map((h) => (
-                    <li key={h.date} className="flex justify-between text-stone-500">
-                      <span>
-                        {new Date(`${h.date}T00:00:00Z`).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}
-                        {h.date > today && <span className="ml-1 rounded-full bg-amber-100 px-1.5 py-px text-[10px] font-medium text-amber-700">à venir</span>}
-                      </span>
-                      <span className="font-medium text-stone-700">{formatEUR(h.balance)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            )}
+            <BalanceHistory account={name} entries={acc.history} today={today} />
           </div>
         );
       })}

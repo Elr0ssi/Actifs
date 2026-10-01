@@ -135,11 +135,54 @@ export async function updateBalanceAnchor(account: string, formData: FormData) {
   refresh();
 }
 
+/** Le solde du compte courant le plus récent est aussi gardé sur le foyer (lecture rapide) : on le remet à jour après chaque changement. */
+async function syncCourantCache(supabase: ReturnType<typeof createClient>, householdId: string) {
+  const { data: latest } = await supabase
+    .from("balance_entries")
+    .select("entry_date, balance")
+    .eq("household_id", householdId)
+    .eq("account", "Courant")
+    .order("entry_date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (latest) await supabase.from("households").update({ current_balance: latest.balance, balance_ref_date: latest.entry_date }).eq("id", householdId);
+}
+
 export async function deleteBalanceEntry(account: string, date: string) {
   const { supabase, householdId } = await ctx();
   if (!householdId) return;
   await supabase.from("balance_entries").delete().eq("household_id", householdId).eq("account", account).eq("entry_date", date);
+  if (account === "Courant") await syncCourantCache(supabase, householdId);
   refresh();
+  revalidatePath("/app/finance/accounts");
+}
+
+/** Corrige un solde déjà saisi : sa date et/ou son montant. */
+export async function editBalanceEntry(account: string, oldDate: string, formData: FormData) {
+  const raw = String(formData.get("balance") ?? "").replace(",", ".");
+  const balance = Number(raw);
+  const date = String(formData.get("entry_date") || "");
+  if (raw === "" || Number.isNaN(balance) || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+  const { supabase, householdId } = await ctx();
+  if (!householdId) return;
+  if (date !== oldDate) await supabase.from("balance_entries").delete().eq("household_id", householdId).eq("account", account).eq("entry_date", oldDate);
+  await supabase.from("balance_entries").upsert({ household_id: householdId, entry_date: date, account, balance }, { onConflict: "household_id,entry_date,account" });
+  if (account === "Courant") await syncCourantCache(supabase, householdId);
+  refresh();
+  revalidatePath("/app/finance/accounts");
+}
+
+/** Efface les soldes plus anciens que `before` (on garde toujours le plus récent). */
+export async function pruneBalanceHistory(account: string, before: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(before)) return;
+  const { supabase, householdId } = await ctx();
+  if (!householdId) return;
+  const { data: latest } = await supabase.from("balance_entries").select("entry_date").eq("household_id", householdId).eq("account", account).order("entry_date", { ascending: false }).limit(1).maybeSingle();
+  const cut = latest && latest.entry_date < before ? latest.entry_date : before;
+  await supabase.from("balance_entries").delete().eq("household_id", householdId).eq("account", account).lt("entry_date", cut);
+  if (account === "Courant") await syncCourantCache(supabase, householdId);
+  refresh();
+  revalidatePath("/app/finance/accounts");
 }
 
 export async function updateGoal(type: "savings" | "investment", formData: FormData) {

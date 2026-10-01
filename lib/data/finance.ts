@@ -57,7 +57,7 @@ export const loadFinanceData = cache(async () => {
   const lastCourant = lastKnown(courantEntries);
   // Courant stays the engine's anchor (still cached on households for quick reads / back-compat).
   const anchor: BalanceAnchor = lastCourant
-    ? { balance: lastCourant.balance, date: lastCourant.date }
+    ? { balance: lastCourant.balance, date: lastCourant.date, history: courantEntries.filter((e) => e.date <= today) }
     : { balance: Number(household?.current_balance ?? 0), date: (household as { balance_ref_date?: string } | null)?.balance_ref_date ?? today };
 
   const accounts = Object.fromEntries(

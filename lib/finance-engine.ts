@@ -40,6 +40,11 @@ export interface Occurrence {
 export interface BalanceAnchor {
   balance: number;
   date: string;
+  /**
+   * Tous les soldes réels saisis (jusqu'à aujourd'hui). Chacun est un montant précis à une date, pas un mouvement :
+   * pour une date donnée, on repart du solde réel le plus proche avant elle au lieu de tout recalculer depuis le dernier.
+   */
+  history?: { date: string; balance: number }[];
 }
 
 const DAY = 86_400_000;
@@ -172,9 +177,13 @@ export function expand(ops: FinOp[], from: string, to: string): Occurrence[] {
 
 /** Continuous treasury: end-of-day balance at `date`, starting from the user's real anchor balance. */
 export function getBalanceAtDate(ops: FinOp[], anchor: BalanceAnchor, date: string) {
-  if (date === anchor.date) return anchor.balance;
-  if (date > anchor.date) return anchor.balance + sum(expand(ops, addDays(anchor.date, 1), date));
-  return anchor.balance - sum(expand(ops, addDays(date, 1), anchor.date));
+  const points = anchor.history?.length ? [...anchor.history].sort((a, b) => a.date.localeCompare(b.date)) : [{ date: anchor.date, balance: anchor.balance }];
+  let base: { date: string; balance: number } | null = null;
+  for (const p of points) if (p.date <= date) base = p;
+  if (base) return base.date === date ? base.balance : base.balance + sum(expand(ops, addDays(base.date, 1), date));
+  // Avant le tout premier solde saisi : on remonte depuis lui.
+  const first = points[0];
+  return first.balance - sum(expand(ops, addDays(date, 1), first.date));
 }
 
 export function getDailyBalances(ops: FinOp[], anchor: BalanceAnchor, from: string, to: string) {
@@ -182,8 +191,11 @@ export function getDailyBalances(ops: FinOp[], anchor: BalanceAnchor, from: stri
   for (const o of expand(ops, from, to)) byDate.set(o.date, (byDate.get(o.date) ?? 0) + o.signed);
   const result: { date: string; balance: number }[] = [];
   let running = getBalanceAtDate(ops, anchor, addDays(from, -1));
+  const real = new Map((anchor.history ?? []).map((h) => [h.date, h.balance]));
   for (let d = from; d <= to; d = addDays(d, 1)) {
     running += byDate.get(d) ?? 0;
+    // Un solde réel saisi ce jour-là remplace le calcul : c'est la vérité du compte.
+    if (real.has(d)) running = real.get(d) as number;
     result.push({ date: d, balance: running });
   }
   return result;
