@@ -42,11 +42,29 @@ const TOOLS = [
   { href: "/calculateurs", icon: "🧾", t: "Salaire net & impôt", d: "Du brut annuel au net mensuel.", rot: "rotate-2", bg: "from-sky-100 to-indigo-50" },
 ];
 
+const FEAT_STYLE = [
+  { rot: "-rotate-1", bg: "from-violet-100 to-indigo-50" },
+  { rot: "rotate-1", bg: "from-emerald-100 to-teal-50" },
+  { rot: "-rotate-2", bg: "from-amber-100 to-orange-50" },
+  { rot: "rotate-2", bg: "from-sky-100 to-blue-50" },
+  { rot: "rotate-1", bg: "from-rose-100 to-pink-50" },
+  { rot: "-rotate-1", bg: "from-fuchsia-100 to-purple-50" },
+];
+
+const FEAT_SHORT: Record<string, string> = {
+  agenda: "Tâches, routines et rentrées d'argent sur une grille horaire.",
+  "taches-et-routines": "Priorités, projets, routines à cocher et séries.",
+  "recettes-et-menu-de-la-semaine": "Un menu par jour, quantités selon le nombre de personnes.",
+  "liste-de-courses": "Quantités fusionnées, formats vendus, prix par enseigne.",
+  "budget-et-finances": "Calendrier financier, reste à vivre, paiements Apple Pay.",
+  notes: "Pages, blocs et recherche, façon Notion.",
+};
+
 const COMPARE = [
-  { before: "Notion", now: "Pages, tâches et listes reliées", icon: "📝" },
-  { before: "Excel / Sheets", now: "Calendrier financier et reste à vivre", icon: "💶" },
-  { before: "Jow", now: "Recettes, menu de la semaine, quantités par personne", icon: "🍽️" },
-  { before: "Google Agenda", now: "Agenda horaire + flux vers Google / iPhone", icon: "📅" },
+  { before: "Notion", now: "Notes & tâches", icon: "📝" },
+  { before: "Excel", now: "Budget", icon: "💶" },
+  { before: "Jow", now: "Recettes & menus", icon: "🍽️" },
+  { before: "Google Agenda", now: "Agenda", icon: "📅" },
 ];
 
 const FAQ = [
@@ -172,26 +190,25 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Fonctionnalités : pastilles-orbes vers les pages dédiées */}
-        <section id="fonctionnalites" className="relative bg-stone-900 py-24 text-white">
-          <div className="mx-auto max-w-6xl px-6">
-            <FadeIn className="mx-auto max-w-2xl text-center">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Six modules, une seule logique</h2>
-              <p className="mt-4 text-stone-300">Chaque module a sa page. Clique pour voir ce qu'il fait, à quoi il sert et comment l'utiliser.</p>
-            </FadeIn>
-            <InView>
-              <div className="mt-14 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-6">
-                {FEATURES.map((f, i) => (
-                  <Link key={f.slug} href={`/fonctionnalites/${f.slug}`} className="fx-in group flex flex-col items-center text-center" style={{ "--d": `${i * 0.08}s` } as React.CSSProperties}>
-                    <span className={cx("fx-float flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br text-4xl shadow-lift ring-4 ring-white/10 transition group-hover:scale-110 group-hover:ring-white/30", f.gradient)} style={{ "--d": `${i * 0.6}s`, "--a": "7px" } as React.CSSProperties}>{f.icon}</span>
-                    <span className="mt-4 text-sm font-semibold">{f.name}</span>
-                    <span className="mt-1 line-clamp-3 text-xs leading-relaxed text-stone-400">{f.short}</span>
-                  </Link>
-                ))}
-              </div>
-            </InView>
-            <p className="mt-12 text-center"><Link href="/fonctionnalites" className="inline-block rounded-xl bg-white px-6 py-3 text-sm font-semibold text-stone-900 transition hover:-translate-y-0.5 hover:bg-brand-50">Voir toutes les fonctionnalités →</Link></p>
+        {/* Fonctionnalités : cartes inclinées vers les pages dédiées */}
+        <section id="fonctionnalites" className="mx-auto max-w-6xl px-6 pb-24">
+          <FadeIn className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Six modules, une seule logique</h2>
+            <p className="mt-4 text-stone-600">Chaque module a sa page. Clique pour voir ce qu'il fait et comment l'utiliser.</p>
+          </FadeIn>
+          <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map((f, i) => (
+              <FadeIn key={f.slug} delay={i * 70}>
+                <Link href={`/fonctionnalites/${f.slug}`} className={cx("group block rounded-[1.75rem] bg-gradient-to-br p-6 shadow-soft transition duration-300 hover:-translate-y-2 hover:rotate-0 hover:shadow-lift", FEAT_STYLE[i % FEAT_STYLE.length].bg, FEAT_STYLE[i % FEAT_STYLE.length].rot)}>
+                  <span className="fx-float flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-3xl shadow-soft" style={{ "--d": `${i * 0.4}s`, "--a": "5px" } as React.CSSProperties}>{f.icon}</span>
+                  <h3 className="mt-5 text-lg font-bold leading-tight text-stone-900">{f.name}</h3>
+                  <p className="mt-1 text-sm text-stone-600">{FEAT_SHORT[f.slug] ?? f.short}</p>
+                  <p className="mt-5 text-sm font-semibold text-brand-700 transition group-hover:translate-x-1">Découvrir →</p>
+                </Link>
+              </FadeIn>
+            ))}
           </div>
+          <p className="mt-12 text-center"><Link href="/fonctionnalites" className="btn-secondary px-5 py-2.5">Voir toutes les fonctionnalités →</Link></p>
         </section>
 
         {/* Tout est relié */}
@@ -240,7 +257,7 @@ export default function LandingPage() {
           <div className="mx-auto max-w-4xl px-6">
             <FadeIn className="text-center">
               <h2 id="remplace" className="text-3xl font-bold tracking-tight sm:text-4xl">Ce que All In remplace</h2>
-              <p className="mt-4 text-stone-600">Garde le meilleur de chaque outil, dans un seul endroit.</p>
+              <p className="mt-4 text-stone-600">Un seul endroit pour tout.</p>
             </FadeIn>
             <InView>
               <div className="mt-12 space-y-4">
@@ -255,7 +272,7 @@ export default function LandingPage() {
               </div>
             </InView>
             <p className="mt-8 text-center text-sm text-stone-500">
-              <Link href="/guides/remplacer-notion-excel-jow" className="text-brand-600 underline underline-offset-4 hover:text-brand-800">Lire le guide : remplacer Notion, Excel et Jow</Link>
+              <Link href="/guides/remplacer-notion-excel-jow" className="text-brand-600 underline underline-offset-4 hover:text-brand-800">Voir le guide</Link>
             </p>
           </div>
         </section>
