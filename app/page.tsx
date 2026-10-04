@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FadeIn } from "@/components/marketing/fade-in";
 import { Aurora, Counter, InView, Marquee } from "@/components/marketing/fx";
-import { CtaBanner, FlowChain } from "@/components/marketing/sections";
+import { Ambience, CtaBanner, FlowChain } from "@/components/marketing/sections";
 import { FEATURES } from "@/lib/marketing/features";
 import { cx } from "@/lib/utils";
 import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
@@ -167,7 +167,9 @@ export default function LandingPage() {
         </section>
 
         {/* Problèmes → solutions : lignes alternées, sans cartes */}
-        <section className="mx-auto max-w-5xl px-6 py-24" aria-labelledby="besoins">
+        <section className="relative overflow-hidden" aria-labelledby="besoins">
+          <Ambience tone="violet" emojis={["😵","✨","🧩"]} />
+          <div className="relative mx-auto max-w-5xl px-6 py-24">
           <FadeIn className="mx-auto max-w-2xl text-center">
             <h2 id="besoins" className="text-3xl font-bold tracking-tight sm:text-4xl">Pour celles et ceux qui jonglent entre 5 outils</h2>
             <p className="mt-4 text-stone-600">Étudiants, jeunes actifs, couples, familles, indépendants : si tu organises ton temps, tes repas et ton argent à plusieurs endroits, All In les réunit.</p>
@@ -188,10 +190,13 @@ export default function LandingPage() {
               </InView>
             ))}
           </div>
+        </div>
         </section>
 
         {/* Fonctionnalités : cartes inclinées vers les pages dédiées */}
-        <section id="fonctionnalites" className="mx-auto max-w-6xl px-6 pb-24">
+        <section id="fonctionnalites" className="relative overflow-hidden bg-gradient-to-b from-transparent via-brand-50/70 to-transparent">
+          <Ambience tone="rose" emojis={["📅","📝","🍽️","💶"]} />
+          <div className="relative mx-auto max-w-6xl px-6 py-24">
           <FadeIn className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Six modules, une seule logique</h2>
             <p className="mt-4 text-stone-600">Chaque module a sa page. Clique pour voir ce qu'il fait et comment l'utiliser.</p>
@@ -209,15 +214,19 @@ export default function LandingPage() {
             ))}
           </div>
           <p className="mt-12 text-center"><Link href="/fonctionnalites" className="btn-secondary px-5 py-2.5">Voir toutes les fonctionnalités →</Link></p>
+        </div>
         </section>
 
         {/* Tout est relié */}
-        <section className="mx-auto max-w-6xl px-6 py-24">
+        <section className="relative overflow-hidden bg-sky-50/60">
+          <Ambience tone="sky" emojis={["🔗","⚡","🔄"]} />
+          <div className="relative mx-auto max-w-6xl px-6 py-24">
           <FadeIn className="mx-auto mb-14 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Ce qui change tout : c'est relié</h2>
             <p className="mt-4 text-stone-600">Une décision dans un module se répercute dans les autres. Aucune ressaisie.</p>
           </FadeIn>
           <FlowChain steps={FLOW} />
+        </div>
         </section>
 
         {/* Chiffres */}
@@ -233,7 +242,9 @@ export default function LandingPage() {
         </section>
 
         {/* Outils gratuits : cartes inclinées */}
-        <section className="mx-auto max-w-6xl px-6 py-24" aria-labelledby="outils">
+        <section className="relative overflow-hidden" aria-labelledby="outils">
+          <Ambience tone="emerald" emojis={["🧮","✅","🛒","💶"]} />
+          <div className="relative mx-auto max-w-6xl px-6 py-24">
           <FadeIn className="mx-auto max-w-2xl text-center">
             <h2 id="outils" className="text-3xl font-bold tracking-tight sm:text-4xl">Essaie gratuitement, sans compte</h2>
             <p className="mt-4 text-stone-600">Une version simple d'All In, directement dans ton navigateur. Pas d'inscription, pas d'abonnement : tes données restent chez toi.</p>
@@ -250,10 +261,13 @@ export default function LandingPage() {
               </FadeIn>
             ))}
           </div>
+        </div>
         </section>
 
         {/* Comparatif : avant → maintenant */}
-        <section className="bg-stone-50 py-24" aria-labelledby="remplace">
+        <section className="relative overflow-hidden bg-stone-100/70" aria-labelledby="remplace">
+          <Ambience tone="violet" emojis={["🗑️","📦"]} />
+          <div className="relative py-24">
           <div className="mx-auto max-w-4xl px-6">
             <FadeIn className="text-center">
               <h2 id="remplace" className="text-3xl font-bold tracking-tight sm:text-4xl">Ce que All In remplace</h2>
@@ -275,10 +289,13 @@ export default function LandingPage() {
               <Link href="/guides/remplacer-notion-excel-jow" className="text-brand-600 underline underline-offset-4 hover:text-brand-800">Voir le guide</Link>
             </p>
           </div>
+        </div>
         </section>
 
         {/* Recettes */}
-        <section className="mx-auto max-w-6xl px-6 py-24">
+        <section className="relative overflow-hidden bg-gradient-to-b from-amber-50/80 to-transparent">
+          <Ambience tone="amber" emojis={["🍅","🥕","🧅","🧀","🌿"]} />
+          <div className="relative mx-auto max-w-6xl px-6 py-24">
           <FadeIn className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Des recettes, et la liste de courses qui va avec</h2>
             <p className="mt-4 text-stone-600">Choisis une recette et un nombre de personnes : All In calcule les quantités à acheter, avec les prix de ton enseigne.</p>
@@ -293,10 +310,13 @@ export default function LandingPage() {
           <FadeIn delay={280} className="mt-8 text-center">
             <Link href="/recettes" className="btn-secondary px-5 py-2.5">Voir toutes les recettes →</Link>
           </FadeIn>
+        </div>
         </section>
 
         {/* Guides : un guide à la une + liste numérotée */}
-        <section className="mx-auto max-w-6xl px-6 pb-24" aria-labelledby="guides">
+        <section className="relative overflow-hidden bg-indigo-50/50" aria-labelledby="guides">
+          <Ambience tone="sky" emojis={["📖","💡","🎯"]} />
+          <div className="relative mx-auto max-w-6xl px-6 py-24">
           <FadeIn className="mx-auto max-w-2xl text-center">
             <h2 id="guides" className="text-3xl font-bold tracking-tight sm:text-4xl">Guides pratiques</h2>
             <p className="mt-4 text-stone-600">Budget, repas, courses, routines : des méthodes simples pour mieux t'organiser.</p>
@@ -329,6 +349,7 @@ export default function LandingPage() {
             </ol>
           </div>
           <p className="mt-8 text-center"><Link href="/guides" className="btn-secondary px-5 py-2.5">Tous les guides →</Link></p>
+        </div>
         </section>
 
         {/* FAQ */}

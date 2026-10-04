@@ -66,3 +66,31 @@ export function StepsRail({ steps }: { steps: { title: string; text: string }[] 
     </InView>
   );
 }
+
+const BLOB = {
+  violet: ["bg-violet-300/45", "bg-brand-200/60"],
+  emerald: ["bg-emerald-300/40", "bg-teal-200/50"],
+  amber: ["bg-amber-300/40", "bg-orange-200/50"],
+  sky: ["bg-sky-300/40", "bg-indigo-200/50"],
+  rose: ["bg-rose-300/35", "bg-fuchsia-200/50"],
+} as const;
+export type AmbienceTone = keyof typeof BLOB;
+
+const EMOJI_POS = ["left-[4%] top-[12%]", "right-[5%] top-[18%]", "left-[9%] bottom-[12%]", "right-[10%] bottom-[16%]", "left-[46%] top-[4%]"];
+
+/** Décor d'ambiance d'une section : halos qui dérivent, motif de points et petits éléments qui flottent. */
+export function Ambience({ tone, emojis = [], dots = true }: { tone: AmbienceTone; emojis?: string[]; dots?: boolean }) {
+  const [a, b] = BLOB[tone];
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      {dots && <div className="absolute inset-0 opacity-70 [background-image:radial-gradient(rgb(120_113_108/0.18)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_70%_70%_at_50%_50%,#000_30%,transparent_100%)]" />}
+      <div className={cx("fx-drift absolute -left-24 top-[10%] h-72 w-72 rounded-full blur-3xl", a)} />
+      <div className={cx("fx-drift absolute -right-24 bottom-[5%] h-80 w-80 rounded-full blur-3xl", b)} style={{ "--d": "-6s", "--t": "22s" } as React.CSSProperties} />
+      {emojis.map((e, i) => (
+        <Float key={e + i} delay={i * 0.9} duration={6 + (i % 3) * 1.5} amp={14} rot={i % 2 ? -8 : 8} className={cx("absolute hidden text-3xl opacity-60 md:block", EMOJI_POS[i % EMOJI_POS.length])}>
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/60 shadow-soft backdrop-blur">{e}</span>
+        </Float>
+      ))}
+    </div>
+  );
+}
