@@ -58,7 +58,7 @@ export const FEATURES: Feature[] = [
       { q: "Les routines apparaissent-elles dans l'agenda ?", a: "Oui, chaque jour prévu, avec une case à cocher et ton suivi de régularité." },
     ],
     tool: { href: "/outils/suivi-habitudes", label: "Essayer le suivi d'habitudes gratuit" },
-    guides: ["creer-une-routine-quotidienne-qui-tient", "remplacer-notion-excel-jow"],
+    guides: ["agenda-partage-en-couple-ou-famille", "synchroniser-calendrier-iphone-google-agenda", "organiser-sa-semaine-le-dimanche", "remplacer-notion-excel-jow"],
   },
   {
     slug: "taches-et-routines",
@@ -96,7 +96,7 @@ export const FEATURES: Feature[] = [
       { q: "Peut-on partager ses tâches à deux ?", a: "Oui, les tâches et projets sont partagés avec les personnes de ton foyer." },
     ],
     tool: { href: "/outils/suivi-habitudes", label: "Essayer le suivi d'habitudes gratuit" },
-    guides: ["creer-une-routine-quotidienne-qui-tient"],
+    guides: ["creer-une-routine-quotidienne-qui-tient", "suivre-ses-habitudes-habit-tracker", "creer-une-liste-de-taches-efficace", "matrice-eisenhower-prioriser-ses-taches"],
   },
   {
     slug: "recettes-et-menu-de-la-semaine",
@@ -134,7 +134,7 @@ export const FEATURES: Feature[] = [
       { q: "Puis-je créer mes propres recettes ?", a: "Oui, avec photo, catégorie, ingrédients, nombre de personnes et étapes." },
     ],
     tool: { href: "/outils/liste-de-courses", label: "Générer une liste de courses gratuite" },
-    guides: ["planifier-ses-repas-de-la-semaine"],
+    guides: ["planifier-ses-repas-de-la-semaine", "batch-cooking-debutant", "idees-repas-pas-chers", "quantites-par-personne"],
   },
   {
     slug: "liste-de-courses",
@@ -172,7 +172,7 @@ export const FEATURES: Feature[] = [
       { q: "La liste est-elle partageable ?", a: "Oui, tout le foyer voit et coche la même liste." },
     ],
     tool: { href: "/outils/liste-de-courses", label: "Essayer le générateur gratuit" },
-    guides: ["faire-sa-liste-de-courses-sans-gaspillage", "planifier-ses-repas-de-la-semaine"],
+    guides: ["faire-sa-liste-de-courses-sans-gaspillage", "reduire-le-gaspillage-alimentaire", "liste-de-courses-partagee-en-couple", "quantites-par-personne"],
   },
   {
     slug: "budget-et-finances",
@@ -210,7 +210,7 @@ export const FEATURES: Feature[] = [
       { q: "Peut-on se connecter directement à sa banque ?", a: "Ce n'est pas encore proposé. Les paiements par carte arrivent via Apple Pay, et les opérations récurrentes sont saisies dans le calendrier." },
     ],
     tool: { href: "/outils/budget-mensuel", label: "Calculer mon reste à vivre" },
-    guides: ["faire-un-budget-mensuel", "calculer-son-reste-a-vivre", "gerer-son-budget-en-couple"],
+    guides: ["faire-un-budget-mensuel", "calculer-son-reste-a-vivre", "gerer-son-budget-en-couple", "regle-50-30-20", "epargne-de-precaution", "reduire-ses-depenses-mensuelles", "calendrier-financier-salaire-et-prelevements", "suivre-ses-depenses-automatiquement"],
   },
   {
     slug: "notes",
@@ -247,7 +247,7 @@ export const FEATURES: Feature[] = [
       { q: "Les notes sont-elles enregistrées automatiquement ?", a: "Oui, quelques instants après chaque modification, avec un indicateur d'enregistrement." },
       { q: "Peut-on partager ses notes ?", a: "Les notes sont partagées avec les personnes de ton foyer." },
     ],
-    guides: ["remplacer-notion-excel-jow"],
+    guides: ["prendre-des-notes-structurees", "remplacer-notion-excel-jow"],
   },
 ];
 

@@ -65,7 +65,7 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
 
           {g.tool && (
             <aside className="mt-8 rounded-2xl border border-brand-200 bg-brand-50 p-5">
-              <p className="text-sm font-semibold text-brand-800">Outil gratuit, sans compte</p>
+              <p className="text-sm font-semibold text-brand-800">{/^\/(outils|calculateurs)/.test(g.tool.href) ? "Outil gratuit, sans compte" : "Dans All In"}</p>
               <p className="mt-1 text-sm text-stone-700">{g.tool.text}</p>
               <Link href={g.tool.href} className="btn-primary mt-3 inline-block px-4 py-2 text-sm">{g.tool.label} →</Link>
             </aside>

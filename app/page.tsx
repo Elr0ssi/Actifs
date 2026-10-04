@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FadeIn } from "@/components/marketing/fade-in";
-import { Aurora, Counter, InView, Marquee } from "@/components/marketing/fx";
+import { Aurora, Counter, Float, InView, Marquee } from "@/components/marketing/fx";
 import { Ambience, CtaBanner, FlowChain } from "@/components/marketing/sections";
 import { FEATURES } from "@/lib/marketing/features";
 import { cx } from "@/lib/utils";
@@ -24,6 +24,15 @@ const PAINS = [
   { icon: "🛒", pain: "Les courses coûtent cher, on jette", fix: "Une liste aux bonnes quantités, arrondie aux formats vendus, pour le bon nombre de personnes.", tone: "from-emerald-500 to-teal-600" },
   { icon: "💸", pain: "On ne sait pas où va l'argent", fix: "Calendrier financier, reste à vivre jusqu'à la prochaine paie, paiements par carte ajoutés tout seuls.", tone: "from-amber-500 to-orange-600" },
   { icon: "🔁", pain: "Les habitudes ne tiennent pas", fix: "Des routines à cocher dans l'agenda et une courbe de régularité par semaine, mois et année.", tone: "from-rose-500 to-pink-600" },
+];
+
+const CHAOS = [
+  { n: "Notion", i: "📄", r: 3, y: 0, tone: "border-stone-200 bg-white text-stone-600" },
+  { n: "Excel", i: "📊", r: -4, y: 10, tone: "border-emerald-200 bg-emerald-50 text-emerald-700" },
+  { n: "Jow", i: "🍲", r: 2, y: -6, tone: "border-amber-200 bg-amber-50 text-amber-700" },
+  { n: "Google Agenda", i: "📆", r: -3, y: 8, tone: "border-sky-200 bg-sky-50 text-sky-700" },
+  { n: "Notes iPhone", i: "🗒️", r: 4, y: -4, tone: "border-yellow-200 bg-yellow-50 text-yellow-700" },
+  { n: "Listes papier", i: "🧾", r: -2, y: 6, tone: "border-rose-200 bg-rose-50 text-rose-700" },
 ];
 
 const REPLACES = ["Notion", "Excel", "Google Sheets", "Jow", "Google Agenda", "Todoist", "Apple Notes", "Listes papier", "Splitwise"];
@@ -174,23 +183,38 @@ export default function LandingPage() {
             <h2 id="besoins" className="text-3xl font-bold tracking-tight sm:text-4xl">Pour celles et ceux qui jonglent entre 5 outils</h2>
             <p className="mt-4 text-stone-600">Étudiants, jeunes actifs, couples, familles, indépendants : si tu organises ton temps, tes repas et ton argent à plusieurs endroits, All In les réunit.</p>
           </FadeIn>
-          <div className="mt-16 space-y-14">
-            {PAINS.map((n, i) => (
-              <InView key={n.pain}>
-                <div className={cx("flex flex-col items-center gap-6 sm:flex-row sm:gap-10", i % 2 === 1 && "sm:flex-row-reverse")}>
-                  <div className={cx("fx-in relative flex h-28 w-28 shrink-0 items-center justify-center rounded-[2rem] bg-gradient-to-br text-5xl text-white shadow-lift", n.tone)}>
-                    <span className="fx-float" style={{ "--d": `${i * 0.5}s`, "--a": "6px" } as React.CSSProperties}>{n.icon}</span>
-                    <span className="absolute -inset-3 -z-10 rounded-[2.4rem] bg-gradient-to-br opacity-20 blur-xl" />
-                  </div>
-                  <div className={cx("fx-in text-center sm:text-left", i % 2 === 1 && "sm:text-right")} style={{ "--d": "0.12s" } as React.CSSProperties}>
-                    <p className="text-sm font-semibold uppercase tracking-wider text-stone-400 line-through decoration-rose-400">{n.pain}</p>
-                    <p className="mt-2 max-w-lg text-xl font-semibold leading-snug text-stone-900 sm:text-2xl">{n.fix}</p>
-                  </div>
+
+          {/* Du chaos à un seul endroit */}
+          <InView>
+            <div className="mt-14 flex flex-wrap items-center justify-center gap-3 sm:gap-4" aria-hidden>
+              {CHAOS.map((c, i) => (
+                <Float key={c.n} delay={i * 0.5} duration={5 + (i % 3)} amp={8} rot={c.r} className="fx-in" >
+                  <span className={cx("inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-semibold shadow-soft", c.tone)} style={{ transform: `translateY(${c.y}px)` }}>
+                    <span>{c.i}</span>{c.n}
+                  </span>
+                </Float>
+              ))}
+            </div>
+            <div className="relative mx-auto my-2 flex h-28 w-full max-w-xs items-center justify-center" aria-hidden>
+              <svg className="absolute inset-x-0 top-0 h-16 w-full" viewBox="0 0 200 60" preserveAspectRatio="none" fill="none">
+                <path d="M10 0 C 60 40, 90 30, 100 58" stroke="rgb(var(--brand-300))" strokeWidth="2" className="fx-dash" vectorEffect="non-scaling-stroke" />
+                <path d="M190 0 C 140 40, 110 30, 100 58" stroke="rgb(var(--brand-300))" strokeWidth="2" className="fx-dash" vectorEffect="non-scaling-stroke" />
+                <path d="M100 0 L 100 58" stroke="rgb(var(--brand-300))" strokeWidth="2" className="fx-dash" vectorEffect="non-scaling-stroke" />
+              </svg>
+              <span className="fx-ring absolute bottom-0 h-12 w-40 rounded-full border border-brand-400" />
+              <span className="fx-in relative mt-12 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-500 to-violet-700 px-6 py-2.5 text-sm font-bold text-white shadow-lift">✨ All In : un seul endroit</span>
+            </div>
+            <div className="mt-10 grid divide-stone-200/80 sm:grid-cols-2 sm:divide-x lg:grid-cols-4">
+              {PAINS.map((n, i) => (
+                <div key={n.pain} className="fx-in px-6 py-6 text-center" style={{ "--d": `${i * 0.12}s` } as React.CSSProperties}>
+                  <span className={cx("mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br text-2xl text-white shadow-lift", n.tone)}>{n.icon}</span>
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-stone-400 line-through decoration-rose-400">{n.pain}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-stone-700">{n.fix}</p>
                 </div>
-              </InView>
-            ))}
+              ))}
+            </div>
+          </InView>
           </div>
-        </div>
         </section>
 
         {/* Fonctionnalités : cartes inclinées vers les pages dédiées */}

@@ -1,3 +1,4 @@
+import { MORE_GUIDES } from "@/lib/marketing/guides-more";
 export interface GuideSection {
   h2: string;
   paragraphs: string[];
@@ -10,7 +11,7 @@ export interface Guide {
   title: string;
   h1: string;
   description: string;
-  category: "Budget" | "Courses & repas" | "Organisation";
+  category: "Budget" | "Courses & repas" | "Organisation" | "Agenda & notes";
   minutes: number;
   published: string;
   intro: string;
@@ -20,7 +21,7 @@ export interface Guide {
   related: string[];
 }
 
-export const GUIDES: Guide[] = [
+const BASE_GUIDES: Guide[] = [
   {
     slug: "faire-un-budget-mensuel",
     title: "Comment faire un budget mensuel simple et qui tient (méthode + modèle)",
@@ -367,5 +368,7 @@ export const GUIDES: Guide[] = [
     related: ["faire-un-budget-mensuel", "calculer-son-reste-a-vivre"],
   },
 ];
+
+export const GUIDES: Guide[] = [...BASE_GUIDES, ...MORE_GUIDES];
 
 export const getGuide = (slug: string) => GUIDES.find((g) => g.slug === slug);
