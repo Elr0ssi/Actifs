@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FadeIn } from "@/components/marketing/fade-in";
-import { Aurora, Bubble, Counter, Float, InView, Marquee } from "@/components/marketing/fx";
-import { AgendaMock } from "@/components/marketing/mocks";
+import { Aurora, Counter, InView, Marquee } from "@/components/marketing/fx";
 import { CtaBanner, FlowChain } from "@/components/marketing/sections";
 import { FEATURES } from "@/lib/marketing/features";
 import { cx } from "@/lib/utils";
@@ -84,17 +83,17 @@ export default function LandingPage() {
 
       <main>
         {/* Hero */}
-        <section className="relative mx-auto max-w-6xl px-6 pb-16 pt-14 sm:pt-20">
-          <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_1fr]">
+        <section className="mx-auto max-w-6xl px-6 pb-12 pt-16 sm:pt-24">
+          <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
             <div>
               <FadeIn>
                 <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-xs font-semibold text-brand-700">
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" /> Outils gratuits sans compte · seul ou à deux
+                  Outils gratuits sans compte · seul ou à deux
                 </span>
               </FadeIn>
               <FadeIn delay={80}>
                 <h1 className="mt-6 text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl lg:text-[3.4rem] lg:leading-[1.05]">
-                  Agenda, courses, budget et notes : <span className="bg-gradient-to-r from-brand-500 to-violet-700 bg-clip-text text-transparent">une seule appli</span>
+                  Agenda, courses, budget et notes : <span className="text-brand-600">une seule appli</span>
                 </h1>
               </FadeIn>
               <FadeIn delay={160}>
@@ -105,19 +104,41 @@ export default function LandingPage() {
               <FadeIn delay={240}>
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <Link href="/signup" className="btn-primary px-6 py-3 text-base">Créer mon espace</Link>
-                  <Link href="/fonctionnalites" className="btn-secondary px-6 py-3 text-base">Découvrir les fonctionnalités</Link>
+                  <Link href="/outils" className="btn-secondary px-6 py-3 text-base">Essayer les outils gratuits</Link>
                 </div>
-                <p className="mt-3 text-xs text-stone-400">Ou <Link href="/outils" className="underline underline-offset-2 hover:text-brand-600">essaie un outil gratuit</Link> : tes données restent dans ton navigateur.</p>
+                <p className="mt-3 text-xs text-stone-400">Les outils gratuits fonctionnent sans inscription : tes données restent dans ton navigateur.</p>
               </FadeIn>
             </div>
 
-            <div className="relative mx-auto w-full max-w-lg pb-6 pt-8" aria-hidden>
-              <AgendaMock />
-              <Float delay={0} duration={7} amp={12} rot={2} className="absolute -left-4 top-0 sm:-left-10"><Bubble icon="🍝" title="Pâtes tomate" sub="ce soir · 2 pers." tone="amber" /></Float>
-              <Float delay={1.4} duration={8} amp={14} rot={-2} className="absolute -right-2 top-16 sm:-right-8"><Bubble icon="💶" title="+ 1 845 €" sub="salaire reçu" tone="green" /></Float>
-              <Float delay={0.7} duration={6.5} amp={10} rot={3} className="absolute -left-2 bottom-4 sm:-left-8"><Bubble icon="🔥" title="12 jours" sub="série de routines" tone="rose" /></Float>
-              <Float delay={2.1} duration={7.5} amp={12} rot={-3} className="absolute -right-2 bottom-0 sm:-right-6"><Bubble icon="🛒" title="1 kg d'oignons" sub="besoin : 300 g" tone="sky" /></Float>
-            </div>
+            {/* Aperçu du produit */}
+            <FadeIn delay={200}>
+              <div className="relative mx-auto w-full max-w-md" aria-hidden>
+                <div className="card p-4 shadow-lift">
+                  <div className="flex items-center justify-between text-xs font-semibold text-stone-800"><span>Agenda · semaine</span><span className="rounded-full bg-brand-50 px-2 py-0.5 text-brand-700">Aujourd'hui</span></div>
+                  <div className="mt-3 grid grid-cols-5 gap-1.5 text-[10px] text-stone-400">
+                    {["Lun", "Mar", "Mer", "Jeu", "Ven"].map((d) => <span key={d} className="text-center">{d}</span>)}
+                    <div className="space-y-1"><span className="block rounded-md bg-brand-500/15 px-1 py-2 text-brand-800">Réunion</span><span className="block rounded-md bg-emerald-500/15 px-1 py-1 text-emerald-700">↻ Sport</span></div>
+                    <div className="space-y-1"><span className="block rounded-md bg-amber-500/15 px-1 py-4 text-amber-800">Appel client</span></div>
+                    <div className="space-y-1"><span className="block rounded-md bg-emerald-500/15 px-1 py-1 text-emerald-700">↻ Lecture</span><span className="block rounded-md bg-sky-500/15 px-1 py-3 text-sky-800">Dentiste</span></div>
+                    <div className="space-y-1"><span className="block rounded-md bg-brand-500/15 px-1 py-2 text-brand-800">Devis</span></div>
+                    <div className="space-y-1"><span className="block rounded-md bg-emerald-500/15 px-1 py-1 text-emerald-700">↻ Sport</span><span className="block rounded-md bg-rose-500/15 px-1 py-2 text-rose-700">+ 1 845 €</span></div>
+                  </div>
+                </div>
+                <div className="card -mt-3 ml-8 mr-[-1rem] p-4 shadow-lift">
+                  <p className="text-xs font-semibold text-stone-800">Repas de la semaine</p>
+                  <div className="mt-2 flex gap-2">
+                    {[["Lun", "🍗", "Poulet basquaise"], ["Mar", "🍝", "Pâtes tomate"], ["Mer", "🌶️", "Chili sin carne"]].map(([d, e, n]) => (
+                      <div key={d} className="flex-1 rounded-xl border border-line p-2"><p className="text-[10px] font-bold text-stone-700">{d}</p><p className="my-1 text-center text-2xl">{e}</p><p className="truncate text-[10px] text-stone-600">{n}</p></div>
+                    ))}
+                  </div>
+                </div>
+                <div className="card -mt-3 mr-8 p-4 shadow-lift">
+                  <p className="text-xs text-stone-500">Reste à vivre jusqu'au prochain salaire</p>
+                  <p className="text-2xl font-bold text-stone-900">642 €</p>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-stone-100"><div className="h-full w-2/3 rounded-full bg-gradient-to-r from-brand-400 to-brand-600" /></div>
+                </div>
+              </div>
+            </FadeIn>
           </div>
         </section>
 
