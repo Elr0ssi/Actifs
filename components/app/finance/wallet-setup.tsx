@@ -12,7 +12,7 @@ export function WalletSetup({ token, defaultOpen }: { token: string; defaultOpen
   const [tested, setTested] = useState(false);
   const origin = typeof window === "undefined" ? "" : window.location.origin;
   const url = `${origin}/api/wallet/${token}`;
-  const template = `${url}?merchant=&amount=&card=`;
+  const template = url;
 
   const copy = async (what: string, text: string) => {
     try {
@@ -40,20 +40,30 @@ export function WalletSetup({ token, defaultOpen }: { token: string; defaultOpen
               <input readOnly value={template} onFocus={(e) => e.currentTarget.select()} className="input flex-1 font-mono text-xs" aria-label="Adresse de réception des paiements" />
               <button type="button" className="btn-primary" onClick={() => copy("url", template)}>{copied === "url" ? "Copié ✓" : "Copier"}</button>
             </div>
-            <p className="mt-1 text-[11px] text-stone-500">Elle se termine par <span className={CODE}>?merchant=&amp;amount=&amp;card=</span> : c'est là que Raccourcis viendra mettre le commerçant, le montant et la carte.</p>
           </div>
 
           <div>
-            <p className="label mb-1.5">2 · Sur ton iPhone : Raccourcis → Automatisation → + → Transaction</p>
+            <p className="label mb-1.5">2 · Sur ton iPhone, dans l'app Raccourcis</p>
             <ol className="list-decimal space-y-1.5 pl-5 leading-relaxed">
-              <li>Choisis tes cartes, garde « Toute transaction », <b>Suivant</b>. Tu arrives sur l'écran avec <b>« Recevoir transaction en tant qu'entrée »</b>.</li>
-              <li>Si une action <b>« Partager Contenu avec App »</b> est présente, supprime-la (croix à droite).</li>
-              <li>Dans « Rechercher des actions », tape <b>URL</b> et ajoute <b>« Obtenir le contenu de l'URL »</b>.</li>
-              <li>Touche le champ URL et <b>colle</b> l'adresse copiée.</li>
-              <li>Place le curseur juste après <span className={CODE}>merchant=</span>, puis dans la barre au-dessus du clavier touche la variable <b>Transaction</b> et choisis sa propriété <b>Commerçant</b>. Fais pareil après <span className={CODE}>amount=</span> avec <b>Montant</b>, et après <span className={CODE}>card=</span> avec <b>Carte ou Pass</b>.</li>
-              <li>Laisse la méthode sur <b>GET</b> (par défaut), touche <b>✓</b> en haut à droite, puis désactive <b>« Demander avant d'exécuter »</b> s'il apparaît.</li>
+              <li>Ouvre <b>Raccourcis</b>, va dans <b>Automatisation</b> et appuie sur <b>+</b>.</li>
+              <li>Choisis <b>Transaction</b>.</li>
+              <li>Dans <b>« Quand je touche »</b>, sélectionne ta ou tes cartes Wallet, puis continue.</li>
+              <li>Choisis l'exécution <b>automatique</b>, sans demander de validation à chaque paiement.</li>
+              <li>Ajoute l'action <b>« Obtenir le contenu de l'URL »</b>.</li>
+              <li>Colle l'adresse copiée à l'étape 1 dans le champ URL.</li>
+              <li>Affiche les options supplémentaires et choisis la méthode <b>POST</b>.</li>
+              <li>Pour <b>« Demander le corps »</b>, choisis <b>JSON</b>.</li>
+              <li>
+                Ajoute ces trois champs, en choisissant à chaque fois la variable de la transaction qui correspond :
+                <ul className="mt-1 space-y-0.5 text-[12px]">
+                  <li><span className={CODE}>merchant</span> → le commerçant</li>
+                  <li><span className={CODE}>amount</span> → le montant</li>
+                  <li><span className={CODE}>card</span> → la carte</li>
+                </ul>
+              </li>
+              <li>Valide en haut à droite.</li>
             </ol>
-            <p className="mt-2 rounded-lg bg-amber-500/10 px-3 py-2 text-[12px] text-amber-800">Apple ne permet pas de partager cette automatisation par lien : elle doit être créée sur le téléphone. Les noms des propriétés peuvent varier légèrement selon la version d'iOS : prends celles qui correspondent au commerçant, au montant et à la carte.</p>
+            <p className="mt-2 rounded-lg bg-amber-500/10 px-3 py-2 text-[12px] text-amber-800">Apple ne permet pas de partager cette automatisation par lien : elle se crée une seule fois sur le téléphone. Le reste est automatique.</p>
           </div>
 
           <div>
