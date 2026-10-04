@@ -44,13 +44,6 @@ const FLOW = [
   { icon: "📅", title: "L'agenda affiche tout", sub: "Tâches, routines, rentrées d'argent", tone: "from-brand-400 to-violet-600" },
 ];
 
-const TOOLS = [
-  { href: "/outils/budget-mensuel", icon: "💶", t: "Budget & reste à vivre", d: "Revenus, charges, règle 50/30/20.", rot: "-rotate-2", bg: "from-emerald-100 to-teal-50" },
-  { href: "/outils/liste-de-courses", icon: "🛒", t: "Liste de courses", d: "Depuis des recettes, aux bonnes quantités.", rot: "rotate-1", bg: "from-amber-100 to-orange-50" },
-  { href: "/outils/suivi-habitudes", icon: "🔁", t: "Suivi d'habitudes", d: "Jours prévus, séries, régularité.", rot: "-rotate-1", bg: "from-rose-100 to-pink-50" },
-  { href: "/calculateurs", icon: "🧾", t: "Salaire net & impôt", d: "Du brut annuel au net mensuel.", rot: "rotate-2", bg: "from-sky-100 to-indigo-50" },
-];
-
 const FEAT_STYLE = [
   { rot: "-rotate-1", bg: "from-violet-100 to-indigo-50" },
   { rot: "rotate-1", bg: "from-emerald-100 to-teal-50" },
@@ -68,13 +61,6 @@ const FEAT_SHORT: Record<string, string> = {
   "budget-et-finances": "Calendrier financier, reste à vivre, paiements Apple Pay.",
   notes: "Pages, blocs et recherche, façon Notion.",
 };
-
-const COMPARE = [
-  { before: "Notion", now: "Notes & tâches", icon: "📝" },
-  { before: "Excel", now: "Budget", icon: "💶" },
-  { before: "Jow", now: "Recettes & menus", icon: "🍽️" },
-  { before: "Google Agenda", now: "Agenda", icon: "📅" },
-];
 
 const FAQ = [
   { q: "All In, c'est quoi exactement ?", a: "Un espace personnel qui regroupe un agenda, des tâches et routines, des listes de courses et des recettes, un budget avec calendrier financier et des notes. Il se partage à deux (couple, colocation, famille)." },
@@ -263,57 +249,6 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
-        </section>
-
-        {/* Outils gratuits : cartes inclinées */}
-        <section className="relative overflow-hidden" aria-labelledby="outils">
-          <Ambience tone="emerald" emojis={["🧮","✅","🛒","💶"]} />
-          <div className="relative mx-auto max-w-6xl px-6 py-24">
-          <FadeIn className="mx-auto max-w-2xl text-center">
-            <h2 id="outils" className="text-3xl font-bold tracking-tight sm:text-4xl">Essaie gratuitement, sans compte</h2>
-            <p className="mt-4 text-stone-600">Une version simple d'All In, directement dans ton navigateur. Pas d'inscription, pas d'abonnement : tes données restent chez toi.</p>
-          </FadeIn>
-          <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {TOOLS.map((t, i) => (
-              <FadeIn key={t.href} delay={i * 80}>
-                <Link href={t.href} className={cx("group block rounded-[1.75rem] bg-gradient-to-br p-6 shadow-soft transition duration-300 hover:rotate-0 hover:-translate-y-2 hover:shadow-lift", t.bg, t.rot)}>
-                  <span className="fx-float flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-3xl shadow-soft" style={{ "--d": `${i * 0.4}s`, "--a": "5px" } as React.CSSProperties}>{t.icon}</span>
-                  <h3 className="mt-5 text-lg font-bold leading-tight text-stone-900">{t.t}</h3>
-                  <p className="mt-1 text-sm text-stone-600">{t.d}</p>
-                  <p className="mt-5 text-sm font-semibold text-brand-700 transition group-hover:translate-x-1">Essayer →</p>
-                </Link>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-        </section>
-
-        {/* Comparatif : avant → maintenant */}
-        <section className="relative overflow-hidden bg-stone-100/70" aria-labelledby="remplace">
-          <Ambience tone="violet" emojis={["🗑️","📦"]} />
-          <div className="relative py-24">
-          <div className="mx-auto max-w-4xl px-6">
-            <FadeIn className="text-center">
-              <h2 id="remplace" className="text-3xl font-bold tracking-tight sm:text-4xl">Ce que All In remplace</h2>
-              <p className="mt-4 text-stone-600">Un seul endroit pour tout.</p>
-            </FadeIn>
-            <InView>
-              <div className="mt-12 space-y-4">
-                {COMPARE.map((c, i) => (
-                  <div key={c.before} className="fx-slide flex flex-wrap items-center gap-3 sm:flex-nowrap sm:gap-4" style={{ "--d": `${i * 0.12}s` } as React.CSSProperties}>
-                    <span className="rounded-full bg-stone-200 px-4 py-2 text-sm font-medium text-stone-500 line-through">{c.before}</span>
-                    <span className="hidden h-px flex-1 bg-gradient-to-r from-stone-300 to-brand-400 sm:block" />
-                    <span className="text-brand-500">→</span>
-                    <span className="flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-500 to-violet-600 px-5 py-2 text-sm font-semibold text-white shadow-lift"><span>{c.icon}</span>{c.now}</span>
-                  </div>
-                ))}
-              </div>
-            </InView>
-            <p className="mt-8 text-center text-sm text-stone-500">
-              <Link href="/guides/remplacer-notion-excel-jow" className="text-brand-600 underline underline-offset-4 hover:text-brand-800">Voir le guide</Link>
-            </p>
-          </div>
-        </div>
         </section>
 
         {/* Recettes */}
