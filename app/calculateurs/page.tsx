@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { FadeIn } from "@/components/marketing/fade-in";
+import { pageMeta } from "@/lib/marketing/site";
 import { TaxCalculator } from "@/components/app/finance/tax-calculator";
 
-export const metadata: Metadata = {
-  title: "Calculateur salaire net & impôt — All In",
-  description: "Passe du salaire brut annuel au net mensuel, et estime ta provision d'impôt sur le revenu. Gratuit, sans compte.",
-};
+export const metadata: Metadata = pageMeta({
+  title: "Calculateur salaire brut net et impôt sur le revenu — gratuit",
+  description: "Passe du salaire brut annuel au net mensuel et estime ta provision d'impôt sur le revenu (barème progressif, alternance). Gratuit, sans compte.",
+  path: "/calculateurs",
+});
 
 const POINTS = [
   { icon: "💶", title: "Brut → net mensuel", desc: "Un ratio indicatif adapté à ton statut (cadre ou non-cadre)." },

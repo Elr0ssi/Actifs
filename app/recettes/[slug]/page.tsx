@@ -5,6 +5,8 @@ import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { FadeIn } from "@/components/marketing/fade-in";
 import { RECIPES, getRecipe } from "@/lib/marketing/recipes";
 import { RecipeCard } from "@/components/marketing/recipe-card";
+import { JsonLd, breadcrumbJsonLd } from "@/components/marketing/json-ld";
+import { SITE_NAME, absolute } from "@/lib/marketing/site";
 
 export function generateStaticParams() {
   return RECIPES.map((r) => ({ slug: r.slug }));
@@ -13,7 +15,16 @@ export function generateStaticParams() {
 export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
   const recipe = getRecipe(params.slug);
   if (!recipe) return {};
-  return { title: `${recipe.name} — All In`, description: recipe.desc };
+  const path = `/recettes/${recipe.slug}`;
+  const title = `${recipe.name} : recette facile en ${recipe.time} (${recipe.servings} pers.)`;
+  const description = `${recipe.desc} Ingrédients, étapes et liste de courses automatique.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: { title, description, url: absolute(path), type: "article", locale: "fr_FR", siteName: SITE_NAME, ...(recipe.image ? { images: [recipe.image] } : {}) },
+    twitter: { card: "summary_large_image", title, description },
+  };
 }
 
 export default function RecipeDetailPage({ params }: { params: { slug: string } }) {
@@ -24,6 +35,27 @@ export default function RecipeDetailPage({ params }: { params: { slug: string } 
 
   return (
     <div className="relative overflow-hidden">
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Recipe",
+            name: recipe.name,
+            description: recipe.desc,
+            recipeCategory: recipe.category,
+            recipeCuisine: "Française",
+            recipeYield: `${recipe.servings} personnes`,
+            prepTime: `PT${recipe.prepMinutes}M`,
+            cookTime: `PT${recipe.cookMinutes}M`,
+            totalTime: `PT${recipe.prepMinutes + recipe.cookMinutes}M`,
+            recipeIngredient: recipe.ingredients,
+            recipeInstructions: recipe.steps.map((text, i) => ({ "@type": "HowToStep", position: i + 1, text })),
+            ...(recipe.image ? { image: [absolute(recipe.image)] } : {}),
+            author: { "@type": "Organization", name: SITE_NAME },
+          },
+          breadcrumbJsonLd([{ name: "Accueil", url: absolute("/") }, { name: "Recettes", url: absolute("/recettes") }, { name: recipe.name, url: absolute(`/recettes/${recipe.slug}`) }]),
+        ]}
+      />
       <SiteHeader current="recettes" />
       <main className="mx-auto max-w-4xl px-6 py-12">
         <Link href="/recettes" className="text-sm font-medium text-stone-500 hover:text-stone-800">← Toutes les recettes</Link>

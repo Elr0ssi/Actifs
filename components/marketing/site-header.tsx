@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { LogoWordmark } from "@/components/logo";
 
-export function SiteHeader({ current }: { current?: "recettes" | "calculateurs" | "tarifs" }) {
-  const link = (href: string, label: string, key?: typeof current) => (
+type Current = "recettes" | "calculateurs" | "tarifs" | "outils" | "guides";
+
+export function SiteHeader({ current }: { current?: Current }) {
+  const link = (href: string, label: string, key?: Current) => (
     <Link href={href} className={key && key === current ? "text-stone-900" : "hover:text-stone-900"}>
       {label}
     </Link>
@@ -11,10 +13,11 @@ export function SiteHeader({ current }: { current?: "recettes" | "calculateurs" 
     <header className="sticky top-0 z-40 border-b border-stone-200/70 bg-surface/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/"><LogoWordmark className="text-lg" /></Link>
-        <nav className="hidden items-center gap-8 text-sm font-medium text-stone-600 md:flex">
+        <nav aria-label="Navigation principale" className="hidden items-center gap-7 text-sm font-medium text-stone-600 md:flex">
           <Link href="/#fonctionnalites" className="hover:text-stone-900">Fonctionnalités</Link>
+          {link("/outils", "Outils gratuits", "outils")}
+          {link("/guides", "Guides", "guides")}
           {link("/recettes", "Recettes", "recettes")}
-          {link("/calculateurs", "Calculateurs", "calculateurs")}
           {link("/tarifs", "Tarifs", "tarifs")}
         </nav>
         <div className="flex items-center gap-3">
@@ -28,19 +31,59 @@ export function SiteHeader({ current }: { current?: "recettes" | "calculateurs" 
   );
 }
 
+const FOOTER_COLUMNS: { title: string; links: [string, string][] }[] = [
+  {
+    title: "Outils gratuits",
+    links: [
+      ["/outils/budget-mensuel", "Budget mensuel & reste à vivre"],
+      ["/outils/liste-de-courses", "Liste de courses par recettes"],
+      ["/outils/suivi-habitudes", "Suivi d'habitudes"],
+      ["/calculateurs", "Salaire net & impôt"],
+    ],
+  },
+  {
+    title: "Guides",
+    links: [
+      ["/guides/faire-un-budget-mensuel", "Faire un budget mensuel"],
+      ["/guides/calculer-son-reste-a-vivre", "Calculer son reste à vivre"],
+      ["/guides/planifier-ses-repas-de-la-semaine", "Planifier ses repas"],
+      ["/guides/remplacer-notion-excel-jow", "Remplacer Notion, Excel et Jow"],
+      ["/guides", "Tous les guides"],
+    ],
+  },
+  {
+    title: "All In",
+    links: [
+      ["/#fonctionnalites", "Fonctionnalités"],
+      ["/recettes", "Recettes"],
+      ["/tarifs", "Tarifs"],
+      ["/login", "Connexion"],
+      ["/signup", "Inscription"],
+    ],
+  },
+];
+
 export function SiteFooter() {
   return (
-    <footer className="border-t border-stone-200 py-10">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
-        <p className="text-sm text-stone-500">© {new Date().getFullYear()} All In. Organise ta vie, simplement.</p>
-        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm font-medium text-stone-500">
-          <Link href="/recettes" className="hover:text-stone-800">Recettes</Link>
-          <Link href="/calculateurs" className="hover:text-stone-800">Calculateurs</Link>
-          <Link href="/tarifs" className="hover:text-stone-800">Tarifs</Link>
-          <span className="text-stone-300">·</span>
-          <Link href="/login" className="hover:text-stone-800">Connexion</Link>
-          <Link href="/signup" className="hover:text-stone-800">Inscription</Link>
+    <footer className="border-t border-stone-200 py-12">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <LogoWordmark className="text-lg" />
+            <p className="mt-3 max-w-xs text-sm text-stone-500">Tâches, agenda, courses, recettes, budget et notes : un seul endroit pour organiser ta vie, seul ou à deux.</p>
+          </div>
+          {FOOTER_COLUMNS.map((col) => (
+            <nav key={col.title} aria-label={col.title}>
+              <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">{col.title}</p>
+              <ul className="mt-3 space-y-2 text-sm text-stone-600">
+                {col.links.map(([href, label]) => (
+                  <li key={href}><Link href={href} className="hover:text-stone-900">{label}</Link></li>
+                ))}
+              </ul>
+            </nav>
+          ))}
         </div>
+        <p className="mt-10 text-sm text-stone-400">© {new Date().getFullYear()} All In. Organise ta vie, simplement.</p>
       </div>
     </footer>
   );

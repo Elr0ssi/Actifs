@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { FadeIn } from "@/components/marketing/fade-in";
+import { pageMeta } from "@/lib/marketing/site";
 import { RecipesBrowser } from "@/components/marketing/recipes-browser";
 
-export const metadata: Metadata = {
-  title: "Recettes — All In",
-  description: "Des recettes faciles, avec leur liste de courses générée automatiquement dans All In.",
-};
+export const metadata: Metadata = pageMeta({
+  title: "Recettes simples et rapides avec liste de courses automatique",
+  description: "Plus de 90 recettes faciles (pâtes, riz, végétarien, rapide…) avec ingrédients, étapes et liste de courses générée automatiquement pour le bon nombre de personnes.",
+  path: "/recettes",
+});
 
 export default function RecipesPage() {
   return (

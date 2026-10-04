@@ -5,13 +5,18 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://actifs.app"),
   title: {
-    default: "All In — Le hub qui organise ta vie",
-    template: "%s — All In",
+    default: "All In — Agenda, tâches, courses, recettes, budget et notes",
+    template: "%s | All In",
   },
   description:
-    "All In regroupe tes tâches, tes projets, tes routines, tes listes partagées et tes finances dans un seul espace personnel, gratuit et ultra ergonomique.",
+    "All In regroupe agenda, tâches, routines, listes de courses, recettes, budget et notes dans un seul espace, seul ou à deux. Outils gratuits sans compte.",
   keywords: [
+    "agenda en ligne",
     "gestion de tâches",
+    "budget mensuel",
+    "reste à vivre",
+    "planifier ses repas",
+    "alternative à Notion",
     "organisation quotidienne",
     "budget personnel",
     "liste de courses partagée",
@@ -20,17 +25,18 @@ export const metadata: Metadata = {
     "gestion financière personnelle",
   ],
   openGraph: {
-    title: "All In — Le hub qui organise ta vie",
+    title: "All In — Agenda, tâches, courses, recettes, budget et notes",
     description:
-      "Tâches, projets, routines, listes partagées et finances : un seul espace, gratuit et ultra ergonomique.",
+      "Remplace Notion, Excel, Jow et Google Agenda par un seul espace, seul ou à deux.",
     type: "website",
+    siteName: "All In",
     locale: "fr_FR",
   },
   appleWebApp: { capable: true, title: "All In", statusBarStyle: "default" },
   twitter: {
     card: "summary_large_image",
-    title: "All In — Le hub qui organise ta vie",
-    description: "Tâches, routines, listes partagées et finances dans un seul espace, gratuit.",
+    title: "All In — Agenda, tâches, courses, recettes, budget et notes",
+    description: "Un seul espace pour organiser ton temps, tes repas et ton argent.",
   },
 };
 

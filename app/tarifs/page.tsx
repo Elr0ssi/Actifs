@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { FadeIn } from "@/components/marketing/fade-in";
+import { JsonLd, faqJsonLd } from "@/components/marketing/json-ld";
+import { pageMeta } from "@/lib/marketing/site";
 
-export const metadata: Metadata = {
-  title: "Tarifs — All In",
-  description: "All In est 100% gratuit : tâches, listes, routines, calendrier et finances, sans carte bancaire ni limite.",
-};
+export const metadata: Metadata = pageMeta({
+  title: "Tarifs All In : outils gratuits sans compte et espace complet",
+  description: "Les outils All In sont gratuits et sans compte : budget, liste de courses, habitudes. Crée un espace pour tout relier : agenda, tâches, courses, recettes, budget et notes.",
+  path: "/tarifs",
+});
 
 const INCLUDED = [
   "Tâches, projets & routines illimités",
@@ -20,6 +23,7 @@ const INCLUDED = [
 const FAQ = [
   { q: "All In est-il vraiment gratuit ?", a: "Oui, entièrement. Aucune carte bancaire n'est demandée à l'inscription, et il n'y a pas de palier payant caché." },
   { q: "Y a-t-il une limite de listes, tâches ou opérations ?", a: "Non, tout est illimité : projets, listes, routines, opérations financières." },
+  { q: "Que contiennent les outils gratuits sans compte ?", a: "Un calculateur de budget et de reste à vivre, un générateur de liste de courses à partir de recettes, un suivi d'habitudes et un calculateur de salaire net : ils fonctionnent dans ton navigateur, sans inscription ni abonnement." },
   { q: "Puis-je partager mon espace ?", a: "Oui, invite ton/ta partenaire avec un code : vous partagez alors listes, budget et objectifs à deux." },
   { q: "Est-ce que mes données financières sont fiables ?", a: "All In affiche toujours des estimations tracées et explicables, jamais des montants inventés — et le calcul détaillé est visible à chaque fois." },
 ];
@@ -27,6 +31,7 @@ const FAQ = [
 export default function TarifsPage() {
   return (
     <div className="relative overflow-hidden">
+      <JsonLd data={faqJsonLd(FAQ)} />
       <SiteHeader current="tarifs" />
       <main>
         <section className="mx-auto max-w-4xl px-6 py-16 text-center">
