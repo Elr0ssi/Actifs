@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LogoWordmark } from "@/components/logo";
 
-type Current = "recettes" | "calculateurs" | "tarifs" | "outils" | "guides";
+type Current = "recettes" | "calculateurs" | "tarifs" | "outils" | "guides" | "fonctionnalites";
 
 export function SiteHeader({ current }: { current?: Current }) {
   const link = (href: string, label: string, key?: Current) => (
@@ -14,7 +14,7 @@ export function SiteHeader({ current }: { current?: Current }) {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/"><LogoWordmark className="text-lg" /></Link>
         <nav aria-label="Navigation principale" className="hidden items-center gap-7 text-sm font-medium text-stone-600 md:flex">
-          <Link href="/#fonctionnalites" className="hover:text-stone-900">Fonctionnalités</Link>
+          {link("/fonctionnalites", "Fonctionnalités", "fonctionnalites")}
           {link("/outils", "Outils gratuits", "outils")}
           {link("/guides", "Guides", "guides")}
           {link("/recettes", "Recettes", "recettes")}
@@ -54,7 +54,9 @@ const FOOTER_COLUMNS: { title: string; links: [string, string][] }[] = [
   {
     title: "All In",
     links: [
-      ["/#fonctionnalites", "Fonctionnalités"],
+      ["/fonctionnalites", "Fonctionnalités"],
+      ["/fonctionnalites/agenda", "Agenda"],
+      ["/fonctionnalites/budget-et-finances", "Budget & finances"],
       ["/recettes", "Recettes"],
       ["/tarifs", "Tarifs"],
       ["/login", "Connexion"],

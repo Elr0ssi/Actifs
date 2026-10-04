@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { RECIPES } from "@/lib/marketing/recipes";
 import { GUIDES } from "@/lib/marketing/guides";
+import { FEATURES } from "@/lib/marketing/features";
 import { SITE_URL } from "@/lib/marketing/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -8,6 +9,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const page = (path: string, priority: number, changeFrequency: "weekly" | "monthly" = "monthly") => ({ url: `${SITE_URL}${path}`, lastModified: now, changeFrequency, priority });
   return [
     page("", 1, "weekly"),
+    page("/fonctionnalites", 0.9),
+    ...FEATURES.map((f) => page(`/fonctionnalites/${f.slug}`, 0.85)),
     page("/outils", 0.9),
     page("/outils/budget-mensuel", 0.9),
     page("/outils/liste-de-courses", 0.9),

@@ -162,7 +162,83 @@
   100% { clip-path: inset(-8px -8px -8px -8px); }
 }
 
+/* ---------- Vitrine : animations « néo-banque » ---------- */
+@keyframes fx-float {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--r, 0deg)); }
+  50% { transform: translate3d(0, calc(var(--a, 10px) * -1), 0) rotate(calc(var(--r, 0deg) * -1)); }
+}
+@keyframes fx-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(40px, -30px, 0) scale(1.08); }
+  66% { transform: translate3d(-30px, 25px, 0) scale(0.95); }
+}
+@keyframes fx-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes fx-pop {
+  0% { opacity: 0; transform: translateY(18px) scale(0.94); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes fx-slide {
+  0% { opacity: 0; transform: translateX(-24px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes fx-bar {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes fx-dash {
+  to { stroke-dashoffset: -24; }
+}
+@keyframes fx-ring {
+  0% { transform: scale(0.7); opacity: 0.55; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+@keyframes fx-sheen {
+  0% { transform: translateX(-120%) skewX(-18deg); }
+  60%, 100% { transform: translateX(260%) skewX(-18deg); }
+}
+@keyframes fx-gradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes fx-check {
+  0% { stroke-dashoffset: 24; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@layer components {
+  .fx-float { animation: fx-float var(--t, 6s) ease-in-out var(--d, 0s) infinite; will-change: transform; }
+  .fx-drift { animation: fx-drift var(--t, 18s) ease-in-out var(--d, 0s) infinite; will-change: transform; }
+  .fx-marquee { animation: fx-marquee var(--t, 40s) linear infinite; width: max-content; }
+  .fx-marquee-wrap:hover .fx-marquee { animation-play-state: paused; }
+  .fx-dash { stroke-dasharray: 6 6; animation: fx-dash 1.4s linear infinite; }
+  .fx-ring { animation: fx-ring 2.4s ease-out var(--d, 0s) infinite; }
+  .fx-gradient { background-size: 220% 220%; animation: fx-gradient 9s ease-in-out infinite; }
+  .fx-sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.55) 50%, transparent 70%);
+    animation: fx-sheen 4.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+  /* Éléments qui apparaissent quand leur bloc entre dans l'écran (voir InView). */
+  .fx-in { opacity: 0; }
+  [data-in="true"] .fx-in { animation: fx-pop 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s) both; }
+  [data-in="true"] .fx-slide { animation: fx-slide 0.6s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s) both; }
+  .fx-slide { opacity: 0; }
+  .fx-bar { transform-origin: left; transform: scaleX(0); }
+  [data-in="true"] .fx-bar { animation: fx-bar 1.2s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0.2s) forwards; }
+  .fx-check path { stroke-dasharray: 24; stroke-dashoffset: 24; }
+  [data-in="true"] .fx-check path { animation: fx-check 0.5s ease-out var(--d, 0.4s) forwards; }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .fx-in, .fx-slide { opacity: 1 !important; }
+  .fx-bar { transform: none !important; }
+  .fx-check path { stroke-dashoffset: 0 !important; }
   *,
   *::before,
   *::after {
