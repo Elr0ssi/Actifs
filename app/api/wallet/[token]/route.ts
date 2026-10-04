@@ -34,9 +34,12 @@ async function handle(req: Request, { params }: { params: { token: string } }) {
   if (!/^[0-9a-f-]{36}$/i.test(token)) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   const body = await readPayload(req);
 
-  const merchantRaw = pick(body, ["merchant", "commercant", "commerçant", "name", "nom", "shop", "label", "libelle"]);
+  // « merchant » (Commerçant) prime ; « name » (Nom) sert de repli si le commerçant est vide.
+  const asText = (v: unknown) => (typeof v === "string" && v.trim() ? v : undefined);
+  const merchantRaw =
+    asText(pick(body, ["merchant", "commercant", "commerçant"])) ?? asText(pick(body, ["name", "nom", "shop", "label", "libelle"]));
   const amountRaw = pick(body, ["amount", "montant", "price", "prix", "total"]) ?? body.raw;
-  const cardRaw = pick(body, ["card", "carte", "cardorpass", "pass"]);
+  const cardRaw = pick(body, ["card", "carte", "cardorpass", "carteoubillet", "pass"]);
   const amount = parseAmount(amountRaw);
   if (amount === null || amount === 0) return NextResponse.json({ ok: false, error: "invalid_amount" }, { status: 400 });
 
