@@ -151,12 +151,12 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
         </button>
       )}
 
-      <div className="grid grid-flow-row-dense grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-flow-row-dense auto-rows-[8px] grid-cols-1 gap-x-4 sm:grid-cols-2 xl:grid-cols-4">
         {items.map((it, idx) => {
           const def = WIDGET_BY_TYPE[it.type];
           const Comp = RENDER[it.type];
           return (
-            <div
+            <MasonryItem
               key={it.id}
               draggable={editing}
               onDragStart={(e) => { dragId.current = it.id; e.dataTransfer.effectAllowed = "move"; }}
@@ -165,9 +165,10 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
               onDrop={(e) => { e.preventDefault(); dropOn(it.id); }}
               onDragEnd={() => { dragId.current = null; setOverId(null); }}
               style={{ animationDelay: `${Math.min(idx, 10) * 55}ms` }}
-              className={cx("relative min-w-0 animate-rise", spanClass(it.size, def.tall), editing && "cursor-grab", overId === it.id && "rounded-2xl ring-2 ring-brand-400 ring-offset-2 ring-offset-canvas")}
+              className={cx("min-w-0 animate-rise", spanClass(it.size), editing && "cursor-grab")}
+              ringed={overId === it.id}
             >
-              <div className={cx("h-full", editing && "pointer-events-none select-none opacity-80")}>
+              <div className={cx(editing && "pointer-events-none select-none opacity-80")}>
                 <WidgetSizeContext.Provider value={it.size}>
                   <Comp key={refDate} data={viewData} size={it.size} opts={it.opts ?? {}} setOpts={setOpts(it.id)} />
                 </WidgetSizeContext.Provider>
@@ -191,7 +192,7 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
                   </div>
                 </div>
               )}
-            </div>
+            </MasonryItem>
           );
         })}
       </div>
@@ -199,6 +200,31 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
       {drawer && <WidgetDrawer page={page} today={data.realToday ?? data.today} items={items} onAdd={add} onClose={() => setDrawer(false)} />}
     </div>
     </WidgetPageContext.Provider>
+  );
+}
+
+/**
+ * Case de grille « maçonnerie » : la grille a des lignes de 8 px et chaque widget occupe exactement sa hauteur réelle,
+ * si bien qu'un widget plus court ne laisse plus de vide et qu'un autre peut se placer juste en dessous.
+ */
+function MasonryItem({ children, className, style, ringed, ...rest }: { children: React.ReactNode; className?: string; style?: React.CSSProperties; ringed?: boolean } & Omit<React.HTMLAttributes<HTMLDivElement>, "className" | "style" | "children">) {
+  const inner = useRef<HTMLDivElement>(null);
+  const [span, setSpan] = useState(24);
+  useEffect(() => {
+    const el = inner.current;
+    if (!el) return;
+    const measure = () => setSpan(Math.max(1, Math.ceil((el.offsetHeight + 16) / 8)));
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <div {...rest} className={className} style={{ ...style, gridRowEnd: `span ${span}` }}>
+      <div ref={inner} className={cx("relative", ringed && "rounded-2xl ring-2 ring-brand-400 ring-offset-2 ring-offset-canvas")}>
+        {children}
+      </div>
+    </div>
   );
 }
 
