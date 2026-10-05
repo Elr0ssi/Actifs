@@ -31,7 +31,8 @@ export function MenuWeek({ data }: WidgetProps) {
   const days = useMemo(() => Array.from({ length: 14 }, (_, i) => addDays(weekStart, i)), [weekStart]);
   const byName = useMemo(() => new Map(RECIPES.map((r) => [r.name.toLowerCase(), r])), []);
   const mineByName = useMemo(() => new Map(data.myRecipes.map((r) => [r.name.toLowerCase(), r])), [data.myRecipes]);
-  const mealsOn = (d: string) => data.menu.filter((m) => m.day === d && !hidden.includes(m.id));
+  const slotRank = (m: { slot?: "midi" | "soir" | null }) => (m.slot === "midi" ? 0 : m.slot === "soir" ? 2 : 1);
+  const mealsOn = (d: string) => data.menu.filter((m) => m.day === d && !hidden.includes(m.id)).sort((a, b) => slotRank(a) - slotRank(b));
   const upcoming = data.menu.filter((m) => m.day >= realToday && !hidden.includes(m.id)).length;
   const planned = useMemo(() => {
     const names = new Set(data.menu.filter((m) => m.day >= weekStart && m.day <= addDays(weekStart, 6)).map((m) => m.name.toLowerCase()));
@@ -104,12 +105,12 @@ export function MenuWeek({ data }: WidgetProps) {
                         <div className="flex h-full items-center justify-center text-4xl">{first.icon ?? rec?.icon ?? "🍽️"}</div>
                       )}
                     </div>
-                    <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-[13px] font-semibold leading-tight text-stone-900">{first.name}</p>
+                    <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-[13px] font-semibold leading-tight text-stone-900">{first.slot && <span className="mr-1" title={first.slot === "midi" ? "Midi" : "Soir"}>{first.slot === "midi" ? "☀️" : "🌙"}</span>}{first.name}</p>
                     <p className="mt-1 flex items-center gap-1 text-[11px] text-stone-500">
                       <span>⏱</span>
                       {rec?.time ?? "—"}
                       <span className="ml-1 text-stone-400">· {first.servings ?? data.defaultServings} pers.</span>
-                      {meals.length > 1 && <span className="ml-auto rounded-full bg-stone-100 px-1.5 text-[10px] font-semibold text-stone-500">+{meals.length - 1}</span>}
+                      {meals.length > 1 && <span className="ml-auto rounded-full bg-stone-100 px-1.5 text-[10px] font-semibold text-stone-500" title={meals.slice(1).map((m) => m.name).join(", ")}>+{meals.length - 1}</span>}
                     </p>
                   </>
                 ) : (

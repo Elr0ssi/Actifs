@@ -17,17 +17,17 @@ const refresh = () => {
 };
 
 /** Ajoute des repas à un jour du menu (sans toucher aux listes de courses). Un même repas n'est pas ajouté deux fois le même jour. */
-export async function addMenuItems(day: string, meals: { name: string; icon: string | null; servings?: number }[]) {
+export async function addMenuItems(day: string, meals: { name: string; icon: string | null; servings?: number }[], slot?: "midi" | "soir") {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return;
   const { supabase, householdId, userId } = await ctx();
   if (!householdId || meals.length === 0) return;
   const monday = new Date(Date.parse(`${day}T00:00:00Z`) - ((new Date(`${day}T00:00:00Z`).getUTCDay() + 6) % 7) * 86_400_000).toISOString().slice(0, 10);
-  const { data: existing } = await supabase.from("menu_items").select("name").eq("household_id", householdId).eq("day", day);
-  const have = new Set((existing ?? []).map((e) => e.name.toLowerCase()));
+  const { data: existing } = await supabase.from("menu_items").select("name, slot").eq("household_id", householdId).eq("day", day);
+  const have = new Set((existing ?? []).filter((e) => (e.slot ?? null) === (slot ?? null)).map((e) => e.name.toLowerCase()));
   const rows = meals
     .filter((m) => m.name.trim() && !have.has(m.name.trim().toLowerCase()))
     .slice(0, 50)
-    .map((m) => ({ household_id: householdId, week_start: monday, day, name: m.name.trim().slice(0, 120), icon: m.icon?.slice(0, 8) ?? null, servings: m.servings ? Math.min(100, Math.max(1, Math.round(m.servings))) : null, created_by: userId }));
+    .map((m) => ({ household_id: householdId, week_start: monday, day, name: m.name.trim().slice(0, 120), icon: m.icon?.slice(0, 8) ?? null, servings: m.servings ? Math.min(100, Math.max(1, Math.round(m.servings))) : null, slot: slot === "midi" || slot === "soir" ? slot : null, created_by: userId }));
   if (rows.length) await supabase.from("menu_items").insert(rows);
   refresh();
 }
@@ -44,5 +44,14 @@ export async function setMenuServings(id: string, servings: number) {
   const { supabase, householdId } = await ctx();
   if (!householdId) return;
   await supabase.from("menu_items").update({ servings: Math.min(100, Math.max(1, Math.round(servings))) }).eq("id", id).eq("household_id", householdId);
+  refresh();
+}
+
+/** Passe un repas planifié du midi au soir (ou l'inverse). */
+export async function setMenuSlot(id: string, slot: "midi" | "soir") {
+  if (slot !== "midi" && slot !== "soir") return;
+  const { supabase, householdId } = await ctx();
+  if (!householdId) return;
+  await supabase.from("menu_items").update({ slot }).eq("id", id).eq("household_id", householdId);
   refresh();
 }

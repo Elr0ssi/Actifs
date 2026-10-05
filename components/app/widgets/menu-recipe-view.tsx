@@ -14,6 +14,7 @@ export interface MealRef {
   name: string;
   icon: string | null;
   servings: number | null;
+  slot?: "midi" | "soir" | null;
 }
 
 /** Fiche d'un repas planifié, en consultation : ingrédients et étapes, comme dans « Mes recettes ». */
@@ -83,7 +84,7 @@ export function MenuRecipeView({
             <div className="mt-4 flex flex-wrap gap-1.5">
               {meals.map((m) => (
                 <button key={m.id} onClick={() => onSelect(m.id)} className={m.id === meal.id ? "rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white" : "rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600 hover:bg-stone-200"}>
-                  {m.icon ?? "🍽️"} {m.name}
+                  {m.slot === "midi" ? "☀️ " : m.slot === "soir" ? "🌙 " : ""}{m.icon ?? "🍽️"} {m.name}
                 </button>
               ))}
             </div>
