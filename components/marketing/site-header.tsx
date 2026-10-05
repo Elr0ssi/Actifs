@@ -30,22 +30,7 @@ export function SiteHeader({ current }: { current?: Current }) {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
         <Link href="/"><LogoWordmark className="text-lg" /></Link>
         <nav aria-label="Navigation principale" className="hidden items-center gap-6 text-sm font-medium text-stone-600 md:flex">
-          {/* Toutes les fonctionnalités */}
-          <div className="group relative">
-            <Link href="/fonctionnalites" className={item(current === "fonctionnalites")}>Fonctionnalités <span className="text-[10px] text-stone-400">▾</span></Link>
-            <div className={cx(panel, "-left-4")}>
-              <div className="grid w-[46rem] grid-cols-3 gap-2 rounded-3xl border border-line bg-surface p-4 shadow-lift">
-                {CATEGORIES.map((c) => (
-                  <div key={c.key}>
-                    <Link href={c.href} className="mb-1 flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-bold uppercase tracking-wide text-stone-400 hover:text-brand-700">
-                      <span>{c.icon}</span>{c.name}
-                    </Link>
-                    {featuresOf(c).map((f) => <FeatureLink key={f.slug} f={f} />)}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <Link href="/fonctionnalites" className={item(current === "fonctionnalites")}>Fonctionnalités</Link>
           {/* Un onglet par catégorie, avec ses pages en sous-menu */}
           {CATEGORIES.map((c) => (
             <div key={c.key} className="group relative">

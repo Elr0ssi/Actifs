@@ -1736,10 +1736,24 @@ export function getRecipe(slug: string) {
 }
 
 /** Filtre commun (site public, onglet Trouver des recettes, sélecteur de courses). */
-export function filterRecipes(list: MarketingRecipe[], { query = "", category = null, equipment = [] }: { query?: string; category?: string | null; equipment?: string[] }) {
+const minutes = (r: MarketingRecipe) => r.prepMinutes + r.cookMinutes;
+
+/** Collections thématiques : des façons de choisir une recette selon la situation. */
+export const COLLECTIONS: { key: string; label: string; icon: string; hint: string; gradient: string; test: (r: MarketingRecipe) => boolean }[] = [
+  { key: "etudiant", label: "Repas étudiant", icon: "🎓", hint: "Peu d'ingrédients, facile, 25 min max, sans four", gradient: "from-violet-500 to-indigo-600", test: (r) => r.difficulty === "Facile" && minutes(r) <= 25 && r.ingredients.length <= 7 && !r.utensils.includes("four") },
+  { key: "express", label: "Express 15 min", icon: "⚡", hint: "Prêt en 15 minutes ou moins", gradient: "from-amber-500 to-orange-600", test: (r) => minutes(r) <= 15 },
+  { key: "one-pot", label: "One pot", icon: "🥘", hint: "Tout dans une seule poêle ou casserole", gradient: "from-rose-500 to-pink-600", test: (r) => r.utensils.filter((u) => u === "poêle" || u === "casserole").length === 1 && !r.utensils.includes("four") && !r.utensils.includes("plat ou moule adapté") },
+  { key: "sans-cuisson", label: "Sans cuisson", icon: "🥗", hint: "Ni feu ni four", gradient: "from-emerald-500 to-teal-600", test: (r) => !r.utensils.some((u) => u === "poêle" || u === "casserole" || u === "four" || u === "micro-ondes") },
+  { key: "au-four", label: "Au four", icon: "🔥", hint: "On enfourne et on attend", gradient: "from-orange-500 to-red-600", test: (r) => r.utensils.includes("four") },
+  { key: "a-preparer", label: "À préparer d'avance", icon: "🥡", hint: "Se réchauffe bien, parfait pour la semaine", gradient: "from-sky-500 to-blue-600", test: (r) => r.category === "Soupe" || r.category === "Gratin" || r.cookMinutes >= 35 },
+];
+
+export function filterRecipes(list: MarketingRecipe[], { query = "", category = null, equipment = [], collection = null }: { query?: string; category?: string | null; equipment?: string[]; collection?: string | null }) {
+  const col = collection ? COLLECTIONS.find((c) => c.key === collection) : null;
   const q = query.trim().toLowerCase();
   return list.filter((r) => {
     if (category && r.category !== category) return false;
+    if (col && !col.test(r)) return false;
     if (equipment.length > 0 && r.utensils.some((u) => !BASIC_UTENSILS.includes(u) && !equipment.includes(u))) return false;
     if (!q) return true;
     return r.name.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q) || r.ingredients.some((i) => i.toLowerCase().includes(q));

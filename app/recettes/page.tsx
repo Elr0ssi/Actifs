@@ -3,7 +3,6 @@ import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { FadeIn } from "@/components/marketing/fade-in";
 import { pageMeta } from "@/lib/marketing/site";
 import { RecipesBrowser } from "@/components/marketing/recipes-browser";
-import { Bubble, Float } from "@/components/marketing/fx";
 import { Ambience, CtaBanner } from "@/components/marketing/sections";
 
 export const metadata: Metadata = pageMeta({
@@ -20,8 +19,6 @@ export default function RecipesPage() {
         <section className="relative">
           <Ambience tone="amber" emojis={["🍅", "🥕", "🧅", "🧀", "🌿"]} />
           <div className="relative mx-auto max-w-4xl px-6 pb-10 pt-16 text-center">
-            <Float delay={0} duration={7} amp={10} rot={2} className="absolute left-0 top-20 hidden lg:block"><Bubble icon="⏱️" title="25 min" sub="pâtes tomate basilic" tone="amber" /></Float>
-            <Float delay={1.2} duration={8} amp={12} rot={-2} className="absolute right-0 top-28 hidden lg:block"><Bubble icon="🛒" title="Liste prête" sub="quantités pour 2" tone="green" /></Float>
             <FadeIn>
               <span className="rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-xs font-semibold text-amber-800">🍽️ Plus de 90 recettes</span>
               <h1 className="mt-5 text-4xl font-bold tracking-tight text-stone-900 sm:text-6xl">
