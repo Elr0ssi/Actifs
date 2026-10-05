@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/components/marketing/json-ld";
 import { GUIDES, getGuide } from "@/lib/marketing/guides";
+import { GUIDE_CATEGORY, getCategory } from "@/lib/marketing/features";
 import { SITE_NAME, absolute } from "@/lib/marketing/site";
 
 export function generateStaticParams() {
@@ -28,6 +29,7 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
   if (!g) notFound();
   const related = g.related.map((s) => getGuide(s)).filter((x): x is NonNullable<typeof x> => !!x);
   const url = absolute(`/guides/${g.slug}`);
+  const cat = getCategory(GUIDE_CATEGORY[g.category] ?? "organisation")!;
 
   return (
     <div className="relative overflow-hidden">
@@ -46,14 +48,14 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
             publisher: { "@type": "Organization", name: SITE_NAME },
           },
           faqJsonLd(g.faq),
-          breadcrumbJsonLd([{ name: "Accueil", url: absolute("/") }, { name: "Guides", url: absolute("/guides") }, { name: g.h1, url }]),
+          breadcrumbJsonLd([{ name: "Accueil", url: absolute("/") }, { name: cat.name, url: absolute(cat.href) }, { name: g.h1, url }]),
         ]}
       />
-      <SiteHeader current="guides" />
+      <SiteHeader current={cat.key} />
       <main className="mx-auto max-w-3xl px-6 py-12">
         <nav aria-label="Fil d'Ariane" className="text-sm text-stone-500">
           <Link href="/" className="hover:text-stone-800">Accueil</Link> <span className="mx-1">/</span>
-          <Link href="/guides" className="hover:text-stone-800">Guides</Link>
+          <Link href={`${cat.href}#articles`} className="hover:text-stone-800">{cat.name}</Link>
         </nav>
 
         <article className="mt-6">

@@ -23,25 +23,29 @@ export function CtaBanner({ title, text, primary = { href: "/signup", label: "Cr
   );
 }
 
-/** Chaîne animée : chaque étape alimente la suivante (courbes en pointillés qui avancent). */
+/** Parcours animé : une impulsion voyage d'une étape à la suivante, chaque pastille pulse à son tour. */
 export function FlowChain({ steps }: { steps: { icon: string; title: string; sub: string; tone: string }[] }) {
   return (
     <InView>
-      <div className="relative grid gap-4 md:grid-cols-4">
-        {steps.map((s, i) => (
-          <div key={s.title} className="relative">
-            <div className="fx-in relative z-10 rounded-3xl border border-line bg-surface p-5 text-center shadow-soft" style={{ "--d": `${i * 0.18}s` } as React.CSSProperties}>
-              <span className={cx("mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br text-2xl text-white shadow-lift", s.tone)}>{s.icon}</span>
-              <p className="mt-3 font-semibold text-stone-900">{s.title}</p>
-              <p className="mt-1 text-xs leading-relaxed text-stone-500">{s.sub}</p>
-            </div>
-            {i < steps.length - 1 && (
-              <svg className="absolute left-[calc(50%+3rem)] top-9 z-0 hidden h-6 w-[calc(100%-3rem)] md:block" viewBox="0 0 100 20" preserveAspectRatio="none" fill="none" aria-hidden>
-                <path d="M0 10 C 30 0, 70 20, 100 10" stroke="rgb(var(--brand-400))" strokeWidth="2" className="fx-dash" vectorEffect="non-scaling-stroke" />
-              </svg>
-            )}
-          </div>
-        ))}
+      <div className="relative">
+        <div className="pointer-events-none absolute left-[12.5%] right-[12.5%] top-8 hidden h-1 md:block" aria-hidden>
+          <span className="block h-full rounded-full bg-gradient-to-r from-amber-300 via-sky-300 to-brand-400 opacity-50" />
+          <span className="fx-travel absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-lift ring-4 ring-brand-300/60" />
+        </div>
+        <ol className="grid gap-2 md:grid-cols-4 md:gap-4">
+          {steps.map((s, i) => (
+            <li key={s.title} className="relative flex flex-col items-center text-center">
+              <span className="fx-in relative flex h-16 w-16 items-center justify-center" style={{ "--d": `${i * 0.18}s` } as React.CSSProperties}>
+                <span className={cx("fx-ring absolute inset-0 rounded-full bg-gradient-to-br opacity-40", s.tone)} style={{ "--d": `${i * 0.6}s` } as React.CSSProperties} />
+                <span className={cx("relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br text-2xl text-white shadow-lift ring-4 ring-canvas", s.tone)}>{s.icon}</span>
+                <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-ink text-[11px] font-bold text-onink ring-2 ring-canvas">{i + 1}</span>
+              </span>
+              <p className="mt-4 font-semibold text-stone-900">{s.title}</p>
+              <p className="mt-1 max-w-[14rem] text-sm leading-relaxed text-stone-500">{s.sub}</p>
+              {i < steps.length - 1 && <span className="my-4 text-xl text-brand-300 md:hidden" aria-hidden>↓</span>}
+            </li>
+          ))}
+        </ol>
       </div>
     </InView>
   );
@@ -82,7 +86,7 @@ const EMOJI_POS = ["left-[4%] top-[12%]", "right-[5%] top-[18%]", "left-[9%] bot
 export function Ambience({ tone, emojis = [], dots = true }: { tone: AmbienceTone; emojis?: string[]; dots?: boolean }) {
   const [a, b] = BLOB[tone];
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,#000_14%,#000_78%,transparent)]" aria-hidden>
       {dots && <div className="absolute inset-0 opacity-70 [background-image:radial-gradient(rgb(120_113_108/0.18)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_70%_70%_at_50%_50%,#000_30%,transparent_100%)]" />}
       <div className={cx("fx-drift absolute -left-24 top-[10%] h-72 w-72 rounded-full blur-3xl", a)} />
       <div className={cx("fx-drift absolute -right-24 bottom-[5%] h-80 w-80 rounded-full blur-3xl", b)} style={{ "--d": "-6s", "--t": "22s" } as React.CSSProperties} />

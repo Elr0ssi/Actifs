@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { FadeIn } from "@/components/marketing/fade-in";
 import { pageMeta } from "@/lib/marketing/site";
 import { RecipesBrowser } from "@/components/marketing/recipes-browser";
+import { Bubble, Float } from "@/components/marketing/fx";
+import { Ambience, CtaBanner } from "@/components/marketing/sections";
 
 export const metadata: Metadata = pageMeta({
   title: "Recettes simples et rapides avec liste de courses automatique",
@@ -16,14 +17,21 @@ export default function RecipesPage() {
     <div className="relative overflow-hidden">
       <SiteHeader current="recettes" />
       <main>
-        <section className="mx-auto max-w-6xl px-6 py-16 text-center">
-          <FadeIn>
-            <h1 className="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">Des recettes simples, prêtes à cuisiner</h1>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-stone-600">
-              Parcours-les librement. Ouvre une recette pour voir ingrédients et étapes — et si tu veux sa liste de courses
-              complète (quantités et prix par enseigne compris), crée ton espace gratuit en un clic.
-            </p>
-          </FadeIn>
+        <section className="relative">
+          <Ambience tone="amber" emojis={["🍅", "🥕", "🧅", "🧀", "🌿"]} />
+          <div className="relative mx-auto max-w-4xl px-6 pb-10 pt-16 text-center">
+            <Float delay={0} duration={7} amp={10} rot={2} className="absolute left-0 top-20 hidden lg:block"><Bubble icon="⏱️" title="25 min" sub="pâtes tomate basilic" tone="amber" /></Float>
+            <Float delay={1.2} duration={8} amp={12} rot={-2} className="absolute right-0 top-28 hidden lg:block"><Bubble icon="🛒" title="Liste prête" sub="quantités pour 2" tone="green" /></Float>
+            <FadeIn>
+              <span className="rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-xs font-semibold text-amber-800">🍽️ Plus de 90 recettes</span>
+              <h1 className="mt-5 text-4xl font-bold tracking-tight text-stone-900 sm:text-6xl">
+                Des recettes <span className="bg-gradient-to-r from-amber-500 to-rose-600 bg-clip-text text-transparent">simples</span>, prêtes à cuisiner
+              </h1>
+              <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-stone-600">
+                Ouvre une recette pour voir ingrédients et étapes. Dans All In, elle devient une liste de courses aux bonnes quantités, avec les prix de ton enseigne.
+              </p>
+            </FadeIn>
+          </div>
         </section>
 
         <section className="mx-auto max-w-6xl px-6 pb-24">
@@ -32,15 +40,8 @@ export default function RecipesPage() {
           </FadeIn>
         </section>
 
-        <section className="bg-stone-900 py-20 text-center text-white">
-          <FadeIn className="mx-auto max-w-2xl px-6">
-            <h2 className="text-3xl font-bold tracking-tight">Ta liste de courses, générée toute seule</h2>
-            <p className="mt-3 text-stone-300">
-              Dans All In, choisis une ou plusieurs recettes et la liste complète se crée automatiquement — quantités
-              ajustées, prix estimés par enseigne, rien à recopier.
-            </p>
-            <Link href="/signup" className="btn-primary mt-8 inline-block px-6 py-3 text-base">Créer mon espace gratuit →</Link>
-          </FadeIn>
+        <section className="mx-auto max-w-5xl px-6 pb-24">
+          <CtaBanner title="Ta liste de courses, générée toute seule" text="Choisis une ou plusieurs recettes : la liste se crée avec les quantités ajustées et les prix estimés, rien à recopier." secondary={{ href: "/repas", label: "Voir Repas & courses" }} />
         </section>
       </main>
       <SiteFooter />

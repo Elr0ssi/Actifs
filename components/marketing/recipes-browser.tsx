@@ -24,7 +24,7 @@ export function RecipesBrowser() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Rechercher une recette ou un ingrédient (ex. poivron)…"
-          className="input w-full py-3 text-center"
+          className="w-full rounded-full border border-line bg-surface/90 px-6 py-3.5 text-center text-base shadow-soft outline-none backdrop-blur transition focus:border-brand-400 focus:shadow-lift"
         />
         <p className="text-xs text-stone-400">La recherche regarde aussi dans les ingrédients.</p>
       </div>
@@ -32,7 +32,7 @@ export function RecipesBrowser() {
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         <button
           onClick={() => setCategory(null)}
-          className={cx("rounded-full px-3.5 py-1.5 text-sm font-medium transition", category === null ? "bg-ink text-onink" : "bg-stone-100 text-stone-600 hover:bg-stone-200")}
+          className={cx("rounded-full px-3.5 py-1.5 text-sm font-medium transition", category === null ? "bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-soft" : "border border-line bg-surface text-stone-600 hover:border-amber-300 hover:text-stone-900")}
         >
           Toutes
         </button>
@@ -40,7 +40,7 @@ export function RecipesBrowser() {
           <button
             key={c}
             onClick={() => setCategory(c === category ? null : c)}
-            className={cx("rounded-full px-3.5 py-1.5 text-sm font-medium transition", category === c ? "bg-ink text-onink" : "bg-stone-100 text-stone-600 hover:bg-stone-200")}
+            className={cx("rounded-full px-3.5 py-1.5 text-sm font-medium transition", category === c ? "bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-soft" : "border border-line bg-surface text-stone-600 hover:border-amber-300 hover:text-stone-900")}
           >
             {c}
           </button>

@@ -27,12 +27,11 @@ const PAINS = [
 ];
 
 const CHAOS = [
-  { n: "Notion", i: "📄", r: 3, y: 0, tone: "border-stone-200 bg-white text-stone-600" },
-  { n: "Excel", i: "📊", r: -4, y: 10, tone: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-  { n: "Jow", i: "🍲", r: 2, y: -6, tone: "border-amber-200 bg-amber-50 text-amber-700" },
-  { n: "Google Agenda", i: "📆", r: -3, y: 8, tone: "border-sky-200 bg-sky-50 text-sky-700" },
-  { n: "Notes iPhone", i: "🗒️", r: 4, y: -4, tone: "border-yellow-200 bg-yellow-50 text-yellow-700" },
-  { n: "Listes papier", i: "🧾", r: -2, y: 6, tone: "border-rose-200 bg-rose-50 text-rose-700" },
+  { n: "Notion", i: "📄", r: 4, badge: "12", pos: "left-[2%] top-0", tone: "border-stone-200 bg-white text-stone-600" },
+  { n: "Excel", i: "📊", r: -5, badge: "v7", pos: "right-[4%] top-4", tone: "border-emerald-200 bg-emerald-50 text-emerald-700" },
+  { n: "Jow", i: "🍲", r: 3, badge: "3", pos: "left-[24%] top-[4.5rem]", tone: "border-amber-200 bg-amber-50 text-amber-700" },
+  { n: "Google Agenda", i: "📆", r: -3, badge: "!", pos: "left-[0%] bottom-4", tone: "border-sky-200 bg-sky-50 text-sky-700" },
+  { n: "Notes iPhone", i: "🗒️", r: 5, badge: "27", pos: "right-[2%] bottom-0", tone: "border-yellow-200 bg-yellow-50 text-yellow-700" },
 ];
 
 const REPLACES = ["Notion", "Excel", "Google Sheets", "Jow", "Google Agenda", "Todoist", "Apple Notes", "Listes papier", "Splitwise"];
@@ -174,34 +173,44 @@ export default function LandingPage() {
             <p className="mt-4 text-stone-600">Étudiants, jeunes actifs, couples, familles, indépendants : si tu organises ton temps, tes repas et ton argent à plusieurs endroits, All In les réunit.</p>
           </FadeIn>
 
-          {/* Du chaos à un seul endroit */}
+          {/* Avant / avec All In */}
           <InView>
-            <div className="mt-14 flex flex-wrap items-center justify-center gap-3 sm:gap-4" aria-hidden>
-              {CHAOS.map((c, i) => (
-                <Float key={c.n} delay={i * 0.5} duration={5 + (i % 3)} amp={8} rot={c.r} className="fx-in" >
-                  <span className={cx("inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-semibold shadow-soft", c.tone)} style={{ transform: `translateY(${c.y}px)` }}>
-                    <span>{c.i}</span>{c.n}
-                  </span>
-                </Float>
-              ))}
-            </div>
-            <div className="relative mx-auto my-2 flex h-28 w-full max-w-xs items-center justify-center" aria-hidden>
-              <svg className="absolute inset-x-0 top-0 h-16 w-full" viewBox="0 0 200 60" preserveAspectRatio="none" fill="none">
-                <path d="M10 0 C 60 40, 90 30, 100 58" stroke="rgb(var(--brand-300))" strokeWidth="2" className="fx-dash" vectorEffect="non-scaling-stroke" />
-                <path d="M190 0 C 140 40, 110 30, 100 58" stroke="rgb(var(--brand-300))" strokeWidth="2" className="fx-dash" vectorEffect="non-scaling-stroke" />
-                <path d="M100 0 L 100 58" stroke="rgb(var(--brand-300))" strokeWidth="2" className="fx-dash" vectorEffect="non-scaling-stroke" />
-              </svg>
-              <span className="fx-ring absolute bottom-0 h-12 w-40 rounded-full border border-brand-400" />
-              <span className="fx-in relative mt-12 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-500 to-violet-700 px-6 py-2.5 text-sm font-bold text-white shadow-lift">✨ All In : un seul endroit</span>
-            </div>
-            <div className="mt-10 grid divide-stone-200/80 sm:grid-cols-2 sm:divide-x lg:grid-cols-4">
-              {PAINS.map((n, i) => (
-                <div key={n.pain} className="fx-in px-6 py-6 text-center" style={{ "--d": `${i * 0.12}s` } as React.CSSProperties}>
-                  <span className={cx("mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br text-2xl text-white shadow-lift", n.tone)}>{n.icon}</span>
-                  <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-stone-400 line-through decoration-rose-400">{n.pain}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-stone-700">{n.fix}</p>
+            <div className="mt-14 grid items-stretch gap-6 lg:grid-cols-[1fr_auto_1.1fr]">
+              <div className="fx-in relative overflow-hidden rounded-[2rem] border border-rose-200/70 bg-gradient-to-br from-rose-50 via-white to-amber-50 p-7">
+                <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-rose-700">Avant</span>
+                <div className="relative mt-6 h-60" aria-hidden>
+                  {CHAOS.map((c, i) => (
+                    <Float key={c.n} delay={i * 0.6} duration={5 + (i % 3)} amp={7} rot={c.r} className={cx("absolute", c.pos)}>
+                      <span className={cx("relative inline-flex items-center gap-2 rounded-2xl border px-3.5 py-2 text-sm font-semibold shadow-soft", c.tone)}>
+                        <span>{c.i}</span>{c.n}
+                        <span className="absolute -right-2 -top-2 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">{c.badge}</span>
+                      </span>
+                    </Float>
+                  ))}
                 </div>
-              ))}
+                <p className="mt-2 text-sm font-medium text-stone-600">5 applis, 5 mots de passe, aucune vue d'ensemble.</p>
+              </div>
+
+              <div className="flex items-center justify-center" aria-hidden>
+                <span className="fx-ring absolute h-14 w-14 rounded-full border border-brand-400" />
+                <span className="relative flex h-14 w-14 rotate-90 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-violet-700 text-2xl text-white shadow-lift lg:rotate-0">→</span>
+              </div>
+
+              <div className="fx-in relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-600 via-violet-700 to-brand-900 p-7 text-white" style={{ "--d": "0.15s" } as React.CSSProperties}>
+                <div className="fx-drift pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/15 blur-3xl" aria-hidden />
+                <span className="relative rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wider">Avec All In</span>
+                <ul className="relative mt-6 space-y-4">
+                  {PAINS.map((n, i) => (
+                    <li key={n.pain} className="fx-slide flex items-start gap-3" style={{ "--d": `${0.3 + i * 0.12}s` } as React.CSSProperties}>
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15 text-xl">{n.icon}</span>
+                      <span>
+                        <span className="block text-[11px] font-semibold uppercase tracking-wider text-white/50 line-through">{n.pain}</span>
+                        <span className="block text-sm leading-relaxed text-white/90">{n.fix}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </InView>
           </div>
@@ -245,9 +254,9 @@ export default function LandingPage() {
         </section>
 
         {/* Chiffres */}
-        <section className="mx-auto max-w-6xl px-6">
+        <section className="mx-auto max-w-6xl px-6 pb-12 pt-10">
           <div className="grid gap-px overflow-hidden rounded-[2rem] bg-gradient-to-r from-brand-500 via-violet-600 to-brand-800 p-px sm:grid-cols-3">
-            {[[RECIPES.length, "", "recettes avec quantités par personne"], [FEATURES.length, "", "fonctionnalités reliées entre elles"], [GUIDES.length, "", "guides pratiques"]].map(([n, suf, l]) => (
+            {[[RECIPES.length, "", "recettes avec quantités par personne"], [FEATURES.length, "", "fonctionnalités reliées entre elles"], [GUIDES.length, "", "articles pratiques"]].map(([n, suf, l]) => (
               <div key={String(l)} className="bg-surface px-6 py-8 text-center">
                 <p className="text-5xl font-bold tracking-tight text-brand-700"><Counter to={Number(n)} suffix={String(suf)} /></p>
                 <p className="mt-2 text-sm text-stone-500">{l}</p>
@@ -282,7 +291,7 @@ export default function LandingPage() {
           <Ambience tone="sky" emojis={["📖","💡","🎯"]} />
           <div className="relative mx-auto max-w-6xl px-6 py-24">
           <FadeIn className="mx-auto max-w-2xl text-center">
-            <h2 id="guides" className="text-3xl font-bold tracking-tight sm:text-4xl">Guides pratiques</h2>
+            <h2 id="guides" className="text-3xl font-bold tracking-tight sm:text-4xl">Articles pratiques</h2>
             <p className="mt-4 text-stone-600">Budget, repas, courses, routines : des méthodes simples pour mieux t'organiser.</p>
           </FadeIn>
           <div className="mt-12 grid gap-8 lg:grid-cols-[1.1fr_1fr]">
@@ -292,7 +301,7 @@ export default function LandingPage() {
                 <p className="relative text-xs font-semibold uppercase tracking-widest text-brand-200">À la une · {featGuide.category}</p>
                 <h3 className="relative mt-4 text-2xl font-bold leading-tight sm:text-3xl">{featGuide.h1}</h3>
                 <p className="relative mt-3 line-clamp-4 text-brand-100">{featGuide.description}</p>
-                <p className="relative mt-6 font-semibold transition group-hover:translate-x-1">Lire le guide →</p>
+                <p className="relative mt-6 font-semibold transition group-hover:translate-x-1">Lire l'article →</p>
               </Link>
             </FadeIn>
             <ol className="divide-y divide-line">
@@ -312,7 +321,6 @@ export default function LandingPage() {
               ))}
             </ol>
           </div>
-          <p className="mt-8 text-center"><Link href="/guides" className="btn-secondary px-5 py-2.5">Tous les guides →</Link></p>
         </div>
         </section>
 

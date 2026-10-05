@@ -58,7 +58,6 @@ export function SiteHeader({ current }: { current?: Current }) {
               </div>
             </div>
           ))}
-          <Link href="/guides" className={item(current === "guides")}>Guides</Link>
           <Link href="/recettes" className={item(current === "recettes")}>Recettes</Link>
           <Link href="/tarifs" className={item(current === "tarifs")}>Tarifs</Link>
         </nav>
@@ -81,7 +80,6 @@ export function SiteHeader({ current }: { current?: Current }) {
               ))}
               <div className="mt-2 grid grid-cols-2 gap-1 border-t border-line pt-2 text-sm font-semibold text-stone-700">
                 <Link href="/fonctionnalites" className="rounded-xl px-2.5 py-2 hover:bg-stone-50">Toutes les fonctions</Link>
-                <Link href="/guides" className="rounded-xl px-2.5 py-2 hover:bg-stone-50">Guides</Link>
                 <Link href="/recettes" className="rounded-xl px-2.5 py-2 hover:bg-stone-50">Recettes</Link>
                 <Link href="/tarifs" className="rounded-xl px-2.5 py-2 hover:bg-stone-50">Tarifs</Link>
                 <Link href="/login" className="rounded-xl px-2.5 py-2 hover:bg-stone-50">Connexion</Link>
@@ -103,7 +101,6 @@ const FOOTER_COLUMNS: { title: string; links: [string, string][] }[] = [
     title: "All In",
     links: [
       ["/fonctionnalites", "Toutes les fonctionnalités"],
-      ["/guides", "Guides"],
       ["/recettes", "Recettes"],
       ["/tarifs", "Tarifs"],
       ["/login", "Connexion"],

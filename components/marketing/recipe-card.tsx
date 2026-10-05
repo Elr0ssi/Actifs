@@ -11,7 +11,10 @@ export function RecipeCard({ recipe, size = "normal" }: { recipe: MarketingRecip
             // eslint-disable-next-line @next/next/no-img-element
             <img src={recipe.image} alt={recipe.name} className="h-full w-full object-cover" />
           ) : (
-            <div className="flex h-full items-center justify-center text-xs text-stone-300">Photo à venir</div>
+            <div className={`relative flex h-full items-center justify-center bg-gradient-to-br ${recipe.gradient}`}>
+              <span className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/30 blur-2xl" />
+              <span className="text-5xl drop-shadow-sm transition duration-300 group-hover:scale-110 group-hover:-rotate-6">{recipe.icon}</span>
+            </div>
           )}
         </div>
         <span className="absolute -bottom-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 border-surface bg-surface text-lg shadow-md">

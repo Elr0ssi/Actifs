@@ -7,6 +7,7 @@ import { RECIPES, getRecipe } from "@/lib/marketing/recipes";
 import { RecipeCard } from "@/components/marketing/recipe-card";
 import { JsonLd, breadcrumbJsonLd } from "@/components/marketing/json-ld";
 import { SITE_NAME, absolute } from "@/lib/marketing/site";
+import { Ambience } from "@/components/marketing/sections";
 
 export function generateStaticParams() {
   return RECIPES.map((r) => ({ slug: r.slug }));
@@ -57,7 +58,8 @@ export default function RecipeDetailPage({ params }: { params: { slug: string } 
         ]}
       />
       <SiteHeader current="recettes" />
-      <main className="mx-auto max-w-4xl px-6 py-12">
+      <div className="absolute inset-x-0 top-0 h-[34rem]"><Ambience tone="amber" /></div>
+      <main className="relative mx-auto max-w-4xl px-6 py-12">
         <Link href="/recettes" className="text-sm font-medium text-stone-500 hover:text-stone-800">← Toutes les recettes</Link>
 
         <FadeIn>
@@ -67,7 +69,7 @@ export default function RecipeDetailPage({ params }: { params: { slug: string } 
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={recipe.image} alt={recipe.name} className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full items-center justify-center text-sm text-stone-300">Photo à venir</div>
+                <div className={`flex h-full items-center justify-center bg-gradient-to-br ${recipe.gradient}`}><span className="text-8xl drop-shadow-sm">{recipe.icon}</span></div>
               )}
             </div>
             <span className="absolute -bottom-4 left-5 z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 border-surface bg-surface text-2xl shadow-md">

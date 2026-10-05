@@ -6,7 +6,7 @@ import { JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/components/marketing/json
 import { Aurora, Bubble, Float, InView, Marquee } from "@/components/marketing/fx";
 import { Ambience, CtaBanner, StepsRail, type AmbienceTone } from "@/components/marketing/sections";
 import { MOCKS } from "@/components/marketing/mocks";
-import { CategoryTabs } from "@/components/marketing/category-view";
+import { DragScroller } from "@/components/marketing/drag-scroller";
 import { FEATURES, categoryOf, getFeature } from "@/lib/marketing/features";
 import { getGuide } from "@/lib/marketing/guides";
 import { SITE_NAME, absolute, pageMeta } from "@/lib/marketing/site";
@@ -72,7 +72,7 @@ export default function FeaturePage({ params }: { params: { slug: string } }) {
           <Ambience tone={t.tone} emojis={t.emojis} />
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 pb-20 pt-14 lg:grid-cols-[1fr_1.05fr]">
           <div>
-            <CategoryTabs category={f.category} active={f.slug} />
+            <Link href={cat.href} className="inline-flex items-center gap-1.5 text-sm font-medium text-stone-500 hover:text-stone-900"><span aria-hidden>←</span> {cat.name}</Link>
             <span className={cx("mt-6 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold", f.soft)}><span className="text-base">{f.icon}</span>{f.name}{f.soon && <span className="rounded-full bg-white px-1.5 py-px text-[9px] font-bold uppercase text-indigo-700">Bientôt disponible</span>}</span>
             <h1 className="mt-4 text-4xl font-bold leading-[1.08] tracking-tight text-stone-900 sm:text-5xl">{f.h1}</h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-stone-600">{f.intro}</p>
@@ -160,15 +160,15 @@ export default function FeaturePage({ params }: { params: { slug: string } }) {
 
         {guides.length > 0 && (
           <section className="mx-auto max-w-5xl px-6 pb-16">
-            <h2 className="text-lg font-bold text-stone-900">Pour aller plus loin</h2>
-            <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+            <h2 className="text-lg font-bold text-stone-900">Articles liés</h2>
+            <DragScroller className="mt-4">
               {guides.map((g) => (
-                <Link key={g.slug} href={`/guides/${g.slug}`} className="min-w-[16rem] max-w-xs flex-1 rounded-2xl border border-line bg-surface p-4 transition hover:-translate-y-0.5 hover:shadow-lift">
+                <Link key={g.slug} href={`/guides/${g.slug}`} draggable={false} className="shrink-0 min-w-[16rem] max-w-xs flex-1 rounded-2xl border border-line bg-surface p-4 transition hover:-translate-y-0.5 hover:shadow-lift">
                   <p className="text-xs font-semibold text-brand-700">{g.category}</p>
                   <p className="mt-1 text-sm font-semibold leading-snug text-stone-900">{g.h1}</p>
                 </Link>
               ))}
-            </div>
+            </DragScroller>
           </section>
         )}
 

@@ -4,32 +4,17 @@ import { JsonLd, breadcrumbJsonLd } from "@/components/marketing/json-ld";
 import { Bubble, Float, InView } from "@/components/marketing/fx";
 import { Ambience, CtaBanner } from "@/components/marketing/sections";
 import { MOCKS } from "@/components/marketing/mocks";
-import { CATEGORIES, featuresOf, type CategoryKey } from "@/lib/marketing/features";
+import { CATEGORIES, GUIDE_CATEGORY, featuresOf, type CategoryKey } from "@/lib/marketing/features";
+import { GUIDES } from "@/lib/marketing/guides";
 import { absolute } from "@/lib/marketing/site";
 import { cx } from "@/lib/utils";
-
-/** Barre d'onglets : les pages d'une catégorie, avec celle en cours mise en avant. */
-export function CategoryTabs({ category, active }: { category: CategoryKey; active?: string }) {
-  const c = CATEGORIES.find((x) => x.key === category)!;
-  return (
-    <nav aria-label={c.name} className="inline-flex max-w-full flex-wrap items-center gap-1.5 rounded-2xl border border-line bg-surface/80 p-1.5 shadow-soft backdrop-blur">
-      <Link href={c.href} className={cx("rounded-xl px-3.5 py-2 text-sm font-semibold transition", !active ? "bg-ink text-onink" : "text-stone-500 hover:text-stone-900")}>
-        {c.icon} Vue d'ensemble
-      </Link>
-      {featuresOf(c).map((f) => (
-        <Link key={f.slug} href={`/fonctionnalites/${f.slug}`} className={cx("rounded-xl px-3.5 py-2 text-sm font-semibold transition", active === f.slug ? cx("bg-gradient-to-r text-white shadow-soft", f.gradient) : "text-stone-500 hover:text-stone-900")}>
-          {f.name}
-          {f.soon && <span className="ml-1.5 rounded-full bg-white/80 px-1.5 py-px text-[9px] font-bold uppercase text-indigo-700">Bientôt</span>}
-        </Link>
-      ))}
-    </nav>
-  );
-}
 
 export function CategoryView({ category }: { category: CategoryKey }) {
   const c = CATEGORIES.find((x) => x.key === category)!;
   const list = featuresOf(c);
   const url = absolute(c.href);
+  const articles = GUIDES.filter((g) => GUIDE_CATEGORY[g.category] === category);
+  const [topArticle, ...restArticles] = articles;
   return (
     <div className="relative overflow-hidden">
       <JsonLd data={breadcrumbJsonLd([{ name: "Accueil", url: absolute("/") }, { name: "Fonctionnalités", url: absolute("/fonctionnalites") }, { name: c.name, url }])} />
@@ -43,7 +28,6 @@ export function CategoryView({ category }: { category: CategoryKey }) {
               <span className={cx("bg-gradient-to-r bg-clip-text text-transparent", c.gradient)}>{c.tagline}</span>
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-stone-600">{c.description}</p>
-            <div className="mt-8"><CategoryTabs category={c.key} /></div>
           </div>
         </section>
 
@@ -84,6 +68,44 @@ export function CategoryView({ category }: { category: CategoryKey }) {
             </section>
           );
         })}
+
+        {topArticle && (
+          <section id="articles" className="relative overflow-hidden py-20" aria-labelledby="articles-titre">
+            <Ambience tone={c.tone} dots={false} />
+            <div className="relative mx-auto max-w-6xl px-6">
+              <div className="text-center">
+                <span className={cx("rounded-full px-4 py-1.5 text-xs font-semibold", c.soft)}>{c.icon} Articles</span>
+                <h2 id="articles-titre" className="mt-4 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">Pour aller plus loin : {c.name.toLowerCase()}</h2>
+                <p className="mx-auto mt-3 max-w-xl text-stone-600">{articles.length} articles pratiques pour mieux t'organiser, avec des méthodes simples et concrètes.</p>
+              </div>
+              <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_1.15fr]">
+                <InView>
+                  <Link href={`/guides/${topArticle.slug}`} className={cx("fx-in group relative block h-full overflow-hidden rounded-[2rem] bg-gradient-to-br p-8 text-white", c.gradient)}>
+                    <span className="fx-gradient pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.14),transparent)]" aria-hidden />
+                    <p className="relative text-xs font-semibold uppercase tracking-widest text-white/70">À lire en premier · {topArticle.minutes} min</p>
+                    <h3 className="relative mt-4 text-2xl font-bold leading-tight sm:text-3xl">{topArticle.h1}</h3>
+                    <p className="relative mt-3 line-clamp-4 text-white/85">{topArticle.description}</p>
+                    <p className="relative mt-6 font-semibold transition group-hover:translate-x-1">Lire l'article →</p>
+                  </Link>
+                </InView>
+                <ol className="divide-y divide-stone-200/80">
+                  {restArticles.map((g, i) => (
+                    <li key={g.slug}>
+                      <Link href={`/guides/${g.slug}`} className="group flex items-center gap-4 py-3.5">
+                        <span className="w-8 text-xl font-bold text-stone-300 transition group-hover:text-brand-500">{String(i + 2).padStart(2, "0")}</span>
+                        <span className="flex-1">
+                          <span className="block font-semibold leading-snug text-stone-900 group-hover:text-brand-700">{g.h1}</span>
+                          <span className="text-xs text-stone-500">{g.minutes} min de lecture</span>
+                        </span>
+                        <span className="text-stone-300 transition group-hover:translate-x-1 group-hover:text-brand-500">→</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="mx-auto max-w-5xl px-6 py-20">
           <CtaBanner title={`Essaie ${c.name.toLowerCase()} dans All In`} text="Un seul espace pour organiser ton temps, tes repas et ton argent, seul ou à deux." secondary={{ href: "/tarifs", label: "Voir les tarifs" }} />

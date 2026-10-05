@@ -12,7 +12,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/fonctionnalites", 0.9),
     ...CATEGORIES.map((c) => page(c.href, 0.9)),
     ...FEATURES.map((f) => page(`/fonctionnalites/${f.slug}`, 0.85)),
-    page("/guides", 0.8, "weekly"),
     ...GUIDES.map((g) => page(`/guides/${g.slug}`, 0.8)),
     page("/recettes", 0.8, "weekly"),
     ...RECIPES.map((r) => page(`/recettes/${r.slug}`, 0.6)),

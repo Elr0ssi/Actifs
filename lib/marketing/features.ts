@@ -405,3 +405,11 @@ export const categoryOf = (f: Feature) => CATEGORIES.find((c) => c.key === f.cat
 export const featuresOf = (c: FeatureCategory) => c.features.map((s) => FEATURES.find((f) => f.slug === s)).filter((f): f is Feature => !!f);
 
 export const getFeature = (slug: string) => FEATURES.find((f) => f.slug === slug);
+
+/** Catégorie du site à laquelle se rattache un article (guide). */
+export const GUIDE_CATEGORY: Record<string, CategoryKey> = {
+  Budget: "finances",
+  "Courses & repas": "repas",
+  Organisation: "organisation",
+  "Agenda & notes": "organisation",
+};
