@@ -1,0 +1,95 @@
+import Link from "next/link";
+import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
+import { JsonLd, breadcrumbJsonLd } from "@/components/marketing/json-ld";
+import { Bubble, Float, InView } from "@/components/marketing/fx";
+import { Ambience, CtaBanner } from "@/components/marketing/sections";
+import { MOCKS } from "@/components/marketing/mocks";
+import { CATEGORIES, featuresOf, type CategoryKey } from "@/lib/marketing/features";
+import { absolute } from "@/lib/marketing/site";
+import { cx } from "@/lib/utils";
+
+/** Barre d'onglets : les pages d'une catégorie, avec celle en cours mise en avant. */
+export function CategoryTabs({ category, active }: { category: CategoryKey; active?: string }) {
+  const c = CATEGORIES.find((x) => x.key === category)!;
+  return (
+    <nav aria-label={c.name} className="inline-flex max-w-full flex-wrap items-center gap-1.5 rounded-2xl border border-line bg-surface/80 p-1.5 shadow-soft backdrop-blur">
+      <Link href={c.href} className={cx("rounded-xl px-3.5 py-2 text-sm font-semibold transition", !active ? "bg-ink text-onink" : "text-stone-500 hover:text-stone-900")}>
+        {c.icon} Vue d'ensemble
+      </Link>
+      {featuresOf(c).map((f) => (
+        <Link key={f.slug} href={`/fonctionnalites/${f.slug}`} className={cx("rounded-xl px-3.5 py-2 text-sm font-semibold transition", active === f.slug ? cx("bg-gradient-to-r text-white shadow-soft", f.gradient) : "text-stone-500 hover:text-stone-900")}>
+          {f.name}
+          {f.soon && <span className="ml-1.5 rounded-full bg-white/80 px-1.5 py-px text-[9px] font-bold uppercase text-indigo-700">Bientôt</span>}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+export function CategoryView({ category }: { category: CategoryKey }) {
+  const c = CATEGORIES.find((x) => x.key === category)!;
+  const list = featuresOf(c);
+  const url = absolute(c.href);
+  return (
+    <div className="relative overflow-hidden">
+      <JsonLd data={breadcrumbJsonLd([{ name: "Accueil", url: absolute("/") }, { name: "Fonctionnalités", url: absolute("/fonctionnalites") }, { name: c.name, url }])} />
+      <SiteHeader current={c.key} />
+      <main>
+        <section className="relative">
+          <Ambience tone={c.tone} emojis={c.emojis} />
+          <div className="relative mx-auto max-w-4xl px-6 pb-14 pt-16 text-center">
+            <span className={cx("inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold", c.soft)}>{c.icon} {c.name}</span>
+            <h1 className="mt-5 text-4xl font-bold tracking-tight text-stone-900 sm:text-6xl">
+              <span className={cx("bg-gradient-to-r bg-clip-text text-transparent", c.gradient)}>{c.tagline}</span>
+            </h1>
+            <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-stone-600">{c.description}</p>
+            <div className="mt-8"><CategoryTabs category={c.key} /></div>
+          </div>
+        </section>
+
+        {list.map((f, i) => {
+          const Mock = MOCKS[f.mock];
+          return (
+            <section key={f.slug} className={cx("relative overflow-hidden py-16", i % 2 === 0 ? "bg-transparent" : "bg-stone-50/80")}>
+              <div className={cx("mx-auto grid max-w-6xl items-center gap-12 px-6 lg:grid-cols-2", i % 2 === 1 && "lg:[&>*:first-child]:order-2")}>
+                <div>
+                  <span className={cx("inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold", f.soft)}>
+                    <span className="text-base">{f.icon}</span>{f.name}
+                    {f.soon && <span className="rounded-full bg-white px-1.5 py-px text-[9px] font-bold uppercase text-indigo-700">Bientôt</span>}
+                  </span>
+                  <h2 className="mt-4 text-3xl font-bold leading-tight tracking-tight text-stone-900 sm:text-4xl">{f.h1}</h2>
+                  <p className="mt-4 leading-relaxed text-stone-600">{f.intro}</p>
+                  <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+                    {f.highlights.slice(0, 4).map((h) => (
+                      <li key={h.title} className="flex items-center gap-2.5 rounded-2xl border border-line bg-surface px-3 py-2.5 text-sm font-medium text-stone-800">
+                        <span className={cx("flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-base text-white", f.gradient)}>{h.icon}</span>
+                        {h.title}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href={`/fonctionnalites/${f.slug}`} className="btn-primary mt-7 inline-block px-6 py-3">Découvrir {f.name.toLowerCase()} →</Link>
+                </div>
+                <InView>
+                  <div className="relative mx-auto w-full max-w-xl">
+                    <div className={cx("absolute -inset-6 -z-10 rounded-[3rem] bg-gradient-to-br opacity-20 blur-2xl", f.gradient)} aria-hidden />
+                    <Mock />
+                    {f.bubbles.slice(0, 2).map((b, k) => (
+                      <Float key={b.title} delay={k * 1.2} duration={6.5 + k} amp={10} rot={k ? -2 : 2} className={cx("absolute z-10", k ? "-right-2 bottom-8 sm:-right-6" : "-left-2 top-6 sm:-left-8")}>
+                        <Bubble {...b} />
+                      </Float>
+                    ))}
+                  </div>
+                </InView>
+              </div>
+            </section>
+          );
+        })}
+
+        <section className="mx-auto max-w-5xl px-6 py-20">
+          <CtaBanner title={`Essaie ${c.name.toLowerCase()} dans All In`} text="Un seul espace pour organiser ton temps, tes repas et ton argent, seul ou à deux." secondary={{ href: "/tarifs", label: "Voir les tarifs" }} />
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}

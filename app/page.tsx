@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FadeIn } from "@/components/marketing/fade-in";
 import { Aurora, Counter, Float, InView, Marquee } from "@/components/marketing/fx";
 import { Ambience, CtaBanner, FlowChain } from "@/components/marketing/sections";
-import { FEATURES } from "@/lib/marketing/features";
+import { CATEGORIES, FEATURES, categoryOf, featuresOf } from "@/lib/marketing/features";
 import { cx } from "@/lib/utils";
 import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { JsonLd, faqJsonLd } from "@/components/marketing/json-ld";
@@ -15,7 +15,7 @@ import { SITE_NAME, SITE_URL, pageMeta } from "@/lib/marketing/site";
 export const metadata: Metadata = pageMeta({
   title: "All In — Agenda, tâches, courses, recettes, budget et notes dans une seule appli",
   description:
-    "Remplace Notion, Excel, Jow et Google Agenda par un seul espace : agenda horaire, tâches et routines, listes de courses et recettes à la bonne quantité, budget et calendrier financier, notes. Seul ou à deux. Outils gratuits sans compte.",
+    "Remplace Notion, Excel, Jow et Google Agenda par un seul espace : agenda horaire, tâches et routines, listes de courses et recettes à la bonne quantité, budget et calendrier financier, notes. Seul ou à deux, gratuit.",
   path: "/",
 });
 
@@ -51,10 +51,14 @@ const FEAT_STYLE = [
   { rot: "rotate-2", bg: "from-sky-100 to-blue-50" },
   { rot: "rotate-1", bg: "from-rose-100 to-pink-50" },
   { rot: "-rotate-1", bg: "from-fuchsia-100 to-purple-50" },
+  { rot: "rotate-1", bg: "from-orange-100 to-rose-50" },
+  { rot: "-rotate-2", bg: "from-indigo-100 to-sky-50" },
 ];
 
 const FEAT_SHORT: Record<string, string> = {
   agenda: "Tâches, routines et rentrées d'argent sur une grille horaire.",
+  "paiements-automatiques": "Chaque paiement Apple Pay arrive tout seul.",
+  "analyse-bancaire": "Compte connecté en direct et analyse de tes dépenses.",
   "taches-et-routines": "Priorités, projets, routines à cocher et séries.",
   "recettes-et-menu-de-la-semaine": "Un menu par jour, quantités selon le nombre de personnes.",
   "liste-de-courses": "Quantités fusionnées, formats vendus, prix par enseigne.",
@@ -64,7 +68,7 @@ const FEAT_SHORT: Record<string, string> = {
 
 const FAQ = [
   { q: "All In, c'est quoi exactement ?", a: "Un espace personnel qui regroupe un agenda, des tâches et routines, des listes de courses et des recettes, un budget avec calendrier financier et des notes. Il se partage à deux (couple, colocation, famille)." },
-  { q: "Puis-je essayer sans créer de compte ?", a: "Oui. Les outils gratuits (budget mensuel et reste à vivre, liste de courses par recettes, suivi d'habitudes, salaire net et impôt) fonctionnent directement dans ton navigateur, sans inscription ni abonnement." },
+  { q: "Combien ça coûte ?", a: "L'offre gratuite donne accès à toutes les fonctionnalités : agenda, tâches, recettes, courses, budget et notes. Une offre à 3 € par mois est prévue pour connecter ton compte bancaire en direct et analyser tes dépenses." },
   { q: "All In remplace-t-il Notion, Excel, Jow et Google Agenda ?", a: "Pour un usage personnel ou à deux, oui : notes en pages, budget avec opérations récurrentes, recettes et menus, agenda horaire. Tu peux aussi garder ton agenda actuel grâce au flux de calendrier vers Google Agenda ou l'iPhone." },
   { q: "Comment les paiements Apple Pay arrivent-ils dans le budget ?", a: "Une automatisation de l'app Raccourcis de l'iPhone envoie chaque paiement par carte à ton espace, avec le commerçant et le montant. Le paiement est retiré de ton solde à sa date." },
   { q: "Mes données sont-elles partagées avec mon conjoint ?", a: "Uniquement avec les personnes que tu invites dans ton foyer : elles partagent alors les listes, le menu, l'agenda et le budget communs." },
@@ -101,7 +105,7 @@ export default function LandingPage() {
             <div>
               <FadeIn>
                 <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-xs font-semibold text-brand-700">
-                  Outils gratuits sans compte · seul ou à deux
+                  Gratuit · seul ou à deux
                 </span>
               </FadeIn>
               <FadeIn delay={80}>
@@ -117,9 +121,9 @@ export default function LandingPage() {
               <FadeIn delay={240}>
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <Link href="/signup" className="btn-primary px-6 py-3 text-base">Créer mon espace</Link>
-                  <Link href="/outils" className="btn-secondary px-6 py-3 text-base">Essayer les outils gratuits</Link>
+                  <Link href="/fonctionnalites" className="btn-secondary px-6 py-3 text-base">Découvrir les fonctionnalités</Link>
                 </div>
-                <p className="mt-3 text-xs text-stone-400">Les outils gratuits fonctionnent sans inscription : tes données restent dans ton navigateur.</p>
+                <p className="mt-3 text-xs text-stone-400">Gratuit, sans carte bancaire. <Link href="/tarifs" className="underline underline-offset-2 hover:text-brand-600">Voir les tarifs</Link></p>
               </FadeIn>
             </div>
 
@@ -208,15 +212,16 @@ export default function LandingPage() {
           <Ambience tone="rose" emojis={["📅","📝","🍽️","💶"]} />
           <div className="relative mx-auto max-w-6xl px-6 py-24">
           <FadeIn className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Six modules, une seule logique</h2>
-            <p className="mt-4 text-stone-600">Chaque module a sa page. Clique pour voir ce qu'il fait et comment l'utiliser.</p>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Trois univers, une seule logique</h2>
+            <p className="mt-4 text-stone-600">Agenda, repas, finances : chaque fonctionnalité a sa page.</p>
           </FadeIn>
-          <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f, i) => (
+          <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {CATEGORIES.flatMap(featuresOf).map((f, i) => (
               <FadeIn key={f.slug} delay={i * 70}>
                 <Link href={`/fonctionnalites/${f.slug}`} className={cx("group block rounded-[1.75rem] bg-gradient-to-br p-6 shadow-soft transition duration-300 hover:-translate-y-2 hover:rotate-0 hover:shadow-lift", FEAT_STYLE[i % FEAT_STYLE.length].bg, FEAT_STYLE[i % FEAT_STYLE.length].rot)}>
                   <span className="fx-float flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-3xl shadow-soft" style={{ "--d": `${i * 0.4}s`, "--a": "5px" } as React.CSSProperties}>{f.icon}</span>
-                  <h3 className="mt-5 text-lg font-bold leading-tight text-stone-900">{f.name}</h3>
+                  <p className="mt-4 text-[11px] font-bold uppercase tracking-wider text-stone-400">{categoryOf(f).label}</p>
+                  <h3 className="mt-1 flex items-center gap-2 text-lg font-bold leading-tight text-stone-900">{f.name}{f.soon && <span className="rounded-full bg-indigo-100 px-1.5 py-px text-[9px] font-bold uppercase text-indigo-700">Bientôt</span>}</h3>
                   <p className="mt-1 text-sm text-stone-600">{FEAT_SHORT[f.slug] ?? f.short}</p>
                   <p className="mt-5 text-sm font-semibold text-brand-700 transition group-hover:translate-x-1">Découvrir →</p>
                 </Link>
@@ -241,8 +246,8 @@ export default function LandingPage() {
 
         {/* Chiffres */}
         <section className="mx-auto max-w-6xl px-6">
-          <div className="grid gap-px overflow-hidden rounded-[2rem] bg-gradient-to-r from-brand-500 via-violet-600 to-brand-800 p-px sm:grid-cols-4">
-            {[[RECIPES.length, "", "recettes avec quantités par personne"], [FEATURES.length, "", "modules reliés entre eux"], [4, "", "outils gratuits, sans compte"], [GUIDES.length, "", "guides pratiques"]].map(([n, suf, l]) => (
+          <div className="grid gap-px overflow-hidden rounded-[2rem] bg-gradient-to-r from-brand-500 via-violet-600 to-brand-800 p-px sm:grid-cols-3">
+            {[[RECIPES.length, "", "recettes avec quantités par personne"], [FEATURES.length, "", "fonctionnalités reliées entre elles"], [GUIDES.length, "", "guides pratiques"]].map(([n, suf, l]) => (
               <div key={String(l)} className="bg-surface px-6 py-8 text-center">
                 <p className="text-5xl font-bold tracking-tight text-brand-700"><Counter to={Number(n)} suffix={String(suf)} /></p>
                 <p className="mt-2 text-sm text-stone-500">{l}</p>
@@ -325,7 +330,7 @@ export default function LandingPage() {
         </section>
 
         <div className="mx-auto max-w-6xl px-6 pb-24">
-          <CtaBanner title="Prêt à tout regrouper ?" text="Crée ton espace en quelques secondes, ou commence par un outil gratuit sans compte." secondary={{ href: "/outils", label: "Outils gratuits" }} />
+          <CtaBanner title="Prêt à tout regrouper ?" text="Crée ton espace gratuit en quelques secondes." secondary={{ href: "/tarifs", label: "Voir les tarifs" }} />
         </div>
       </main>
 

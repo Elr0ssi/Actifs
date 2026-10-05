@@ -6,7 +6,8 @@ import { JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/components/marketing/json
 import { Aurora, Bubble, Float, InView, Marquee } from "@/components/marketing/fx";
 import { Ambience, CtaBanner, StepsRail, type AmbienceTone } from "@/components/marketing/sections";
 import { MOCKS } from "@/components/marketing/mocks";
-import { FEATURES, getFeature } from "@/lib/marketing/features";
+import { CategoryTabs } from "@/components/marketing/category-view";
+import { FEATURES, categoryOf, getFeature } from "@/lib/marketing/features";
 import { getGuide } from "@/lib/marketing/guides";
 import { SITE_NAME, absolute, pageMeta } from "@/lib/marketing/site";
 import { cx } from "@/lib/utils";
@@ -28,6 +29,8 @@ const TONE: Record<string, { tone: AmbienceTone; band: string; emojis: string[] 
   "liste-de-courses": { tone: "emerald", band: "bg-emerald-50/60", emojis: ["🛒", "🥖", "🧀", "🥛"] },
   "budget-et-finances": { tone: "sky", band: "bg-sky-50/70", emojis: ["💶", "📈", "💳", "🏦"] },
   notes: { tone: "violet", band: "bg-indigo-50/60", emojis: ["📝", "📌", "💡"] },
+  "paiements-automatiques": { tone: "rose", band: "bg-rose-50/60", emojis: ["💳", "📲", "🧾"] },
+  "analyse-bancaire": { tone: "sky", band: "bg-indigo-50/60", emojis: ["🏦", "📊", "🔗"] },
 };
 
 const SPAN = [4, 2, 2, 4, 3, 3];
@@ -48,6 +51,7 @@ export default function FeaturePage({ params }: { params: { slug: string } }) {
   const Mock = MOCKS[f.mock];
   const url = absolute(`/fonctionnalites/${f.slug}`);
   const others = FEATURES.filter((x) => x.slug !== f.slug);
+  const cat = categoryOf(f);
   const t = TONE[f.slug] ?? TONE.agenda;
   const guides = f.guides.map((s) => getGuide(s)).filter((g): g is NonNullable<typeof g> => !!g);
 
@@ -57,10 +61,10 @@ export default function FeaturePage({ params }: { params: { slug: string } }) {
         data={[
           { "@context": "https://schema.org", "@type": "WebPage", name: f.h1, description: f.description, url, inLanguage: "fr-FR", isPartOf: { "@type": "WebSite", name: SITE_NAME, url: absolute("/") } },
           faqJsonLd(f.faq),
-          breadcrumbJsonLd([{ name: "Accueil", url: absolute("/") }, { name: "Fonctionnalités", url: absolute("/fonctionnalites") }, { name: f.name, url }]),
+          breadcrumbJsonLd([{ name: "Accueil", url: absolute("/") }, { name: "Fonctionnalités", url: absolute("/fonctionnalites") }, { name: cat.name, url: absolute(cat.href) }, { name: f.name, url }]),
         ]}
       />
-      <SiteHeader current="fonctionnalites" />
+      <SiteHeader current={f.category} />
       <Aurora />
       <main>
         {/* Hero */}
@@ -68,16 +72,13 @@ export default function FeaturePage({ params }: { params: { slug: string } }) {
           <Ambience tone={t.tone} emojis={t.emojis} />
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 pb-20 pt-14 lg:grid-cols-[1fr_1.05fr]">
           <div>
-            <nav aria-label="Fil d'Ariane" className="text-sm text-stone-500">
-              <Link href="/" className="hover:text-stone-800">Accueil</Link> <span className="mx-1">/</span>
-              <Link href="/fonctionnalites" className="hover:text-stone-800">Fonctionnalités</Link>
-            </nav>
-            <span className={cx("mt-5 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold", f.soft)}><span className="text-base">{f.icon}</span>{f.name}</span>
+            <CategoryTabs category={f.category} active={f.slug} />
+            <span className={cx("mt-6 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold", f.soft)}><span className="text-base">{f.icon}</span>{f.name}{f.soon && <span className="rounded-full bg-white px-1.5 py-px text-[9px] font-bold uppercase text-indigo-700">Bientôt disponible</span>}</span>
             <h1 className="mt-4 text-4xl font-bold leading-[1.08] tracking-tight text-stone-900 sm:text-5xl">{f.h1}</h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-stone-600">{f.intro}</p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Link href="/signup" className="btn-primary px-6 py-3 text-base">Créer mon espace</Link>
-              {f.tool && <Link href={f.tool.href} className="btn-secondary px-6 py-3 text-base">{f.tool.label}</Link>}
+              <Link href="/signup" className="btn-primary px-6 py-3 text-base">{f.soon ? "Créer mon espace gratuit" : "Créer mon espace"}</Link>
+              <Link href="/tarifs" className="btn-secondary px-6 py-3 text-base">Voir les tarifs</Link>
             </div>
           </div>
           <div className="relative mx-auto w-full max-w-xl">
@@ -172,7 +173,7 @@ export default function FeaturePage({ params }: { params: { slug: string } }) {
         )}
 
         <section className="mx-auto max-w-5xl px-6 pb-24">
-          <CtaBanner title={`Essaie ${f.name.toLowerCase()} dans All In`} text="Un seul espace pour organiser ton temps, tes repas et ton argent, seul ou à deux." secondary={f.tool ? { href: f.tool.href, label: "Version gratuite sans compte" } : undefined} />
+          <CtaBanner title={`Essaie ${f.name.toLowerCase()} dans All In`} text="Un seul espace pour organiser ton temps, tes repas et ton argent, seul ou à deux." secondary={{ href: "/tarifs", label: "Voir les tarifs" }} />
         </section>
       </main>
       <SiteFooter />

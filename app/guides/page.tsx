@@ -26,7 +26,7 @@ export default function GuidesPage() {
       <main>
         <header className="mx-auto max-w-2xl px-6 pb-12 pt-16 text-center">
           <h1 className="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">Guides pour mieux t'organiser</h1>
-          <p className="mt-4 text-lg text-stone-600">Budget, courses, repas, routines, agenda : {GUIDES.length} méthodes simples et concrètes, avec des outils gratuits à essayer sans compte.</p>
+          <p className="mt-4 text-lg text-stone-600">Budget, courses, repas, routines, agenda : {GUIDES.length} méthodes simples et concrètes,.</p>
           <nav aria-label="Catégories" className="mt-6 flex flex-wrap justify-center gap-2">
             {CATEGORIES.map((c) => <a key={c.name} href={`#${c.name.replace(/\W+/g, "-")}`} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${c.chip}`}>{c.emoji} {c.name}</a>)}
           </nav>

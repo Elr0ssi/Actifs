@@ -1,7 +1,12 @@
 import type { MockKey } from "@/components/marketing/mocks";
 
+export type CategoryKey = "organisation" | "repas" | "finances";
+
 export interface Feature {
   slug: string;
+  category: CategoryKey;
+  /** Fonctionnalité de l'offre payante, pas encore ouverte. */
+  soon?: boolean;
   icon: string;
   name: string;
   short: string;
@@ -24,6 +29,7 @@ export interface Feature {
 export const FEATURES: Feature[] = [
   {
     slug: "agenda",
+    category: "organisation",
     icon: "📅",
     name: "Agenda",
     short: "Un agenda horaire où tâches, routines et rentrées d'argent vivent ensemble.",
@@ -62,6 +68,7 @@ export const FEATURES: Feature[] = [
   },
   {
     slug: "taches-et-routines",
+    category: "organisation",
     icon: "✅",
     name: "Tâches & routines",
     short: "Priorités, projets, notes dans chaque tâche et routines avec courbe de régularité.",
@@ -100,6 +107,7 @@ export const FEATURES: Feature[] = [
   },
   {
     slug: "recettes-et-menu-de-la-semaine",
+    category: "repas",
     icon: "🍽️",
     name: "Recettes & menu",
     short: "Des recettes à la bonne quantité et un menu de la semaine par jour, avec photos.",
@@ -138,6 +146,7 @@ export const FEATURES: Feature[] = [
   },
   {
     slug: "liste-de-courses",
+    category: "repas",
     icon: "🛒",
     name: "Listes de courses",
     short: "Quantités fusionnées, formats vendus, prix par enseigne et liste partagée.",
@@ -176,6 +185,7 @@ export const FEATURES: Feature[] = [
   },
   {
     slug: "budget-et-finances",
+    category: "finances",
     icon: "💶",
     name: "Budget & finances",
     short: "Calendrier financier, reste à vivre, soldes réels et paiements Apple Pay.",
@@ -213,7 +223,83 @@ export const FEATURES: Feature[] = [
     guides: ["faire-un-budget-mensuel", "calculer-son-reste-a-vivre", "gerer-son-budget-en-couple", "regle-50-30-20", "epargne-de-precaution", "reduire-ses-depenses-mensuelles", "calendrier-financier-salaire-et-prelevements", "suivre-ses-depenses-automatiquement"],
   },
   {
+    slug: "paiements-automatiques",
+    category: "finances",
+    icon: "💳",
+    name: "Paiements automatiques",
+    short: "Chaque paiement Apple Pay arrive tout seul dans ton budget, au bon jour.",
+    gradient: "from-rose-500 to-fuchsia-700",
+    soft: "bg-rose-50 text-rose-700",
+    mock: "budget",
+    title: "Suivre ses paiements par carte automatiquement avec Apple Pay et Raccourcis",
+    description: "Une automatisation de l'app Raccourcis de l'iPhone envoie chaque paiement par carte vers ton budget : commerçant, montant, date. Ton solde se met à jour sans saisie.",
+    h1: "Tes paiements par carte arrivent tout seuls dans ton budget",
+    intro: "Tu paies avec ton iPhone, et le paiement apparaît dans All In avec le commerçant et le montant. Tu crées l'automatisation une seule fois, ensuite tu n'as plus rien à saisir.",
+    bubbles: [
+      { icon: "📲", title: "Paiement détecté", sub: "Carrefour City · 12,50 €", tone: "violet" },
+      { icon: "🧾", title: "Ajouté au budget", sub: "à la date du paiement", tone: "green" },
+      { icon: "🎯", title: "Reste à vivre", sub: "mis à jour", tone: "amber" },
+    ],
+    highlights: [
+      { icon: "⚡", title: "Zéro saisie", text: "L'automatisation envoie le commerçant, le montant, la carte et l'heure dès que tu paies." },
+      { icon: "🗓️", title: "Au bon jour", text: "Le paiement est retiré de ton solde à sa date, et ton reste à vivre se recalcule." },
+      { icon: "🏷️", title: "Page Paiements", text: "Retrouve la liste de tes paiements, modifie une catégorie ou supprime un doublon." },
+      { icon: "🔒", title: "Sans identifiants bancaires", text: "Rien n'est partagé avec ta banque : seul ton iPhone envoie ses propres paiements, vers une adresse privée liée à ton foyer." },
+    ],
+    steps: [
+      { title: "Ouvre Raccourcis", text: "Crée une automatisation déclenchée par une transaction Apple Pay." },
+      { title: "Ajoute l'envoi", text: "Une requête vers l'adresse privée fournie par All In, avec quatre champs." },
+      { title: "Paie comme d'habitude", text: "Le raccourci s'exécute immédiatement, sans confirmation." },
+      { title: "Retrouve tout dans All In", text: "Le paiement est listé et ton solde est à jour." },
+    ],
+    faq: [
+      { q: "Faut-il connecter ma banque ?", a: "Non. Ce sont les paiements Apple Pay de ton iPhone qui sont envoyés par une automatisation, sans identifiants bancaires." },
+      { q: "Et si je paie sans Apple Pay ?", a: "Ces paiements ne sont pas détectés par l'automatisation : tu peux les ajouter à la main dans ton calendrier financier." },
+      { q: "Le tutoriel est-il détaillé ?", a: "Oui, All In affiche les étapes exactes à suivre dans Raccourcis, avec les noms des champs à copier." },
+    ],
+    guides: ["suivre-ses-depenses-automatiquement"],
+  },
+  {
+    slug: "analyse-bancaire",
+    category: "finances",
+    soon: true,
+    icon: "🏦",
+    name: "Analyse bancaire",
+    short: "Connecte ton compte en direct et obtiens une analyse de tes dépenses. Offre à 3 € par mois, bientôt.",
+    gradient: "from-indigo-500 to-violet-800",
+    soft: "bg-indigo-50 text-indigo-700",
+    mock: "budget",
+    title: "Connexion bancaire et analyse de ses dépenses : l'offre All In à 3 € par mois",
+    description: "L'offre à 3 € par mois d'All In permettra de connecter ton compte bancaire en direct et d'analyser tes dépenses. Bientôt disponible.",
+    h1: "Ton compte bancaire connecté, et une vraie analyse de tes dépenses",
+    intro: "L'offre à 3 € par mois est en préparation : elle permettra de relier ton compte bancaire en direct pour que tes opérations arrivent d'elles-mêmes, puis de les analyser. Elle n'est pas encore ouverte.",
+    bubbles: [
+      { icon: "🔗", title: "Compte relié", sub: "opérations importées", tone: "violet" },
+      { icon: "📊", title: "Dépenses par catégorie", sub: "mois après mois", tone: "sky" },
+      { icon: "🔁", title: "Abonnements repérés", sub: "ceux que tu oublies", tone: "amber" },
+    ],
+    highlights: [
+      { icon: "🔗", title: "Connexion en direct", text: "Tes opérations arrivent automatiquement, sans saisie ni raccourci, une fois ton compte autorisé." },
+      { icon: "📊", title: "Analyse des dépenses", text: "Répartition par catégorie, évolution d'un mois à l'autre, plus gros postes." },
+      { icon: "🔁", title: "Abonnements et récurrences", text: "Repérage des prélèvements qui reviennent pour les ajouter à ton calendrier financier." },
+      { icon: "🎯", title: "Projections plus justes", text: "Ton solde réel vient de ta banque, donc ton reste à vivre repart d'un chiffre exact." },
+    ],
+    steps: [
+      { title: "Passe à l'offre à 3 €", text: "Quand elle sera ouverte, depuis tes réglages." },
+      { title: "Autorise l'accès", text: "Tu choisis ta banque et tu confirmes l'accès en lecture seule." },
+      { title: "Les opérations arrivent", text: "Elles s'ajoutent à ton calendrier et à ton solde." },
+      { title: "Lis l'analyse", text: "Catégories, tendances et abonnements repérés." },
+    ],
+    faq: [
+      { q: "L'offre à 3 € par mois est-elle disponible ?", a: "Pas encore. Elle est en préparation : la connexion bancaire n'est pas ouverte aujourd'hui." },
+      { q: "En attendant, comment suivre mes paiements ?", a: "Avec les paiements automatiques Apple Pay et le calendrier financier, disponibles dans l'offre gratuite." },
+      { q: "Pourquoi une offre payante ?", a: "La connexion à une banque repose sur des services de tiers qui ont un coût : l'offre à 3 € par mois couvre ce coût." },
+    ],
+    guides: ["suivre-ses-depenses-automatiquement", "reduire-ses-depenses-mensuelles"],
+  },
+  {
     slug: "notes",
+    category: "organisation",
     icon: "📝",
     name: "Notes",
     short: "Pages, sous-pages et blocs façon Notion, avec recherche dans tout le contenu.",
@@ -250,5 +336,72 @@ export const FEATURES: Feature[] = [
     guides: ["prendre-des-notes-structurees", "remplacer-notion-excel-jow"],
   },
 ];
+
+export interface FeatureCategory {
+  key: CategoryKey;
+  /** Adresse de la page de la catégorie. */
+  href: string;
+  /** Libellé court dans le menu. */
+  label: string;
+  name: string;
+  icon: string;
+  tagline: string;
+  description: string;
+  gradient: string;
+  soft: string;
+  tone: "violet" | "emerald" | "amber" | "sky" | "rose";
+  emojis: string[];
+  /** Pages de la catégorie, dans l'ordre d'affichage. */
+  features: string[];
+}
+
+export const CATEGORIES: FeatureCategory[] = [
+  {
+    key: "organisation",
+    href: "/organisation",
+    label: "Agenda",
+    name: "Agenda & organisation",
+    icon: "📅",
+    tagline: "Ton temps, tes tâches et tes idées au même endroit.",
+    description: "Un agenda horaire où tâches, routines et rentrées d'argent vivent ensemble, des tâches avec projets et notes, et des notes en pages façon Notion.",
+    gradient: "from-brand-500 to-violet-700",
+    soft: "bg-brand-50 text-brand-700",
+    tone: "violet",
+    emojis: ["📅", "✅", "📝", "🔁"],
+    features: ["agenda", "taches-et-routines", "notes"],
+  },
+  {
+    key: "repas",
+    href: "/repas",
+    label: "Repas",
+    name: "Repas & courses",
+    icon: "🍽️",
+    tagline: "Du menu de la semaine au caddie, sans rien ressaisir.",
+    description: "Une liste de courses aux bonnes quantités, arrondies aux formats vendus, et des recettes avec le menu de la semaine pour le bon nombre de personnes.",
+    gradient: "from-amber-500 to-orange-700",
+    soft: "bg-amber-50 text-amber-700",
+    tone: "amber",
+    emojis: ["🍅", "🥕", "🛒", "🧀"],
+    features: ["liste-de-courses", "recettes-et-menu-de-la-semaine"],
+  },
+  {
+    key: "finances",
+    href: "/finances",
+    label: "Finances",
+    name: "Finances",
+    icon: "💶",
+    tagline: "Ton argent dans un calendrier, du salaire au dernier paiement.",
+    description: "Un calendrier financier avec reste à vivre, des paiements par carte ajoutés automatiquement et, bientôt, la connexion directe à ton compte bancaire.",
+    gradient: "from-fuchsia-500 to-brand-700",
+    soft: "bg-fuchsia-50 text-fuchsia-700",
+    tone: "sky",
+    emojis: ["💶", "📈", "💳", "🏦"],
+    features: ["budget-et-finances", "paiements-automatiques", "analyse-bancaire"],
+  },
+];
+
+export const getCategory = (key: string) => CATEGORIES.find((c) => c.key === key);
+export const categoryOf = (f: Feature) => CATEGORIES.find((c) => c.key === f.category)!;
+export const featuresOf = (c: FeatureCategory) => c.features.map((s) => FEATURES.find((f) => f.slug === s)).filter((f): f is Feature => !!f);
 
 export const getFeature = (slug: string) => FEATURES.find((f) => f.slug === slug);
