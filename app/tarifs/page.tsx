@@ -8,8 +8,8 @@ import { Ambience, CtaBanner } from "@/components/marketing/sections";
 import { pageMeta } from "@/lib/marketing/site";
 
 export const metadata: Metadata = pageMeta({
-  title: "Tarifs All In : offre gratuite complète et offre à 3 € par mois",
-  description: "All In est gratuit : agenda, tâches, recettes, courses, budget et notes. L'offre à 3 € par mois, bientôt, connecte ton compte bancaire en direct et analyse tes dépenses.",
+  title: "Tarifs Flozea : offre gratuite complète et offre à 3 € par mois",
+  description: "Flozea est gratuit : agenda, tâches, recettes, courses, budget et notes. L'offre à 3 € par mois, bientôt, connecte ton compte bancaire en direct et analyse tes dépenses.",
   path: "/tarifs",
 });
 
@@ -34,7 +34,7 @@ const PREMIUM = [
 ];
 
 const FAQ = [
-  { q: "All In est-il vraiment gratuit ?", a: "Oui. L'offre gratuite donne accès à toutes les fonctionnalités : agenda, tâches, recettes, courses, budget et notes. Aucune carte bancaire n'est demandée à l'inscription." },
+  { q: "Flozea est-il vraiment gratuit ?", a: "Oui. L'offre gratuite donne accès à toutes les fonctionnalités : agenda, tâches, recettes, courses, budget et notes. Aucune carte bancaire n'est demandée à l'inscription." },
   { q: "Y a-t-il une limite de listes, tâches ou opérations ?", a: "Non, tout est illimité dans l'offre gratuite : projets, listes, routines, opérations financières." },
   { q: "Que fait l'offre à 3 € par mois ?", a: "Elle permettra de connecter ton compte bancaire en direct pour que tes opérations arrivent automatiquement, et d'obtenir une analyse de tes dépenses." },
   { q: "L'offre à 3 € par mois est-elle disponible ?", a: "Pas encore : elle est en préparation. Tu peux utiliser dès aujourd'hui l'offre gratuite, y compris les paiements Apple Pay automatiques." },

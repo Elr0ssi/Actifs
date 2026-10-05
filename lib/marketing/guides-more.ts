@@ -176,7 +176,7 @@ export const MORE_GUIDES: Guide[] = [
       {
         h2: "Option 3 : l'enregistrement automatique",
         paragraphs: [
-          "Sur iPhone, une automatisation de l'app Raccourcis peut envoyer chaque paiement par carte (commerçant, montant) vers ton espace All In dès qu'il est effectué. Le solde est ajusté à la date du paiement sans que tu saisisses quoi que ce soit.",
+          "Sur iPhone, une automatisation de l'app Raccourcis peut envoyer chaque paiement par carte (commerçant, montant) vers ton espace Flozea dès qu'il est effectué. Le solde est ajusté à la date du paiement sans que tu saisisses quoi que ce soit.",
           "Le principe : à chaque paiement, le téléphone envoie une requête avec les informations du paiement, et l'application l'ajoute à tes opérations.",
         ],
       },
@@ -353,7 +353,7 @@ export const MORE_GUIDES: Guide[] = [
       },
       {
         h2: "Et à la caisse ?",
-        paragraphs: ["Les produits ne se vendent pas au gramme près : 300 g d'oignons, c'est un filet d'un kilo. All In calcule ce qu'il te faut pour tes repas et l'arrondit au format réellement vendu."],
+        paragraphs: ["Les produits ne se vendent pas au gramme près : 300 g d'oignons, c'est un filet d'un kilo. Flozea calcule ce qu'il te faut pour tes repas et l'arrondit au format réellement vendu."],
       },
     ],
     faq: [
@@ -416,7 +416,7 @@ export const MORE_GUIDES: Guide[] = [
       },
       {
         h2: "L'appliquer au quotidien",
-        paragraphs: ["Chaque matin, regarde ta liste et attribue une priorité. Dans All In, chaque tâche a une priorité et une échéance, et le calendrier montre ce qui est prévu chaque jour pour ne pas tout laisser à la dernière minute."],
+        paragraphs: ["Chaque matin, regarde ta liste et attribue une priorité. Dans Flozea, chaque tâche a une priorité et une échéance, et le calendrier montre ce qui est prévu chaque jour pour ne pas tout laisser à la dernière minute."],
       },
     ],
     faq: [
@@ -555,7 +555,7 @@ export const MORE_GUIDES: Guide[] = [
     ],
     faq: [
       { q: "Quel est le meilleur agenda partagé pour un couple ?", a: "Celui que vous consultez tous les deux : l'important est qu'il soit simple à mettre à jour et visible par chacun." },
-      { q: "Peut-on garder son agenda Google ?", a: "Oui : All In fournit un flux de calendrier que Google Agenda ou l'iPhone peuvent afficher." },
+      { q: "Peut-on garder son agenda Google ?", a: "Oui : Flozea fournit un flux de calendrier que Google Agenda ou l'iPhone peuvent afficher." },
       { q: "Les tâches doivent-elles être dans l'agenda ?", a: "C'est plus efficace : une tâche avec un créneau a plus de chances d'être faite." },
     ],
     tool: { href: "/fonctionnalites/agenda", label: "Voir la fonctionnalité Agenda", text: "Grille horaire, tâches, routines et argent au même endroit." },
@@ -569,11 +569,11 @@ export const MORE_GUIDES: Guide[] = [
     category: "Agenda & notes",
     minutes: 4,
     published: D,
-    intro: "Tu n'as pas à abandonner l'agenda que tu utilises déjà. Avec un lien d'abonnement au format iCal, tes tâches et événements d'All In s'affichent dans Google Agenda ou dans l'app Calendrier de l'iPhone.",
+    intro: "Tu n'as pas à abandonner l'agenda que tu utilises déjà. Avec un lien d'abonnement au format iCal, tes tâches et événements de Flozea s'affichent dans Google Agenda ou dans l'app Calendrier de l'iPhone.",
     sections: [
       {
         h2: "Le principe",
-        paragraphs: ["Un flux iCal est une adresse web qui décrit ton calendrier. Ton application de calendrier s'y abonne et la relit régulièrement : l'affichage est en lecture seule, ce que tu modifies dans All In se retrouve ensuite dans l'autre agenda."],
+        paragraphs: ["Un flux iCal est une adresse web qui décrit ton calendrier. Ton application de calendrier s'y abonne et la relit régulièrement : l'affichage est en lecture seule, ce que tu modifies dans Flozea se retrouve ensuite dans l'autre agenda."],
       },
       {
         h2: "Sur iPhone",
@@ -589,7 +589,7 @@ export const MORE_GUIDES: Guide[] = [
       },
     ],
     faq: [
-      { q: "La synchronisation est-elle dans les deux sens ?", a: "Non, le flux est en lecture seule : les modifications se font dans All In." },
+      { q: "La synchronisation est-elle dans les deux sens ?", a: "Non, le flux est en lecture seule : les modifications se font dans Flozea." },
       { q: "Pourquoi les mises à jour mettent-elles du temps ?", a: "Google Agenda et l'iPhone relisent les flux abonnés à intervalles réguliers, qui varient selon le service." },
       { q: "Le lien est-il sécurisé ?", a: "Il contient un identifiant secret propre à ton foyer. Garde-le privé et régénère-le au besoin." },
     ],

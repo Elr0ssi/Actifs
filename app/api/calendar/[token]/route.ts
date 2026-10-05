@@ -41,10 +41,10 @@ export async function GET(_req: Request, { params }: { params: { token: string }
   const L: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//All In//Agenda//FR",
+    "PRODID:-//Flozea//Agenda//FR",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
-    `X-WR-CALNAME:All In · ${esc(feed.name || "Agenda")}`,
+    `X-WR-CALNAME:Flozea · ${esc(feed.name || "Agenda")}`,
     "X-WR-TIMEZONE:Europe/Paris",
     "REFRESH-INTERVAL;VALUE=DURATION:PT1H",
     "X-PUBLISHED-TTL:PT1H",

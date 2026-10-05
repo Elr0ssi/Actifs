@@ -211,7 +211,7 @@ export function HabitTool() {
         </div>
         <div className="rounded-2xl bg-stone-900 p-5 text-white">
           <p className="font-semibold">Tes routines dans ton agenda</p>
-          <p className="mt-1 text-sm text-stone-300">Avec All In, tes routines apparaissent à côté de tes tâches dans l'agenda, avec une courbe de régularité par semaine, mois et année.</p>
+          <p className="mt-1 text-sm text-stone-300">Avec Flozea, tes routines apparaissent à côté de tes tâches dans l'agenda, avec une courbe de régularité par semaine, mois et année.</p>
           <Link href="/signup" className="mt-3 inline-block rounded-xl bg-white px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-100">Créer mon espace</Link>
         </div>
         <p className="text-[11px] text-stone-400">Tes habitudes restent dans ce navigateur : rien n'est envoyé.</p>

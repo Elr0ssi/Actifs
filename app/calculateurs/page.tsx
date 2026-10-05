@@ -15,7 +15,7 @@ const POINTS = [
   { icon: "💶", title: "Brut → net mensuel", desc: "Un ratio indicatif adapté à ton statut (cadre ou non-cadre)." },
   { icon: "🧾", title: "Impôt estimé", desc: "Barème progressif français par tranches, toujours donné en fourchette." },
   { icon: "🎓", title: "Alternance prise en compte", desc: "Exonération jusqu'à 21 000 €/an sur les périodes d'alternance." },
-  { icon: "📅", title: "Suivi mois après mois", desc: "Dans ton espace All In, ces montants sont tracés, pas juste calculés une fois." },
+  { icon: "📅", title: "Suivi mois après mois", desc: "Dans ton espace Flozea, ces montants sont tracés, pas juste calculés une fois." },
 ];
 
 export default function CalculateursPage() {
@@ -27,7 +27,7 @@ export default function CalculateursPage() {
           <FadeIn>
             <h1 className="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">Ton salaire net et ton impôt, calculés</h1>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-stone-600">
-              Un aperçu gratuit de l'outil Finance d'All In : passe du brut annuel au net mensuel, et connais ta
+              Un aperçu gratuit de l'outil Finance de Flozea : passe du brut annuel au net mensuel, et connais ta
               provision d'impôt indicative. Aucun compte requis pour essayer.
             </p>
           </FadeIn>

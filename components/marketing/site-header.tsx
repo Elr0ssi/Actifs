@@ -29,12 +29,12 @@ export function SiteHeader({ current }: { current?: Current }) {
     <header className="sticky top-0 z-40 border-b border-stone-200/70 bg-surface/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
         <Link href="/"><LogoWordmark className="text-lg" /></Link>
-        <nav aria-label="Navigation principale" className="hidden items-center gap-6 text-sm font-medium text-stone-600 md:flex">
+        <nav aria-label="Navigation principale" className="hidden items-center gap-5 text-sm font-medium text-stone-600 md:flex">
           <Link href="/fonctionnalites" className={item(current === "fonctionnalites")}>Fonctionnalités</Link>
           {/* Un onglet par catégorie, avec ses pages en sous-menu */}
           {CATEGORIES.map((c) => (
             <div key={c.key} className="group relative">
-              <Link href={c.href} className={item(current === c.key)}>{c.label} <span className="text-[10px] text-stone-400">▾</span></Link>
+              <Link href={c.href} className={item(current === c.key)}>Flozea {c.label} <span className="text-[10px] text-stone-400">▾</span></Link>
               <div className={cx(panel, center)}>
                 <div className="w-64 rounded-3xl border border-line bg-surface p-2.5 shadow-lift">
                   <Link href={c.href} className="block rounded-xl px-2.5 py-1.5 text-xs font-bold uppercase tracking-wide text-stone-400 hover:text-brand-700">{c.name}</Link>
@@ -43,7 +43,7 @@ export function SiteHeader({ current }: { current?: Current }) {
               </div>
             </div>
           ))}
-          <Link href="/recettes" className={item(current === "recettes")}>Recettes</Link>
+          <Link href="/recettes" className={item(current === "recettes")}>Flozea Recettes</Link>
           <Link href="/tarifs" className={item(current === "tarifs")}>Tarifs</Link>
         </nav>
         <div className="flex items-center gap-3">
@@ -83,7 +83,7 @@ const FOOTER_COLUMNS: { title: string; links: [string, string][] }[] = [
     links: featuresOf(c).map((f): [string, string] => [`/fonctionnalites/${f.slug}`, f.name]),
   })),
   {
-    title: "All In",
+    title: "Flozea",
     links: [
       ["/fonctionnalites", "Toutes les fonctionnalités"],
       ["/recettes", "Recettes"],
@@ -114,7 +114,7 @@ export function SiteFooter() {
             </nav>
           ))}
         </div>
-        <p className="mt-10 text-sm text-stone-400">© {new Date().getFullYear()} All In. Organise ta vie, simplement.</p>
+        <p className="mt-10 text-sm text-stone-400">© {new Date().getFullYear()} Flozea. Organise ta vie, simplement.</p>
       </div>
     </footer>
   );

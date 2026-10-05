@@ -75,7 +75,7 @@ export function CategoryView({ category }: { category: CategoryKey }) {
             <div className="relative mx-auto max-w-6xl px-6">
               <div className="text-center">
                 <span className={cx("rounded-full px-4 py-1.5 text-xs font-semibold", c.soft)}>{c.icon} Articles</span>
-                <h2 id="articles-titre" className="mt-4 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">Pour aller plus loin : {c.name.toLowerCase()}</h2>
+                <h2 id="articles-titre" className="mt-4 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">Pour aller plus loin avec {c.name}</h2>
                 <p className="mx-auto mt-3 max-w-xl text-stone-600">{articles.length} articles pratiques pour mieux t'organiser, avec des méthodes simples et concrètes.</p>
               </div>
               <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_1.15fr]">
@@ -108,7 +108,7 @@ export function CategoryView({ category }: { category: CategoryKey }) {
         )}
 
         <section className="mx-auto max-w-5xl px-6 py-20">
-          <CtaBanner title={`Essaie ${c.name.toLowerCase()} dans All In`} text="Un seul espace pour organiser ton temps, tes repas et ton argent, seul ou à deux." secondary={{ href: "/tarifs", label: "Voir les tarifs" }} />
+          <CtaBanner title={`Essaie ${c.name}`} text="Un seul espace pour organiser ton temps, tes repas et ton argent, seul ou à deux." secondary={{ href: "/tarifs", label: "Voir les tarifs" }} />
         </section>
       </main>
       <SiteFooter />

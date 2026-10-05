@@ -13,7 +13,7 @@ import { GUIDES } from "@/lib/marketing/guides";
 import { SITE_NAME, SITE_URL, pageMeta } from "@/lib/marketing/site";
 
 export const metadata: Metadata = pageMeta({
-  title: "All In — Agenda, tâches, courses, recettes, budget et notes dans une seule appli",
+  title: "Flozea — Agenda, tâches, courses, recettes, budget et notes dans une seule appli",
   description:
     "Remplace Notion, Excel, Jow et Google Agenda par un seul espace : agenda horaire, tâches et routines, listes de courses et recettes à la bonne quantité, budget et calendrier financier, notes. Seul ou à deux, gratuit.",
   path: "/",
@@ -66,9 +66,9 @@ const FEAT_SHORT: Record<string, string> = {
 };
 
 const FAQ = [
-  { q: "All In, c'est quoi exactement ?", a: "Un espace personnel qui regroupe un agenda, des tâches et routines, des listes de courses et des recettes, un budget avec calendrier financier et des notes. Il se partage à deux (couple, colocation, famille)." },
+  { q: "Flozea, c'est quoi exactement ?", a: "Un espace personnel qui regroupe un agenda, des tâches et routines, des listes de courses et des recettes, un budget avec calendrier financier et des notes. Il se partage à deux (couple, colocation, famille)." },
   { q: "Combien ça coûte ?", a: "L'offre gratuite donne accès à toutes les fonctionnalités : agenda, tâches, recettes, courses, budget et notes. Une offre à 3 € par mois est prévue pour connecter ton compte bancaire en direct et analyser tes dépenses." },
-  { q: "All In remplace-t-il Notion, Excel, Jow et Google Agenda ?", a: "Pour un usage personnel ou à deux, oui : notes en pages, budget avec opérations récurrentes, recettes et menus, agenda horaire. Tu peux aussi garder ton agenda actuel grâce au flux de calendrier vers Google Agenda ou l'iPhone." },
+  { q: "Flozea remplace-t-il Notion, Excel, Jow et Google Agenda ?", a: "Pour un usage personnel ou à deux, oui : notes en pages, budget avec opérations récurrentes, recettes et menus, agenda horaire. Tu peux aussi garder ton agenda actuel grâce au flux de calendrier vers Google Agenda ou l'iPhone." },
   { q: "Comment les paiements Apple Pay arrivent-ils dans le budget ?", a: "Une automatisation de l'app Raccourcis de l'iPhone envoie chaque paiement par carte à ton espace, avec le commerçant et le montant. Le paiement est retiré de ton solde à sa date." },
   { q: "Mes données sont-elles partagées avec mon conjoint ?", a: "Uniquement avec les personnes que tu invites dans ton foyer : elles partagent alors les listes, le menu, l'agenda et le budget communs." },
 ];
@@ -114,7 +114,7 @@ export default function LandingPage() {
               </FadeIn>
               <FadeIn delay={160}>
                 <p className="mt-6 max-w-xl text-lg leading-relaxed text-stone-600">
-                  All In remplace Notion, Excel, Jow et Google Agenda. Ton menu de la semaine génère ta liste de courses, tes courses alimentent ton budget, et tout apparaît dans ton agenda.
+                  Flozea remplace Notion, Excel, Jow et Google Agenda. Ton menu de la semaine génère ta liste de courses, tes courses alimentent ton budget, et tout apparaît dans ton agenda.
                 </p>
               </FadeIn>
               <FadeIn delay={240}>
@@ -170,10 +170,10 @@ export default function LandingPage() {
           <div className="relative mx-auto max-w-5xl px-6 py-24">
           <FadeIn className="mx-auto max-w-2xl text-center">
             <h2 id="besoins" className="text-3xl font-bold tracking-tight sm:text-4xl">Pour celles et ceux qui jonglent entre 5 outils</h2>
-            <p className="mt-4 text-stone-600">Étudiants, jeunes actifs, couples, familles, indépendants : si tu organises ton temps, tes repas et ton argent à plusieurs endroits, All In les réunit.</p>
+            <p className="mt-4 text-stone-600">Étudiants, jeunes actifs, couples, familles, indépendants : si tu organises ton temps, tes repas et ton argent à plusieurs endroits, Flozea les réunit.</p>
           </FadeIn>
 
-          {/* Avant / avec All In */}
+          {/* Avant / avec Flozea */}
           <InView>
             <div className="mt-14 grid items-stretch gap-6 lg:grid-cols-[1fr_auto_1.1fr]">
               <div className="fx-in relative overflow-hidden rounded-[2rem] border border-rose-200/70 bg-gradient-to-br from-rose-50 via-white to-amber-50 p-7">
@@ -198,7 +198,7 @@ export default function LandingPage() {
 
               <div className="fx-in relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-600 via-violet-700 to-brand-900 p-7 text-white" style={{ "--d": "0.15s" } as React.CSSProperties}>
                 <div className="fx-drift pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/15 blur-3xl" aria-hidden />
-                <span className="relative rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wider">Avec All In</span>
+                <span className="relative rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wider">Avec Flozea</span>
                 <ul className="relative mt-6 space-y-4">
                   {PAINS.map((n, i) => (
                     <li key={n.pain} className="fx-slide flex items-start gap-3" style={{ "--d": `${0.3 + i * 0.12}s` } as React.CSSProperties}>
@@ -229,7 +229,7 @@ export default function LandingPage() {
               <FadeIn key={f.slug} delay={i * 70}>
                 <Link href={`/fonctionnalites/${f.slug}`} className={cx("group block rounded-[1.75rem] bg-gradient-to-br p-6 shadow-soft transition duration-300 hover:-translate-y-2 hover:rotate-0 hover:shadow-lift", FEAT_STYLE[i % FEAT_STYLE.length].bg, FEAT_STYLE[i % FEAT_STYLE.length].rot)}>
                   <span className="fx-float flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-3xl shadow-soft" style={{ "--d": `${i * 0.4}s`, "--a": "5px" } as React.CSSProperties}>{f.icon}</span>
-                  <p className="mt-4 text-[11px] font-bold uppercase tracking-wider text-stone-400">{categoryOf(f).label}</p>
+                  <p className="mt-4 text-[11px] font-bold uppercase tracking-wider text-stone-400">Flozea {categoryOf(f).label}</p>
                   <h3 className="mt-1 flex items-center gap-2 text-lg font-bold leading-tight text-stone-900">{f.name}{f.soon && <span className="rounded-full bg-indigo-100 px-1.5 py-px text-[9px] font-bold uppercase text-indigo-700">Bientôt</span>}</h3>
                   <p className="mt-1 text-sm text-stone-600">{FEAT_SHORT[f.slug] ?? f.short}</p>
                   <p className="mt-5 text-sm font-semibold text-brand-700 transition group-hover:translate-x-1">Découvrir →</p>
@@ -271,7 +271,7 @@ export default function LandingPage() {
           <div className="relative mx-auto max-w-6xl px-6 py-24">
           <FadeIn className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Des recettes, et la liste de courses qui va avec</h2>
-            <p className="mt-4 text-stone-600">Choisis une recette et un nombre de personnes : All In calcule les quantités à acheter, avec les prix de ton enseigne.</p>
+            <p className="mt-4 text-stone-600">Choisis une recette et un nombre de personnes : Flozea calcule les quantités à acheter, avec les prix de ton enseigne.</p>
           </FadeIn>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {RECIPES.slice(0, 4).map((r, i) => (

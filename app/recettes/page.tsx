@@ -20,12 +20,12 @@ export default function RecipesPage() {
           <Ambience tone="amber" emojis={["🍅", "🥕", "🧅", "🧀", "🌿"]} />
           <div className="relative mx-auto max-w-4xl px-6 pb-10 pt-16 text-center">
             <FadeIn>
-              <span className="rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-xs font-semibold text-amber-800">🍽️ Plus de 90 recettes</span>
+              <span className="rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-xs font-semibold text-amber-800">🍽️ Flozea Recettes · plus de 90 recettes</span>
               <h1 className="mt-5 text-4xl font-bold tracking-tight text-stone-900 sm:text-6xl">
                 Des recettes <span className="bg-gradient-to-r from-amber-500 to-rose-600 bg-clip-text text-transparent">simples</span>, prêtes à cuisiner
               </h1>
               <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-stone-600">
-                Ouvre une recette pour voir ingrédients et étapes. Dans All In, elle devient une liste de courses aux bonnes quantités, avec les prix de ton enseigne.
+                Ouvre une recette pour voir ingrédients et étapes. Dans Flozea, elle devient une liste de courses aux bonnes quantités, avec les prix de ton enseigne.
               </p>
             </FadeIn>
           </div>

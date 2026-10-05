@@ -207,7 +207,7 @@ export function ShoppingTool() {
           )}
         </div>
         <div className="mt-4 rounded-2xl bg-stone-900 p-5 text-white">
-          <p className="font-semibold">Dans All In, c'est encore plus complet</p>
+          <p className="font-semibold">Dans Flozea, c'est encore plus complet</p>
           <p className="mt-1 text-sm text-stone-300">Prix par enseigne, liste partagée à deux en direct, menu de la semaine, vos propres recettes et historique de courses.</p>
           <Link href="/signup" className="mt-3 inline-block rounded-xl bg-white px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-100">Créer mon espace</Link>
         </div>

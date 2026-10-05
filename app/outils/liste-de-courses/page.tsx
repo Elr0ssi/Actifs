@@ -29,9 +29,9 @@ export default function Page() {
       ]}
       faq={[
         { q: "Comment la liste de courses est-elle calculée ?", a: "Chaque ingrédient de chaque recette est mis à l'échelle selon le nombre de personnes, puis les ingrédients identiques sont additionnés et arrondis aux formats habituellement vendus." },
-        { q: "Puis-je utiliser mes propres recettes ?", a: "Dans cet outil gratuit, tu choisis parmi les recettes proposées. Avec un espace All In, tu peux créer tes propres recettes, avec leurs étapes et leurs photos." },
+        { q: "Puis-je utiliser mes propres recettes ?", a: "Dans cet outil gratuit, tu choisis parmi les recettes proposées. Avec un espace Flozea, tu peux créer tes propres recettes, avec leurs étapes et leurs photos." },
         { q: "Ma liste est-elle sauvegardée ?", a: "Oui, dans ton navigateur uniquement. Elle n'est pas envoyée sur nos serveurs et ne se synchronise pas entre appareils sans compte." },
-        { q: "Les prix sont-ils indiqués ?", a: "Pas dans l'outil gratuit. Dans All In, la liste est chiffrée avec les prix de référence de ton enseigne et comparée aux autres magasins." },
+        { q: "Les prix sont-ils indiqués ?", a: "Pas dans l'outil gratuit. Dans Flozea, la liste est chiffrée avec les prix de référence de ton enseigne et comparée aux autres magasins." },
       ]}
       guides={["planifier-ses-repas-de-la-semaine", "faire-sa-liste-de-courses-sans-gaspillage", "faire-un-budget-mensuel"]}
     >

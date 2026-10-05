@@ -26,7 +26,7 @@ export default function OutilsPage() {
         <header className="mx-auto max-w-2xl text-center">
           <span className="rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">Gratuits · sans compte · sans abonnement</span>
           <h1 className="mt-4 text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">Des outils gratuits pour t'organiser</h1>
-          <p className="mt-4 text-lg text-stone-600">La version simple d'All In, directement dans ton navigateur. Tes données restent sur ton appareil : rien à créer, rien à payer.</p>
+          <p className="mt-4 text-lg text-stone-600">La version simple de Flozea, directement dans ton navigateur. Tes données restent sur ton appareil : rien à créer, rien à payer.</p>
         </header>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2">
@@ -50,7 +50,7 @@ export default function OutilsPage() {
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-stone-900">L'espace All In</h3>
+              <h3 className="font-semibold text-stone-900">L'espace Flozea</h3>
               <ul className="mt-3 space-y-2 text-sm text-stone-600">
                 {["Tout relié : agenda, tâches, courses, recettes, budget, notes", "Synchronisé sur tous tes appareils et partagé à deux", "Prix par enseigne, paiements Apple Pay, calendrier financier", "Flux d'agenda vers Google Agenda et iPhone"].map((i) => <li key={i} className="flex gap-2"><span className="text-brand-600">✓</span>{i}</li>)}
               </ul>

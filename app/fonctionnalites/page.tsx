@@ -10,8 +10,8 @@ import { absolute, pageMeta } from "@/lib/marketing/site";
 import { cx } from "@/lib/utils";
 
 export const metadata: Metadata = pageMeta({
-  title: "Fonctionnalités All In : agenda, tâches, recettes, courses, budget, notes",
-  description: "Découvre tout ce que fait All In : agenda horaire, tâches et routines, recettes et menu de la semaine, listes de courses, budget et calendrier financier, notes en pages.",
+  title: "Fonctionnalités Flozea : agenda, tâches, recettes, courses, budget, notes",
+  description: "Découvre tout ce que fait Flozea : agenda horaire, tâches et routines, recettes et menu de la semaine, listes de courses, budget et calendrier financier, notes en pages.",
   path: "/fonctionnalites",
 });
 
@@ -39,7 +39,7 @@ export default function FeaturesPage() {
           <Float delay={2.2} duration={7.5} amp={12} rot={-3} className="absolute right-[6%] top-[18rem] hidden lg:block"><Bubble icon="🛒" title="1 kg d'oignons" sub="besoin 300 g" tone="sky" /></Float>
           <span className="rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-xs font-semibold text-brand-700">Trois univers, un seul espace</span>
           <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight text-stone-900 sm:text-6xl">
-            Tout ce que fait <span className="bg-gradient-to-r from-brand-500 to-violet-700 bg-clip-text text-transparent">All In</span>
+            Tout ce que fait <span className="bg-gradient-to-r from-brand-500 to-violet-700 bg-clip-text text-transparent">Flozea</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-stone-600">
             Agenda, repas et finances. Chaque fonctionnalité a sa page, regroupée par univers, et elles fonctionnent ensemble : le menu alimente les courses, les courses pèsent sur le budget, et tout s'affiche dans l'agenda.

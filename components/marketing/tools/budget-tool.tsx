@@ -143,7 +143,7 @@ export function BudgetTool() {
         </div>
 
         <div className="rounded-2xl bg-stone-900 p-5 text-white">
-          <p className="font-semibold">Aller plus loin avec All In</p>
+          <p className="font-semibold">Aller plus loin avec Flozea</p>
           <p className="mt-1 text-sm text-stone-300">Un budget qui vit : opérations récurrentes dans un calendrier, solde réel, paiements par carte ajoutés automatiquement, reste à vivre jusqu'à ta prochaine paie.</p>
           <Link href="/signup" className="mt-3 inline-block rounded-xl bg-white px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-100">Créer mon espace</Link>
         </div>

@@ -133,7 +133,7 @@ export default function FeaturePage({ params }: { params: { slug: string } }) {
 
         {/* Autres modules */}
         <section className="py-10" aria-label="Autres fonctionnalités">
-          <p className="mb-5 text-center text-sm font-semibold text-stone-500">Aussi dans All In</p>
+          <p className="mb-5 text-center text-sm font-semibold text-stone-500">Aussi dans Flozea</p>
           <Marquee speed={50} items={others.map((o) => (
             <Link key={o.slug} href={`/fonctionnalites/${o.slug}`} className="flex items-center gap-3 rounded-2xl border border-line bg-surface px-5 py-3 shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift">
               <span className={cx("flex h-10 w-10 items-center justify-center rounded-xl text-xl", o.soft)}>{o.icon}</span>
@@ -173,7 +173,7 @@ export default function FeaturePage({ params }: { params: { slug: string } }) {
         )}
 
         <section className="mx-auto max-w-5xl px-6 pb-24">
-          <CtaBanner title={`Essaie ${f.name.toLowerCase()} dans All In`} text="Un seul espace pour organiser ton temps, tes repas et ton argent, seul ou à deux." secondary={{ href: "/tarifs", label: "Voir les tarifs" }} />
+          <CtaBanner title={`Essaie ${f.name} avec Flozea`} text="Un seul espace pour organiser ton temps, tes repas et ton argent, seul ou à deux." secondary={{ href: "/tarifs", label: "Voir les tarifs" }} />
         </section>
       </main>
       <SiteFooter />

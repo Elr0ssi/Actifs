@@ -31,7 +31,7 @@ export default function Page() {
         { q: "Combien d'habitudes puis-je suivre ?", a: "Autant que tu veux, mais commencer par deux ou trois habitudes augmente nettement les chances de les tenir." },
         { q: "Mes habitudes sont-elles sauvegardées ?", a: "Oui, dans ton navigateur. Elles restent sur cet appareil et ne sont pas envoyées sur nos serveurs." },
         { q: "La journée en cours compte-t-elle dans mon pourcentage ?", a: "Les jours à venir ne comptent pas, et une habitude pas encore cochée aujourd'hui ne casse pas ta série." },
-        { q: "Puis-je retrouver mes routines dans un agenda ?", a: "Avec un espace All In, tes routines s'affichent dans l'agenda avec tes tâches, et une courbe suit ta régularité par semaine, mois et année." },
+        { q: "Puis-je retrouver mes routines dans un agenda ?", a: "Avec un espace Flozea, tes routines s'affichent dans l'agenda avec tes tâches, et une courbe suit ta régularité par semaine, mois et année." },
       ]}
       guides={["creer-une-routine-quotidienne-qui-tient", "remplacer-notion-excel-jow"]}
     >

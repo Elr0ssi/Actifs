@@ -5,11 +5,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://actifs.app"),
   title: {
-    default: "All In — Agenda, tâches, courses, recettes, budget et notes",
-    template: "%s | All In",
+    default: "Flozea — Agenda, tâches, courses, recettes, budget et notes",
+    template: "%s | Flozea",
   },
   description:
-    "All In regroupe agenda, tâches, routines, listes de courses, recettes, budget et notes dans un seul espace, seul ou à deux. Outils gratuits sans compte.",
+    "Flozea regroupe agenda, tâches, routines, listes de courses, recettes, budget et notes dans un seul espace, seul ou à deux. Gratuit.",
   keywords: [
     "agenda en ligne",
     "gestion de tâches",
@@ -25,17 +25,17 @@ export const metadata: Metadata = {
     "gestion financière personnelle",
   ],
   openGraph: {
-    title: "All In — Agenda, tâches, courses, recettes, budget et notes",
+    title: "Flozea — Agenda, tâches, courses, recettes, budget et notes",
     description:
       "Remplace Notion, Excel, Jow et Google Agenda par un seul espace, seul ou à deux.",
     type: "website",
-    siteName: "All In",
+    siteName: "Flozea",
     locale: "fr_FR",
   },
-  appleWebApp: { capable: true, title: "All In", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "Flozea", statusBarStyle: "default" },
   twitter: {
     card: "summary_large_image",
-    title: "All In — Agenda, tâches, courses, recettes, budget et notes",
+    title: "Flozea — Agenda, tâches, courses, recettes, budget et notes",
     description: "Un seul espace pour organiser ton temps, tes repas et ton argent.",
   },
 };

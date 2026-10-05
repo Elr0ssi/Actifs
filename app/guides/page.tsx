@@ -6,7 +6,7 @@ import { GUIDES } from "@/lib/marketing/guides";
 import { absolute, pageMeta } from "@/lib/marketing/site";
 
 export const metadata: Metadata = pageMeta({
-  title: "Guides budget, courses, repas et organisation — All In",
+  title: "Guides budget, courses, repas et organisation — Flozea",
   description: "Guides pratiques pour faire un budget mensuel, calculer son reste à vivre, planifier ses repas, faire sa liste de courses et s'organiser au quotidien.",
   path: "/guides",
 });

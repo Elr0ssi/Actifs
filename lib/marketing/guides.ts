@@ -30,7 +30,7 @@ const BASE_GUIDES: Guide[] = [
     category: "Budget",
     minutes: 6,
     published: "2026-10-04",
-    intro: "Faire un budget mensuel, ce n'est pas se priver : c'est savoir à l'avance où va chaque euro pour ne plus avoir de mauvaise surprise en fin de mois. Voici une méthode en cinq étapes, utilisable avec un simple tableur ou avec l'outil gratuit d'All In.",
+    intro: "Faire un budget mensuel, ce n'est pas se priver : c'est savoir à l'avance où va chaque euro pour ne plus avoir de mauvaise surprise en fin de mois. Voici une méthode en cinq étapes, utilisable avec un simple tableur ou avec l'outil gratuit de Flozea.",
     sections: [
       {
         h2: "Étape 1 : poser ce qui rentre, pour de vrai",
@@ -64,7 +64,7 @@ const BASE_GUIDES: Guide[] = [
         h2: "Étape 5 : suivre, comparer, ajuster",
         paragraphs: [
           "Un budget qu'on ne regarde plus devient vite faux. Une fois par semaine, compare ce qui était prévu et ce qui s'est passé. L'important est de repérer les écarts récurrents : si tu dépasses chaque mois de 80 € en sorties, relève l'enveloppe ou change l'habitude, mais ne te mens pas.",
-          "Dans All In, tes opérations récurrentes (salaire, loyer, abonnements) sont placées dans un calendrier, et tes paiements par carte peuvent s'y ajouter automatiquement : tu vois en temps réel ce qu'il te reste avant la prochaine rentrée d'argent.",
+          "Dans Flozea, tes opérations récurrentes (salaire, loyer, abonnements) sont placées dans un calendrier, et tes paiements par carte peuvent s'y ajouter automatiquement : tu vois en temps réel ce qu'il te reste avant la prochaine rentrée d'argent.",
         ],
       },
     ],
@@ -111,7 +111,7 @@ const BASE_GUIDES: Guide[] = [
         h2: "Comment l'augmenter sans se priver",
         paragraphs: [
           "Renégocier ou comparer les contrats récurrents (énergie, assurance, forfait) est souvent le levier le plus rentable car il ne change rien à ton quotidien. Fais ensuite le tri des abonnements inutilisés. Enfin, planifier les courses et les repas de la semaine fait baisser le poste alimentation sans effort de volonté.",
-          "Dans All In, le reste à vivre est calculé automatiquement jusqu'à ta prochaine rentrée d'argent, en tenant compte de chaque opération prévue entre-temps et des paiements déjà faits par carte.",
+          "Dans Flozea, le reste à vivre est calculé automatiquement jusqu'à ta prochaine rentrée d'argent, en tenant compte de chaque opération prévue entre-temps et des paiements déjà faits par carte.",
         ],
       },
     ],
@@ -149,7 +149,7 @@ const BASE_GUIDES: Guide[] = [
       {
         h2: "3. Adapter les quantités au nombre de personnes",
         paragraphs: [
-          "Une recette écrite pour quatre personnes ne convient ni à un couple ni à un foyer de cinq. Recalcule les quantités avant de faire la liste : 320 g de pâtes pour quatre deviennent 160 g pour deux. Dans All In, tu choisis le nombre de personnes pour chaque repas et les quantités se mettent à jour toutes seules.",
+          "Une recette écrite pour quatre personnes ne convient ni à un couple ni à un foyer de cinq. Recalcule les quantités avant de faire la liste : 320 g de pâtes pour quatre deviennent 160 g pour deux. Dans Flozea, tu choisis le nombre de personnes pour chaque repas et les quantités se mettent à jour toutes seules.",
           "Pense aussi aux formats vendus : on n'achète pas 300 g d'oignons mais un filet de 1 kg. Arrondir au conditionnement réel évite de se retrouver à court en caisse… ou avec trois kilos de trop.",
         ],
       },
@@ -162,7 +162,7 @@ const BASE_GUIDES: Guide[] = [
       {
         h2: "Garder le rythme sur la durée",
         paragraphs: [
-          "Garde un petit stock de recettes qui marchent et réutilise-les : planifier devient alors une question de deux minutes. Note aussi ce que tu as vraiment cuisiné pour ajuster la semaine suivante. Les recettes favorites et le menu de la semaine d'All In servent exactement à cela.",
+          "Garde un petit stock de recettes qui marchent et réutilise-les : planifier devient alors une question de deux minutes. Note aussi ce que tu as vraiment cuisiné pour ajuster la semaine suivante. Les recettes favorites et le menu de la semaine de Flozea servent exactement à cela.",
         ],
       },
     ],
@@ -200,7 +200,7 @@ const BASE_GUIDES: Guide[] = [
       {
         h2: "Pourquoi les quantités changent tout",
         paragraphs: [
-          "Une liste sans quantité oblige à décider en rayon, là où l'impulsion est la plus forte. Avec les quantités, tu sais exactement combien acheter et tu peux estimer le total avant de partir. Si tu connais le prix de référence de tes produits chez ton enseigne, tu peux même comparer plusieurs magasins : c'est ce que fait All In pour chaque liste.",
+          "Une liste sans quantité oblige à décider en rayon, là où l'impulsion est la plus forte. Avec les quantités, tu sais exactement combien acheter et tu peux estimer le total avant de partir. Si tu connais le prix de référence de tes produits chez ton enseigne, tu peux même comparer plusieurs magasins : c'est ce que fait Flozea pour chaque liste.",
         ],
       },
       {
@@ -221,7 +221,7 @@ const BASE_GUIDES: Guide[] = [
       { q: "Faut-il une application pour faire sa liste de courses ?", a: "Ce n'est pas obligatoire, mais une application additionne les quantités, arrondit aux formats vendus et partage la liste en direct, ce qui est long à faire à la main." },
       { q: "Comment éviter les achats impulsifs ?", a: "Partir avec une liste précise, ne pas faire les courses le ventre vide et s'en tenir à la liste préparée à partir des repas prévus." },
     ],
-    tool: { href: "/outils/liste-de-courses", label: "Liste de courses depuis des recettes", text: "Sélectionne tes recettes, All In calcule la liste fusionnée avec les quantités à acheter." },
+    tool: { href: "/outils/liste-de-courses", label: "Liste de courses depuis des recettes", text: "Sélectionne tes recettes, Flozea calcule la liste fusionnée avec les quantités à acheter." },
     related: ["planifier-ses-repas-de-la-semaine", "faire-un-budget-mensuel"],
   },
   {
@@ -256,7 +256,7 @@ const BASE_GUIDES: Guide[] = [
       {
         h2: "Suivre pour garder la motivation",
         paragraphs: [
-          "Voir une série de jours cochés est un puissant moteur. Suis le pourcentage de réussite par semaine plutôt que la perfection : un jour manqué ne casse pas la routine, deux jours de suite oui. Dans All In, les routines apparaissent dans ton agenda à côté de tes tâches et une courbe te montre ta régularité par semaine, par mois et par année.",
+          "Voir une série de jours cochés est un puissant moteur. Suis le pourcentage de réussite par semaine plutôt que la perfection : un jour manqué ne casse pas la routine, deux jours de suite oui. Dans Flozea, les routines apparaissent dans ton agenda à côté de tes tâches et une courbe te montre ta régularité par semaine, par mois et par année.",
         ],
       },
     ],
@@ -297,14 +297,14 @@ const BASE_GUIDES: Guide[] = [
       {
         h2: "Un seul espace : tâches, agenda, repas, budget, notes",
         paragraphs: [
-          "All In regroupe ces usages : un agenda façon calendrier où tes tâches et tes routines sont placées sur une grille horaire ; des recettes qui génèrent des listes de courses aux bonnes quantités ; un budget avec calendrier financier et reste à vivre ; des notes en pages et sous-pages avec blocs, comme dans un outil de prise de notes moderne.",
+          "Flozea regroupe ces usages : un agenda façon calendrier où tes tâches et tes routines sont placées sur une grille horaire ; des recettes qui génèrent des listes de courses aux bonnes quantités ; un budget avec calendrier financier et reste à vivre ; des notes en pages et sous-pages avec blocs, comme dans un outil de prise de notes moderne.",
           "L'intérêt tient dans les liens : le menu de la semaine alimente la liste de courses, les courses réalisées pèsent sur le budget, et ton agenda montre tâches, routines et rentrées d'argent au même endroit.",
         ],
       },
       {
         h2: "Garder ton agenda Google ou iPhone",
         paragraphs: [
-          "Tu n'as pas à abandonner ton agenda actuel : All In fournit un flux de calendrier que tu peux ajouter à Google Agenda ou au Calendrier de ton iPhone pour y voir tes tâches et tes routines.",
+          "Tu n'as pas à abandonner ton agenda actuel : Flozea fournit un flux de calendrier que tu peux ajouter à Google Agenda ou au Calendrier de ton iPhone pour y voir tes tâches et tes routines.",
         ],
       },
       {
@@ -315,11 +315,11 @@ const BASE_GUIDES: Guide[] = [
       },
     ],
     faq: [
-      { q: "All In remplace-t-il Notion ?", a: "Pour la prise de notes en pages et sous-pages avec blocs, les tâches et les listes, oui pour un usage personnel ou à deux. Ce n'est pas un outil de gestion d'équipe en entreprise." },
+      { q: "Flozea remplace-t-il Notion ?", a: "Pour la prise de notes en pages et sous-pages avec blocs, les tâches et les listes, oui pour un usage personnel ou à deux. Ce n'est pas un outil de gestion d'équipe en entreprise." },
       { q: "Puis-je importer mon budget Excel ?", a: "Tu peux ressaisir tes opérations récurrentes (salaire, loyer, abonnements) en quelques minutes : elles se répètent ensuite automatiquement dans le calendrier financier." },
-      { q: "Mes tâches apparaissent-elles dans Google Agenda ?", a: "Oui, en ajoutant le flux de calendrier All In à Google Agenda ou à l'application Calendrier de l'iPhone (lecture seule)." },
+      { q: "Mes tâches apparaissent-elles dans Google Agenda ?", a: "Oui, en ajoutant le flux de calendrier Flozea à Google Agenda ou à l'application Calendrier de l'iPhone (lecture seule)." },
     ],
-    tool: { href: "/signup", label: "Créer mon espace", text: "Essaie All In : l'inscription est rapide et tu peux commencer par un seul usage." },
+    tool: { href: "/signup", label: "Créer mon espace", text: "Essaie Flozea : l'inscription est rapide et tu peux commencer par un seul usage." },
     related: ["planifier-ses-repas-de-la-semaine", "creer-une-routine-quotidienne-qui-tient", "faire-un-budget-mensuel"],
   },
   {
@@ -354,7 +354,7 @@ const BASE_GUIDES: Guide[] = [
         h2: "Peu importe la méthode : avoir la même vue",
         paragraphs: [
           "Dans tous les cas, ce qui apaise est de regarder les mêmes chiffres : revenus, charges fixes, reste à vivre, objectifs d'épargne. Un budget partagé permet de décider à deux d'une dépense importante en sachant ce qu'elle change pour le reste du mois.",
-          "Dans All In, vous partagez le même espace : listes de courses, menu de la semaine, calendrier, tâches et budget sont communs à votre foyer, avec le même solde et le même reste à vivre.",
+          "Dans Flozea, vous partagez le même espace : listes de courses, menu de la semaine, calendrier, tâches et budget sont communs à votre foyer, avec le même solde et le même reste à vivre.",
         ],
         list: ["Fixez ensemble une date par mois pour faire le point (15 minutes suffisent)", "Définissez un seuil au-delà duquel on se prévient avant un achat", "Gardez un objectif d'épargne commun, visible et chiffré"],
       },

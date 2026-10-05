@@ -67,7 +67,7 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
 
           {g.tool && (
             <aside className="mt-8 rounded-2xl border border-brand-200 bg-brand-50 p-5">
-              <p className="text-sm font-semibold text-brand-800">{/^\/(outils|calculateurs)/.test(g.tool.href) ? "Outil gratuit, sans compte" : "Dans All In"}</p>
+              <p className="text-sm font-semibold text-brand-800">{/^\/(outils|calculateurs)/.test(g.tool.href) ? "Outil gratuit, sans compte" : "Dans Flozea"}</p>
               <p className="mt-1 text-sm text-stone-700">{g.tool.text}</p>
               <Link href={g.tool.href} className="btn-primary mt-3 inline-block px-4 py-2 text-sm">{g.tool.label} →</Link>
             </aside>
@@ -111,7 +111,7 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
           </section>
 
           <section className="mt-14 rounded-3xl bg-stone-900 p-8 text-center text-white">
-            <h2 className="text-2xl font-bold">Mets-le en pratique dans All In</h2>
+            <h2 className="text-2xl font-bold">Mets-le en pratique dans Flozea</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-stone-300">Tâches, agenda, courses, recettes, budget et notes dans un seul espace, seul ou à deux.</p>
             <Link href="/signup" className="mt-5 inline-block rounded-xl bg-white px-6 py-3 text-sm font-semibold text-stone-900 hover:bg-stone-100">Créer mon espace</Link>
           </section>

@@ -1,7 +1,7 @@
 import { cx } from "@/lib/utils";
 
 /**
- * Marque "All In" : trois formes qui convergent vers une seule — l'idée du tout-en-un.
+ * Marque "Flozea" : trois formes qui convergent vers une seule — l'idée du tout-en-un.
  * Le fond en dégradé suit la couleur d'accent choisie dans Paramètres (en CSS, pour éviter les identifiants SVG dupliqués).
  */
 export function LogoMark({ className }: { className?: string }) {
@@ -20,7 +20,7 @@ export function LogoWordmark({ className }: { className?: string }) {
   return (
     <span className={cx("flex items-center gap-2 font-bold tracking-tight text-stone-900", className)}>
       <LogoMark />
-      All In
+      Flozea
     </span>
   );
 }
