@@ -203,6 +203,9 @@
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
 }
+@keyframes fx-spin {
+  to { transform: rotate(360deg); }
+}
 @keyframes fx-travel {
   0% { left: 0; opacity: 0; }
   8% { opacity: 1; }
@@ -220,6 +223,8 @@
   .fx-marquee { animation: fx-marquee var(--t, 40s) linear infinite; width: max-content; }
   .fx-marquee-wrap:hover .fx-marquee { animation-play-state: paused; }
   .fx-dash { stroke-dasharray: 6 6; animation: fx-dash 1.4s linear infinite; }
+  .fx-orbit { animation: fx-spin var(--t, 40s) linear infinite; }
+  .fx-orbit-rev { animation: fx-spin var(--t, 40s) linear infinite reverse; }
   .fx-travel { animation: fx-travel 5.5s ease-in-out infinite; }
   .fx-ring { animation: fx-ring 2.4s ease-out var(--d, 0s) infinite; }
   .fx-gradient { background-size: 220% 220%; animation: fx-gradient 9s ease-in-out infinite; }

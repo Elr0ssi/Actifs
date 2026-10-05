@@ -23,11 +23,11 @@ export function CategoryView({ category }: { category: CategoryKey }) {
         <section className="relative">
           <Ambience tone={c.tone} emojis={c.emojis} />
           <div className="relative mx-auto max-w-4xl px-6 pb-14 pt-16 text-center">
-            <span className={cx("inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold", c.soft)}>{c.icon} {c.name}</span>
-            <h1 className="mt-5 text-4xl font-bold tracking-tight text-stone-900 sm:text-6xl">
-              <span className={cx("bg-gradient-to-r bg-clip-text text-transparent", c.gradient)}>{c.tagline}</span>
+            <h1 className="text-6xl font-extrabold tracking-tight text-stone-900 sm:text-8xl">
+              Flozea <span className={cx("bg-gradient-to-r bg-clip-text text-transparent", c.gradient)}>{c.label}</span>
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-stone-600">{c.description}</p>
+            <p className="mx-auto mt-5 max-w-2xl text-xl font-semibold text-stone-800 sm:text-2xl">{c.tagline}</p>
+            <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-stone-600">{c.description}</p>
           </div>
         </section>
 

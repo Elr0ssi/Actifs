@@ -34,7 +34,7 @@ export function SiteHeader({ current }: { current?: Current }) {
           {/* Un onglet par catégorie, avec ses pages en sous-menu */}
           {CATEGORIES.map((c) => (
             <div key={c.key} className="group relative">
-              <Link href={c.href} className={item(current === c.key)}>Flozea {c.label} <span className="text-[10px] text-stone-400">▾</span></Link>
+              <Link href={c.href} className={item(current === c.key)}>{c.label} <span className="text-[10px] text-stone-400">▾</span></Link>
               <div className={cx(panel, center)}>
                 <div className="w-64 rounded-3xl border border-line bg-surface p-2.5 shadow-lift">
                   <Link href={c.href} className="block rounded-xl px-2.5 py-1.5 text-xs font-bold uppercase tracking-wide text-stone-400 hover:text-brand-700">{c.name}</Link>
@@ -43,7 +43,7 @@ export function SiteHeader({ current }: { current?: Current }) {
               </div>
             </div>
           ))}
-          <Link href="/recettes" className={item(current === "recettes")}>Flozea Recettes</Link>
+          <Link href="/recettes" className={item(current === "recettes")}>Recettes</Link>
           <Link href="/tarifs" className={item(current === "tarifs")}>Tarifs</Link>
         </nav>
         <div className="flex items-center gap-3">

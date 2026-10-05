@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FadeIn } from "@/components/marketing/fade-in";
 import { Aurora, Counter, Float, InView, Marquee } from "@/components/marketing/fx";
-import { Ambience, CtaBanner, FlowChain } from "@/components/marketing/sections";
+import { Ambience, CtaBanner } from "@/components/marketing/sections";
 import { CATEGORIES, FEATURES, categoryOf, featuresOf } from "@/lib/marketing/features";
 import { cx } from "@/lib/utils";
 import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
@@ -20,27 +20,27 @@ export const metadata: Metadata = pageMeta({
 });
 
 const PAINS = [
-  { icon: "😵", pain: "Tout est éparpillé", fix: "Le menu alimente les courses, les courses pèsent sur le budget, tout apparaît dans l'agenda.", tone: "from-brand-500 to-violet-600" },
-  { icon: "🛒", pain: "Les courses coûtent cher, on jette", fix: "Une liste aux bonnes quantités, arrondie aux formats vendus, pour le bon nombre de personnes.", tone: "from-emerald-500 to-teal-600" },
-  { icon: "💸", pain: "On ne sait pas où va l'argent", fix: "Calendrier financier, reste à vivre jusqu'à la prochaine paie, paiements par carte ajoutés tout seuls.", tone: "from-amber-500 to-orange-600" },
-  { icon: "🔁", pain: "Les habitudes ne tiennent pas", fix: "Des routines à cocher dans l'agenda et une courbe de régularité par semaine, mois et année.", tone: "from-rose-500 to-pink-600" },
+  { icon: "🧩", short: "Tout au même endroit", tone: "from-brand-500 to-violet-600" },
+  { icon: "🛒", short: "Courses sans gaspillage", tone: "from-emerald-500 to-teal-600" },
+  { icon: "💶", short: "Argent sous contrôle", tone: "from-amber-500 to-orange-600" },
+  { icon: "🔥", short: "Habitudes qui tiennent", tone: "from-rose-500 to-pink-600" },
 ];
 
 const CHAOS = [
-  { n: "Notion", i: "📄", r: 4, badge: "12", pos: "left-[2%] top-0", tone: "border-stone-200 bg-white text-stone-600" },
-  { n: "Excel", i: "📊", r: -5, badge: "v7", pos: "right-[4%] top-4", tone: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-  { n: "Jow", i: "🍲", r: 3, badge: "3", pos: "left-[24%] top-[4.5rem]", tone: "border-amber-200 bg-amber-50 text-amber-700" },
-  { n: "Google Agenda", i: "📆", r: -3, badge: "!", pos: "left-[0%] bottom-4", tone: "border-sky-200 bg-sky-50 text-sky-700" },
-  { n: "Notes iPhone", i: "🗒️", r: 5, badge: "27", pos: "right-[2%] bottom-0", tone: "border-yellow-200 bg-yellow-50 text-yellow-700" },
+  { n: "Notion", i: "📄", tone: "border-stone-200 bg-white text-stone-600" },
+  { n: "Excel", i: "📊", tone: "border-emerald-200 bg-emerald-50 text-emerald-700" },
+  { n: "Jow", i: "🍲", tone: "border-amber-200 bg-amber-50 text-amber-700" },
+  { n: "Agenda", i: "📆", tone: "border-sky-200 bg-sky-50 text-sky-700" },
+  { n: "Notes", i: "🗒️", tone: "border-yellow-200 bg-yellow-50 text-yellow-700" },
 ];
 
 const REPLACES = ["Notion", "Excel", "Google Sheets", "Jow", "Google Agenda", "Todoist", "Apple Notes", "Listes papier", "Splitwise"];
 
-const FLOW = [
-  { icon: "🍽️", title: "Tu planifies le menu", sub: "Un repas par jour, pour N personnes", tone: "from-amber-400 to-orange-500" },
-  { icon: "🛒", title: "La liste se crée", sub: "Quantités fusionnées, formats vendus", tone: "from-emerald-400 to-teal-500" },
-  { icon: "💶", title: "Le budget suit", sub: "Dépense prévue, reste à vivre", tone: "from-sky-400 to-blue-500" },
-  { icon: "📅", title: "L'agenda affiche tout", sub: "Tâches, routines, rentrées d'argent", tone: "from-brand-400 to-violet-600" },
+const CASCADE = [
+  { icon: "🍽️", t: "Pâtes tomate ajoutées", s: "Menu de samedi · 2 personnes", tone: "from-amber-400 to-orange-500" },
+  { icon: "🛒", t: "+ 160 g de pâtes, 400 g de tomates", s: "Ta liste de courses", tone: "from-emerald-400 to-teal-500" },
+  { icon: "💶", t: "− 3,40 € prévus", s: "Budget courses", tone: "from-sky-400 to-blue-500" },
+  { icon: "📅", t: "Courses samedi, 10 h", s: "Dans ton agenda", tone: "from-brand-400 to-violet-600" },
 ];
 
 const FEAT_STYLE = [
@@ -108,8 +108,9 @@ export default function LandingPage() {
                 </span>
               </FadeIn>
               <FadeIn delay={80}>
-                <h1 className="mt-6 text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl lg:text-[3.4rem] lg:leading-[1.05]">
-                  Agenda, courses, budget et notes : <span className="text-brand-600">une seule appli</span>
+                <h1 className="mt-6">
+                  <span className="block bg-gradient-to-r from-brand-500 via-violet-600 to-fuchsia-600 bg-clip-text text-7xl font-extrabold tracking-tight text-transparent sm:text-8xl lg:text-[7.5rem] lg:leading-none">Flozea</span>
+                  <span className="mt-5 block text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl lg:text-4xl lg:leading-tight">Agenda, courses, budget et notes : <span className="text-brand-600">une seule appli</span></span>
                 </h1>
               </FadeIn>
               <FadeIn delay={160}>
@@ -166,53 +167,42 @@ export default function LandingPage() {
 
         {/* Problèmes → solutions : lignes alternées, sans cartes */}
         <section className="relative overflow-hidden" aria-labelledby="besoins">
-          <Ambience tone="violet" emojis={["😵","✨","🧩"]} />
-          <div className="relative mx-auto max-w-5xl px-6 py-24">
-          <FadeIn className="mx-auto max-w-2xl text-center">
-            <h2 id="besoins" className="text-3xl font-bold tracking-tight sm:text-4xl">Pour celles et ceux qui jonglent entre 5 outils</h2>
-            <p className="mt-4 text-stone-600">Étudiants, jeunes actifs, couples, familles, indépendants : si tu organises ton temps, tes repas et ton argent à plusieurs endroits, Flozea les réunit.</p>
-          </FadeIn>
+          <Ambience tone="violet" emojis={["✨", "🧩"]} />
+          <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
+            <FadeIn>
+              <h2 id="besoins" className="text-4xl font-extrabold tracking-tight sm:text-5xl">5 applis. <span className="bg-gradient-to-r from-brand-500 to-violet-700 bg-clip-text text-transparent">Une seule.</span></h2>
+              <p className="mx-auto mt-3 max-w-md text-stone-600">Fini de jongler : Flozea réunit tout au même endroit.</p>
+            </FadeIn>
 
-          {/* Avant / avec Flozea */}
-          <InView>
-            <div className="mt-14 grid items-stretch gap-6 lg:grid-cols-[1fr_auto_1.1fr]">
-              <div className="fx-in relative overflow-hidden rounded-[2rem] border border-rose-200/70 bg-gradient-to-br from-rose-50 via-white to-amber-50 p-7">
-                <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-rose-700">Avant</span>
-                <div className="relative mt-6 h-60" aria-hidden>
-                  {CHAOS.map((c, i) => (
-                    <Float key={c.n} delay={i * 0.6} duration={5 + (i % 3)} amp={7} rot={c.r} className={cx("absolute", c.pos)}>
-                      <span className={cx("relative inline-flex items-center gap-2 rounded-2xl border px-3.5 py-2 text-sm font-semibold shadow-soft", c.tone)}>
-                        <span>{c.i}</span>{c.n}
-                        <span className="absolute -right-2 -top-2 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">{c.badge}</span>
+            <div className="relative mx-auto mt-14 h-[19rem] w-[19rem] sm:h-[22rem] sm:w-[22rem]" aria-hidden>
+              <span className="absolute inset-0 rounded-full border border-dashed border-brand-300/70" />
+              <span className="absolute inset-[18%] rounded-full border border-brand-200/70" />
+              <span className="fx-ring absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border border-brand-400" />
+              <span className="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[1.75rem] bg-gradient-to-br from-brand-500 to-violet-700 shadow-lift">
+                <svg viewBox="0 0 32 32" className="h-14 w-14" fill="none"><circle cx="11" cy="12" r="3.4" fill="white" fillOpacity="0.55" /><circle cx="21" cy="12" r="3.4" fill="white" fillOpacity="0.55" /><circle cx="16" cy="20" r="4.6" fill="white" /></svg>
+              </span>
+              <div className="fx-orbit absolute inset-0" style={{ "--t": "48s" } as React.CSSProperties}>
+                {CHAOS.map((c, i) => {
+                  const ang = (i / CHAOS.length) * Math.PI * 2 - Math.PI / 2;
+                  return (
+                    <span key={c.n} className="absolute" style={{ left: `${50 + 44 * Math.cos(ang)}%`, top: `${50 + 44 * Math.sin(ang)}%`, transform: "translate(-50%, -50%)" }}>
+                      <span className="fx-orbit-rev block" style={{ "--t": "48s" } as React.CSSProperties}>
+                        <span className={cx("inline-flex items-center gap-1.5 whitespace-nowrap rounded-2xl border px-3 py-1.5 text-xs font-semibold shadow-soft sm:text-sm", c.tone)}><span>{c.i}</span>{c.n}</span>
                       </span>
-                    </Float>
-                  ))}
-                </div>
-                <p className="mt-2 text-sm font-medium text-stone-600">5 applis, 5 mots de passe, aucune vue d'ensemble.</p>
-              </div>
-
-              <div className="flex items-center justify-center" aria-hidden>
-                <span className="fx-ring absolute h-14 w-14 rounded-full border border-brand-400" />
-                <span className="relative flex h-14 w-14 rotate-90 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-violet-700 text-2xl text-white shadow-lift lg:rotate-0">→</span>
-              </div>
-
-              <div className="fx-in relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-600 via-violet-700 to-brand-900 p-7 text-white" style={{ "--d": "0.15s" } as React.CSSProperties}>
-                <div className="fx-drift pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/15 blur-3xl" aria-hidden />
-                <span className="relative rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wider">Avec Flozea</span>
-                <ul className="relative mt-6 space-y-4">
-                  {PAINS.map((n, i) => (
-                    <li key={n.pain} className="fx-slide flex items-start gap-3" style={{ "--d": `${0.3 + i * 0.12}s` } as React.CSSProperties}>
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15 text-xl">{n.icon}</span>
-                      <span>
-                        <span className="block text-[11px] font-semibold uppercase tracking-wider text-white/50 line-through">{n.pain}</span>
-                        <span className="block text-sm leading-relaxed text-white/90">{n.fix}</span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                    </span>
+                  );
+                })}
               </div>
             </div>
-          </InView>
+
+            <div className="mx-auto mt-14 grid max-w-3xl grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
+              {PAINS.map((n, i) => (
+                <FadeIn key={n.short} delay={i * 80}>
+                  <span className={cx("mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br text-xl text-white shadow-lift", n.tone)}>{n.icon}</span>
+                  <p className="mt-2 text-sm font-semibold text-stone-800">{n.short}</p>
+                </FadeIn>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -241,16 +231,32 @@ export default function LandingPage() {
         </div>
         </section>
 
-        {/* Tout est relié */}
+        {/* Tout est relié : cascade de notifications */}
         <section className="relative overflow-hidden bg-sky-50/60">
-          <Ambience tone="sky" emojis={["🔗","⚡","🔄"]} />
-          <div className="relative mx-auto max-w-6xl px-6 py-24">
-          <FadeIn className="mx-auto mb-14 max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Ce qui change tout : c'est relié</h2>
-            <p className="mt-4 text-stone-600">Une décision dans un module se répercute dans les autres. Aucune ressaisie.</p>
-          </FadeIn>
-          <FlowChain steps={FLOW} />
-        </div>
+          <Ambience tone="sky" emojis={["🔗", "⚡"]} />
+          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 py-24 lg:grid-cols-[1fr_1.1fr]">
+            <FadeIn>
+              <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">Un repas planifié.<br /><span className="bg-gradient-to-r from-brand-500 to-violet-700 bg-clip-text text-transparent">Tout le reste suit.</span></h2>
+              <p className="mt-4 max-w-sm text-stone-600">Menu, courses, budget et agenda se mettent à jour ensemble.</p>
+            </FadeIn>
+            <InView>
+              <div className="relative mx-auto w-full max-w-md">
+                <span className="pointer-events-none absolute left-[1.65rem] top-6 bottom-6 w-px border-l-2 border-dashed border-brand-300" aria-hidden />
+                <ul className="space-y-4">
+                  {CASCADE.map((c, i) => (
+                    <li key={c.t} className="fx-in relative flex items-center gap-3 rounded-2xl border border-white/70 bg-surface/85 p-3 pr-4 shadow-lift backdrop-blur-xl" style={{ "--d": `${i * 0.25}s`, marginLeft: `${i % 2 ? 1.5 : 0}rem` } as React.CSSProperties}>
+                      <span className={cx("flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-xl text-white", c.tone)}>{c.icon}</span>
+                      <span className="min-w-0 flex-1 leading-tight">
+                        <span className="block text-sm font-semibold text-stone-900">{c.t}</span>
+                        <span className="block text-xs text-stone-500">{c.s}</span>
+                      </span>
+                      <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">{i === 0 ? "Toi" : "Auto"}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </InView>
+          </div>
         </section>
 
         {/* Chiffres */}
