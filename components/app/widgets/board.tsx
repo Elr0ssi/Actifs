@@ -9,6 +9,7 @@ import {
   SIZE_LABEL,
   WIDGETS,
   WIDGET_BY_TYPE,
+  WIDGET_UNIT_HEIGHT,
   spanClass,
   type WidgetItem,
   type WidgetOpts,
@@ -167,6 +168,7 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
               style={{ animationDelay: `${Math.min(idx, 10) * 55}ms` }}
               className={cx("min-w-0 animate-rise", spanClass(it.size), editing && "cursor-grab")}
               ringed={overId === it.id}
+              fixedHeight={def.auto ? undefined : WIDGET_UNIT_HEIGHT}
             >
               <div className={cx(editing && "pointer-events-none select-none opacity-80")}>
                 <WidgetSizeContext.Provider value={it.size}>
@@ -207,21 +209,25 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
  * Case de grille « maçonnerie » : la grille a des lignes de 8 px et chaque widget occupe exactement sa hauteur réelle,
  * si bien qu'un widget plus court ne laisse plus de vide et qu'un autre peut se placer juste en dessous.
  */
-function MasonryItem({ children, className, style, ringed, ...rest }: { children: React.ReactNode; className?: string; style?: React.CSSProperties; ringed?: boolean } & Omit<React.HTMLAttributes<HTMLDivElement>, "className" | "style" | "children">) {
+function MasonryItem({ children, className, style, ringed, fixedHeight, ...rest }: { children: React.ReactNode; className?: string; style?: React.CSSProperties; ringed?: boolean; fixedHeight?: number } & Omit<React.HTMLAttributes<HTMLDivElement>, "className" | "style" | "children">) {
   const inner = useRef<HTMLDivElement>(null);
-  const [span, setSpan] = useState(24);
+  const [span, setSpan] = useState(fixedHeight ? Math.ceil((fixedHeight + 16) / 8) : 24);
   useEffect(() => {
     const el = inner.current;
-    if (!el) return;
+    if (!el || fixedHeight) return;
     const measure = () => setSpan(Math.max(1, Math.ceil((el.offsetHeight + 16) / 8)));
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [fixedHeight]);
   return (
     <div {...rest} className={className} style={{ ...style, gridRowEnd: `span ${span}` }}>
-      <div ref={inner} className={cx("relative", ringed && "rounded-2xl ring-2 ring-brand-400 ring-offset-2 ring-offset-canvas")}>
+      <div
+        ref={inner}
+        style={fixedHeight ? { height: fixedHeight } : undefined}
+        className={cx("relative", fixedHeight ? "[&>div]:h-full [&>div>section]:h-full [&>div>section>div:last-child]:overflow-y-auto [&>div>section>div:last-child]:[scrollbar-width:thin]" : "", ringed && "rounded-2xl ring-2 ring-brand-400 ring-offset-2 ring-offset-canvas")}
+      >
         {children}
       </div>
     </div>

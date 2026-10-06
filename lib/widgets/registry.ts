@@ -50,8 +50,8 @@ export interface WidgetDef {
   icon: IconName;
   sizes: WidgetSize[];
   defaultSize: WidgetSize;
-  /** Occupe deux rangées quand il est large (calendriers). */
-  tall?: boolean;
+  /** Hauteur libre (calendriers, menu, courbes…) : sinon le widget a la hauteur standard, quelle que soit sa largeur. */
+  auto?: boolean;
 }
 
 export const SECTIONS: { key: WidgetSection; label: string; icon: IconName }[] = [
@@ -66,29 +66,29 @@ export const SECTIONS: { key: WidgetSection; label: string; icon: IconName }[] =
 export const SIZE_LABEL: Record<WidgetSize, string> = { s: "Petit", m: "Moyen", l: "Large", xl: "Pleine largeur" };
 
 export const WIDGETS: WidgetDef[] = [
-  { type: "fin-accounts", section: "finance", title: "Situation des comptes", description: "Courant, épargne et solde total, modifiables en un clic.", icon: "bank", sizes: ["m", "l", "xl"], defaultSize: "l" },
+  { type: "fin-accounts", section: "finance", title: "Situation des comptes", description: "Courant, épargne et solde total, modifiables en un clic.", icon: "bank", sizes: ["m", "l", "xl"], defaultSize: "l", auto: true },
   { type: "fin-reste", section: "finance", title: "Reste à vivre", description: "Ce qu'il te reste ce mois-ci, par jour et en % du budget.", icon: "target", sizes: ["s", "m"], defaultSize: "s" },
-  { type: "fin-calendar", section: "finance", title: "Calendrier financier", description: "Revenus, dépenses et solde jour par jour, avec le détail d'une journée.", icon: "calendar", sizes: ["m", "l", "xl"], defaultSize: "l", tall: true },
+  { type: "fin-calendar", section: "finance", title: "Calendrier financier", description: "Revenus, dépenses et solde jour par jour, avec le détail d'une journée.", icon: "calendar", sizes: ["m", "l", "xl"], defaultSize: "l", auto: true },
   { type: "fin-breakdown", section: "finance", title: "Répartition du mois", description: "Camembert des charges, dépenses et épargne du mois.", icon: "pie", sizes: ["s", "m"], defaultSize: "s" },
   { type: "fin-budgets", section: "finance", title: "Budgets", description: "Dépenses variables consommées par catégorie.", icon: "chart", sizes: ["s", "m"], defaultSize: "s" },
   { type: "fin-incomes", section: "finance", title: "Revenus à venir", description: "Tes prochaines rentrées d'argent.", icon: "arrowIn", sizes: ["s", "m"], defaultSize: "s" },
   { type: "fin-charges", section: "finance", title: "Charges à venir", description: "Loyer, abonnements, factures : les prochaines sorties.", icon: "arrowOut", sizes: ["s", "m"], defaultSize: "s" },
-  { type: "fin-trend", section: "finance", title: "Évolution du solde", description: "Courbe du solde prévu sur le mois.", icon: "trend", sizes: ["s", "m", "l", "xl"], defaultSize: "m" },
+  { type: "fin-trend", section: "finance", title: "Évolution du solde", description: "Courbe du solde prévu sur le mois.", icon: "trend", sizes: ["s", "m", "l", "xl"], defaultSize: "m", auto: true },
   { type: "fin-actions", section: "finance", title: "Actions rapides", description: "Ajouter une opération, mettre à jour un solde, gérer tes comptes.", icon: "bolt", sizes: ["s", "m"], defaultSize: "s" },
-  { type: "cal-agenda", section: "calendar", title: "Calendrier", description: "Tâches, routines et flux d'argent réunis, avec filtres.", icon: "calendar", sizes: ["m", "l", "xl"], defaultSize: "l", tall: true },
-  { type: "cal-week", section: "calendar", title: "Cette semaine", description: "Les 7 prochains jours d'un coup d'œil.", icon: "list", sizes: ["m", "l", "xl"], defaultSize: "m" },
+  { type: "cal-agenda", section: "calendar", title: "Calendrier", description: "Tâches, routines et flux d'argent réunis, avec filtres.", icon: "calendar", sizes: ["m", "l", "xl"], defaultSize: "l", auto: true },
+  { type: "cal-week", section: "calendar", title: "Cette semaine", description: "Les 7 prochains jours d'un coup d'œil.", icon: "list", sizes: ["m", "l", "xl"], defaultSize: "m", auto: true },
   { type: "tasks-list", section: "tasks", title: "Tâches prioritaires", description: "Tes tâches en cours, à cocher directement.", icon: "tasks", sizes: ["s", "m", "l"], defaultSize: "m" },
   { type: "tasks-stat", section: "tasks", title: "Compteur de tâches", description: "Tâches en cours et en retard.", icon: "tasks", sizes: ["s"], defaultSize: "s" },
   { type: "projects", section: "tasks", title: "Projets", description: "Avancement de chaque projet, en tâches terminées.", icon: "target", sizes: ["s", "m", "l"], defaultSize: "m" },
   { type: "routines-today", section: "routines", title: "Routines du jour", description: "Coche tes routines d'aujourd'hui.", icon: "repeat", sizes: ["s", "m"], defaultSize: "s" },
-  { type: "tasks-calendar", section: "tasks", title: "Agenda", description: "Un calendrier cliquable avec uniquement tes tâches et tes projets.", icon: "calendar", sizes: ["m", "l", "xl"], defaultSize: "l", tall: true },
-  { type: "routines-week", section: "routines", title: "Courbe des routines", description: "Ta réussite dans le temps, par jour, semaine, mois ou année.", icon: "trend", sizes: ["m", "l", "xl"], defaultSize: "l" },
+  { type: "tasks-calendar", section: "tasks", title: "Agenda", description: "Un calendrier cliquable avec uniquement tes tâches et tes projets.", icon: "calendar", sizes: ["m", "l", "xl"], defaultSize: "l", auto: true },
+  { type: "routines-week", section: "routines", title: "Courbe des routines", description: "Ta réussite dans le temps, par jour, semaine, mois ou année.", icon: "trend", sizes: ["m", "l", "xl"], defaultSize: "l", auto: true },
   { type: "lists-shopping", section: "courses", title: "Liste de courses", description: "Les articles qu'il reste à acheter.", icon: "cart", sizes: ["s", "m"], defaultSize: "s" },
-  { type: "menu-week", section: "courses", title: "Repas de la semaine", description: "Les recettes que tu as choisies pour la semaine.", icon: "chef", sizes: ["s", "m", "l"], defaultSize: "m" },
+  { type: "menu-week", section: "courses", title: "Repas de la semaine", description: "Les recettes que tu as choisies pour la semaine.", icon: "chef", sizes: ["s", "m", "l"], defaultSize: "m", auto: true },
   { type: "courses-budget", section: "courses", title: "Budget courses", description: "Ce que tes courses coûtent ce mois-ci face au budget que tu leur alloues.", icon: "wallet", sizes: ["s", "m"], defaultSize: "s" },
   { type: "courses-last", section: "courses", title: "Dernière course", description: "Montant de ta dernière course et prix moyen par repas.", icon: "cart", sizes: ["s"], defaultSize: "s" },
   { type: "lists-overview", section: "courses", title: "Listes en cours", description: "Tes listes en cours avec leur avancement et leur montant.", icon: "list", sizes: ["s", "m"], defaultSize: "m" },
-  { type: "recipes-ideas", section: "courses", title: "Idées de recettes", description: "Une sélection de recettes qui change chaque jour.", icon: "chef", sizes: ["m", "l", "xl"], defaultSize: "m" },
+  { type: "recipes-ideas", section: "courses", title: "Idées de recettes", description: "Une sélection de recettes qui change chaque jour.", icon: "chef", sizes: ["m", "l", "xl"], defaultSize: "m", auto: true },
   { type: "vocab-stats", section: "notes", title: "Compteur de mots", description: "Nombre de mots appris, au total et cette semaine.", icon: "chart", sizes: ["s"], defaultSize: "s" },
   { type: "vocab-quiz", section: "notes", title: "Révision éclair", description: "Une carte à retourner pour réviser ton vocabulaire.", icon: "book", sizes: ["s", "m"], defaultSize: "m" },
   { type: "notes-recent", section: "notes", title: "Pages récentes", description: "Tes dernières notes, pour les rouvrir en un clic.", icon: "notes", sizes: ["s", "m", "l"], defaultSize: "m" },
@@ -165,7 +165,10 @@ export function sanitizeLayout(raw: unknown, page: WidgetPage): WidgetItem[] {
 }
 
 /** Classes de grille (1 col mobile, 2 cols tablette, 4 cols bureau). */
-export function spanClass(size: WidgetSize, tall?: boolean) {
+/** Hauteur standard (px) d'un widget : la même pour petit, moyen, large et pleine largeur, afin que tout s'aligne. */
+export const WIDGET_UNIT_HEIGHT = 232;
+
+export function spanClass(size: WidgetSize) {
   const base = { s: "col-span-1", m: "sm:col-span-2", l: "sm:col-span-2 xl:col-span-3", xl: "sm:col-span-2 xl:col-span-4" }[size];
-  return tall && (size === "l" || size === "xl") ? `${base} xl:row-span-2` : base;
+  return base;
 }
