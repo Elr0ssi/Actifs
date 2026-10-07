@@ -23,9 +23,9 @@ export function ClickRipple() {
         ring.className = "click-ripple";
         ring.style.left = `${e.clientX}px`;
         ring.style.top = `${e.clientY}px`;
-        ring.style.animationDelay = `${i * 140}ms`;
+        ring.style.animationDelay = `${i * 80}ms`;
         layer.appendChild(ring);
-        setTimeout(() => ring.remove(), 1500 + i * 140);
+        setTimeout(() => ring.remove(), 1000 + i * 80);
       }
     };
     document.addEventListener("pointerdown", onDown, { passive: true });
