@@ -203,6 +203,21 @@
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
 }
+@keyframes click-ripple {
+  0% { transform: translate(-50%, -50%) scale(0.05); opacity: 0.95; }
+  70% { opacity: 0.4; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+.click-ripple {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border-radius: 9999px;
+  border: 2px solid rgb(var(--brand-500) / 0.85);
+  background: radial-gradient(circle, rgb(var(--brand-400) / 0.2), transparent 65%);
+  opacity: 0;
+  animation: click-ripple 1.1s cubic-bezier(0.2, 0.6, 0.3, 1) both;
+}
 @keyframes fx-spin {
   to { transform: rotate(360deg); }
 }

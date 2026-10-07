@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { ClickRipple } from "@/components/ui/click-ripple";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 
@@ -39,7 +40,6 @@ export const metadata: Metadata = {
     description: "Un seul espace pour organiser ton temps, tes repas et ton argent.",
   },
 };
-
 export const viewport: Viewport = {
   themeColor: "#f5f5f7",
   viewportFit: "cover",
@@ -48,7 +48,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className={GeistSans.variable}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <ClickRipple />
+      </body>
     </html>
   );
 }
