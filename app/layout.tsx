@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { ClickRipple } from "@/components/ui/click-ripple";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <ClickRipple />
+        <Analytics />
       </body>
     </html>
   );
