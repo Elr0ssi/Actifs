@@ -64,11 +64,12 @@ export function Empty({ children }: { children: React.ReactNode }) {
 }
 
 export function Segmented<T extends string>({ value, options, onChange }: { value: T; options: { v: T; l: string }[]; onChange: (v: T) => void }) {
+  const tr = useT();
   return (
     <div className="segmented">
       {options.map((o) => (
         <button key={o.v} type="button" data-active={value === o.v} onClick={() => onChange(o.v)}>
-          {o.l}
+          {tr(o.l)}
         </button>
       ))}
     </div>

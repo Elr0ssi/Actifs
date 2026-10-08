@@ -15,16 +15,16 @@ export default function SignupPage({ searchParams }: { searchParams: { error?: s
   return (
     <AuthShell
       title={tr("Crée ton espace gratuit")}
-      subtitle="30 secondes, aucune carte bancaire."
+      subtitle={tr("30 secondes, aucune carte bancaire.")}
       footer={
         <p className="text-sm text-stone-500">
-          Déjà un compte ? <Link href="/login" className="font-semibold text-brand-600">{tr("Se connecter")}</Link>
+          {tr("Déjà un compte ?")} <Link href="/login" className="font-semibold text-brand-600">{tr("Se connecter")}</Link>
         </p>
       }
     >
       <div className="mb-4 space-y-4">
         <GoogleButton label={tr("S'inscrire avec Google")} />
-        <div className="flex items-center gap-3 text-xs text-stone-500"><span className="h-px flex-1 bg-stone-200" />ou avec ton email<span className="h-px flex-1 bg-stone-200" /></div>
+        <div className="flex items-center gap-3 text-xs text-stone-500"><span className="h-px flex-1 bg-stone-200" />{tr("ou avec ton email")}<span className="h-px flex-1 bg-stone-200" /></div>
       </div>
       <CredentialForm action={signup} className="space-y-4">
         {searchParams?.error && (

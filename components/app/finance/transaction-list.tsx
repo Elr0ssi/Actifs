@@ -39,7 +39,7 @@ export function TransactionList({ txns }: { txns: Txn[] }) {
   return (
     <section className={cx("card p-4", pending && "opacity-70")}>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-[13px] font-semibold text-stone-900">Paiements récents <span className="font-normal text-stone-400">({list.length})</span></h2>
+        <h2 className="text-[13px] font-semibold text-stone-900">{tr("Paiements récents")} <span className="font-normal text-stone-400">({list.length})</span></h2>
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr("Rechercher un commerçant…")} className="input w-56 py-1.5 text-xs" />
       </div>
       <div className="space-y-4">
@@ -65,7 +65,7 @@ export function TransactionList({ txns }: { txns: Txn[] }) {
                       className="hidden max-w-[150px] rounded-md border border-line bg-surface px-1.5 py-1 text-[11px] text-stone-600 sm:block"
                       aria-label={tr("Catégorie")}
                     >
-                      {[...new Set([cats[t.id] ?? t.category, ...options])].map((c) => <option key={c} value={c}>{c}</option>)}
+                      {[...new Set([cats[t.id] ?? t.category, ...options])].map((c) => <option key={c} value={c}>{tr(c)}</option>)}
                     </select>
                     <span className={cx("tabular w-20 shrink-0 text-right text-[13px] font-semibold", t.income ? "text-emerald-600" : "text-rose-600")}>{t.income ? "+" : "-"}{formatEUR(t.amount)}</span>
                     <button onClick={() => { setGone((g) => [...g, t.id]); start(() => deleteTransaction(t.id)); }} title={tr("Supprimer")} className="text-xs text-stone-300 hover:text-rose-600">✕</button>

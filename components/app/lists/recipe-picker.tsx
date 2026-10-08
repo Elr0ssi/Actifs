@@ -77,7 +77,7 @@ export function RecipePicker({
           <p className="mr-auto text-base font-bold text-stone-900">{tr("Choisir des recettes")}</p>
           <div className="segmented">
             <button type="button" data-active={tab === "discover"} onClick={() => setTab("discover")}>{tr("Découvrir")}</button>
-            <button type="button" data-active={tab === "mine"} onClick={() => setTab("mine")}>Mes recettes ({mine.length})</button>
+            <button type="button" data-active={tab === "mine"} onClick={() => setTab("mine")}>{tr("Mes recettes ({n})", { n: mine.length })}</button>
           </div>
           <button type="button" onClick={onClose} aria-label={tr("Fermer")} className="rounded-lg p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-700">
             <Icon name="close" />
@@ -99,7 +99,7 @@ export function RecipePicker({
                 onClick={() => setShowEquipment((v) => !v)}
                 className={cx("shrink-0 rounded-xl border px-3 text-xs font-medium transition", equipment.length ? "border-brand-300 bg-brand-50 text-brand-700" : "border-line bg-surface text-stone-500 hover:bg-stone-50")}
               >
-                Équipement{equipment.length > 0 && ` (${equipment.length})`}
+                {tr("Équipement")}{equipment.length > 0 && ` (${equipment.length})`}
               </button>
             )}
           </div>
@@ -171,7 +171,7 @@ export function RecipePicker({
                   emoji={r.icon ?? "🍽️"}
                   image={r.image_url}
                   title={`${r.is_favorite ? "★ " : ""}${r.name}`}
-                  meta={`${r.itemCount} ingr.${r.estimate !== null && store ? ` · ≈ ${formatEUR(r.estimate)}` : ""}`}
+                  meta={`${tr("{n} ingr.", { n: r.itemCount })}${r.estimate !== null && store ? ` · ≈ ${formatEUR(r.estimate)}` : ""}`}
                   count={counts[r.id] ?? 0}
                   busy={false}
                   onAdd={() => onCount(r.id, defaultPeople)}
@@ -184,7 +184,7 @@ export function RecipePicker({
 
         <footer className="flex items-center justify-between gap-3 border-t border-line bg-surface px-5 py-2.5">
           <p className="text-sm text-stone-500">
-            {total > 0 ? <><b className="text-stone-900">{total}</b> recette{total > 1 ? "s" : ""} choisie{total > 1 ? "s" : ""}</> : tr("Aucune recette choisie")}
+            {total > 0 ? <><b className="text-stone-900">{total}</b> {tr(total > 1 ? "recettes choisies" : "recette choisie")}</> : tr("Aucune recette choisie")}
           </p>
           <button type="button" onClick={onClose} className="btn-primary">{total > 0 ? tr("Terminé") : tr("Fermer")}</button>
         </footer>
@@ -199,7 +199,7 @@ function Card({ emoji, image, title, meta, count, busy, onAdd, onCount }: { emoj
   const on = count > 0;
   return (
     <article className={cx("flex flex-col overflow-hidden rounded-2xl border bg-surface transition", on ? "border-brand-400 ring-2 ring-brand-200" : "border-line hover:border-stone-300")}>
-      <button type="button" onClick={() => (on ? onCount(0) : onAdd())} disabled={busy} className="flex h-20 items-center justify-center overflow-hidden bg-stone-100 text-4xl" aria-label={on ? `Retirer ${title}` : `Ajouter ${title}`}>
+      <button type="button" onClick={() => (on ? onCount(0) : onAdd())} disabled={busy} className="flex h-20 items-center justify-center overflow-hidden bg-stone-100 text-4xl" aria-label={on ? tr("Retirer {name}", { name: title }) : tr("Ajouter {name}", { name: title })}>
         {image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={image} alt="" draggable={false} className="h-full w-full object-cover" />
@@ -213,7 +213,7 @@ function Card({ emoji, image, title, meta, count, busy, onAdd, onCount }: { emoj
         {on ? (
           <div className="mt-1 flex items-center justify-between rounded-lg bg-brand-50 px-1.5 py-1">
             <button type="button" onClick={() => onCount(count - 1)} className="h-6 w-6 rounded-md bg-surface text-stone-600 shadow-sm" aria-label={tr("Moins de personnes")}>−</button>
-            <span className="text-xs font-semibold text-brand-800">{count} pers.</span>
+            <span className="text-xs font-semibold text-brand-800">{tr("{n} pers.", { n: count })}</span>
             <button type="button" onClick={() => onCount(count + 1)} className="h-6 w-6 rounded-md bg-surface text-stone-600 shadow-sm" aria-label={tr("Plus de personnes")}>+</button>
           </div>
         ) : (

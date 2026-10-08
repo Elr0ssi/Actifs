@@ -101,18 +101,18 @@ export function MenuRecipeView({
 
           {!found ? (
             <p className="mt-5 rounded-xl bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">
-              Ce repas n'est lié à aucune recette enregistrée. Crée-la dans <a href="/app/lists/recipes" className="font-medium text-brand-600 hover:underline">{tr("Mes recettes")}</a> avec le même nom pour retrouver ici ses ingrédients et ses étapes.
+              {tr("Ce repas n'est lié à aucune recette enregistrée. Crée-la dans")} <a href="/app/lists/recipes" className="font-medium text-brand-600 hover:underline">{tr("Mes recettes")}</a> {tr("avec le même nom pour retrouver ici ses ingrédients et ses étapes.")}
             </p>
           ) : (
             <>
               <div className="mb-2 mt-5 flex items-center justify-between gap-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-stone-400">Ingrédients ({ingredients.length})</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-stone-400">{tr("Ingrédients ({n})", { n: ingredients.length })}</h3>
                 <div className="flex items-center gap-1 text-xs text-stone-500">
-                  Pour
+                  {tr("Pour")}
                   <button type="button" onClick={() => changePeople(people - 1)} className="h-6 w-6 rounded-md border border-line text-stone-600" aria-label={tr("Moins de personnes")}>−</button>
                   <b className="min-w-[1.5rem] text-center text-sm text-stone-900">{people}</b>
                   <button type="button" onClick={() => changePeople(people + 1)} className="h-6 w-6 rounded-md border border-line text-stone-600" aria-label={tr("Plus de personnes")}>+</button>
-                  pers.
+                  {tr("pers.")}
                 </div>
               </div>
               {ingredients.length === 0 ? (

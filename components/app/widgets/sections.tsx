@@ -14,7 +14,7 @@ export function Projects({ data, size }: WidgetProps) {
   const tr = useT();
   const list = data.projects;
   return (
-    <WidgetShell icon="target" title={tr("Projets")} subtitle={`${list.length} en cours`} href="/app/tasks/list">
+    <WidgetShell icon="target" title={tr("Projets")} subtitle={tr("{n} en cours", { n: list.length })} href="/app/tasks/list">
       {list.length === 0 ? (
         <Empty>{tr("Crée un projet pour regrouper tes tâches.")}</Empty>
       ) : (
@@ -85,7 +85,7 @@ export function VocabQuiz({ data }: WidgetProps) {
     <WidgetShell
       icon="book"
       title={tr("Révision éclair")}
-      subtitle={`Carte ${(index % order.length) + 1} / ${order.length}`}
+      subtitle={tr("Carte {a} / {b}", { a: (index % order.length) + 1, b: order.length })}
       right={
         <button onClick={() => { setReverse((r) => !r); setRevealed(false); }} className="rounded-md border border-line px-2 py-1 text-[11px] font-medium text-stone-500 hover:text-stone-800">
           {reverse ? "EN → FR" : "FR → EN"}

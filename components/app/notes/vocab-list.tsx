@@ -28,7 +28,7 @@ export function VocabList({ words }: { words: VocabWord[] }) {
     <div className={cx("card overflow-hidden p-0", pending && "opacity-70")}>
       <div className="flex items-center gap-3 border-b border-stone-100 p-4">
         <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr("Rechercher un mot…")} className="input max-w-xs" />
-        <p className="ml-auto text-xs text-stone-400">{rows.length} mot(s)</p>
+        <p className="ml-auto text-xs text-stone-400">{tr("{n} mot(s)", { n: rows.length })}</p>
       </div>
       {rows.length === 0 ? (
         <p className="p-4 text-sm text-stone-400">{tr("Aucun mot pour l'instant.")}</p>

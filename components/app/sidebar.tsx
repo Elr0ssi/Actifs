@@ -72,7 +72,7 @@ export function Sidebar({ displayName, inviteCode }: { displayName: string; invi
         })}
         <button type="button" onClick={() => setOpen(true)} className="flex flex-col items-center gap-0.5 rounded-2xl py-1.5 text-[10px] font-medium text-stone-400">
           <Icon name="menu" className="h-5 w-5" />
-          Plus
+          {tr("Plus")}
         </button>
       </nav>
 

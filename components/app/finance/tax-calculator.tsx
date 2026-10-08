@@ -24,7 +24,7 @@ export function TaxCalculator() {
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-3">
         <label className="block text-xs font-medium text-stone-500">
-          Salaire brut annuel
+          {tr("Salaire brut annuel")}
           <input
             type="number"
             min={0}
@@ -36,19 +36,19 @@ export function TaxCalculator() {
         </label>
         <div className="grid grid-cols-2 gap-3">
           <label className="text-xs font-medium text-stone-500">
-            Statut
+            {tr("Statut")}
             <select value={statut} onChange={(e) => setStatut(e.target.value as "non-cadre" | "cadre")} className="input mt-1">
               <option value="non-cadre">{tr("Non-cadre")}</option>
               <option value="cadre">{tr("Cadre")}</option>
             </select>
           </label>
           <label className="text-xs font-medium text-stone-500">
-            Parts fiscales du foyer
+            {tr("Parts fiscales du foyer")}
             <input type="number" min={1} step={0.5} value={parts} onChange={(e) => setParts(Math.max(1, Number(e.target.value) || 1))} className="input mt-1" />
           </label>
         </div>
         <p className="text-[11px] text-stone-400">
-          Estimation indicative à partir de ratios publics (charges salariales, barème {new Date().getFullYear()}). Ne remplace pas ta fiche de paie ni un simulateur officiel.
+          {tr("Estimation indicative à partir de ratios publics (charges salariales, barème {year}). Ne remplace pas ta fiche de paie ni un simulateur officiel.", { year: new Date().getFullYear() })}
         </p>
       </div>
 
@@ -56,13 +56,13 @@ export function TaxCalculator() {
         <div className="rounded-2xl bg-stone-50 p-4">
           <p className="text-xs font-medium text-stone-500">{tr("Net mensuel estimé (avant impôt)")}</p>
           <p className="mt-1 text-2xl font-bold text-stone-900">{formatEUR(net.netMensuel)}</p>
-          <p className="text-[11px] text-stone-400">Fourchette : {formatEUR(net.low)} – {formatEUR(net.high)}</p>
+          <p className="text-[11px] text-stone-400">{tr("Fourchette :")} {formatEUR(net.low)} – {formatEUR(net.high)}</p>
         </div>
         <div className="rounded-2xl bg-brand-50 p-4">
           <p className="text-xs font-medium text-brand-800">{tr("Impôt sur le revenu — à provisionner chaque mois")}</p>
           <p className="mt-1 text-2xl font-bold text-brand-700">{formatEUR(tax.monthlyProvision)}</p>
           <p className="text-[11px] text-brand-700/70">
-            Fourchette : {formatEUR(tax.low / 12)} – {formatEUR(tax.high / 12)} · soit {formatEUR(tax.annualTax)}/an · taux calculé ≈ {tax.withholdingRate.toFixed(1)}%
+            {tr("Fourchette :")} {formatEUR(tax.low / 12)} – {formatEUR(tax.high / 12)} · {tr("soit {amount}/an · taux calculé ≈ {rate}%", { amount: formatEUR(tax.annualTax), rate: tax.withholdingRate.toFixed(1) })}
           </p>
         </div>
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4">
@@ -72,7 +72,7 @@ export function TaxCalculator() {
         </div>
 
         <button type="button" onClick={() => setShowBrackets((v) => !v)} className="text-xs font-medium text-stone-500 hover:text-stone-800">
-          {showBrackets ? tr("Masquer") : tr("Voir")} le détail par tranche du barème →
+          {showBrackets ? tr("Masquer le détail par tranche du barème →") : tr("Voir le détail par tranche du barème →")}
         </button>
         {showBrackets && (
           <div className="rounded-2xl border border-stone-100 p-3">
@@ -81,7 +81,7 @@ export function TaxCalculator() {
                 <tr className="text-left text-stone-400">
                   <th className="pb-1.5 font-medium">{tr("Tranche (par part)")}</th>
                   <th className="pb-1.5 text-right font-medium">{tr("Taux")}</th>
-                  <th className="pb-1.5 text-right font-medium">Impôt (× {parts} part{parts > 1 ? "s" : ""})</th>
+                  <th className="pb-1.5 text-right font-medium">{tr(parts > 1 ? "Impôt (× {n} parts)" : "Impôt (× {n} part)", { n: parts })}</th>
                 </tr>
               </thead>
               <tbody>
@@ -94,7 +94,7 @@ export function TaxCalculator() {
                 ))}
               </tbody>
             </table>
-            <p className="mt-2 text-[10px] text-stone-400">Quotient familial : {formatEUR(quotient)} par part, après abattement forfaitaire de 10%.</p>
+            <p className="mt-2 text-[10px] text-stone-400">{tr("Quotient familial : {amount} par part, après abattement forfaitaire de 10%.", { amount: formatEUR(quotient) })}</p>
           </div>
         )}
       </div>

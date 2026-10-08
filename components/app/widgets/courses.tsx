@@ -9,7 +9,7 @@ import { addDays, expand, monthBounds } from "@/lib/finance-engine";
 import { cx } from "@/lib/utils";
 import { CountUp } from "@/components/app/count-up";
 import { WidgetShell, Empty } from "@/components/app/widgets/shell";
-import { eur0, fmtShort, mondayOf } from "@/components/app/widgets/helpers";
+import { eur0, fmtShort, mondayOf, DOW } from "@/components/app/widgets/helpers";
 import type { WidgetProps } from "@/components/app/widgets/types";
 import { MenuEditor } from "@/components/app/widgets/menu-editor";
 import { MenuRecipeView } from "@/components/app/widgets/menu-recipe-view";
@@ -21,7 +21,6 @@ const shopping = (lists: WidgetList[]) => lists.filter((l) => l.type === "shoppi
 
 /* ---------- Menu de la semaine ---------- */
 
-const DAY_SHORT = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
 export function MenuWeek({ data }: WidgetProps) {
   const tr = useT();
@@ -78,7 +77,7 @@ export function MenuWeek({ data }: WidgetProps) {
     <WidgetShell
       icon="chef"
       title={tr("Repas de la semaine")}
-      subtitle={`Semaine du ${fmtShort(weekStart)}`}
+      subtitle={tr("Semaine du {date}", { date: fmtShort(weekStart) })}
       right={<button type="button" onClick={() => setEditDay(realToday)} className="btn-secondary px-2.5 py-1 text-[11px]">{tr("Planifier")}</button>}
     >
       <div className="relative">
@@ -97,7 +96,7 @@ export function MenuWeek({ data }: WidgetProps) {
                 draggable={false}
                 className={cx("group w-[150px] shrink-0 rounded-2xl border p-2.5 text-left transition hover:shadow-soft", isToday ? "border-brand-300 bg-brand-50/40" : "border-line bg-surface")}
               >
-                <p className={cx("text-[13px] font-bold", isToday ? "text-brand-700" : "text-stone-900")}>{DAY_SHORT[i % 7]} {Number(d.slice(8))}</p>
+                <p className={cx("text-[13px] font-bold", isToday ? "text-brand-700" : "text-stone-900")}>{DOW[i % 7]} {Number(d.slice(8))}</p>
                 {first ? (
                   <>
                     <div className="mt-2 aspect-[4/3] overflow-hidden rounded-xl bg-stone-100">
@@ -230,7 +229,7 @@ export function CoursesBudget({ data, size }: WidgetProps) {
       </div>
       {budget > 0 ? (
         <p className={cx("mt-1.5 text-[11px]", left < 0 ? "font-medium text-rose-600" : "text-stone-500")}>
-          {left < 0 ? `Dépassé de ${eur0(-left)}` : `Il te reste ${eur0(left)}`}
+          {left < 0 ? tr("Dépassé de {amount}", { amount: eur0(-left) }) : tr("Il te reste {amount}", { amount: eur0(left) })}
         </p>
       ) : (
         <p className="mt-1.5 text-[11px] text-stone-400">{tr("Aucun budget « {cat} » défini dans Finance.", { cat: BUDGET_CATEGORY })}</p>

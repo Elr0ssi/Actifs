@@ -26,10 +26,10 @@ export default async function PagesIndex() {
         <p className="text-2xl">📝</p>
         <h2 className="mt-2 text-lg font-bold text-stone-900">{tr("Tes pages")}</h2>
         <p className="mx-auto mt-1 max-w-md text-sm text-stone-500">
-          Écris comme dans Notion : tape <kbd className="rounded bg-stone-100 px-1.5 py-px font-mono text-xs">/</kbd> pour choisir un type de bloc, ou utilise les raccourcis Markdown (<span className="font-mono text-xs">#</span>, <span className="font-mono text-xs">- </span>, <span className="font-mono text-xs">[] </span>…). Les sous-pages te permettent de tout ranger.
+          {tr("Écris comme dans Notion : tape")} <kbd className="rounded bg-stone-100 px-1.5 py-px font-mono text-xs">/</kbd> {tr("pour choisir un type de bloc, ou utilise les raccourcis Markdown (")}<span className="font-mono text-xs">#</span>, <span className="font-mono text-xs">- </span>, <span className="font-mono text-xs">[] </span>{tr("…). Les sous-pages te permettent de tout ranger.")}
         </p>
         <form action={createNote.bind(null, null)} className="mt-4">
-          <button className="btn-primary"><Icon name="plus" className="h-4 w-4" />Nouvelle page</button>
+          <button className="btn-primary"><Icon name="plus" className="h-4 w-4" />{tr("Nouvelle page")}</button>
         </form>
       </div>
       {notes.length > 0 && (

@@ -68,7 +68,7 @@ export function RecipeForm({
       }
       onDone?.();
     } catch {
-      setError("Impossible d'envoyer l'image, réessaie avec une autre photo.");
+      setError(tr("Impossible d'envoyer l'image, réessaie avec une autre photo."));
     } finally {
       setPending(false);
     }
@@ -81,7 +81,7 @@ export function RecipeForm({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={preview} alt="" className="h-full w-full object-cover" />
         ) : (
-          <span>📷<br />Ajouter une photo</span>
+          <span>📷<br />{tr("Ajouter une photo")}</span>
         )}
         <input
           type="file"
@@ -117,13 +117,13 @@ export function RecipeForm({
           required
         />
         <div className="grid grid-cols-[1fr_auto] gap-2">
-          <select name="category" defaultValue={recipe?.category ?? tr("Rapide")} className="input">
-            {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
+          <select name="category" defaultValue={recipe?.category ?? "Rapide"} className="input">
+            {allCategories.map((c) => <option key={c} value={c}>{tr(c)}</option>)}
           </select>
           <label className="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 text-xs text-stone-500">
-            Pour
+            {tr("Pour")}
             <input name="servings" type="number" min={1} max={50} defaultValue={recipe?.servings ?? 2} className="w-12 bg-transparent text-center text-sm font-semibold text-stone-800 outline-none" aria-label={tr("Nombre de personnes")} />
-            pers.
+            {tr("pers.")}
           </label>
         </div>
         <div>

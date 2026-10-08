@@ -131,7 +131,7 @@ export function IngredientPicker({
             {q && !exact && (
               <li>
                 <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => add(query)} className="w-full rounded-lg px-3 py-1.5 text-left text-sm font-medium text-brand-600 hover:bg-brand-50">
-                  + Créer « {query.trim()} » (ma base perso)
+                  {tr("+ Créer « {name} » (ma base perso)", { name: query.trim() })}
                 </button>
               </li>
             )}

@@ -138,11 +138,11 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
           {editing ? (
             <>
               <button onClick={() => persist(DEFAULT_LAYOUTS[page])} className="btn-secondary px-3 py-1.5 text-xs">{tr("Réinitialiser")}</button>
-              <button onClick={() => setDrawer(true)} className="btn-secondary px-3 py-1.5 text-xs"><Icon name="plus" className="h-3.5 w-3.5" />Ajouter un widget</button>
+              <button onClick={() => setDrawer(true)} className="btn-secondary px-3 py-1.5 text-xs"><Icon name="plus" className="h-3.5 w-3.5" />{tr("Ajouter un widget")}</button>
               <button onClick={() => { setEditing(false); setDrawer(false); }} className="btn-primary px-3 py-1.5 text-xs">{tr("Terminé")}</button>
             </>
           ) : (
-            <button onClick={() => setEditing(true)} className="btn-secondary px-3 py-1.5 text-xs"><Icon name="grid" className="h-3.5 w-3.5" />Personnaliser</button>
+            <button onClick={() => setEditing(true)} className="btn-secondary px-3 py-1.5 text-xs"><Icon name="grid" className="h-3.5 w-3.5" />{tr("Personnaliser")}</button>
           )}
         </div>
       </div>
@@ -150,7 +150,7 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
       {items.length === 0 && (
         <button onClick={() => { setEditing(true); setDrawer(true); }} className="flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-line py-16 text-sm text-stone-400 hover:border-brand-300 hover:text-brand-700">
           <Icon name="plus" className="h-6 w-6" />
-          Ajoute ton premier widget
+          {tr("Ajoute ton premier widget")}
         </button>
       )}
 
@@ -320,7 +320,7 @@ function WidgetDrawer({ page, today, items, onAdd, onClose }: { page: WidgetPage
                   <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-2 text-[13px] font-semibold text-stone-900">
                       {tr(w.title)}
-                      {count > 0 && <span className="rounded-full bg-stone-100 px-1.5 py-px text-[10px] font-medium text-stone-500">affiché{count > 1 ? ` ×${count}` : ""}</span>}
+                      {count > 0 && <span className="rounded-full bg-stone-100 px-1.5 py-px text-[10px] font-medium text-stone-500">{tr("affiché")}{count > 1 ? ` ×${count}` : ""}</span>}
                     </p>
                     <p className="mt-0.5 text-[11px] leading-snug text-stone-500">{tr(w.description)}</p>
                   </div>

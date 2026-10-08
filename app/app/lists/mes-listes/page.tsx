@@ -45,16 +45,16 @@ export default async function ListsPage() {
       <Link key={l.id} href={`/app/lists/${l.id}`} className="card block p-5 transition hover:-translate-y-0.5 hover:shadow-md">
         <div className="flex items-start justify-between gap-2">
           <p className="font-semibold text-stone-900">{l.name}</p>
-          <span className="shrink-0 rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-stone-500">{TYPE_LABEL[l.type]}</span>
+          <span className="shrink-0 rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-stone-500">{tr(TYPE_LABEL[l.type])}</span>
         </div>
         <p className="mt-0.5 text-xs text-stone-400">
-          {[l.week_start && `Sem. du ${new Date(`${l.week_start}T00:00:00Z`).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" })}`, l.store].filter(Boolean).join(" · ")}
+          {[l.week_start && tr("Sem. du {date}", { date: new Date(`${l.week_start}T00:00:00Z`).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" }) }), l.store].filter(Boolean).join(" · ")}
         </p>
         <div className="mt-3 h-1.5 w-full rounded-full bg-stone-100">
           <div className="h-1.5 rounded-full bg-brand-500" style={{ width: total ? `${(done / total) * 100}%` : "0%" }} />
         </div>
         <div className="mt-2 flex justify-between text-xs text-stone-400">
-          <span>{done}/{total} cochés</span>
+          <span>{tr("{a}/{b} cochés", { a: done, b: total })}</span>
           {amount > 0 && <span className="font-medium text-stone-600">{formatEUR(amount)}</span>}
         </div>
       </Link>
@@ -87,7 +87,7 @@ export default async function ListsPage() {
       {archived.length > 0 && (
         <details className="group">
           <summary className="mb-3 cursor-pointer list-none text-sm font-semibold uppercase tracking-wide text-stone-500">
-            <span className="mr-1 inline-block transition group-open:rotate-90">›</span> Archives ({archived.length})
+            <span className="mr-1 inline-block transition group-open:rotate-90">›</span> {tr("Archives ({n})", { n: archived.length })}
           </summary>
           <div className="grid gap-4 opacity-80 sm:grid-cols-2 lg:grid-cols-3">{archived.map(card)}</div>
         </details>

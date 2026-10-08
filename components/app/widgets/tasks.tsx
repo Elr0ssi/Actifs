@@ -27,11 +27,11 @@ export function TaskRow({ task, today, project, onTouch, onOpen }: { task: Task;
   const sub = done
     ? tr("Terminée")
     : late
-      ? `En retard · ${fmtShort(task.due_date!)}`
+      ? tr("En retard · {date}", { date: fmtShort(task.due_date!) })
       : task.due_date === today
         ? tr("Aujourd'hui")
         : task.due_date
-          ? `Échéance ${fmtShort(task.due_date)}`
+          ? tr("Échéance {date}", { date: fmtShort(task.due_date) })
           : task.priority === "high"
             ? tr("Priorité haute")
             : "";
@@ -112,7 +112,7 @@ export function TasksList({ data, size }: WidgetProps) {
     <WidgetShell
       icon="tasks"
       title={tr("Tâches")}
-      subtitle={`${todo.length} à faire · ${finished.length} faites`}
+      subtitle={tr("{a} à faire · {b} faites", { a: todo.length, b: finished.length })}
       href="/app/tasks/list"
       right={
         <Segmented<Tab>
@@ -131,7 +131,7 @@ export function TasksList({ data, size }: WidgetProps) {
           ))}
         </div>
       )}
-      {rows.length > limit && <p className="mt-1 px-1.5 text-[11px] text-stone-400">+ {rows.length - limit} autre(s)</p>}
+      {rows.length > limit && <p className="mt-1 px-1.5 text-[11px] text-stone-400">{tr("+ {n} autre(s)", { n: rows.length - limit })}</p>}
       <form action={(fd) => start(async () => { await quickAddTask(fd); setDraft(""); })} className={cx("mt-2 flex gap-1.5", pending && "opacity-60")}>
         <input name="title" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={tr("Ajouter une tâche pour aujourd'hui…")} className="input py-1.5 text-xs" />
         <button disabled={!draft.trim()} className="btn-primary shrink-0 px-2.5 py-1.5"><Icon name="plus" /></button>
@@ -143,7 +143,7 @@ export function TasksList({ data, size }: WidgetProps) {
           projects={data.projects}
           saving={pending}
           onClose={() => setOpen(null)}
-          onDelete={() => { const id = open.id; setOpen(null); if (confirm("Supprimer cette tâche ?")) start(() => deleteTask(id)); }}
+          onDelete={() => { const id = open.id; setOpen(null); if (confirm(tr("Supprimer cette tâche ?"))) start(() => deleteTask(id)); }}
           onSave={(v) => {
             const id = open.id;
             setOpen(null);
@@ -252,7 +252,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
       subtitle={wide ? tr("Tes tâches et tes routines au même endroit : coche directement dans le calendrier") : undefined}
       right={
         <div className="flex items-center gap-1.5">
-          <button type="button" onClick={() => openCreate(timeView && view === "day" ? anchor : selected)} className="btn-primary px-2.5 py-1 text-[11px]"><Icon name="plus" className="h-3 w-3" />Tâche</button>
+          <button type="button" onClick={() => openCreate(timeView && view === "day" ? anchor : selected)} className="btn-primary px-2.5 py-1 text-[11px]"><Icon name="plus" className="h-3 w-3" />{tr("Tâche")}</button>
           {data.projects.length > 0 && (
           <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className="max-w-[130px] rounded-md border border-line bg-surface px-1.5 py-1 text-[11px] text-stone-600">
             <option value="">{tr("Tous les projets")}</option>
@@ -267,7 +267,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
         <button type="button" onClick={() => setOpts({ routines: !showRoutines })} className={chip(showRoutines)}>{tr("Routines")}</button>
         {timeView && (
           <div className="ml-auto flex items-center gap-1.5 text-[11px] text-stone-400">
-            Taille
+            {tr("Taille")}
             <Segmented<Zoom> value={zoom} onChange={(z) => setOpts({ zoom: z })} options={[{ v: "compact", l: tr("Compact") }, { v: "normal", l: tr("Normal") }, { v: "large", l: tr("Grand") }]} />
           </div>
         )}
@@ -309,7 +309,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
           {overdue.length > 0 && (
             <div className="mt-2">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-rose-500">{tr("En retard")}</p>
-              {overdue.map((t) => <CheckRow key={t.id} onOpen={() => openEdit(t)} checked={toggles.taskDone(t)} onChange={() => toggles.toggleTask(t)} label={t.title} sub={`En retard · ${fmtShort(t.due_date!)}`} dot={(t.project_id && projectOf.get(t.project_id)?.color) || undefined} />)}
+              {overdue.map((t) => <CheckRow key={t.id} onOpen={() => openEdit(t)} checked={toggles.taskDone(t)} onChange={() => toggles.toggleTask(t)} label={t.title} sub={tr("En retard · {date}", { date: fmtShort(t.due_date!) })} dot={(t.project_id && projectOf.get(t.project_id)?.color) || undefined} />)}
             </div>
           )}
           {dayTasks.length > 0 && (
@@ -347,7 +347,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
 
           {!adding ? (
             <button type="button" onClick={() => setAdding(true)} className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-line py-2 text-[12px] font-medium text-stone-500 transition hover:border-brand-300 hover:text-brand-700">
-              <Icon name="plus" className="h-3.5 w-3.5" />Ajouter une tâche ce jour-là
+              <Icon name="plus" className="h-3.5 w-3.5" />{tr("Ajouter une tâche ce jour-là")}
             </button>
           ) : (
             <form key={formKey} action={(fd) => start(async () => { await createTask(fd); setFormKey((k) => k + 1); setAdding(false); })} className="mt-3 space-y-1.5 border-t border-line pt-3">
@@ -361,7 +361,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
                 </select>
               </div>
               <div className="flex gap-1.5">
-                <button className="btn-primary flex-1 py-1.5 text-xs"><Icon name="plus" className="h-3.5 w-3.5" />Ajouter</button>
+                <button className="btn-primary flex-1 py-1.5 text-xs"><Icon name="plus" className="h-3.5 w-3.5" />{tr("Ajouter")}</button>
                 <button type="button" onClick={() => setAdding(false)} className="btn-secondary px-3 py-1.5 text-xs">{tr("Annuler")}</button>
               </div>
             </form>
@@ -375,7 +375,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
           projects={data.projects}
           saving={pending}
           onClose={() => setEditor(null)}
-          onDelete={editor.id ? () => { const id = editor.id as string; setEditor(null); if (confirm("Supprimer cette tâche ?")) start(() => deleteTask(id)); } : undefined}
+          onDelete={editor.id ? () => { const id = editor.id as string; setEditor(null); if (confirm(tr("Supprimer cette tâche ?"))) start(() => deleteTask(id)); } : undefined}
           onSave={(v) => {
             const values = v;
             setEditor(null);

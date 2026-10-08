@@ -64,7 +64,7 @@ export default async function TasksPage() {
                     <ToggleCheckbox initialChecked={false} onToggle={toggleTaskStatus.bind(null, t.id)} label={t.title} />
                   </div>
                   <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-600">{tr("reportée")}</span>
-                  <span className={cx("h-2 w-2 shrink-0 rounded-full", PRIORITY_DOT[t.priority])} title={PRIORITY_LABEL[t.priority]} />
+                  <span className={cx("h-2 w-2 shrink-0 rounded-full", PRIORITY_DOT[t.priority])} title={tr(PRIORITY_LABEL[t.priority])} />
                 </div>
               ))}
               {dueToday.map((t) => (
@@ -72,7 +72,7 @@ export default async function TasksPage() {
                   <div className="flex-1">
                     <ToggleCheckbox initialChecked={false} onToggle={toggleTaskStatus.bind(null, t.id)} label={t.title} sublabel={t.due_time ?? undefined} />
                   </div>
-                  <span className={cx("h-2 w-2 shrink-0 rounded-full", PRIORITY_DOT[t.priority])} title={PRIORITY_LABEL[t.priority]} />
+                  <span className={cx("h-2 w-2 shrink-0 rounded-full", PRIORITY_DOT[t.priority])} title={tr(PRIORITY_LABEL[t.priority])} />
                 </div>
               ))}
             </div>
@@ -111,7 +111,7 @@ export default async function TasksPage() {
             <div className="mb-4 flex items-center gap-2">
               <span className="text-xl">{g.project?.icon ?? "📌"}</span>
               <h2 className="font-semibold text-stone-900">{g.project?.name ?? tr("Sans projet")}</h2>
-              <span className="ml-auto text-xs text-stone-400">{g.tasks.filter((t) => t.status !== "done").length} en cours</span>
+              <span className="ml-auto text-xs text-stone-400">{g.tasks.filter((t) => t.status !== "done").length} {tr("en cours")}</span>
             </div>
 
             <div className="space-y-1">
@@ -129,7 +129,7 @@ export default async function TasksPage() {
                       />
                     </div>
                     {isOverdue && <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-600">{tr("reportée")}</span>}
-                    <span className={`h-2 w-2 rounded-full ${PRIORITY_DOT[t.priority]}`} title={PRIORITY_LABEL[t.priority]} />
+                    <span className={`h-2 w-2 rounded-full ${PRIORITY_DOT[t.priority]}`} title={tr(PRIORITY_LABEL[t.priority])} />
                     <form action={deleteTask.bind(null, t.id)}>
                       <button className="rounded-lg px-2 py-1 text-xs text-stone-400 hover:bg-stone-100 hover:text-rose-600">✕</button>
                     </form>

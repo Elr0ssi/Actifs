@@ -63,7 +63,7 @@ function Row({ listId, item }: { listId: string; item: Item }) {
           <div className="mt-1 flex items-center gap-1.5">
             <input value={qty} onChange={(e) => setQty(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); save(); } if (e.key === "Escape") setEditing(false); }} inputMode="decimal" className="input w-20 py-1 text-right text-xs" autoFocus aria-label={tr("Quantité")} />
             <select value={unit} onChange={(e) => setUnit(e.target.value)} className="input w-24 py-1 text-xs">
-              {unitsFor(item.qty_unit).map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
+              {unitsFor(item.qty_unit).map((o) => <option key={o.v} value={o.v}>{tr(o.l)}</option>)}
             </select>
             <button type="button" onClick={save} className="btn-primary px-2.5 py-1 text-xs">{tr("OK")}</button>
             <button type="button" onClick={() => setEditing(false)} className="text-xs text-stone-400">{tr("Annuler")}</button>

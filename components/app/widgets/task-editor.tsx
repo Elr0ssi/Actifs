@@ -56,26 +56,26 @@ export function TaskEditor({
         <input value={v.title} onChange={(e) => set({ title: e.target.value })} placeholder={tr("Titre (ex. Salle de sport, Appel client…)")} className="input mt-4 py-2.5 text-base font-medium" autoFocus required />
         <div className="mt-3 grid grid-cols-3 gap-2">
           <label className="col-span-3 text-xs text-stone-500 sm:col-span-1">
-            Jour
+            {tr("Jour")}
             <input type="date" value={v.date} onChange={(e) => set({ date: e.target.value })} className="input mt-1" />
           </label>
           <label className="text-xs text-stone-500">
-            Début
+            {tr("Début")}
             <input type="time" value={v.start} onChange={(e) => set({ start: e.target.value, end: v.end && v.end <= e.target.value ? "" : v.end })} className="input mt-1" />
           </label>
           <label className="text-xs text-stone-500">
-            Fin
+            {tr("Fin")}
             <input type="time" value={v.end} onChange={(e) => set({ end: e.target.value })} disabled={!v.start} className="input mt-1" />
           </label>
         </div>
         {badRange && <p className="mt-1 text-xs text-rose-600">{tr("L'heure de fin doit être après le début.")}</p>}
         {!v.start && <p className="mt-1 text-[11px] text-stone-400">{tr("Sans heure, la tâche apparaît en haut de la journée.")}</p>}
         <label className="mt-3 block text-xs text-stone-500">
-          Notes
+          {tr("Notes")}
           <textarea value={v.notes} onChange={(e) => set({ notes: e.target.value })} rows={4} placeholder={tr("Détails, étapes, liens… (facultatif)")} className="input mt-1 min-h-[6rem] resize-y leading-relaxed" />
         </label>
         <div className="mt-3 text-xs text-stone-500">
-          Priorité
+          {tr("Priorité")}
           <div className="mt-1 grid grid-cols-3 gap-1 rounded-xl bg-stone-100 p-1 text-xs font-medium">
             {([["low", tr("Basse")], ["medium", tr("Normale")], ["high", tr("Haute")]] as const).map(([k, l]) => (
               <button key={k} type="button" onClick={() => set({ priority: k })} className={cx("rounded-lg py-1.5 transition", v.priority === k ? "bg-surface text-stone-900 shadow-sm" : "text-stone-500")}>{l}</button>
@@ -84,7 +84,7 @@ export function TaskEditor({
         </div>
         {projects.length > 0 && (
           <label className="mt-3 block text-xs text-stone-500">
-            Projet
+            {tr("Projet")}
             <select value={v.projectId} onChange={(e) => set({ projectId: e.target.value })} className="input mt-1">
               <option value="">{tr("Sans projet")}</option>
               {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}

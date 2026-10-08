@@ -383,7 +383,7 @@ export function BudgetBreakdown({ budget, size = 150 }: { budget: ReturnType<typ
         {pickedItem && (
           <p className="mt-3 rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-600">
             <b>{tr(pickedItem.label)}</b> : {formatEUR(pickedItem.value)} {tr("soit {n} %", { n: total > 0 ? Math.round((pickedItem.value / total) * 100) : 0 })} {mode === "global" ? tr("du budget") : tr("des {what}", { what: tr(BREAKDOWN_LABEL[mode]).toLowerCase() })}
-            {budget.income > 0 && ` · ${Math.round((pickedItem.value / budget.income) * 100)} % des revenus`}
+            {budget.income > 0 && ` · ${tr("{n} % des revenus", { n: Math.round((pickedItem.value / budget.income) * 100) })}`}
           </p>
         )}
       </div>

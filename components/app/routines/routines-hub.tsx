@@ -2,6 +2,7 @@
 
 import { useT } from "@/components/i18n/provider";
 import { useMemo, useState, useTransition } from "react";
+import { DAYS_SHORT_SUN } from "@/lib/i18n";
 import { addDays } from "@/lib/finance-engine";
 import { cx } from "@/lib/utils";
 import { toggleRoutineLog } from "@/app/app/actions";
@@ -25,12 +26,10 @@ const toneOf = (r: Routine) => TONES[[...r.id].reduce((a, c) => a + c.charCodeAt
 const PICK_DAYS = [
   { v: 1, l: "L" }, { v: 2, l: "M" }, { v: 3, l: "M" }, { v: 4, l: "J" }, { v: 5, l: "V" }, { v: 6, l: "S" }, { v: 0, l: "D" },
 ];
-const DAY_NAMES = ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"];
-
-const summary = (r: Routine) => {
+const summary = (r: Routine, tr: (k: string) => string) => {
   const days = r.days_of_week ?? [];
-  if (r.frequency === "daily" || days.length >= 7) return "Tous les jours";
-  return PICK_DAYS.filter((d) => days.includes(d.v)).map((d) => DAY_NAMES[d.v]).join(" · ") || "Aucun jour";
+  if (r.frequency === "daily" || days.length >= 7) return tr("Tous les jours");
+  return PICK_DAYS.filter((d) => days.includes(d.v)).map((d) => DAYS_SHORT_SUN[d.v].toLowerCase()).join(" · ") || tr("Aucun jour");
 };
 
 export function RoutinesHub({ routines, archived, doneKeys, today, minDate, curve }: { routines: Routine[]; archived: Routine[]; doneKeys: string[]; today: string; minDate: string; curve?: React.ReactNode }) {
@@ -84,7 +83,7 @@ export function RoutinesHub({ routines, archived, doneKeys, today, minDate, curv
 
   const total = [...stats.values()].reduce((a, s) => ({ done: a.done + s.done, due: a.due + s.due }), { done: 0, due: 0 });
   const pct = total.due ? Math.round((total.done / total.due) * 100) : 0;
-  const label = isCurrent ? tr("Cette semaine") : `Semaine du ${fmtShort(week)} au ${fmtShort(addDays(week, 6))}`;
+  const label = isCurrent ? tr("Cette semaine") : tr("Semaine du {a} au {b}", { a: fmtShort(week), b: fmtShort(addDays(week, 6)) });
 
   return (
     <div className={cx("space-y-5", pending && "opacity-90")}>
@@ -117,7 +116,7 @@ export function RoutinesHub({ routines, archived, doneKeys, today, minDate, curv
             <span className="absolute text-[13px] font-bold text-stone-900">{pct}%</span>
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-stone-900">{total.done} sur {total.due} faites</p>
+            <p className="text-sm font-semibold text-stone-900">{tr("{a} sur {b} faites", { a: total.done, b: total.due })}</p>
             <p className="text-xs text-stone-500">{isCurrent ? tr("Coche au fil de la semaine, un jour oublié se rattrape.") : tr("Tu peux corriger une journée passée : la courbe se met à jour.")}</p>
           </div>
         </div>
@@ -127,7 +126,7 @@ export function RoutinesHub({ routines, archived, doneKeys, today, minDate, curv
       {routines.length === 0 ? (
         <button type="button" onClick={() => setEditing("new")} className="flex w-full flex-col items-center gap-2 rounded-3xl border-2 border-dashed border-line py-14 text-sm text-stone-400 hover:border-brand-300 hover:text-brand-700">
           <span className="text-3xl">🔁</span>
-          Crée ta première routine
+          {tr("Crée ta première routine")}
         </button>
       ) : (
         <ul className="grid gap-3 lg:grid-cols-2">
@@ -139,7 +138,7 @@ export function RoutinesHub({ routines, archived, doneKeys, today, minDate, curv
                   <span className={cx("flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-xl text-white shadow-soft", toneOf(r))}>{iconOf(r)}</span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[15px] font-semibold text-stone-900">{r.title}</p>
-                    <p className="truncate text-xs text-stone-500">{r.category ? `${r.category} · ` : ""}{summary(r)}</p>
+                    <p className="truncate text-xs text-stone-500">{r.category ? `${tr(r.category)} · ` : ""}{summary(r, tr)}</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {s.streak > 1 && <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[11px] font-bold text-orange-600" title={tr("Série en cours")}>🔥 {s.streak}</span>}
@@ -189,14 +188,14 @@ export function RoutinesHub({ routines, archived, doneKeys, today, minDate, curv
 
       {archived.length > 0 && (
         <details className="rounded-2xl border border-line bg-surface">
-          <summary className="cursor-pointer list-none px-5 py-3.5 text-sm font-semibold text-stone-600">Archivées ({archived.length})</summary>
+          <summary className="cursor-pointer list-none px-5 py-3.5 text-sm font-semibold text-stone-600">{tr("Archivées ({n})", { n: archived.length })}</summary>
           <ul className="space-y-1 border-t border-line p-3">
             {archived.map((r) => (
               <li key={r.id} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm text-stone-500 hover:bg-stone-50">
                 <span className="truncate"><span className="mr-2">{iconOf(r)}</span>{r.title}</span>
                 <span className="flex shrink-0 items-center gap-3">
                   <button type="button" onClick={() => start(() => restoreRoutine(r.id))} className="text-xs font-semibold text-brand-600 hover:underline">{tr("Restaurer")}</button>
-                  <button type="button" onClick={() => { if (confirm(`Supprimer définitivement « ${r.title} » ?`)) start(() => deleteRoutineForever(r.id)); }} className="text-xs text-stone-400 hover:text-rose-600">{tr("Supprimer")}</button>
+                  <button type="button" onClick={() => { if (confirm(tr("Supprimer définitivement « {name} » ?", { name: r.title }))) start(() => deleteRoutineForever(r.id)); }} className="text-xs text-stone-400 hover:text-rose-600">{tr("Supprimer")}</button>
                 </span>
               </li>
             ))}

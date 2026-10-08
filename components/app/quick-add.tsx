@@ -73,7 +73,7 @@ export function QuickAdd() {
               start(async () => {
                 await createTask(fd);
                 setOpen(false);
-                setToast("Tâche ajoutée");
+                setToast(tr("Tâche ajoutée"));
               })
             }
             className="w-full max-w-md animate-modal space-y-4 rounded-t-3xl border border-line bg-surface p-5 shadow-lift sm:rounded-3xl"
@@ -102,7 +102,7 @@ export function QuickAdd() {
               <p className="label mb-1.5">{tr("Priorité")}</p>
               <div className="segmented">
                 {PRIORITIES.map((p) => (
-                  <button key={p.v} type="button" data-active={priority === p.v} onClick={() => setPriority(p.v)}>{p.l}</button>
+                  <button key={p.v} type="button" data-active={priority === p.v} onClick={() => setPriority(p.v)}>{tr(p.l)}</button>
                 ))}
               </div>
             </div>

@@ -216,7 +216,7 @@ export function CheckRow({ checked, onChange, label, sub, disabled, dot, onOpen 
   if (onOpen) {
     return (
       <div className="flex items-start gap-2.5 rounded-lg px-1.5 py-1 transition hover:bg-stone-50">
-        <input type="checkbox" checked={checked} disabled={disabled} onChange={onChange} aria-label={`Cocher : ${label}`} className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        <input type="checkbox" checked={checked} disabled={disabled} onChange={onChange} aria-label={tr("Cocher : {name}", { name: label })} className="mt-0.5 h-3.5 w-3.5 shrink-0" />
         <button type="button" onClick={onOpen} className="min-w-0 flex-1 text-left" title={tr("Ouvrir la tâche")}>{text}</button>
       </div>
     );

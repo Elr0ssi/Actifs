@@ -30,7 +30,7 @@ export function IngredientsTable({ catalog, prices }: { catalog: CatalogIngredie
         <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr("Rechercher un ingrédient…")} className="input max-w-xs" />
         <label className="flex items-center gap-2 text-sm text-stone-600">
           <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} className="h-4 w-4 rounded border-stone-300" />
-          Seulement mes ajouts
+          {tr("Seulement mes ajouts")}
         </label>
         <p className="ml-auto text-xs text-stone-400">{tr("Gris = prix de référence · saisis ton prix pour le remplacer (vide = revenir à la référence)")}</p>
       </div>
@@ -38,7 +38,7 @@ export function IngredientsTable({ catalog, prices }: { catalog: CatalogIngredie
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-stone-100 text-left text-xs text-stone-500">
-              <th className="px-4 py-2.5 font-medium">Ingrédient ({rows.length})</th>
+              <th className="px-4 py-2.5 font-medium">{tr("Ingrédient ({n})", { n: rows.length })}</th>
               {STORES.map((s) => <th key={s} className="px-2 py-2.5 text-right font-medium">{s}</th>)}
               <th className="w-8" />
             </tr>
@@ -76,7 +76,7 @@ export function IngredientsTable({ catalog, prices }: { catalog: CatalogIngredie
                 })}
                 <td className="px-2 text-right">
                   {ing.personal && (
-                    <button onClick={() => confirm(`Supprimer "${ing.name}" ?`) && start(() => deleteIngredient(ing.id))} className="text-xs text-stone-300 hover:text-rose-600">✕</button>
+                    <button onClick={() => confirm(tr("Supprimer « {name} » ?", { name: ing.name })) && start(() => deleteIngredient(ing.id))} className="text-xs text-stone-300 hover:text-rose-600">✕</button>
                   )}
                 </td>
               </tr>

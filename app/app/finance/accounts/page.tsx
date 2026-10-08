@@ -33,13 +33,13 @@ export default async function AccountsPage() {
         return (
           <div key={name} className="card space-y-3 p-5">
             <div>
-              <p className="flex items-center gap-2 font-semibold text-stone-900">{meta.icon} {name}</p>
-              <p className="text-xs text-stone-400">{meta.hint}</p>
+              <p className="flex items-center gap-2 font-semibold text-stone-900">{meta.icon} {tr(name)}</p>
+              <p className="text-xs text-stone-400">{tr(meta.hint)}</p>
             </div>
 
             <div>
               <p className="text-2xl font-bold text-stone-900">{acc.last ? formatEUR(acc.last.balance) : tr("Solde inconnu")}</p>
-              {acc.last && <p className="text-[11px] text-stone-400">au {new Date(`${acc.last.date}T00:00:00Z`).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" })}, mouvements ultérieurs non compris ici</p>}
+              {acc.last && <p className="text-[11px] text-stone-400">{tr("au {date}, mouvements ultérieurs non compris ici", { date: new Date(`${acc.last.date}T00:00:00Z`).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" }) })}</p>}
             </div>
 
             {meta.goalType && (
@@ -47,7 +47,7 @@ export default async function AccountsPage() {
                 {goal > 0 ? (
                   <>
                     <div className="h-1.5 rounded-full bg-stone-100"><div className="h-1.5 rounded-full bg-brand-500" style={{ width: `${pct}%` }} /></div>
-                    <p className="mt-1 text-[11px] text-stone-400">{pct}% de l'objectif ({formatEUR(goal)})</p>
+                    <p className="mt-1 text-[11px] text-stone-400">{tr("{pct}% de l'objectif ({amount})", { pct: pct ?? 0, amount: formatEUR(goal) })}</p>
                   </>
                 ) : (
                   <p className="text-[11px] text-stone-400">{tr("Aucun objectif fixé.")}</p>

@@ -50,7 +50,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
             onClick={() => setKind(k.v)}
             className={cx("rounded-lg py-1.5 transition", kind === k.v ? "bg-surface text-stone-900 shadow-sm" : "text-stone-500")}
           >
-            {k.l}
+            {tr(k.l)}
           </button>
         ))}
       </div>
@@ -58,17 +58,17 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
       <input name="name" defaultValue={op?.name} placeholder={tr("Nom (ex. Loyer, Netflix, Salaire…)")} className="input" required />
       <div className="grid grid-cols-2 gap-2">
         <label className="text-xs text-stone-500">
-          Montant
+          {tr("Montant")}
           <input name="amount" type="number" step="0.01" min="0" defaultValue={op?.amount} placeholder="€" className="input mt-1" required />
         </label>
         <label className="text-xs text-stone-500">
-          Catégorie
+          {tr("Catégorie")}
           <select key={kind} name="category" defaultValue={categories.includes(op?.category ?? "") ? op?.category : categories[0]} className="input mt-1">
-            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+            {categories.map((c) => <option key={c} value={c}>{tr(c)}</option>)}
           </select>
         </label>
         <label className="col-span-2 text-xs text-stone-500">
-          Compte (optionnel)
+          {tr("Compte (optionnel)")}
           <input name="account" list="finance-accounts" defaultValue={op?.account ?? ""} placeholder={tr("Ex. Compte courant, Compte joint…")} className="input mt-1" />
           <datalist id="finance-accounts">
             <option value="Compte courant" />
@@ -83,7 +83,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
         <input type="hidden" name="frequency" value={freq} />
         <select value={freq} onChange={(e) => setFreq(e.target.value as OpFrequency)} className="input">
           {FREQS.map((f) => (
-            <option key={f.v} value={f.v}>{f.l}</option>
+            <option key={f.v} value={f.v}>{tr(f.l)}</option>
           ))}
         </select>
         <div className="mt-2 grid grid-cols-2 gap-2">
@@ -93,7 +93,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
           </label>
           {freq !== "once" && (
             <label className="text-xs text-stone-500">
-              Date de fin <span className="text-stone-400">{tr("(optionnelle)")}</span>
+              {tr("Date de fin")} <span className="text-stone-400">{tr("(optionnelle)")}</span>
               <input name="end_date" type="date" defaultValue={op?.end ?? ""} className="input mt-1" />
             </label>
           )}
@@ -101,7 +101,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
         {freq !== "once" && (
           <div className="mt-2 space-y-2">
             <label className="flex items-center gap-2 text-sm text-stone-600">
-              Tous les <input name="interval" type="number" min="1" defaultValue={op?.interval ?? 1} className="input w-16 py-1" /> {unit}
+              {tr("Tous les")} <input name="interval" type="number" min="1" defaultValue={op?.interval ?? 1} className="input w-16 py-1" /> {unit ? tr(unit) : ""}
             </label>
             {freq === "weekly" && (
               <div className="flex gap-1">
@@ -118,7 +118,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
             )}
             {(freq === "monthly" || freq === "yearly") && (
               <label className="block text-xs text-stone-500">
-                Si la date tombe un week-end
+                {tr("Si la date tombe un week-end")}
                 <select key={kind} name="weekend_rule" defaultValue={op?.weekendRule ?? (kind === "income" ? "next" : "none")} className="input mt-1">
                   <option value="none">{tr("Ne pas décaler")}</option>
                   <option value="next">{tr("Reporter au lundi suivant")}</option>

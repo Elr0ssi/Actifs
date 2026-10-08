@@ -47,22 +47,22 @@ export function WalletSetup({ token, defaultOpen }: { token: string; defaultOpen
           <div>
             <p className="label mb-1.5">{tr("2 · Sur ton iPhone (une seule fois, environ 2 minutes)")}</p>
             <ol className="list-decimal space-y-2 pl-5 leading-relaxed">
-              <li>Ouvre l'application <b>{tr("« Raccourcis »")}</b>.</li>
-              <li>En bas de l'écran, appuie sur <b>{tr("« Automatisation »")}</b>.</li>
-              <li>Appuie sur <b>« + »</b> en haut à droite.</li>
-              <li>Dans <b>{tr("« Nouvelle automatisation »")}</b>, sélectionne <b>{tr("« Carte »")}</b>.</li>
+              <li>{tr("Ouvre l'application")} <b>{tr("« Raccourcis »")}</b>.</li>
+              <li>{tr("En bas de l'écran, appuie sur")} <b>{tr("« Automatisation »")}</b>.</li>
+              <li>{tr("Appuie sur")} <b>« + »</b> {tr("en haut à droite.")}</li>
+              <li>{tr("Dans")} <b>{tr("« Nouvelle automatisation »")}</b>{tr(", sélectionne")} <b>{tr("« Carte »")}</b>.</li>
               <li>{tr("Sélectionne la ou les cartes bancaires que tu veux connecter.")}</li>
-              <li>Sélectionne <b>{tr("« Exécuter immédiatement »")}</b>.</li>
-              <li>Appuie sur <b>{tr("« Suivant »")}</b>.</li>
-              <li>Appuie sur <b>{tr("« Créer un raccourci »")}</b>.</li>
-              <li>Dans le nouveau raccourci, ajoute l'action <b>{tr("« Obtenir le contenu de l'URL »")}</b>.</li>
-              <li>Dans le bloc <b>{tr("« Obtenir le contenu de »")}</b>, appuie directement sur le bouton bleu <b>{tr("« URL »")}</b>.</li>
+              <li>{tr("Sélectionne")} <b>{tr("« Exécuter immédiatement »")}</b>.</li>
+              <li>{tr("Appuie sur")} <b>{tr("« Suivant »")}</b>.</li>
+              <li>{tr("Appuie sur")} <b>{tr("« Créer un raccourci »")}</b>.</li>
+              <li>{tr("Dans le nouveau raccourci, ajoute l'action")} <b>{tr("« Obtenir le contenu de l'URL »")}</b>.</li>
+              <li>{tr("Dans le bloc")} <b>{tr("« Obtenir le contenu de »")}</b>{tr(", appuie directement sur le bouton bleu")} <b>{tr("« URL »")}</b>.</li>
               <li>{tr("Colle dans ce champ l'adresse copiée à l'étape 1.")}</li>
-              <li>Appuie sur la <b>{tr("petite flèche bleue")}</b> à droite de l'URL pour afficher les options.</li>
-              <li>À <b>{tr("« Méthode »")}</b>, appuie sur <b>{tr("« GET »")}</b> puis sélectionne <b>{tr("« POST »")}</b>.</li>
-              <li><b>{tr("« Corps de la requête »")}</b> apparaît : sélectionne <b>{tr("« JSON »")}</b>.</li>
+              <li>{tr("Appuie sur la")} <b>{tr("petite flèche bleue")}</b> {tr("à droite de l'URL pour afficher les options.")}</li>
+              <li>À <b>{tr("« Méthode »")}</b>{tr(", appuie sur")} <b>{tr("« GET »")}</b> {tr("puis sélectionne")} <b>{tr("« POST »")}</b>.</li>
+              <li><b>{tr("« Corps de la requête »")}</b> {tr("apparaît : sélectionne")} <b>{tr("« JSON »")}</b>.</li>
               <li>
-                Appuie sur <b>{tr("« Ajouter nouveau champ »")}</b>, et crée ces <b>{tr("4 champs")}</b> :
+                {tr("Appuie sur")} <b>{tr("« Ajouter nouveau champ »")}</b>{tr(", et crée ces")} <b>{tr("4 champs")}</b> :
                 <div className="mt-2 overflow-hidden rounded-xl border border-line text-[12px]">
                   {[
                     { type: "Nombre", key: "amount", prop: tr("Montant") },
@@ -73,15 +73,15 @@ export function WalletSetup({ token, defaultOpen }: { token: string; defaultOpen
                     <div key={f.key} className="flex flex-wrap items-center gap-x-3 gap-y-0.5 border-b border-line/70 px-3 py-2 last:border-0">
                       <span className="w-14 text-stone-400">{f.type}</span>
                       <span className={CODE}>{f.key}</span>
-                      <span className="text-stone-500">→ « Entrée de raccourci » → <b className="text-stone-800">« {f.prop} »</b></span>
+                      <span className="text-stone-500">{tr("→ « Entrée de raccourci » →")} <b className="text-stone-800">« {f.prop} »</b></span>
                     </div>
                   ))}
                 </div>
                 <p className="mt-2 text-[12px] text-stone-600">
-                  Pour chaque valeur : appuie dans la valeur du champ, sélectionne <b>{tr("« Entrée de raccourci »")}</b>, appuie sur la variable insérée, puis choisis la propriété ci-dessus (dans la liste : Transaction, Carte ou billet, Commerçant, Montant, Nom).
+                  {tr("Pour chaque valeur : appuie dans la valeur du champ, sélectionne")} <b>{tr("« Entrée de raccourci »")}</b>{tr(", appuie sur la variable insérée, puis choisis la propriété ci-dessus (dans la liste : Transaction, Carte ou billet, Commerçant, Montant, Nom).")}
                 </p>
               </li>
-              <li>Appuie sur la <b>{tr("coche bleue ✓")}</b> en haut à droite pour enregistrer.</li>
+              <li>{tr("Appuie sur la")} <b>{tr("coche bleue ✓")}</b> {tr("en haut à droite pour enregistrer.")}</li>
             </ol>
             <p className="mt-3 rounded-lg bg-sky-500/10 px-3 py-2 text-[12px] text-sky-800">{tr("La date et l'heure ne sont pas fournies par l'iPhone : elles sont ajoutées automatiquement par ton site à la réception de chaque paiement.")}</p>
             <p className="mt-2 rounded-lg bg-amber-500/10 px-3 py-2 text-[12px] text-amber-800">{tr("Apple ne permet pas de partager cette automatisation par lien : elle se crée une seule fois sur le téléphone.")}</p>
@@ -99,7 +99,7 @@ export function WalletSetup({ token, defaultOpen }: { token: string; defaultOpen
 
           <form
             action={regenerateWalletToken}
-            onSubmit={(e) => { if (!confirm("Générer une nouvelle adresse ? L'ancienne cessera de fonctionner et ton automatisation devra être mise à jour.")) e.preventDefault(); }}
+            onSubmit={(e) => { if (!confirm(tr("Générer une nouvelle adresse ? L'ancienne cessera de fonctionner et ton automatisation devra être mise à jour."))) e.preventDefault(); }}
           >
             <button className="text-[11px] text-stone-400 underline hover:text-rose-600">{tr("Changer l'adresse (si elle a fuité)")}</button>
           </form>

@@ -38,13 +38,13 @@ export function TaxPeriods({ year, profile }: { year: number; profile: TaxProfil
             <p className="font-semibold text-stone-900">{tr("Périodes de revenus")}</p>
             <button type="button" onClick={() => { addPeriod(); setAdding(true); }} className="text-sm font-medium text-brand-600">{tr("+ Ajouter une période")}</button>
           </div>
-          {periods.length === 0 && !adding && <p className="text-sm text-stone-400">Aucune période. Ajoute tes périodes de revenus {year}.</p>}
+          {periods.length === 0 && !adding && <p className="text-sm text-stone-400">{tr("Aucune période. Ajoute tes périodes de revenus {year}.", { year })}</p>}
           <div className="space-y-2">
             {periods.map((p, i) => (
               <div key={i} className="grid grid-cols-[1fr_1fr_100px_auto] items-center gap-2 rounded-xl border border-stone-100 p-2">
                 <input value={p.label} onChange={(e) => updatePeriod(i, { label: e.target.value })} placeholder={tr("Ex. Janv. – août")} className="input px-2 py-1 text-sm" />
                 <select value={p.activity} onChange={(e) => updatePeriod(i, { activity: e.target.value })} className="input px-2 py-1 text-sm">
-                  {ACTIVITIES.map((a) => <option key={a} value={a}>{a}</option>)}
+                  {ACTIVITIES.map((a) => <option key={a} value={a}>{tr(a)}</option>)}
                 </select>
                 <input
                   type="number"
@@ -93,18 +93,18 @@ export function TaxPeriods({ year, profile }: { year: number; profile: TaxProfil
             <p className="text-xs font-medium text-brand-800">{tr("Provision indicative pour le reste de l'année")}</p>
             <p className="mt-1 text-3xl font-bold text-brand-700">{formatEUR(Math.max(0, netOfWithholding ?? 0))}</p>
             <p className="text-[11px] text-brand-700/70">
-              Fourchette annuelle : {formatEUR(estimate.low)} – {formatEUR(estimate.high)} · soit ≈ {formatEUR(estimate.monthlyProvision)}/mois
+              {tr("Fourchette annuelle :")} {formatEUR(estimate.low)} – {formatEUR(estimate.high)} · {tr("soit ≈ {amount}/mois", { amount: formatEUR(estimate.monthlyProvision) })}
             </p>
           </div>
         )}
         <details className="mt-3 text-xs">
           <summary className="cursor-pointer text-stone-400">{tr("Hypothèses et détail du calcul")}</summary>
           <div className="mt-2 space-y-1 text-stone-500">
-            <p>Revenu brut total saisi : {formatEUR(grossTotal)}</p>
-            {exempted > 0 && <p>Dont exonéré (alternance, jusqu'à 21 000 €) : − {formatEUR(exempted)}</p>}
-            <p>Revenu imposable retenu : {formatEUR(taxable)}</p>
-            <p>Barème {year} par part, {parts} part(s) fiscale(s) — estimation indicative, non contractuelle.</p>
-            <p>Déjà prélevé : {formatEUR(alreadyWithheld)}</p>
+            <p>{tr("Revenu brut total saisi :")} {formatEUR(grossTotal)}</p>
+            {exempted > 0 && <p>{tr("Dont exonéré (alternance, jusqu'à 21 000 €) :")} − {formatEUR(exempted)}</p>}
+            <p>{tr("Revenu imposable retenu :")} {formatEUR(taxable)}</p>
+            <p>{tr("Barème {year} par part, {parts} part(s) fiscale(s) — estimation indicative, non contractuelle.", { year, parts })}</p>
+            <p>{tr("Déjà prélevé :")} {formatEUR(alreadyWithheld)}</p>
             <p>{tr("Aucune assiette, exonération ou barème non vérifié n'est inventé : si une donnée manque, aucun montant « exact » n'est affiché.")}</p>
           </div>
         </details>

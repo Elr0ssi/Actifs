@@ -48,10 +48,10 @@ export default async function OperationsPage({ searchParams }: { searchParams: {
               <div className="mb-3 flex items-center justify-between gap-2">
                 <h2 className="flex items-center gap-2 text-[13px] font-semibold text-stone-900">
                   <span className={cx("h-2 w-2 rounded-full", KIND_STYLE[kind].dot)} />
-                  {KIND_LABEL[kind]} <span className="font-normal text-stone-400">({list.length})</span>
+                  {tr(KIND_LABEL[kind])} <span className="font-normal text-stone-400">({list.length})</span>
                 </h2>
                 <div className="flex items-center gap-2">
-                  {monthly > 0 && <span className="text-[11px] text-stone-500">≈ {formatEUR(monthly)} / mois</span>}
+                  {monthly > 0 && <span className="text-[11px] text-stone-500">{tr("≈ {amount} / mois", { amount: formatEUR(monthly) })}</span>}
                   <NewOperationButton defaultDate={today} defaultKind={kind} label={tr("+ Ajouter")} className="btn-ghost" />
                 </div>
               </div>
@@ -69,7 +69,7 @@ export default async function OperationsPage({ searchParams }: { searchParams: {
                       <div key={cat}>
                         <div className="mb-1 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wide text-stone-400">
                           <span>{cat}</span>
-                          {sub > 0 && <span className="normal-case">≈ {formatEUR(sub)} / mois</span>}
+                          {sub > 0 && <span className="normal-case">{tr("≈ {amount} / mois", { amount: formatEUR(sub) })}</span>}
                         </div>
                         <ul className="space-y-1.5">
                           {items.map((op) => <OperationRow key={`${op.table}-${op.id}`} op={op} today={today} />)}

@@ -46,8 +46,8 @@ export default async function BudgetsPage({ searchParams }: { searchParams: { ye
           <Link href={`/app/finance/budgets?year=${next.y}&month=${next.m}`} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label={tr("Mois suivant")}><Icon name="chevronRight" /></Link>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/app/finance/operations" className={actionCls}><Icon name="list" className="text-brand-600" />Gérer mes opérations</Link>
-          <Link href="/app/finance/accounts" className={actionCls}><Icon name="bank" className="text-brand-600" />Mettre à jour mon solde</Link>
+          <Link href="/app/finance/operations" className={actionCls}><Icon name="list" className="text-brand-600" />{tr("Gérer mes opérations")}</Link>
+          <Link href="/app/finance/accounts" className={actionCls}><Icon name="bank" className="text-brand-600" />{tr("Mettre à jour mon solde")}</Link>
         </div>
       </div>
 

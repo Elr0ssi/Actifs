@@ -19,13 +19,13 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
       subtitle={tr("Connecte-toi à ton espace Flozea.")}
       footer={
         <p className="text-sm text-stone-500">
-          Pas encore de compte ? <Link href="/signup" className="font-semibold text-brand-600">{tr("Créer un espace")}</Link>
+          {tr("Pas encore de compte ?")} <Link href="/signup" className="font-semibold text-brand-600">{tr("Créer un espace")}</Link>
         </p>
       }
     >
       <div className="mb-4 space-y-4">
         <GoogleButton label={tr("Continuer avec Google")} />
-        <div className="flex items-center gap-3 text-xs text-stone-500"><span className="h-px flex-1 bg-stone-200" />ou avec ton email<span className="h-px flex-1 bg-stone-200" /></div>
+        <div className="flex items-center gap-3 text-xs text-stone-500"><span className="h-px flex-1 bg-stone-200" />{tr("ou avec ton email")}<span className="h-px flex-1 bg-stone-200" /></div>
       </div>
       <CredentialForm action={login} className="space-y-4">
         {searchParams?.error && (

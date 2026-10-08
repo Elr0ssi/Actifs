@@ -79,7 +79,7 @@ export function NotesShell({ notes, children }: { notes: NoteMeta[]; children: R
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr("Rechercher une note…")} className="input pl-8 text-[13px]" />
           </div>
           <form action={createNote.bind(null, null)} className="mt-2">
-            <button className="btn-primary w-full justify-center py-1.5 text-xs"><Icon name="plus" className="h-3.5 w-3.5" />Nouvelle page</button>
+            <button className="btn-primary w-full justify-center py-1.5 text-xs"><Icon name="plus" className="h-3.5 w-3.5" />{tr("Nouvelle page")}</button>
           </form>
           <div className="mt-2 max-h-[60vh] overflow-y-auto">
             {query ? (

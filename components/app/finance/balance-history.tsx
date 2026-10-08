@@ -24,7 +24,7 @@ export function BalanceHistory({ account, entries, today }: { account: string; e
 
   return (
     <details className="text-xs">
-      <summary className="cursor-pointer text-stone-400">Historique des soldes ({list.length})</summary>
+      <summary className="cursor-pointer text-stone-400">{tr("Historique des soldes ({n})", { n: list.length })}</summary>
       <p className="mt-2 text-[11px] text-stone-400">{tr("Chaque ligne est le solde réel à cette date, pas un montant à additionner.")}</p>
       <ul className={cx("mt-2 space-y-1", pending && "opacity-60")}>
         {list.map((h) =>
@@ -64,12 +64,12 @@ export function BalanceHistory({ account, entries, today }: { account: string; e
       </ul>
       {list.length > 1 && (
         <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-line pt-2 text-[11px] text-stone-400">
-          Nettoyer :
+          {tr("Nettoyer :")}
           {[{ l: tr("+ d'1 mois"), m: 1 }, { l: tr("+ de 3 mois"), m: 3 }, { l: tr("+ de 6 mois"), m: 6 }].map((o) => (
             <button
               key={o.m}
               type="button"
-              onClick={() => confirm(`Effacer les soldes de plus de ${o.m} mois ? (le plus récent est toujours gardé)`) && start(() => pruneBalanceHistory(account, shift(today, o.m)))}
+              onClick={() => confirm(tr("Effacer les soldes de plus de {m} mois ? (le plus récent est toujours gardé)", { m: o.m })) && start(() => pruneBalanceHistory(account, shift(today, o.m)))}
               className="rounded-md bg-stone-100 px-2 py-0.5 text-stone-500 hover:bg-rose-50 hover:text-rose-600"
             >
               {o.l}

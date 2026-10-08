@@ -22,14 +22,14 @@ export function OperationRow({ op, today }: { op: FinOp; today: string }) {
       <div className="flex items-center gap-3">
         <span className={cx("h-2.5 w-2.5 shrink-0 rounded-full", KIND_STYLE[op.kind].dot)} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-medium text-stone-800">{op.name} <span className="text-xs font-normal text-stone-400">· {op.category}</span></p>
-          <p className="truncate text-xs text-stone-400">{describeRecurrence(op)} · dès le {op.start}{op.end ? ` jusqu'au ${op.end}` : ""}</p>
+          <p className="truncate text-[13px] font-medium text-stone-800">{op.name} <span className="text-xs font-normal text-stone-400">· {tr(op.category)}</span></p>
+          <p className="truncate text-xs text-stone-400">{describeRecurrence(op, tr)} · {tr("dès le {date}", { date: op.start })}{op.end ? ` ${tr("jusqu'au {date}", { date: op.end })}` : ""}</p>
         </div>
         <span className={cx("tabular shrink-0 text-[13px] font-semibold", KIND_STYLE[op.kind].text)}>{formatEUR(op.amount)}</span>
         <ToggleSwitch initialChecked={op.active} onToggle={toggleOperationActive.bind(null, op.table, op.id)} />
         <button onClick={() => setEditing((e) => !e)} className="text-xs font-medium text-brand-600">{editing ? tr("Fermer") : tr("Modifier")}</button>
         <button
-          onClick={() => confirm(`Supprimer "${op.name}" et toute sa récurrence ?`) && start(() => deleteOperation(op.table, op.id))}
+          onClick={() => confirm(tr("Supprimer « {name} » et toute sa récurrence ?", { name: op.name })) && start(() => deleteOperation(op.table, op.id))}
           className="text-xs text-stone-300 hover:text-rose-600"
         >
           ✕
@@ -59,7 +59,7 @@ export function OperationRow({ op, today }: { op: FinOp; today: string }) {
           </div>
           {picked && (
             <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg bg-stone-50 p-2">
-              <span className="text-stone-500">Prévu le {picked.raw.slice(8)}/{picked.raw.slice(5, 7)} · tombe le</span>
+              <span className="text-stone-500">{tr("Prévu le {date} · tombe le", { date: `${picked.raw.slice(8)}/${picked.raw.slice(5, 7)}` })}</span>
               <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} className="input w-auto py-1 text-xs" />
               <button
                 disabled={!newDate}

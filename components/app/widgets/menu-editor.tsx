@@ -67,7 +67,7 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
 
   const add = (c: Card) => {
     setOptimistic((o) => [...o, { name: c.name, icon: c.icon, day, slot }]);
-    setFlash(`${c.name} ajouté · ${label(day)} ${slot === "midi" ? "midi" : "soir"}`);
+    setFlash(tr("{name} ajouté · {day} {slot}", { name: c.name, day: label(day), slot: slot === "midi" ? tr("midi") : tr("soir") }));
     setTimeout(() => setFlash(null), 2200);
     start(() => addMenuItems(day, [{ name: c.name, icon: c.icon, servings: people }], slot));
   };
@@ -87,7 +87,7 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
   };
 
   const query = fold(q.trim());
-  const fromMine = (r: WidgetData["myRecipes"][number]): Card => ({ name: r.name, icon: known(r.name)?.icon ?? null, image: r.image_url, gradient: known(r.name)?.gradient ?? "from-stone-100 to-stone-200", sub: `${r.servings} pers.` });
+  const fromMine = (r: WidgetData["myRecipes"][number]): Card => ({ name: r.name, icon: known(r.name)?.icon ?? null, image: r.image_url, gradient: known(r.name)?.gradient ?? "from-stone-100 to-stone-200", sub: tr("{n} pers.", { n: r.servings }) });
   const fromIdea = (r: (typeof RECIPES)[number]): Card => ({ name: r.name, icon: r.icon, image: r.image, gradient: r.gradient, sub: r.time });
   const cards: Card[] = useMemo(() => {
     let list: Card[];
@@ -148,7 +148,7 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
             return (
               <div key={s.key} onClick={() => setSlot(s.key)} className={cx("cursor-pointer rounded-2xl border p-3 transition", on ? "border-brand-400 bg-brand-50/60 ring-2 ring-brand-200" : "border-line hover:bg-stone-50")}>
                 <div className="flex items-center justify-between">
-                  <p className="text-[13px] font-bold text-stone-900">{s.icon} {s.label}</p>
+                  <p className="text-[13px] font-bold text-stone-900">{s.icon} {tr(s.label)}</p>
                   {on && <span className="rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-semibold text-white">{tr("j'ajoute ici")}</span>}
                 </div>
                 <ul className="mt-2 space-y-1.5">
@@ -164,7 +164,7 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
                           <button type="button" aria-label={tr("Plus de personnes")} onClick={(e) => { e.stopPropagation(); changeMeal(m.id, n + 1); }} className="px-1">+</button>
                         </span>
                         <button type="button" title={s.key === "midi" ? tr("Passer au soir") : tr("Passer au midi")} onClick={(e) => { e.stopPropagation(); moveSlot(m.id, s.key === "midi" ? "soir" : "midi"); }} className="text-[13px] opacity-60 hover:opacity-100">{s.key === "midi" ? "🌙" : "☀️"}</button>
-                        <button aria-label={`Retirer ${m.name}`} onClick={(e) => { e.stopPropagation(); setRemoved((r) => [...r, m.id]); start(() => removeMenuItem(m.id)); }} className="text-stone-400 hover:text-rose-600">✕</button>
+                        <button aria-label={tr("Retirer {name}", { name: m.name })} onClick={(e) => { e.stopPropagation(); setRemoved((r) => [...r, m.id]); start(() => removeMenuItem(m.id)); }} className="text-stone-400 hover:text-rose-600">✕</button>
                       </li>
                     );
                   })}
@@ -176,7 +176,7 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
           })}
         </div>
         {dayItems.some((m) => !m.slot) && (
-          <p className="mt-2 text-[11px] text-stone-400">Repas sans moment précisé : {dayItems.filter((m) => !m.slot).map((m) => m.name).join(", ")}. Passe-les au midi ou au soir depuis la fiche du jour.</p>
+          <p className="mt-2 text-[11px] text-stone-400">{tr("Repas sans moment précisé : {names}. Passe-les au midi ou au soir depuis la fiche du jour.", { names: dayItems.filter((m) => !m.slot).map((m) => m.name).join(", ") })}</p>
         )}
 
         {/* Personnes */}
@@ -242,7 +242,7 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
 
           {hiddenCount > 0 && (
             <p className="mt-1 text-[11px] text-stone-400">
-              {hiddenCount} repas déjà planifié{hiddenCount > 1 ? "s" : ""} {showUsed ? tr("affiché") + (hiddenCount > 1 ? "s" : "") : tr("masqué") + (hiddenCount > 1 ? "s" : "")} ·{" "}
+              {tr(showUsed ? (hiddenCount > 1 ? "{n} repas déjà planifiés affichés" : "{n} repas déjà planifié affiché") : (hiddenCount > 1 ? "{n} repas déjà planifiés masqués" : "{n} repas déjà planifié masqué"), { n: hiddenCount })} ·{" "}
               <button type="button" onClick={() => setShowUsed((v) => !v)} className="font-medium text-brand-600 hover:underline">{showUsed ? tr("Les masquer") : tr("Les afficher")}</button>
             </p>
           )}

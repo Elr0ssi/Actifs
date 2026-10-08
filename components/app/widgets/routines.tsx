@@ -19,7 +19,6 @@ interface Point {
   pct: number | null;
 }
 
-const MONTH_TICK = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
 
 const GRANS: { v: Gran; l: string }[] = [
   { v: "day", l: "Jour" },
@@ -34,7 +33,7 @@ const HELP: Record<Gran, string> = {
 };
 
 /** Jour → les 7 jours d'une semaine · Semaine → toutes les semaines d'un mois · Mois → les 12 mois d'une année. `off` décale la période. */
-function buckets(gran: Gran, today: string, off: number) {
+function buckets(gran: Gran, today: string, off: number, tr: (k: string, v?: Record<string, string | number>) => string) {
   const out: { key: string; label: string; tick: string; from: string; to: string }[] = [];
   const y = Number(today.slice(0, 4));
   const m = Number(today.slice(5, 7)) - 1;
@@ -54,7 +53,7 @@ function buckets(gran: Gran, today: string, off: number) {
       const from = monday < firstIso ? firstIso : monday;
       const sunday = addDays(monday, 6);
       const to = sunday > lastIso ? lastIso : sunday;
-      out.push({ key: monday, label: `Semaine du ${fmtShort(from)} au ${fmtShort(to)}`, tick: `${Number(from.slice(8))}–${Number(to.slice(8))}`, from, to });
+      out.push({ key: monday, label: tr("Semaine du {a} au {b}", { a: fmtShort(from), b: fmtShort(to) }), tick: `${Number(from.slice(8))}–${Number(to.slice(8))}`, from, to });
     }
     title = `${MONTHS_FR[first.getUTCMonth()]} ${first.getUTCFullYear()}`;
   } else {
@@ -62,7 +61,7 @@ function buckets(gran: Gran, today: string, off: number) {
     for (let k = 0; k < 12; k++) {
       const from = new Date(Date.UTC(yr, k, 1)).toISOString().slice(0, 10);
       const to = new Date(Date.UTC(yr, k + 1, 0)).toISOString().slice(0, 10);
-      out.push({ key: from, label: `${MONTHS_FR[k]} ${yr}`, tick: MONTH_TICK[k], from, to });
+      out.push({ key: from, label: `${MONTHS_FR[k]} ${yr}`, tick: MONTHS_FR[k].slice(0, 3), from, to });
     }
     title = String(yr);
   }
@@ -81,7 +80,7 @@ export function RoutinesCurve({ data, size, opts, setOpts }: WidgetProps) {
   const plot = useRef<HTMLDivElement>(null);
 
   const done = useMemo(() => new Set(data.logs.filter((l) => l.done).map((l) => `${l.routine_id}_${l.log_date}`)), [data.logs]);
-  const period = useMemo(() => buckets(gran, data.today, off), [gran, data.today, off]);
+  const period = useMemo(() => buckets(gran, data.today, off, tr), [gran, data.today, off]);
   const points: Point[] = useMemo(
     () =>
       period.list.map((b) => {
@@ -131,7 +130,7 @@ export function RoutinesCurve({ data, size, opts, setOpts }: WidgetProps) {
     <WidgetShell
       icon="trend"
       title={tr("Courbe des routines")}
-      subtitle={HELP[gran]}
+      subtitle={tr(HELP[gran])}
       href="/app/tasks/routines"
       right={<Segmented<Gran> value={gran} onChange={changeGran} options={GRANS} />}
     >
@@ -176,7 +175,7 @@ export function RoutinesCurve({ data, size, opts, setOpts }: WidgetProps) {
               onPointerDown={onMove}
               onPointerLeave={() => setHover(null)}
               role="img"
-              aria-label={`Courbe de réussite des routines par ${GRANS.find((g) => g.v === gran)?.l.toLowerCase()}`}
+              aria-label={tr("Courbe de réussite des routines par {gran}", { gran: tr(GRANS.find((g) => g.v === gran)?.l ?? "").toLowerCase() })}
             >
               {[100, 50, 0].map((v) => (
                 <div key={v} className={cx("absolute inset-x-0 border-t", v === 0 ? "border-stone-300" : "border-dashed border-line")} style={{ top: `${100 - v}%` }} />

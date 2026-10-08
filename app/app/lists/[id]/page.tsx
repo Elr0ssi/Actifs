@@ -21,12 +21,12 @@ import {
   finishShopping,
 } from "@/app/app/lists/actions";
 
-function weekLabel(iso: string | null) {
+function weekLabel(iso: string | null, tr: (k: string, v?: Record<string, string | number>) => string) {
   if (!iso) return null;
   const d = new Date(`${iso}T00:00:00Z`);
   const end = new Date(d.getTime() + 6 * 86_400_000);
   const f = (x: Date) => x.toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" });
-  return `Semaine du ${f(d)} au ${f(end)}`;
+  return tr("Semaine du {a} au {b}", { a: f(d), b: f(end) });
 }
 
 export default async function ListDetailPage({ params, searchParams }: { params: { id: string }; searchParams: { compose?: string; done?: string } }) {
@@ -98,7 +98,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-stone-900">{list.name}</h1>
           <p className="mt-1 text-sm text-stone-500">
-            {[list.category, weekLabel(list.week_start), `${checkedCount}/${all.length} cochés`].filter(Boolean).join(" · ")}
+            {[list.category, weekLabel(list.week_start, tr), tr("{a}/{b} cochés", { a: checkedCount, b: all.length })].filter(Boolean).join(" · ")}
             {list.archived && <span className="ml-2 rounded-full bg-stone-100 px-2 py-0.5 text-xs">{tr("Archivée")}</span>}
           </p>
         </div>
@@ -126,17 +126,17 @@ export default async function ListDetailPage({ params, searchParams }: { params:
             <div>
               <h2 className="font-semibold text-stone-900">{tr("🧾 Comparatif des enseignes")}</h2>
               <p className="text-xs text-stone-500">
-                Tes {comparable} article(s) {all.some((i) => i.checked) ? tr("achetés") : tr("de la liste")} au prix de référence de chaque enseigne
-                {outsideBase > 0 && ` · ${outsideBase} hors base non comparé(s)`}
+                {tr(all.some((i) => i.checked) ? "Tes {n} article(s) achetés au prix de référence de chaque enseigne" : "Tes {n} article(s) de la liste au prix de référence de chaque enseigne", { n: comparable })}
+                {outsideBase > 0 && ` · ${tr("{n} hors base non comparé(s)", { n: outsideBase })}`}
               </p>
             </div>
             {best && current && best.store !== current.store && current.total - best.total > 0.01 && (
               <p className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
-                {formatEUR(current.total - best.total)} d'économie possible chez {best.store}
+                {tr("{amount} d'économie possible chez {store}", { amount: formatEUR(current.total - best.total), store: best.store })}
               </p>
             )}
             {best && current && best.store === current.store && (
-              <p className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">✓ {current.store} était le meilleur choix</p>
+              <p className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">{tr("✓ {store} était le meilleur choix", { store: current.store })}</p>
             )}
           </div>
           <div className="space-y-2.5">
@@ -161,7 +161,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
                   <span className={`w-20 shrink-0 text-right text-xs ${diff > 0.01 ? "text-rose-600" : diff < -0.01 ? "text-emerald-600" : "text-stone-400"}`}>
                     {current && !isCurrent ? `${diff > 0 ? "+" : ""}${formatEUR(diff)}` : isBest ? "🏆" : ""}
                   </span>
-                  {c.missing > 0 && <span className="w-16 shrink-0 text-[11px] text-stone-400">{c.missing} sans prix</span>}
+                  {c.missing > 0 && <span className="w-16 shrink-0 text-[11px] text-stone-400">{tr("{n} sans prix", { n: c.missing })}</span>}
                 </div>
               );
             })}
@@ -173,7 +173,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
         <div className="grid gap-4 sm:grid-cols-2">
           <form action={setListStore.bind(null, list.id)} className="card flex items-end gap-2 p-4">
             <label className="flex-1 text-xs text-stone-500">
-              Enseigne
+              {tr("Enseigne")}
               <select name="store" defaultValue={list.store ?? ""} className="input mt-1" required>
                 <option value="" disabled>{tr("Choisir…")}</option>
                 {STORES.map((st) => <option key={st} value={st}>{st}</option>)}
@@ -183,9 +183,9 @@ export default async function ListDetailPage({ params, searchParams }: { params:
           </form>
           <div className="card flex items-center justify-between p-4">
             <div>
-              <p className="text-xs text-stone-500">Total estimé{list.store ? ` chez ${list.store}` : ""}</p>
+              <p className="text-xs text-stone-500">{list.store ? tr("Total estimé chez {store}", { store: list.store }) : tr("Total estimé")}</p>
               <p className="text-2xl font-bold text-stone-900">{formatEUR(total)}</p>
-              {unpriced > 0 && <p className="text-[11px] text-stone-400">{unpriced} article(s) sans prix</p>}
+              {unpriced > 0 && <p className="text-[11px] text-stone-400">{tr("{n} article(s) sans prix", { n: unpriced })}</p>}
             </div>
             <div className="text-right">
               <p className="text-xs text-stone-500">{tr("Reste à acheter")}</p>
@@ -198,7 +198,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
       {isShopping && (
         <details open={composeOpen} className="card group p-6">
           <summary className="cursor-pointer list-none font-semibold text-stone-900">
-            <span className="mr-2 inline-block transition group-open:rotate-90">›</span>Ajouter des recettes et des produits
+            <span className="mr-2 inline-block transition group-open:rotate-90">›</span>{tr("Ajouter des recettes et des produits")}
           </summary>
           <div className="mt-5">
             <ListComposer

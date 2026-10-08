@@ -142,9 +142,9 @@ export function ListComposer({
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="mr-auto text-sm font-semibold text-stone-900">{tr("Recettes")}</h3>
           <div className="flex items-center gap-1 text-[11px] text-stone-500" title={tr("Nombre de personnes proposé pour chaque nouvelle recette")}>
-            Par défaut
+            {tr("Par défaut")}
             <button type="button" onClick={() => changeDefault(defaultPeople - 1)} className="h-6 w-6 rounded-md border border-line text-stone-500" aria-label={tr("Moins")}>−</button>
-            <b className="min-w-[2.2rem] text-center text-xs text-stone-800">{defaultPeople} pers.</b>
+            <b className="min-w-[2.2rem] text-center text-xs text-stone-800">{tr("{n} pers.", { n: defaultPeople })}</b>
             <button type="button" onClick={() => changeDefault(defaultPeople + 1)} className="h-6 w-6 rounded-md border border-line text-stone-500" aria-label={tr("Plus")}>+</button>
           </div>
         </div>
@@ -166,10 +166,10 @@ export function ListComposer({
                   <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-stone-800">{r.name}</span>
                   <div className="flex items-center gap-1" title={tr("Nombre de personnes")}>
                     <button type="button" onClick={() => set(r.id, c - 1)} className="h-7 w-7 rounded-lg border border-line text-stone-500 hover:bg-stone-50" aria-label={tr("Moins de personnes")}>−</button>
-                    <span className="min-w-[3rem] text-center text-xs font-semibold text-stone-800">{c} pers.</span>
+                    <span className="min-w-[3rem] text-center text-xs font-semibold text-stone-800">{tr("{n} pers.", { n: c })}</span>
                     <button type="button" onClick={() => set(r.id, c + 1)} className="h-7 w-7 rounded-lg border border-line text-stone-500 hover:bg-stone-50" aria-label={tr("Plus de personnes")}>+</button>
                   </div>
-                  <button type="button" onClick={() => set(r.id, 0)} className="px-1 text-stone-300 hover:text-rose-600" aria-label={`Retirer ${r.name}`}>✕</button>
+                  <button type="button" onClick={() => set(r.id, 0)} className="px-1 text-stone-300 hover:text-rose-600" aria-label={tr("Retirer {name}", { name: r.name })}>✕</button>
                 </li>
               );
             })}
@@ -207,7 +207,7 @@ export function ListComposer({
                       <p className={cx("truncate text-[13px] font-medium text-stone-800 first-letter:uppercase", l.removed && "line-through")}>{l.label}</p>
                       <p className="truncate text-[11px] text-stone-400">
                         {l.pack && !edited ? `${l.pack}` : l.sources.join(", ")}
-                        {l.pack && !edited && l.need !== null && l.need !== l.qty && <> · besoin {formatNeed(l.need, l.unit)}</>}
+                        {l.pack && !edited && l.need !== null && l.need !== l.qty && <> · {tr("besoin {amount}", { amount: formatNeed(l.need, l.unit) })}</>}
                       </p>
                     </div>
                     <input
@@ -216,11 +216,11 @@ export function ListComposer({
                       inputMode="decimal"
                       placeholder="—"
                       disabled={l.removed}
-                      aria-label={`Quantité : ${l.label}`}
+                      aria-label={tr("Quantité : {name}", { name: l.label })}
                       className="input w-20 py-1 text-right text-xs"
                     />
                     <select value={l.unit} onChange={(e) => updateLine(l.key, { unit: e.target.value as QtyUnit })} disabled={l.removed} className="input w-24 py-1 text-xs" aria-label={tr("Unité")}>
-                      {unitOpts.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
+                      {unitOpts.map((o) => <option key={o.v} value={o.v}>{tr(o.l)}</option>)}
                     </select>
                     <span className={cx("tabular w-16 text-right text-xs", cost === null ? "text-stone-300" : "font-semibold text-stone-700")}>{cost === null ? (store ? "sans prix" : "") : formatEUR(cost)}</span>
                     <button type="button" onClick={() => updateLine(l.key, { removed: !l.removed })} title={l.removed ? tr("Remettre") : tr("Retirer")} className="rounded-md px-1.5 py-1 text-xs text-stone-300 hover:bg-stone-100 hover:text-rose-600">{l.removed ? "↺" : "✕"}</button>
@@ -231,8 +231,8 @@ export function ListComposer({
           )}
           {store && (
             <p className="mt-2 text-xs text-stone-500">
-              {kept.length} article(s) · ≈ <b className="text-stone-800">{formatEUR(reviewTotal)}</b> chez {store}
-              {unpriced > 0 && ` · ${unpriced} sans prix`}
+              {tr("{n} article(s) · ≈", { n: kept.length })} <b className="text-stone-800">{formatEUR(reviewTotal)}</b> {tr("chez {store}", { store })}
+              {unpriced > 0 && ` · ${tr("{n} sans prix", { n: unpriced })}`}
             </p>
           )}
         </section>
@@ -246,8 +246,8 @@ export function ListComposer({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-stone-500">
-          {chosen.length > 0 ? `${chosen.length} recette${chosen.length > 1 ? "s" : ""}` : tr("Aucune recette")}
-          {!review && store && estimate > 0 && <> · ≈ <b className="text-stone-800">{formatEUR(estimate)}</b> chez {store}</>}
+          {chosen.length > 0 ? tr(chosen.length > 1 ? "{n} recettes" : "{n} recette", { n: chosen.length }) : tr("Aucune recette")}
+          {!review && store && estimate > 0 && <> · ≈ <b className="text-stone-800">{formatEUR(estimate)}</b> {tr("chez {store}", { store })}</>}
         </p>
         {chosen.length > 0 && !review ? (
           <button type="button" onClick={openReview} disabled={loading} className="btn-primary">{loading ? tr("Calcul…") : tr("Voir les quantités →")}</button>

@@ -144,7 +144,7 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
       for (const [i, o] of occ.entries()) items.push({ key: `f${o.op.id}${i}`, label: o.op.name, tone: o.signed > 0 ? "in" : "out", amount: `${o.signed > 0 ? "+" : "-"}${eur0(Math.abs(o.signed))}` });
     } else if (occ.length > 0) {
       const net = occ.reduce((s, o) => s + o.signed, 0);
-      items.push({ key: `f${d}`, label: occ.length > 1 ? `${occ.length} flux` : occ[0].op.name, tone: net >= 0 ? "in" : "out", amount: `${net >= 0 ? "+" : "-"}${eur0(Math.abs(net))}` });
+      items.push({ key: `f${d}`, label: occ.length > 1 ? tr("{n} flux", { n: occ.length }) : occ[0].op.name, tone: net >= 0 ? "in" : "out", amount: `${net >= 0 ? "+" : "-"}${eur0(Math.abs(net))}` });
     }
     return items;
   };
@@ -224,7 +224,7 @@ export function CalWeek({ data, size }: WidgetProps) {
   const routinesOn = (d: string) => data.routines.filter((r) => scheduledOn(r, d)).length;
   const focus = picked ?? data.today;
   return (
-    <WidgetShell icon="list" title={tr("Cette semaine")} subtitle={picked ? `${fmtLong(picked)} · touche à nouveau pour tout voir` : tr("Touche un jour pour le détail")} href="/app/tasks/calendar">
+    <WidgetShell icon="list" title={tr("Cette semaine")} subtitle={picked ? tr("{date} · touche à nouveau pour tout voir", { date: fmtLong(picked) }) : tr("Touche un jour pour le détail")} href="/app/tasks/calendar">
       <div className="grid grid-cols-7 gap-1">
         {days.map((d) => {
           const n = (tasksBy.get(d)?.length ?? 0) + (finBy.get(d)?.length ?? 0);
@@ -293,7 +293,7 @@ export function ListsShopping({ data, size, opts, setOpts }: WidgetProps) {
     <WidgetShell
       icon="cart"
       title={tr("Liste de courses")}
-      subtitle={size === "s" ? `${list.name} · ${remaining} à acheter` : `${list.name} · ${remaining} article(s) à acheter`}
+      subtitle={size === "s" ? tr("{name} · {n} à acheter", { name: list.name, n: remaining }) : tr("{name} · {n} article(s) à acheter", { name: list.name, n: remaining })}
       href={`/app/lists/${list.id}`}
       hrefLabel={tr("Ouvrir")}
       right={

@@ -203,7 +203,7 @@ export function NoteEditor({ id, initialTitle, initialIcon, initialBlocks, pinne
           <span className="mr-1">{status === "saved" ? tr("Enregistré") : status === "saving" ? tr("Enregistrement…") : tr("Modifications non enregistrées")}</span>
           <button type="button" title={isPinned ? tr("Désépingler") : tr("Épingler")} onClick={() => { setIsPinned(!isPinned); void togglePin(id, !isPinned); }} className={cx("rounded-md px-1.5 py-1 text-sm hover:bg-stone-100", isPinned ? "text-brand-600" : "text-stone-400")}>{isPinned ? "★" : "☆"}</button>
           <form action={createNote.bind(null, id)}><button title={tr("Nouvelle sous-page")} className="rounded-md p-1.5 hover:bg-stone-100 hover:text-stone-700"><Icon name="plus" className="h-3.5 w-3.5" /></button></form>
-          <form action={deleteNote.bind(null, id)} onSubmit={(e) => { if (!confirm("Supprimer cette page et ses sous-pages ?")) e.preventDefault(); }}>
+          <form action={deleteNote.bind(null, id)} onSubmit={(e) => { if (!confirm(tr("Supprimer cette page et ses sous-pages ?"))) e.preventDefault(); }}>
             <button title={tr("Supprimer")} className="rounded-md p-1.5 hover:bg-rose-500/10 hover:text-rose-600"><Icon name="close" className="h-3.5 w-3.5" /></button>
           </form>
         </div>

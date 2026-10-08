@@ -36,7 +36,7 @@ export function InspirationBrowser({ favoriteKeys }: { favoriteKeys: { slugs: st
             equipment.length > 0 ? "border-brand-300 bg-brand-50 text-brand-700" : "border-stone-200 bg-surface text-stone-500 hover:bg-stone-50"
           )}
         >
-          🔧 Équipement {equipment.length > 0 && `(${equipment.length})`}
+          {tr("🔧 Équipement")} {equipment.length > 0 && `(${equipment.length})`}
         </button>
       </div>
 
@@ -83,7 +83,7 @@ export function InspirationBrowser({ favoriteKeys }: { favoriteKeys: { slugs: st
       )}
 
       <p className="mt-4 text-xs text-stone-400">
-        {results.length} recette{results.length > 1 ? "s" : ""} {results.length !== RECIPES.length && `sur ${RECIPES.length}`}
+        {tr(results.length > 1 ? "{n} recettes" : "{n} recette", { n: results.length })} {results.length !== RECIPES.length && tr("sur {n}", { n: RECIPES.length })}
       </p>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -127,7 +127,7 @@ function InspirationCard({ recipe, initialFav }: { recipe: MarketingRecipe; init
       </div>
       <div className="flex flex-1 flex-col p-4 pt-5">
         <div className="flex items-center justify-between">
-          <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700">{recipe.category}</span>
+          <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700">{tr(recipe.category)}</span>
           <span className="text-xs text-stone-400">{recipe.tag}</span>
         </div>
         <h3 className="mt-2 text-sm font-semibold text-stone-900">{recipe.name}</h3>
@@ -155,7 +155,7 @@ function InspirationCard({ recipe, initialFav }: { recipe: MarketingRecipe; init
             <div className="p-6">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700">{recipe.icon} {recipe.category}</span>
+                  <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700">{recipe.icon} {tr(recipe.category)}</span>
                   <h2 className="mt-2 text-2xl font-bold tracking-tight text-stone-900">{recipe.name}</h2>
                   <p className="mt-1 text-sm text-stone-500">{recipe.desc}</p>
                 </div>
@@ -163,7 +163,7 @@ function InspirationCard({ recipe, initialFav }: { recipe: MarketingRecipe; init
               </div>
               <div className="mt-4 flex flex-wrap gap-2 text-xs text-stone-600">
                 <span className="rounded-full bg-stone-100 px-2.5 py-1">⏱ {recipe.time}</span>
-                <span className="rounded-full bg-stone-100 px-2.5 py-1">🍽 {recipe.servings} pers.</span>
+                <span className="rounded-full bg-stone-100 px-2.5 py-1">🍽 {tr("{n} pers.", { n: recipe.servings })}</span>
                 <span className="rounded-full bg-stone-100 px-2.5 py-1">{recipe.difficulty}</span>
               </div>
               <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">{tr("Ingrédients")}</h3>

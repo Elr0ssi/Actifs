@@ -19,13 +19,13 @@ export function CalendarFeedCard({ token }: { token: string }) {
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
         <a href={webcal} className="btn-secondary px-3 py-1.5 text-xs">{tr("S'abonner sur cet appareil (iPhone / Mac)")}</a>
-        <form action={regenerateCalendarToken} onSubmit={(e) => { if (!confirm("Générer une nouvelle adresse ? L'ancienne cessera de fonctionner.")) e.preventDefault(); }}>
+        <form action={regenerateCalendarToken} onSubmit={(e) => { if (!confirm(tr("Générer une nouvelle adresse ? L'ancienne cessera de fonctionner."))) e.preventDefault(); }}>
           <button className="text-stone-400 underline hover:text-rose-600">{tr("Changer l'adresse")}</button>
         </form>
       </div>
       <ul className="mt-4 space-y-1.5 text-xs leading-relaxed text-stone-500">
-        <li><strong className="text-stone-700">{tr("Google Agenda")}</strong> : Autres agendas → « + » → À partir de l'URL → colle l'adresse.</li>
-        <li><strong className="text-stone-700">{tr("iPhone")}</strong> : Réglages → Calendrier → Comptes → Ajouter un compte → Autre → Ajouter un calendrier avec abonnement, ou touche le bouton ci-dessus.</li>
+        <li><strong className="text-stone-700">{tr("Google Agenda")}</strong> {tr(": Autres agendas → « + » → À partir de l'URL → colle l'adresse.")}</li>
+        <li><strong className="text-stone-700">{tr("iPhone")}</strong> {tr(": Réglages → Calendrier → Comptes → Ajouter un compte → Autre → Ajouter un calendrier avec abonnement, ou touche le bouton ci-dessus.")}</li>
         <li>{tr("Le flux est en lecture seule et se met à jour tout seul (comptez quelques heures côté Google). Toute personne ayant l'adresse peut le lire : ne la partage pas.")}</li>
       </ul>
     </div>

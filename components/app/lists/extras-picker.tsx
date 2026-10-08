@@ -81,7 +81,7 @@ export function ExtrasPicker({
             {!exact && (
               <li>
                 <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => add(query)} className="w-full rounded-lg px-3 py-1.5 text-left text-sm font-medium text-brand-600 hover:bg-brand-50">
-                  + Ajouter « {query.trim()} »
+                  {tr("+ Ajouter « {name} »", { name: query.trim() })}
                 </button>
               </li>
             )}
@@ -92,7 +92,7 @@ export function ExtrasPicker({
       {free.length > 0 && (
         <div className="mt-2">
           <button type="button" onClick={() => setShowSuggestions((v) => !v)} className="text-xs font-medium text-brand-600 hover:underline">
-            {showSuggestions ? tr("Masquer les suggestions") : `Suggestions de tes dernières courses (${free.length})`}
+            {showSuggestions ? tr("Masquer les suggestions") : tr("Suggestions de tes dernières courses ({n})", { n: free.length })}
           </button>
           {showSuggestions && (
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -122,11 +122,11 @@ export function ExtrasPicker({
                   value={p.qty ?? ""}
                   onChange={(e) => update(i, { qty: e.target.value === "" ? null : Number(e.target.value) })}
                   placeholder="1"
-                  aria-label={`Quantité : ${p.name}`}
+                  aria-label={tr("Quantité : {name}", { name: p.name })}
                   className="w-16 rounded-lg border border-line bg-surface px-2 py-1 text-right text-sm"
                 />
                 <select value={p.qtyUnit ?? "u"} onChange={(e) => update(i, { qtyUnit: e.target.value as QtyUnit })} className="w-[5.5rem] rounded-lg border border-line bg-surface px-1.5 py-1 text-xs" aria-label={tr("Unité")}>
-                  {units.map((u) => <option key={u.v} value={u.v}>{u.l}</option>)}
+                  {units.map((u) => <option key={u.v} value={u.v}>{tr(u.l)}</option>)}
                 </select>
                 {!known && store && (
                   <input
@@ -136,11 +136,11 @@ export function ExtrasPicker({
                     value={p.price ?? ""}
                     onChange={(e) => update(i, { price: e.target.value === "" ? null : Number(e.target.value) })}
                     placeholder={tr("€ (facultatif)")}
-                    title={`Prix chez ${store}`}
+                    title={tr("Prix chez {store}", { store })}
                     className="hidden w-24 rounded-lg border border-line bg-surface px-2 py-1 text-right text-xs sm:block"
                   />
                 )}
-                <button type="button" onClick={() => setPicked((all) => all.filter((_, j) => j !== i))} className={cx("px-1 text-stone-300 hover:text-rose-600")} aria-label={`Retirer ${p.name}`}>✕</button>
+                <button type="button" onClick={() => setPicked((all) => all.filter((_, j) => j !== i))} className={cx("px-1 text-stone-300 hover:text-rose-600")} aria-label={tr("Retirer {name}", { name: p.name })}>✕</button>
               </li>
             );
           })}

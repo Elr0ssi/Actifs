@@ -57,7 +57,7 @@ function AccountTile({ name, icon, tint, value, today, editable }: { name: strin
           <Icon name={icon} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[11px] text-stone-500">{name}</p>
+          <p className="truncate text-[11px] text-stone-500">{tr(name)}</p>
           {editing ? (
             <form
               action={(fd) => start(async () => { await updateBalanceAnchor(name, fd); setEditing(false); })}
@@ -255,7 +255,7 @@ function DayDetail({ date, ops, anchor, flow }: { date: string; ops: NonNullable
       ) : (
         <ul className="space-y-1">
           {occ.map((o, i) => (
-            <li key={i} className="group flex items-center gap-2 text-[12px]" title={KIND_LABEL[o.op.kind]}>
+            <li key={i} className="group flex items-center gap-2 text-[12px]" title={tr(KIND_LABEL[o.op.kind])}>
               <span className={cx("h-1.5 w-1.5 shrink-0 rounded-full", KIND_STYLE[o.op.kind].dot)} />
               <span className="min-w-0 flex-1 truncate text-stone-700">{o.op.name}{o.op.txn && <span className="text-stone-400"> · {o.op.txn.time ?? "carte"}{o.op.txn.card ? ` · ${o.op.txn.card}` : ""}</span>}</span>
               <button onClick={() => remove(o)} title={o.op.frequency === "once" ? tr("Supprimer") : tr("Ignorer cette occurrence")} className="hidden text-stone-300 hover:text-rose-600 group-hover:block">
@@ -286,7 +286,7 @@ export function FinBreakdown({ data }: WidgetProps) {
     { label: tr("Épargne"), value: budget.savings },
   ].filter((i) => i.value > 0);
   return (
-    <WidgetShell icon="pie" title={tr("Répartition du mois")} subtitle={`${MONTHS_FR[m]} · revenus ${eur0(budget.income)}`} href="/app/finance/budgets" hrefLabel={tr("Budgets")}>
+    <WidgetShell icon="pie" title={tr("Répartition du mois")} subtitle={tr("{month} · revenus {amount}", { month: MONTHS_FR[m], amount: eur0(budget.income) })} href="/app/finance/budgets" hrefLabel={tr("Budgets")}>
       <DonutChart items={items} size={132} strokeWidth={18} centerCaption={tr("dépensé")} selected={picked} onSelect={(l) => setPicked(l === picked ? null : l)} />
     </WidgetShell>
   );
@@ -323,7 +323,7 @@ export function FinBudgets({ data }: WidgetProps) {
             return (
               <li key={r.label}>
                 <div className="flex items-baseline justify-between gap-2 text-[12px]">
-                  <span className="truncate text-stone-700">{r.label}</span>
+                  <span className="truncate text-stone-700">{tr(r.label)}</span>
                   <span className="tabular shrink-0 text-[11px] text-stone-500"><b className="text-stone-800">{eur0(r.spent)}</b> / {eur0(r.planned)}</span>
                 </div>
                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-stone-100">

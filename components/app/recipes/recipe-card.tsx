@@ -46,20 +46,20 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
           {recipe.is_favorite ? "★" : "☆"}
         </button>
         {recipe.category && (
-          <span className="absolute bottom-2 left-2 rounded-full bg-surface/90 px-2.5 py-0.5 text-xs font-medium text-stone-700 shadow">{recipe.category}</span>
+          <span className="absolute bottom-2 left-2 rounded-full bg-surface/90 px-2.5 py-0.5 text-xs font-medium text-stone-700 shadow">{tr(recipe.category)}</span>
         )}
       </div>
       <div className="flex flex-1 flex-col p-5">
         <h3 className="cursor-pointer text-lg font-bold leading-tight text-stone-900 hover:text-brand-700" onClick={() => setOpen(true)}>{recipe.name}</h3>
         <ul className="mt-2 flex-1 space-y-0.5 text-sm text-stone-600">
           {recipe.recipe_items.slice(0, 5).map((it) => <li key={it.id}>• {it.label}{it.quantity && <span className="text-stone-400"> — {it.quantity}</span>}</li>)}
-          {recipe.recipe_items.length > 5 && <li className="text-stone-400">+ {recipe.recipe_items.length - 5} autres</li>}
+          {recipe.recipe_items.length > 5 && <li className="text-stone-400">{tr("+ {n} autres", { n: recipe.recipe_items.length - 5 })}</li>}
         </ul>
         <div className="mt-4 flex items-center gap-2">
           <button onClick={() => setOpen(true)} className="btn-primary py-2 text-xs">{tr("Consulter")}</button>
           <button onClick={() => setEditing(true)} className="btn-secondary py-2 text-xs">{tr("Modifier")}</button>
           <button
-            onClick={() => confirm(`Supprimer "${recipe.name}" ?`) && start(() => deleteRecipe(recipe.id))}
+            onClick={() => confirm(tr("Supprimer « {name} » ?", { name: recipe.name })) && start(() => deleteRecipe(recipe.id))}
             className="ml-auto text-xs text-stone-300 hover:text-rose-600"
           >
             {tr("Supprimer")}</button>
@@ -75,12 +75,12 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
             <div className="p-6">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  {recipe.category && <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700">{recipe.category}</span>}
+                  {recipe.category && <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700">{tr(recipe.category)}</span>}
                   <h2 className="mt-2 text-2xl font-bold tracking-tight text-stone-900">{recipe.name}</h2>
                 </div>
                 <button onClick={() => setOpen(false)} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label={tr("Fermer")}>✕</button>
               </div>
-              <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Ingrédients ({recipe.recipe_items.length})</h3>
+              <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">{tr("Ingrédients ({n})", { n: recipe.recipe_items.length })}</h3>
               {recipe.recipe_items.length === 0 ? (
                 <p className="text-sm text-stone-400">{tr("Aucun ingrédient renseigné.")}</p>
               ) : (
@@ -104,7 +104,7 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
               <div className="mt-6 flex items-center gap-2 border-t border-line pt-4">
                 <button onClick={() => { setOpen(false); setEditing(true); }} className="btn-primary">{tr("Modifier")}</button>
                 <button onClick={() => start(() => toggleRecipeFavorite(recipe.id, !recipe.is_favorite))} className="btn-secondary">{recipe.is_favorite ? tr("★ Favori") : tr("☆ Favori")}</button>
-                <button onClick={() => confirm(`Supprimer "${recipe.name}" ?`) && start(() => deleteRecipe(recipe.id))} className="ml-auto text-xs text-stone-400 hover:text-rose-600">{tr("Supprimer")}</button>
+                <button onClick={() => confirm(tr("Supprimer « {name} » ?", { name: recipe.name })) && start(() => deleteRecipe(recipe.id))} className="ml-auto text-xs text-stone-400 hover:text-rose-600">{tr("Supprimer")}</button>
               </div>
             </div>
           </div>
