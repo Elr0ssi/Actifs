@@ -1,3 +1,4 @@
+import { TARIFS_FAQ_EXTRA } from "@/lib/marketing/faq-extra";
 import { getT, setRequestLocale } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import Link from "@/components/marketing/link";
@@ -44,6 +45,7 @@ const FAQ = [
   { q: "Que fait l'offre à 3 € par mois ?", a: "Elle permettra de connecter ton compte bancaire en direct pour que tes opérations arrivent automatiquement, et d'obtenir une analyse de tes dépenses." },
   { q: "L'offre à 3 € par mois est-elle disponible ?", a: "Pas encore : elle est en préparation. Tu peux utiliser dès aujourd'hui l'offre gratuite, y compris les paiements Apple Pay automatiques." },
   { q: "Puis-je partager mon espace ?", a: "Oui, invite ton ou ta partenaire avec un code : vous partagez alors listes, menu, agenda et budget." },
+  ...TARIFS_FAQ_EXTRA,
 ];
 
 export default function TarifsPage({ params }: { params: { lang: string } }) {

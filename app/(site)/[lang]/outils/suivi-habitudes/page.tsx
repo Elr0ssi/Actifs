@@ -1,3 +1,4 @@
+import { TOOL_FAQ_EXTRA } from "@/lib/marketing/faq-extra";
 import { getT, setRequestLocale } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { ToolPage } from "@/components/marketing/tool-page";
@@ -39,6 +40,7 @@ export default function Page({ params }: { params: { lang: string } }) {
         { q: tr("Mes habitudes sont-elles sauvegardées ?"), a: tr("Oui, dans ton navigateur. Elles restent sur cet appareil et ne sont pas envoyées sur nos serveurs.") },
         { q: tr("La journée en cours compte-t-elle dans mon pourcentage ?"), a: tr("Les jours à venir ne comptent pas, et une habitude pas encore cochée aujourd'hui ne casse pas ta série.") },
         { q: tr("Puis-je retrouver mes routines dans un agenda ?"), a: tr("Avec un espace Flozea, tes routines s'affichent dans l'agenda avec tes tâches, et une courbe suit ta régularité par semaine, mois et année.") },
+        ...TOOL_FAQ_EXTRA["suivi-habitudes"],
       ]}
       guides={["creer-une-routine-quotidienne-qui-tient", "remplacer-notion-excel-jow"]}
     >

@@ -1,3 +1,4 @@
+import { FEATURE_FAQ_EXTRA } from "@/lib/marketing/faq-extra";
 import type { MockKey } from "@/components/marketing/mocks";
 
 export type CategoryKey = "organisation" | "repas" | "finances";
@@ -336,6 +337,9 @@ export const FEATURES: Feature[] = [
     guides: ["prendre-des-notes-structurees", "remplacer-notion-excel-jow"],
   },
 ];
+
+// Questions supplémentaires (voir faq-extra.ts)
+for (const f of FEATURES) f.faq.push(...(FEATURE_FAQ_EXTRA[f.slug] ?? []));
 
 export interface FeatureCategory {
   key: CategoryKey;

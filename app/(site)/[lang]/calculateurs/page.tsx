@@ -1,3 +1,5 @@
+import { TOOL_FAQ_EXTRA } from "@/lib/marketing/faq-extra";
+import { JsonLd, faqJsonLd } from "@/components/marketing/json-ld";
 import { getT, setRequestLocale } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import Link from "@/components/marketing/link";
@@ -67,6 +69,19 @@ export default function CalculateursPage({ params }: { params: { lang: string } 
               {tr("Estimation indicative à partir de ratios et d'un barème publics. Ne remplace pas ta fiche de paie ni un simulateur officiel — utile pour anticiper, pas pour déclarer.")}
             </p>
           </FadeIn>
+        </section>
+
+        <section className="mx-auto max-w-3xl px-6 pb-24" aria-labelledby="faq">
+          <JsonLd data={faqJsonLd(TOOL_FAQ_EXTRA.calculateurs)} />
+          <h2 id="faq" className="text-center text-3xl font-bold tracking-tight">{tr("Questions fréquentes")}</h2>
+          <div className="mt-8 divide-y divide-line border-y border-line">
+            {TOOL_FAQ_EXTRA.calculateurs.map((f) => (
+              <details key={f.q} className="group py-4">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-stone-900">{tr(f.q)}<span className="text-xl text-brand-500 transition group-open:rotate-45">+</span></summary>
+                <p className="mt-2 text-sm leading-relaxed text-stone-600">{tr(f.a)}</p>
+              </details>
+            ))}
+          </div>
         </section>
       </main>
       <SiteFooter />

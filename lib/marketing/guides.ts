@@ -1,3 +1,4 @@
+import { GUIDE_FAQ_EXTRA } from "@/lib/marketing/faq-extra";
 import { MORE_GUIDES } from "@/lib/marketing/guides-more";
 export interface GuideSection {
   h2: string;
@@ -369,6 +370,6 @@ const BASE_GUIDES: Guide[] = [
   },
 ];
 
-export const GUIDES: Guide[] = [...BASE_GUIDES, ...MORE_GUIDES];
+export const GUIDES: Guide[] = [...BASE_GUIDES, ...MORE_GUIDES].map((g) => ({ ...g, faq: [...g.faq, ...(GUIDE_FAQ_EXTRA[g.slug] ?? [])] }));
 
 export const getGuide = (slug: string) => GUIDES.find((g) => g.slug === slug);

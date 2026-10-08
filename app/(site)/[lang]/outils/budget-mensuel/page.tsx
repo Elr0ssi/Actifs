@@ -1,3 +1,4 @@
+import { TOOL_FAQ_EXTRA } from "@/lib/marketing/faq-extra";
 import { getT, setRequestLocale } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { ToolPage } from "@/components/marketing/tool-page";
@@ -39,6 +40,7 @@ export default function Page({ params }: { params: { lang: string } }) {
         { q: tr("Quelle est la différence entre reste à vivre et reste à dépenser ?"), a: tr("Le reste à vivre est calculé après les charges fixes uniquement. Le montant « il reste en fin de mois » retire en plus les dépenses variables et l'épargne.") },
         { q: tr("Que signifie la règle 50/30/20 ?"), a: tr("Un repère budgétaire : environ 50 % du revenu net pour les besoins, 30 % pour les envies et 20 % pour l'épargne. C'est un point de départ à adapter à ta situation.") },
         { q: tr("Faut-il compter les courses dans les charges fixes ?"), a: tr("Non, les courses varient d'un mois à l'autre : on les place dans les dépenses variables.") },
+        ...TOOL_FAQ_EXTRA["budget-mensuel"],
       ]}
       guides={["faire-un-budget-mensuel", "calculer-son-reste-a-vivre", "gerer-son-budget-en-couple"]}
     >

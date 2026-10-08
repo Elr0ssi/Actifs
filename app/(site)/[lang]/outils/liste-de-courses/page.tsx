@@ -1,3 +1,4 @@
+import { TOOL_FAQ_EXTRA } from "@/lib/marketing/faq-extra";
 import { getT, setRequestLocale } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { ToolPage } from "@/components/marketing/tool-page";
@@ -39,6 +40,7 @@ export default function Page({ params }: { params: { lang: string } }) {
         { q: tr("Puis-je utiliser mes propres recettes ?"), a: tr("Dans cet outil gratuit, tu choisis parmi les recettes proposées. Avec un espace Flozea, tu peux créer tes propres recettes, avec leurs étapes et leurs photos.") },
         { q: tr("Ma liste est-elle sauvegardée ?"), a: tr("Oui, dans ton navigateur uniquement. Elle n'est pas envoyée sur nos serveurs et ne se synchronise pas entre appareils sans compte.") },
         { q: tr("Les prix sont-ils indiqués ?"), a: tr("Pas dans l'outil gratuit. Dans Flozea, la liste est chiffrée avec les prix de référence de ton enseigne et comparée aux autres magasins.") },
+        ...TOOL_FAQ_EXTRA["liste-de-courses"],
       ]}
       guides={["planifier-ses-repas-de-la-semaine", "faire-sa-liste-de-courses-sans-gaspillage", "faire-un-budget-mensuel"]}
     >

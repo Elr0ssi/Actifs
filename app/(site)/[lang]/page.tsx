@@ -1,4 +1,6 @@
-import { intlOf } from "@/lib/i18n";
+import { HOME_FAQ_EXTRA } from "@/lib/marketing/faq-extra";
+import { intlOf, lowerFor } from "@/lib/i18n";
+import { MOCKS } from "@/components/marketing/mocks";
 import { getLocale, getT, setRequestLocale } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import Link from "@/components/marketing/link";
@@ -58,6 +60,7 @@ const FAQ = [
   { q: "Flozea remplace-t-il Notion, Excel, Jow et Google Agenda ?", a: "Pour un usage personnel ou à deux, oui : notes en pages, budget avec opérations récurrentes, recettes et menus, agenda horaire. Tu peux aussi garder ton agenda actuel grâce au flux de calendrier vers Google Agenda ou l'iPhone." },
   { q: "Comment les paiements Apple Pay arrivent-ils dans le budget ?", a: "Une automatisation de l'app Raccourcis de l'iPhone envoie chaque paiement par carte à ton espace, avec le commerçant et le montant. Le paiement est retiré de ton solde à sa date." },
   { q: "Mes données sont-elles partagées avec mon conjoint ?", a: "Uniquement avec les personnes que tu invites dans ton foyer : elles partagent alors les listes, le menu, l'agenda et le budget communs." },
+  ...HOME_FAQ_EXTRA,
 ];
 
 export default function LandingPage({ params }: { params: { lang: string } }) {
@@ -157,17 +160,21 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
           title={tr("Tout ce dont tu as besoin,")}
           accent={tr("une seule logique.")}
           all={tr("Voir toutes les fonctionnalités →")}
-          groups={CATEGORIES.map((c) => ({
-            key: c.key,
-            href: c.href,
-            name: tr(c.name),
-            icon: c.icon,
-            tagline: tr(c.tagline),
-            gradient: c.gradient,
-            soft: c.soft,
-            cta: tr("Découvrir"),
-            features: featuresOf(c).map((f) => ({ slug: f.slug, name: tr(f.name), icon: f.icon, text: tr(FEAT_SHORT[f.slug] ?? f.short), soon: !!f.soon, badge: tr("Bientôt") })),
-          }))}
+          groups={CATEGORIES.map((c) => {
+            const Mock = MOCKS[featuresOf(c)[0].mock];
+            return {
+              key: c.key,
+              href: c.href,
+              name: tr(c.name),
+              icon: tr(c.icon),
+              tagline: tr(c.tagline),
+              gradient: c.gradient,
+              see: `${tr("Voir")} ${lowerFor(getLocale(), tr(c.label))}`,
+              cta: tr("Découvrir"),
+              mock: <Mock />,
+              features: featuresOf(c).map((f) => ({ slug: f.slug, name: tr(f.name), icon: tr(f.icon), text: tr(FEAT_SHORT[f.slug] ?? f.short), soon: !!f.soon, badge: tr("Bientôt"), soft: f.soft, gradient: f.gradient })),
+            };
+          })}
         />
 
         {/* Frise du quotidien */}
