@@ -1,4 +1,5 @@
 import { intlLocale } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 import { getAppContext } from "@/lib/data/context";
 import { loadWidgetData, loadWidgetLayout } from "@/lib/data/widgets";
 import { WidgetBoard } from "@/components/app/widgets/board";
@@ -6,12 +7,12 @@ import { routineStreak, scheduledOn } from "@/components/app/widgets/helpers";
 import { Icon, type IconName } from "@/components/app/icons";
 import { cx } from "@/lib/utils";
 
-function greeting() {
+function greeting(tr: (k: string) => string) {
   const hour = Number(new Intl.DateTimeFormat(intlLocale(), { hour: "numeric", hourCycle: "h23", timeZone: "Europe/Paris" }).format(new Date()));
-  if (hour < 5) return "Bonne nuit";
-  if (hour < 12) return "Bonjour";
-  if (hour < 18) return "Bon après-midi";
-  return "Bonsoir";
+  if (hour < 5) return tr("Bonne nuit");
+  if (hour < 12) return tr("Bonjour");
+  if (hour < 18) return tr("Bon après-midi");
+  return tr("Bonsoir");
 }
 
 function Chip({ icon, children, tone = "neutral" }: { icon: IconName; children: React.ReactNode; tone?: "neutral" | "warn" | "good" }) {
@@ -29,6 +30,7 @@ function Chip({ icon, children, tone = "neutral" }: { icon: IconName; children: 
 }
 
 export default async function DashboardPage() {
+  const tr = getT();
   const ctx = await getAppContext();
   if (!ctx) return null;
   const [data, layout] = await Promise.all([loadWidgetData(), loadWidgetLayout("dashboard")]);
@@ -53,7 +55,7 @@ export default async function DashboardPage() {
         <div>
           <p className="text-[13px] font-medium capitalize text-brand-700">{dateLabel}</p>
           <h1 className="mt-0.5 text-3xl font-bold tracking-tight text-stone-900 sm:text-[2.1rem]">
-            {greeting()}
+            {greeting(tr)}
             {name && (
               <>
                 , <span className="bg-gradient-to-r from-brand-500 to-brand-700 bg-clip-text text-transparent">{name}</span>
@@ -61,14 +63,14 @@ export default async function DashboardPage() {
             )}
           </h1>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Chip icon="tasks">{dueToday > 0 ? `${dueToday} tâche${dueToday > 1 ? "s" : ""} aujourd'hui` : "Aucune tâche prévue aujourd'hui"}</Chip>
-            {overdue > 0 && <Chip icon="close" tone="warn">{overdue} en retard</Chip>}
+            <Chip icon="tasks">{dueToday > 1 ? tr("{n} tâches aujourd'hui", { n: dueToday }) : dueToday === 1 ? tr("1 tâche aujourd'hui") : tr("Aucune tâche prévue aujourd'hui")}</Chip>
+            {overdue > 0 && <Chip icon="close" tone="warn">{tr("{n} en retard", { n: overdue })}</Chip>}
             {routinesToday.length > 0 && (
               <Chip icon="repeat" tone={routinesDone === routinesToday.length ? "good" : "neutral"}>
-                Routines {routinesDone}/{routinesToday.length}
+                {tr("Routines {done}/{total}", { done: routinesDone, total: routinesToday.length })}
               </Chip>
             )}
-            {streak > 1 && <Chip icon="bolt" tone="good">{streak} jours de série</Chip>}
+            {streak > 1 && <Chip icon="bolt" tone="good">{tr("{n} jours de série", { n: streak })}</Chip>}
           </div>
         </div>
       }

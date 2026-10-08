@@ -77,7 +77,7 @@ function AccountTile({ name, icon, tint, value, today, editable }: { name: strin
           <Icon name="pencil" className="h-3.5 w-3.5" />
         </button>
       )}
-      {value && !editing && <p className="mt-1.5 text-[10px] text-stone-400">au {fmtShort(value.date)}</p>}
+      {value && !editing && <p className="mt-1.5 text-[10px] text-stone-400">{tr("au {date}", { date: fmtShort(value.date) })}</p>}
     </div>
   );
 }
@@ -121,13 +121,13 @@ export function FinReste({ data }: WidgetProps) {
     <WidgetShell icon="target" title={tr("Reste à vivre")} href="/app/finance/calendar" hrefLabel="Détail">
       <p className={cx("tabular text-3xl font-bold tracking-tight", s.endBalance >= 0 ? "text-stone-900" : "text-rose-600")}><CountUp value={s.endBalance} /></p>
       <p className="mt-0.5 text-[11px] text-stone-500">
-        ≈ <b className="text-stone-700">{eur0(s.perDay)}</b> / jour · {s.daysRemaining} j jusqu'au {fmtShort(s.monthEnd)}
+        ≈ <b className="text-stone-700">{eur0(s.perDay)}</b> {tr("/ jour · {d} j jusqu'au {date}", { d: s.daysRemaining, date: fmtShort(s.monthEnd) })}
       </p>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-brand-100">
         <div className="fill-grow h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600" style={{ width: `${100 - leftPct}%` }} />
       </div>
       <p className="mt-1.5 text-[11px] text-stone-400">
-        {eur0(s.pastOut)} déjà sortis · {eur0(s.upcomingOut)} encore prévus
+        {tr("{a} déjà sortis · {b} encore prévus", { a: eur0(s.pastOut), b: eur0(s.upcomingOut) })}
       </p>
     </WidgetShell>
   );
@@ -249,7 +249,7 @@ function DayDetail({ date, ops, anchor, flow }: { date: string; ops: NonNullable
         <div className="flex justify-between"><dt className="text-stone-500">{tr("Revenus")}</dt><dd className="font-medium text-emerald-600">+{formatEUR(inflow)}</dd></div>
         <div className="flex justify-between rounded-lg bg-brand-50 px-2 py-1.5 text-[12px]"><dt className="font-semibold text-brand-800">{tr("Solde fin de journée")}</dt><dd className={cx("font-bold", endBal >= 0 ? "text-brand-800" : "text-rose-600")}>{formatEUR(endBal)}</dd></div>
       </dl>
-      <p className="mb-1 mt-3 text-[11px] font-semibold text-stone-500">Opérations du jour ({occ.length})</p>
+      <p className="mb-1 mt-3 text-[11px] font-semibold text-stone-500">{tr("Opérations du jour ({n})", { n: occ.length })}</p>
       {occ.length === 0 ? (
         <p className="text-[11px] text-stone-400">{tr("Rien ce jour-là.")}</p>
       ) : (
@@ -419,7 +419,7 @@ export function FinTrend({ data, size }: WidgetProps) {
       </svg>
       <div className="mt-1 flex justify-between text-[10px] text-stone-400">
         <span>1 {MONTHS_FR[m].slice(0, 3).toLowerCase()}.</span>
-        <span>fin : <b className="text-stone-600">{eur0(points[points.length - 1].balance)}</b></span>
+        <span>{tr("fin :")} <b className="text-stone-600">{eur0(points[points.length - 1].balance)}</b></span>
       </div>
     </WidgetShell>
   );
@@ -435,8 +435,8 @@ export function FinActions({ data }: WidgetProps) {
       <div className="grid grid-cols-2 gap-2">
         <NewOperationButton defaultDate={data.today} defaultKind="variable" label={tr("+ Dépense")} className={tile} />
         <NewOperationButton defaultDate={data.today} defaultKind="income" label={tr("+ Revenu")} className={tile} />
-        <Link href="/app/finance/accounts" className={tile}><Icon name="bank" className="text-brand-600" />Soldes</Link>
-        <Link href="/app/finance/operations" className={tile}><Icon name="list" className="text-brand-600" />Opérations</Link>
+        <Link href="/app/finance/accounts" className={tile}><Icon name="bank" className="text-brand-600" />{tr("Soldes")}</Link>
+        <Link href="/app/finance/operations" className={tile}><Icon name="list" className="text-brand-600" />{tr("Opérations")}</Link>
       </div>
     </WidgetShell>
   );

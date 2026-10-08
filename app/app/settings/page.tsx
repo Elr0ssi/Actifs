@@ -5,6 +5,7 @@ import type { Profile } from "@/lib/types";
 import { updateProfile, updateHouseholdName, joinHousehold, changePassword } from "@/app/app/settings/actions";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { cookies } from "next/headers";
+import { LanguagePicker } from "@/components/app/language-picker";
 import { CalendarFeedCard } from "@/components/app/calendar-feed-card";
 import { AppearancePicker } from "@/components/app/appearance-picker";
 import { ACCENT_COOKIE, THEME_COOKIE, parseAccent, parseMode } from "@/lib/theme";
@@ -29,6 +30,12 @@ export default async function SettingsPage() {
         <h1 className="text-2xl font-bold tracking-tight text-stone-900">{tr("Paramètres")}</h1>
         <p className="mt-1 text-sm text-stone-500">{tr("Ton profil et ton foyer partagé.")}</p>
       </div>
+
+      <section className="card p-6">
+        <h2 className="mb-1 font-semibold text-stone-900">{tr("Langue")}</h2>
+        <p className="mb-4 text-xs text-stone-500">{tr("Langue de l'interface. Elle s'applique tout de suite.")}</p>
+        <LanguagePicker />
+      </section>
 
       <section className="card p-6">
         <h2 className="mb-1 font-semibold text-stone-900">{tr("Apparence")}</h2>

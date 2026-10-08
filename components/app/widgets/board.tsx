@@ -179,7 +179,7 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
               </div>
               {editing && (
                 <div className="absolute inset-0 z-20 rounded-[20px] border-2 border-dashed border-brand-400/60 bg-surface/30 backdrop-blur-[1px]">
-                  <div title={`${def.title} · glisse pour déplacer`} className="absolute left-1/2 top-1.5 -translate-x-1/2 rounded-md bg-surface/95 px-2 py-0.5 text-stone-400 shadow-sm">
+                  <div title={tr("{name} · glisse pour déplacer", { name: tr(def.title) })} className="absolute left-1/2 top-1.5 -translate-x-1/2 rounded-md bg-surface/95 px-2 py-0.5 text-stone-400 shadow-sm">
                     <Icon name="drag" className="h-3.5 w-3.5 rotate-90" />
                   </div>
                   <button onClick={() => persist(items.filter((i) => i.id !== it.id))} title={tr("Retirer")} className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-ink text-onink shadow hover:bg-rose-600">
@@ -188,7 +188,7 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
                   <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-xl bg-surface/95 p-1 shadow-md">
                     <button onClick={() => move(it.id, -1)} disabled={idx === 0} title={tr("Avancer")} className="rounded-md p-1 text-stone-500 hover:bg-stone-100 disabled:opacity-30"><Icon name="chevronLeft" className="h-3.5 w-3.5" /></button>
                     {def.sizes.map((s) => (
-                      <button key={s} onClick={() => update(it.id, { size: s })} title={SIZE_LABEL[s]} className={cx("min-w-[26px] rounded-md px-1.5 py-0.5 text-[11px] font-bold", it.size === s ? "bg-brand-600 text-white" : "text-stone-500 hover:bg-stone-100")}>
+                      <button key={s} onClick={() => update(it.id, { size: s })} title={tr(SIZE_LABEL[s])} className={cx("min-w-[26px] rounded-md px-1.5 py-0.5 text-[11px] font-bold", it.size === s ? "bg-brand-600 text-white" : "text-stone-500 hover:bg-stone-100")}>
                         {SIZE_SHORT[s]}
                       </button>
                     ))}
@@ -304,7 +304,7 @@ function WidgetDrawer({ page, today, items, onAdd, onClose }: { page: WidgetPage
           <div className="flex gap-1.5 overflow-x-auto border-b border-line px-5 py-3">
             {[{ key: "all" as const, label: "Tous" }, ...SECTIONS.filter((s) => allowed.includes(s.key))].map((s) => (
               <button key={s.key} onClick={() => setSection(s.key)} className={cx("shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition", section === s.key ? "bg-ink text-onink" : "bg-surface text-stone-500 hover:text-stone-800")}>
-                {s.label}
+                {tr(s.label)}
               </button>
             ))}
           </div>
@@ -319,10 +319,10 @@ function WidgetDrawer({ page, today, items, onAdd, onClose }: { page: WidgetPage
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600"><Icon name={w.icon} /></span>
                   <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-2 text-[13px] font-semibold text-stone-900">
-                      {w.title}
+                      {tr(w.title)}
                       {count > 0 && <span className="rounded-full bg-stone-100 px-1.5 py-px text-[10px] font-medium text-stone-500">affiché{count > 1 ? ` ×${count}` : ""}</span>}
                     </p>
-                    <p className="mt-0.5 text-[11px] leading-snug text-stone-500">{w.description}</p>
+                    <p className="mt-0.5 text-[11px] leading-snug text-stone-500">{tr(w.description)}</p>
                   </div>
                 </div>
                 <WidgetPreview type={w.type} size={chosen} data={sample} />
@@ -332,11 +332,11 @@ function WidgetDrawer({ page, today, items, onAdd, onClose }: { page: WidgetPage
                       <button
                         key={s}
                         onClick={() => setSizes((m) => ({ ...m, [w.type]: s }))}
-                        title={SIZE_LABEL[s]}
+                        title={tr(SIZE_LABEL[s])}
                         className={cx("flex flex-col items-center gap-1 rounded-lg border px-2 py-1.5 text-[10px] font-semibold transition", chosen === s ? "border-brand-400 bg-brand-50 text-brand-700" : "border-line text-stone-400 hover:text-stone-700")}
                       >
                         <SizePreview size={s} />
-                        {SIZE_LABEL[s]}
+                        {tr(SIZE_LABEL[s])}
                       </button>
                     ))}
                   </div>

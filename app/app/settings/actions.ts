@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { createClient, getSessionUser } from "@/lib/supabase/server";
+import { LANG_COOKIE, isLocale } from "@/lib/i18n";
 import { ACCENT_COOKIE, THEME_COOKIE, parseAccent, parseMode } from "@/lib/theme";
 
 export async function updateProfile(formData: FormData) {
@@ -62,4 +63,11 @@ export async function regenerateCalendarToken() {
   if (!profile?.household_id) return;
   await supabase.from("households").update({ ical_token: crypto.randomUUID() }).eq("id", profile.household_id);
   revalidatePath("/app/settings");
+}
+
+/** Change la langue de l'interface (cookie conservé un an). */
+export async function setLanguage(code: string) {
+  if (!isLocale(code)) return;
+  cookies().set(LANG_COOKIE, code, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  revalidatePath("/app", "layout");
 }

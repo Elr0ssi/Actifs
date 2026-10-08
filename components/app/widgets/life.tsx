@@ -34,8 +34,8 @@ export function TasksStat({ data }: WidgetProps) {
     <WidgetShell icon="tasks" title={tr("Tâches en cours")} href="/app/tasks/list" hrefLabel="Gérer">
       <p className="tabular text-3xl font-bold text-stone-900"><CountUp value={open.length} kind="int" /></p>
       <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
-        <span className="rounded-full bg-brand-50 px-2 py-0.5 font-medium text-brand-700">{todayCount} aujourd'hui</span>
-        <span className={cx("rounded-full px-2 py-0.5 font-medium", late ? "bg-rose-50 text-rose-600" : "bg-stone-100 text-stone-500")}>{late} en retard</span>
+        <span className="rounded-full bg-brand-50 px-2 py-0.5 font-medium text-brand-700">{tr("{n} aujourd'hui", { n: todayCount })}</span>
+        <span className={cx("rounded-full px-2 py-0.5 font-medium", late ? "bg-rose-50 text-rose-600" : "bg-stone-100 text-stone-500")}>{tr("{n} en retard", { n: late })}</span>
       </div>
     </WidgetShell>
   );
@@ -69,7 +69,7 @@ export function RoutinesToday({ data }: WidgetProps) {
       hrefLabel="Gérer"
       right={
         streak > 1 ? (
-          <span title={`${streak} jours d'affilée avec toutes tes routines faites`} className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+          <span title={tr("{n} jours d'affilée avec toutes tes routines faites", { n: streak })} className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
             <Icon name="bolt" className="h-3 w-3" />
             {streak} j
           </span>
@@ -82,7 +82,7 @@ export function RoutinesToday({ data }: WidgetProps) {
         <>
           <div className="mb-1 flex items-center gap-3">
             <Ring value={count} total={today.length} />
-            <p className="text-[12px] text-stone-500"><b className="tabular text-base text-stone-900">{count}/{today.length}</b> faites</p>
+            <p className="text-[12px] text-stone-500"><b className="tabular text-base text-stone-900">{count}/{today.length}</b> {tr("faites")}</p>
           </div>
           {today.map((r) => (
             <ToggleCheckbox key={r.id} initialChecked={done.has(`${r.id}_${data.today}`)} onToggle={toggleRoutineLog.bind(null, r.id, data.today)} label={r.title} sublabel={r.category ?? undefined} strikeThrough={false} />
@@ -266,7 +266,7 @@ export function CalWeek({ data, size }: WidgetProps) {
           ))}
         </ul>
       )}
-      {routinesOn(focus) > 0 && <p className="mt-2 text-[10px] text-stone-400">+ {routinesOn(focus)} routine(s) {picked ? "ce jour-là" : "aujourd'hui"}</p>}
+      {routinesOn(focus) > 0 && <p className="mt-2 text-[10px] text-stone-400">{tr("+ {n} routine(s) {when}", { n: routinesOn(focus), when: picked ? tr("ce jour-là") : tr("aujourd'hui") })}</p>}
     </WidgetShell>
   );
 }

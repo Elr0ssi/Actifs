@@ -150,7 +150,7 @@ export function RoutinesCurve({ data, size, opts, setOpts }: WidgetProps) {
           <div className="flex items-end justify-between gap-3">
             <p className="tabular text-3xl font-bold tracking-tight text-stone-900">
               {avg === null ? "—" : `${avg} %`}
-              <span className="ml-2 text-[11px] font-normal tracking-normal text-stone-400">moyenne de la période · {totalDone}/{totalDue} réalisées</span>
+              <span className="ml-2 text-[11px] font-normal tracking-normal text-stone-400">{tr("moyenne de la période · {done}/{due} réalisées", { done: totalDone, due: totalDue })}</span>
             </p>
             <p className="tabular text-right text-[12px] text-stone-500">
               {shown ? (

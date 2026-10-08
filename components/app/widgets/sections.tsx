@@ -52,7 +52,7 @@ export function VocabStats({ data }: WidgetProps) {
     <WidgetShell icon="chart" title={tr("Compteur de mots")} href="/app/notes/vocabulaire">
       <p className="tabular text-3xl font-bold text-stone-900"><CountUp value={data.wordsTotal} kind="int" /></p>
       <p className="text-[11px] text-stone-500">{tr("mots enregistrés")}</p>
-      <span className="mt-2 inline-block rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700">+{week} cette semaine</span>
+      <span className="mt-2 inline-block rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700">{tr("+{n} cette semaine", { n: week })}</span>
     </WidgetShell>
   );
 }

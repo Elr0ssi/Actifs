@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { getAppContext } from "@/lib/data/context";
 import { ACCENT_COOKIE, THEME_COOKIE, parseAccent, parseMode } from "@/lib/theme";
 import { cx } from "@/lib/utils";
+import { dictFor, getLocale } from "@/lib/i18n/server";
+import { I18nProvider } from "@/components/i18n/provider";
+import { HtmlLang } from "@/components/i18n/html-lang";
 import { Sidebar } from "@/components/app/sidebar";
 import { PageTransition } from "@/components/app/page-transition";
 import { ThemeSync } from "@/components/app/theme-sync";
@@ -19,9 +22,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const jar = cookies();
   const mode = parseMode(jar.get(THEME_COOKIE)?.value);
   const accent = parseAccent(jar.get(ACCENT_COOKIE)?.value);
+  const locale = getLocale();
   const displayName = ctx.profile?.display_name || ctx.user.email || "Toi";
 
   return (
+    <I18nProvider locale={locale} dict={dictFor(locale)}>
+    <HtmlLang locale={locale} />
     <div className={cx("relative isolate flex min-h-screen bg-canvas text-stone-900", mode === "dark" && "dark", mode === "auto" && "theme-auto")} data-accent={accent}>
       <style>{DENSITY}</style>
       <ThemeSync mode={mode} accent={accent} />
@@ -38,5 +44,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <CommandPalette mode={mode} />
       <QuickAdd />
     </div>
+    </I18nProvider>
   );
 }

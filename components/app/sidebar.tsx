@@ -66,7 +66,7 @@ export function Sidebar({ displayName, inviteCode }: { displayName: string; invi
               className={cx("flex flex-col items-center gap-0.5 rounded-2xl py-1.5 text-[10px] font-medium transition", active ? "bg-brand-500/12 text-brand-700" : "text-stone-400")}
             >
               <Icon name={item.icon} className={cx("h-5 w-5 transition-transform", active && "scale-110")} />
-              {item.short}
+              {tr(item.short)}
             </Link>
           );
         })}
@@ -117,7 +117,7 @@ export function Sidebar({ displayName, inviteCode }: { displayName: string; invi
               >
                 {active && <span className="absolute -left-3 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-brand-500" />}
                 <Icon name={item.icon} className={cx("h-[18px] w-[18px] transition-transform duration-200 group-hover:scale-110", active ? "text-brand-600" : "text-stone-400")} />
-                {item.label}
+                {tr(item.label)}
               </Link>
             );
           })}
@@ -128,7 +128,7 @@ export function Sidebar({ displayName, inviteCode }: { displayName: string; invi
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-sm font-bold text-white shadow-glow">{initial}</span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-[13px] font-semibold text-stone-800">{displayName}</p>
-              {inviteCode && <p className="truncate text-[11px] text-stone-400">Foyer · {inviteCode}</p>}
+              {inviteCode && <p className="truncate text-[11px] text-stone-400">{tr("Foyer")} · {inviteCode}</p>}
             </div>
             <form action={logout}>
               <button type="submit" title={tr("Déconnexion")} className="rounded-lg p-1.5 text-stone-400 transition hover:bg-stone-100 hover:text-stone-700">

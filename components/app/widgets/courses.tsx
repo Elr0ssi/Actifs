@@ -112,7 +112,7 @@ export function MenuWeek({ data }: WidgetProps) {
                     <p className="mt-1 flex items-center gap-1 text-[11px] text-stone-500">
                       <span>⏱</span>
                       {rec?.time ?? "—"}
-                      <span className="ml-1 text-stone-400">· {first.servings ?? data.defaultServings} pers.</span>
+                      <span className="ml-1 text-stone-400">· {tr("{n} pers.", { n: first.servings ?? data.defaultServings })}</span>
                       {meals.length > 1 && <span className="ml-auto rounded-full bg-stone-100 px-1.5 text-[10px] font-semibold text-stone-500" title={meals.slice(1).map((m) => m.name).join(", ")}>+{meals.length - 1}</span>}
                     </p>
                   </>
@@ -133,13 +133,13 @@ export function MenuWeek({ data }: WidgetProps) {
 
       {planned.length > 0 && (
         <p className="mt-2 text-[11px] text-stone-500">
-          Dans tes courses de la semaine : <button className="font-medium text-brand-600 hover:underline" onClick={() => setEditDay(realToday)}>{planned.join(", ")}</button> — à placer sur un jour.
+          {tr("Dans tes courses de la semaine :")} <button className="font-medium text-brand-600 hover:underline" onClick={() => setEditDay(realToday)}>{planned.join(", ")}</button> {tr("— à placer sur un jour.")}
         </p>
       )}
 
       {upcoming === 0 && (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-brand-50 px-3.5 py-2.5 text-[12px] text-brand-800">
-          <span>Aucun repas prévu à partir du {nextWord}.</span>
+          <span>{tr("Aucun repas prévu à partir du {date}.", { date: nextWord })}</span>
           <button type="button" onClick={() => setEditDay(realToday)} className="rounded-lg border border-brand-300 bg-surface px-3 py-1.5 font-semibold text-brand-700 hover:bg-brand-50">{tr("Planifier des repas")}</button>
         </div>
       )}
@@ -170,7 +170,7 @@ export function ListsOverview({ data, size }: WidgetProps) {
   const tr = useT();
   const open = data.lists.filter((l) => !l.archived);
   return (
-    <WidgetShell icon="list" title={tr("Listes en cours")} subtitle={open.length ? `${open.length} liste(s)` : undefined}>
+    <WidgetShell icon="list" title={tr("Listes en cours")} subtitle={open.length ? tr("{n} liste(s)", { n: open.length }) : undefined}>
       {open.length === 0 ? (
         <Empty>{tr("Aucune liste en cours.")}</Empty>
       ) : (
@@ -233,10 +233,10 @@ export function CoursesBudget({ data, size }: WidgetProps) {
           {left < 0 ? `Dépassé de ${eur0(-left)}` : `Il te reste ${eur0(left)}`}
         </p>
       ) : (
-        <p className="mt-1.5 text-[11px] text-stone-400">Aucun budget « {BUDGET_CATEGORY} » défini dans Finance.</p>
+        <p className="mt-1.5 text-[11px] text-stone-400">{tr("Aucun budget « {cat} » défini dans Finance.", { cat: BUDGET_CATEGORY })}</p>
       )}
       {size === "m" && (
-        <p className="mt-2 text-[11px] text-stone-400">{eur0(spent)} déjà dépensés · {eur0(planned)} en cours</p>
+        <p className="mt-2 text-[11px] text-stone-400">{tr("{a} déjà dépensés · {b} en cours", { a: eur0(spent), b: eur0(planned) })}</p>
       )}
     </WidgetShell>
   );
@@ -264,7 +264,7 @@ export function CoursesLast({ data }: WidgetProps) {
           <p className="tabular text-2xl font-bold tracking-tight text-stone-900"><CountUp value={last.amount} kind="eur0" /></p>
           <p className="mt-1.5 text-[11px] text-stone-500">
             {avgMeal !== null ? (
-              <>Prix moyen par repas : <b className="tabular text-stone-800">{avgMeal.toLocaleString(intlLocale(), { style: "currency", currency: "EUR", maximumFractionDigits: 2 })}</b></>
+              <>{tr("Prix moyen par repas :")} <b className="tabular text-stone-800">{avgMeal.toLocaleString(intlLocale(), { style: "currency", currency: "EUR", maximumFractionDigits: 2 })}</b></>
             ) : (
               "Choisis des recettes dans tes listes pour connaître ton prix par repas."
             )}

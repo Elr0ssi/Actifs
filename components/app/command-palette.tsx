@@ -60,39 +60,39 @@ export function CommandPalette({ mode }: { mode: ThemeMode }) {
   const go = (href: string) => () => router.push(href);
   const commands: Cmd[] = useMemo(
     () => [
-      { id: "a-task", group: "Actions", label: "Nouvelle tâche", hint: "Ajout rapide", icon: "plus", keywords: "ajouter creer todo", run: () => window.dispatchEvent(new Event("allin:quickadd")) },
-      { id: "a-list", group: "Actions", label: "Nouvelle liste de courses", icon: "cart", keywords: "creer courses", run: go("/app/lists/mes-listes") },
-      { id: "a-op", group: "Actions", label: "Nouvelle opération", hint: "Finance", icon: "wallet", keywords: "depense revenu charge", run: go("/app/finance/operations") },
-      { id: "a-note", group: "Actions", label: "Nouvelle note", icon: "notes", keywords: "page ecrire notion", run: go("/app/notes/pages") },
-      { id: "a-word", group: "Actions", label: "Ajouter un mot de vocabulaire", icon: "book", keywords: "notes", run: go("/app/notes/vocabulaire") },
+      { id: "a-task", group: "Actions", label: tr("Nouvelle tâche"), hint: tr("Ajout rapide"), icon: "plus", keywords: "ajouter creer todo", run: () => window.dispatchEvent(new Event("allin:quickadd")) },
+      { id: "a-list", group: "Actions", label: tr("Nouvelle liste de courses"), icon: "cart", keywords: "creer courses", run: go("/app/lists/mes-listes") },
+      { id: "a-op", group: "Actions", label: tr("Nouvelle opération"), hint: tr("Finance"), icon: "wallet", keywords: "depense revenu charge", run: go("/app/finance/operations") },
+      { id: "a-note", group: "Actions", label: tr("Nouvelle note"), icon: "notes", keywords: "page ecrire notion", run: go("/app/notes/pages") },
+      { id: "a-word", group: "Actions", label: tr("Ajouter un mot de vocabulaire"), icon: "book", keywords: "notes", run: go("/app/notes/vocabulaire") },
       {
         id: "a-theme",
         group: "Actions",
-        label: mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre",
+        label: mode === "dark" ? tr("Passer en mode clair") : tr("Passer en mode sombre"),
         icon: mode === "dark" ? "sun" : "moon",
         keywords: "theme apparence nuit",
         run: () => start(() => setAppearance(mode === "dark" ? "light" : "dark", null)),
       },
-      { id: "a-out", group: "Actions", label: "Se déconnecter", icon: "logout", run: () => start(() => logout()) },
-      { id: "n-home", group: "Aller à", label: "Tableau de bord", icon: "home", run: go("/app") },
-      { id: "n-tasks", group: "Aller à", label: "Tâches & projets", icon: "tasks", run: go("/app/tasks/list") },
-      { id: "n-routines", group: "Aller à", label: "Routines", icon: "repeat", run: go("/app/tasks/routines") },
-      { id: "n-cal", group: "Aller à", label: "Calendrier des tâches", icon: "calendar", run: go("/app/tasks/calendar") },
-      { id: "n-lists", group: "Aller à", label: "Listes de courses", icon: "cart", run: go("/app/lists/mes-listes") },
-      { id: "n-recipes", group: "Aller à", label: "Mes recettes", hint: "Trouver des recettes", icon: "chef", keywords: "cuisine", run: go("/app/lists/recipes") },
-      { id: "n-ingr", group: "Aller à", label: "Ingrédients & prix", icon: "list", run: go("/app/lists/ingredients") },
-      { id: "n-fin", group: "Aller à", label: "Finance — vue d'ensemble", icon: "wallet", run: go("/app/finance") },
-      { id: "n-fincal", group: "Aller à", label: "Finance — calendrier", icon: "calendar", run: go("/app/finance/calendar") },
-      { id: "n-budgets", group: "Aller à", label: "Finance — budgets", icon: "pie", run: go("/app/finance/budgets") },
-      { id: "n-ops", group: "Aller à", label: "Finance — opérations", icon: "list", run: go("/app/finance/operations") },
-      { id: "n-acc", group: "Aller à", label: "Finance — comptes", icon: "bank", run: go("/app/finance/accounts") },
-      { id: "n-tax", group: "Aller à", label: "Finance — impôts", icon: "chart", run: go("/app/finance/taxes") },
-      { id: "n-notes", group: "Aller à", label: "Notes, pages & vocabulaire", icon: "notes", run: go("/app/notes") },
-      { id: "n-set", group: "Aller à", label: "Paramètres & apparence", icon: "settings", keywords: "theme couleur profil", run: go("/app/settings") },
+      { id: "a-out", group: "Actions", label: tr("Se déconnecter"), icon: "logout", run: () => start(() => logout()) },
+      { id: "n-home", group: "Aller à", label: tr("Tableau de bord"), icon: "home", run: go("/app") },
+      { id: "n-tasks", group: "Aller à", label: tr("Tâches & projets"), icon: "tasks", run: go("/app/tasks/list") },
+      { id: "n-routines", group: "Aller à", label: tr("Routines"), icon: "repeat", run: go("/app/tasks/routines") },
+      { id: "n-cal", group: "Aller à", label: tr("Calendrier des tâches"), icon: "calendar", run: go("/app/tasks/calendar") },
+      { id: "n-lists", group: "Aller à", label: tr("Listes de courses"), icon: "cart", run: go("/app/lists/mes-listes") },
+      { id: "n-recipes", group: "Aller à", label: tr("Mes recettes"), hint: tr("Trouver des recettes"), icon: "chef", keywords: "cuisine", run: go("/app/lists/recipes") },
+      { id: "n-ingr", group: "Aller à", label: tr("Ingrédients & prix"), icon: "list", run: go("/app/lists/ingredients") },
+      { id: "n-fin", group: "Aller à", label: tr("Finance — vue d'ensemble"), icon: "wallet", run: go("/app/finance") },
+      { id: "n-fincal", group: "Aller à", label: tr("Finance — calendrier"), icon: "calendar", run: go("/app/finance/calendar") },
+      { id: "n-budgets", group: "Aller à", label: tr("Finance — budgets"), icon: "pie", run: go("/app/finance/budgets") },
+      { id: "n-ops", group: "Aller à", label: tr("Finance — opérations"), icon: "list", run: go("/app/finance/operations") },
+      { id: "n-acc", group: "Aller à", label: tr("Finance — comptes"), icon: "bank", run: go("/app/finance/accounts") },
+      { id: "n-tax", group: "Aller à", label: tr("Finance — impôts"), icon: "chart", run: go("/app/finance/taxes") },
+      { id: "n-notes", group: "Aller à", label: tr("Notes, pages & vocabulaire"), icon: "notes", run: go("/app/notes") },
+      { id: "n-set", group: "Aller à", label: tr("Paramètres & apparence"), icon: "settings", keywords: "theme couleur profil", run: go("/app/settings") },
       ...RECIPES.map<Cmd>((r) => ({ id: `r-${r.slug}`, group: "Recettes", label: r.name, hint: `${r.category} · ${r.time}`, icon: "chef", keywords: r.ingredients.join(" "), run: () => window.open(`/recettes/${r.slug}`, "_blank") })),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [mode]
+    [mode, tr]
   );
 
   const results = useMemo(() => {
@@ -150,13 +150,13 @@ export function CommandPalette({ mode }: { mode: ThemeMode }) {
           <kbd className="rounded-md border border-line bg-stone-50 px-1.5 py-0.5 font-sans text-[10px] text-stone-400">{tr("Échap")}</kbd>
         </div>
         <div ref={listRef} className="max-h-[52vh] overflow-y-auto p-2">
-          {results.length === 0 && <p className="px-3 py-8 text-center text-sm text-stone-400">Aucun résultat pour « {query} »</p>}
+          {results.length === 0 && <p className="px-3 py-8 text-center text-sm text-stone-400">{tr("Aucun résultat pour « {q} »", { q: query })}</p>}
           {results.map((c, i) => {
             const header = c.group !== lastGroup;
             lastGroup = c.group;
             return (
               <div key={c.id}>
-                {header && <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-stone-400">{c.group}</p>}
+                {header && <p className="px-3 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-stone-400">{tr(c.group)}</p>}
                 <button
                   type="button"
                   data-idx={i}
@@ -177,7 +177,7 @@ export function CommandPalette({ mode }: { mode: ThemeMode }) {
         </div>
         <div className="flex items-center justify-between border-t border-line px-4 py-2 text-[11px] text-stone-400">
           <span>{tr("↑ ↓ pour naviguer · ↵ pour ouvrir")}</span>
-          <span className="hidden items-center gap-1 sm:flex"><Icon name="sparkle" className="h-3 w-3" />Astuce : tape une recette ou un ingrédient</span>
+          <span className="hidden items-center gap-1 sm:flex"><Icon name="sparkle" className="h-3 w-3" />{tr("Astuce : tape une recette ou un ingrédient")}</span>
         </div>
       </div>
     </div>
