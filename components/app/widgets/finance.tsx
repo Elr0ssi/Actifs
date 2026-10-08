@@ -1,5 +1,6 @@
 "use client";
 
+import { intlLocale } from "@/lib/i18n";
 import { useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import {
@@ -25,10 +26,10 @@ import { CountUp } from "@/components/app/count-up";
 import { useDragNav } from "@/components/app/widgets/calendar-grid";
 import type { WidgetProps } from "@/components/app/widgets/types";
 
-const DOW = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-const fmtShort = (d: string) => new Date(toMs(d)).toLocaleDateString("fr-FR", { day: "numeric", month: "short", timeZone: "UTC" });
-const fmtLong = (d: string) => new Date(toMs(d)).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
-const eur0 = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n || 0);
+import { DOW } from "@/components/app/widgets/helpers";
+const fmtShort = (d: string) => new Date(toMs(d)).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" });
+const fmtLong = (d: string) => new Date(toMs(d)).toLocaleDateString(intlLocale(), { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+const eur0 = (n: number) => new Intl.NumberFormat(intlLocale(), { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n || 0);
 const ym = (d: string) => ({ y: Number(d.slice(0, 4)), m: Number(d.slice(5, 7)) - 1 });
 
 function NoFinance() {

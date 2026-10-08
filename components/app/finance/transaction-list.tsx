@@ -1,5 +1,6 @@
 "use client";
 
+import { intlLocale } from "@/lib/i18n";
 import { useMemo, useState, useTransition } from "react";
 import { deleteTransaction, setTransactionCategory } from "@/app/app/finance/actions";
 import { CATEGORIES } from "@/lib/finance-engine";
@@ -16,7 +17,7 @@ export interface Txn {
   category: string;
 }
 
-const dayLabel = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+const dayLabel = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString(intlLocale(), { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
 
 export function TransactionList({ txns }: { txns: Txn[] }) {
   const [pending, start] = useTransition();

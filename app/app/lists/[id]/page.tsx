@@ -1,3 +1,4 @@
+import { intlLocale } from "@/lib/i18n";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAppContext } from "@/lib/data/context";
@@ -23,7 +24,7 @@ function weekLabel(iso: string | null) {
   if (!iso) return null;
   const d = new Date(`${iso}T00:00:00Z`);
   const end = new Date(d.getTime() + 6 * 86_400_000);
-  const f = (x: Date) => x.toLocaleDateString("fr-FR", { day: "numeric", month: "short", timeZone: "UTC" });
+  const f = (x: Date) => x.toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" });
   return `Semaine du ${f(d)} au ${f(end)}`;
 }
 

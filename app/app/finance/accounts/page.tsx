@@ -1,3 +1,4 @@
+import { intlLocale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { loadFinanceData, ACCOUNTS } from "@/lib/data/finance";
 import { formatEUR, todayISO } from "@/lib/utils";
@@ -34,7 +35,7 @@ export default async function AccountsPage() {
 
             <div>
               <p className="text-2xl font-bold text-stone-900">{acc.last ? formatEUR(acc.last.balance) : "Solde inconnu"}</p>
-              {acc.last && <p className="text-[11px] text-stone-400">au {new Date(`${acc.last.date}T00:00:00Z`).toLocaleDateString("fr-FR", { day: "numeric", month: "short", timeZone: "UTC" })}, mouvements ultérieurs non compris ici</p>}
+              {acc.last && <p className="text-[11px] text-stone-400">au {new Date(`${acc.last.date}T00:00:00Z`).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" })}, mouvements ultérieurs non compris ici</p>}
             </div>
 
             {meta.goalType && (

@@ -1,5 +1,6 @@
 "use client";
 
+import { intlLocale } from "@/lib/i18n";
 import { useMemo, useState, useTransition } from "react";
 import { deleteWord } from "@/app/app/notes/actions";
 import { cx } from "@/lib/utils";
@@ -37,7 +38,7 @@ export function VocabList({ words }: { words: VocabWord[] }) {
               <span className="text-stone-300">→</span>
               <span className="min-w-0 flex-1 truncate text-stone-600">{w.english}</span>
               <span className="hidden shrink-0 text-[11px] text-stone-400 sm:block">
-                {new Date(w.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                {new Date(w.created_at).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", year: "numeric" })}
               </span>
               <button
                 onClick={() => start(() => deleteWord(w.id))}

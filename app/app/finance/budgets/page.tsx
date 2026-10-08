@@ -1,3 +1,4 @@
+import { intlLocale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { loadFinanceData } from "@/lib/data/finance";
@@ -8,7 +9,7 @@ import { Icon } from "@/components/app/icons";
 
 export const metadata: Metadata = { title: "Finance — Budgets" };
 
-const eur0 = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n || 0);
+const eur0 = (n: number) => new Intl.NumberFormat(intlLocale(), { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n || 0);
 
 export default async function BudgetsPage({ searchParams }: { searchParams: { year?: string; month?: string } }) {
   const data = await loadFinanceData();

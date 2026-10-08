@@ -1,3 +1,4 @@
+import { intlLocale } from "@/lib/i18n";
 import { getAppContext } from "@/lib/data/context";
 import { loadWidgetData, loadWidgetLayout } from "@/lib/data/widgets";
 import { WidgetBoard } from "@/components/app/widgets/board";
@@ -6,7 +7,7 @@ import { Icon, type IconName } from "@/components/app/icons";
 import { cx } from "@/lib/utils";
 
 function greeting() {
-  const hour = Number(new Intl.DateTimeFormat("fr-FR", { hour: "numeric", hourCycle: "h23", timeZone: "Europe/Paris" }).format(new Date()));
+  const hour = Number(new Intl.DateTimeFormat(intlLocale(), { hour: "numeric", hourCycle: "h23", timeZone: "Europe/Paris" }).format(new Date()));
   if (hour < 5) return "Bonne nuit";
   if (hour < 12) return "Bonjour";
   if (hour < 18) return "Bon après-midi";
@@ -34,7 +35,7 @@ export default async function DashboardPage() {
   if (!data) return null;
 
   const name = ctx.profile?.display_name?.split(" ")[0] ?? "";
-  const dateLabel = new Date(`${data.today}T00:00:00Z`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+  const dateLabel = new Date(`${data.today}T00:00:00Z`).toLocaleDateString(intlLocale(), { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
 
   const open = data.tasks.filter((t) => t.status !== "done");
   const dueToday = open.filter((t) => t.due_date === data.today).length;

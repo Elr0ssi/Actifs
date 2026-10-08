@@ -1,3 +1,4 @@
+import { intlLocale } from "@/lib/i18n";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
@@ -43,7 +44,7 @@ export default async function ListsPage() {
           <span className="shrink-0 rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-stone-500">{TYPE_LABEL[l.type]}</span>
         </div>
         <p className="mt-0.5 text-xs text-stone-400">
-          {[l.week_start && `Sem. du ${new Date(`${l.week_start}T00:00:00Z`).toLocaleDateString("fr-FR", { day: "numeric", month: "short", timeZone: "UTC" })}`, l.store].filter(Boolean).join(" · ")}
+          {[l.week_start && `Sem. du ${new Date(`${l.week_start}T00:00:00Z`).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" })}`, l.store].filter(Boolean).join(" · ")}
         </p>
         <div className="mt-3 h-1.5 w-full rounded-full bg-stone-100">
           <div className="h-1.5 rounded-full bg-brand-500" style={{ width: total ? `${(done / total) * 100}%` : "0%" }} />

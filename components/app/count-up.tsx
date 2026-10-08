@@ -1,10 +1,11 @@
 "use client";
 
+import { intlLocale } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 
-const EUR = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
-const EUR0 = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
-const INT = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
+const EUR = new Intl.NumberFormat(intlLocale(), { style: "currency", currency: "EUR" });
+const EUR0 = new Intl.NumberFormat(intlLocale(), { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+const INT = new Intl.NumberFormat(intlLocale(), { maximumFractionDigits: 0 });
 
 /** Compte jusqu'à la valeur à l'affichage, puis à chaque changement. Sans animation si l'utilisateur la réduit. */
 export function CountUp({ value, kind = "eur", duration = 900 }: { value: number; kind?: "eur" | "eur0" | "int"; duration?: number }) {

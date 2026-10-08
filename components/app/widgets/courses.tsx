@@ -1,5 +1,6 @@
 "use client";
 
+import { intlLocale } from "@/lib/i18n";
 import { useMemo, useRef, useState } from "react";
 import { RECIPES } from "@/lib/marketing/recipes";
 import Link from "next/link";
@@ -69,7 +70,7 @@ export function MenuWeek({ data }: WidgetProps) {
     // Après un glissement, on s'aligne sur le jour le plus proche.
     if (g.moved && el) el.scrollTo({ left: Math.round(el.scrollLeft / CARD) * CARD, behavior: "smooth" });
   }
-  const nextWord = new Date(`${realToday}T00:00:00Z`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+  const nextWord = new Date(`${realToday}T00:00:00Z`).toLocaleDateString(intlLocale(), { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
 
   return (
     <WidgetShell
@@ -145,7 +146,7 @@ export function MenuWeek({ data }: WidgetProps) {
           data={data}
           meals={mealsOn(viewDay.day)}
           activeId={viewDay.id}
-          dayLabel={new Date(`${viewDay.day}T00:00:00Z`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })}
+          dayLabel={new Date(`${viewDay.day}T00:00:00Z`).toLocaleDateString(intlLocale(), { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })}
           onSelect={(id) => setViewDay({ day: viewDay.day, id })}
           onClose={() => setViewDay(null)}
           onPlan={() => { const d = viewDay.day; setViewDay(null); setEditDay(d); }}
@@ -258,7 +259,7 @@ export function CoursesLast({ data }: WidgetProps) {
           <p className="tabular text-2xl font-bold tracking-tight text-stone-900"><CountUp value={last.amount} kind="eur0" /></p>
           <p className="mt-1.5 text-[11px] text-stone-500">
             {avgMeal !== null ? (
-              <>Prix moyen par repas : <b className="tabular text-stone-800">{avgMeal.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 2 })}</b></>
+              <>Prix moyen par repas : <b className="tabular text-stone-800">{avgMeal.toLocaleString(intlLocale(), { style: "currency", currency: "EUR", maximumFractionDigits: 2 })}</b></>
             ) : (
               "Choisis des recettes dans tes listes pour connaître ton prix par repas."
             )}

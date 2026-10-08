@@ -1,10 +1,11 @@
 "use client";
 
+import { intlLocale } from "@/lib/i18n";
 import { useState, useTransition } from "react";
 import { deleteBalanceEntry, editBalanceEntry, pruneBalanceHistory } from "@/app/app/finance/actions";
 import { cx, formatEUR } from "@/lib/utils";
 
-const fmt = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+const fmt = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 const shift = (iso: string, months: number) => {
   const d = new Date(`${iso}T00:00:00Z`);
   d.setUTCMonth(d.getUTCMonth() - months);

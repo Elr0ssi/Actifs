@@ -1,5 +1,6 @@
 "use client";
 
+import { intlLocale } from "@/lib/i18n";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   addDays,
@@ -25,15 +26,15 @@ import { NewOperationButton } from "@/components/app/finance/operation-form";
 import { skipOccurrence, restoreOccurrence, deleteOperation } from "@/app/app/finance/actions";
 
 type View = "month" | "week" | "year";
-const DOW = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+import { DOW } from "@/components/app/widgets/helpers";
 
 const dayNum = (d: string) => new Date(toMs(d)).getUTCDate();
 const monthOf = (d: string) => new Date(toMs(d)).getUTCMonth();
 const yearOf = (d: string) => new Date(toMs(d)).getUTCFullYear();
 const mondayOf = (d: string) => addDays(d, -((new Date(toMs(d)).getUTCDay() + 6) % 7));
 const fmtLong = (d: string) =>
-  new Date(toMs(d)).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
-const fmtShort = (d: string) => new Date(toMs(d)).toLocaleDateString("fr-FR", { day: "numeric", month: "short", timeZone: "UTC" });
+  new Date(toMs(d)).toLocaleDateString(intlLocale(), { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+const fmtShort = (d: string) => new Date(toMs(d)).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" });
 
 function tooltip(o: Occurrence) {
   const next = occurrencesOf(o.op, addDays(o.date, 1), addDays(o.date, 400))[0];
