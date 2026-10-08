@@ -8,7 +8,9 @@ import { formatEUR } from "@/lib/utils";
 import { STORES } from "@/lib/shopping";
 import { createList } from "@/app/app/lists/actions";
 
-export const metadata: Metadata = { title: "Courses" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Courses") };
+}
 
 const TYPE_LABEL: Record<string, string> = { generic: "Générale", shopping: "Courses", recipe: "Recette" };
 

@@ -7,7 +7,9 @@ import { GoogleButton } from "@/components/marketing/google-button";
 import { RememberedEmailInput } from "@/components/marketing/remembered-email-input";
 import { CredentialForm } from "@/components/marketing/credential-form";
 
-export const metadata: Metadata = { title: "Connexion" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Connexion") };
+}
 
 export default function LoginPage({ searchParams }: { searchParams: { error?: string } }) {
   const tr = getT();

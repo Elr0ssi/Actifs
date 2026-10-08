@@ -1,5 +1,6 @@
 // Pure, framework-free finance engine shared by server and client components.
 // All dates are "YYYY-MM-DD" strings handled in UTC to avoid timezone drift.
+import { DAYS_SHORT_SUN as WEEKDAYS_FR } from "@/lib/i18n";
 
 export type OpKind = "income" | "fixed" | "variable" | "savings";
 export type OpFrequency = "once" | "daily" | "weekly" | "monthly" | "yearly";
@@ -389,17 +390,20 @@ export function incomeRowToOp(r: Record<string, any>): FinOp {
   };
 }
 
-const FREQ_TEXT: Record<OpFrequency, string> = { once: "Une fois", daily: "jour", weekly: "semaine", monthly: "mois", yearly: "an" };
-const WEEKDAY_FR = ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."];
+type Tr = (key: string, vars?: Record<string, string | number>) => string;
+const identity: Tr = (key, vars) => (vars ? key.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m)) : key);
 
-export function describeRecurrence(op: FinOp) {
-  if (op.frequency === "once") return "Une fois";
-  const plural: Record<OpFrequency, string> = { once: "", daily: "jours", weekly: "semaines", monthly: "mois", yearly: "ans" };
-  const every = op.interval > 1 ? `Tous les ${op.interval} ${plural[op.frequency]}` : `Chaque ${FREQ_TEXT[op.frequency]}`;
-  if (op.frequency === "weekly" && op.weekdays.length) return `${every} (${op.weekdays.map((d) => WEEKDAY_FR[d]).join(", ")})`;
+/** Texte de récurrence d'une opération ; `tr` traduit les phrases (français par défaut). */
+export function describeRecurrence(op: FinOp, tr: Tr = identity) {
+  if (op.frequency === "once") return tr("Une fois");
+  const every =
+    op.interval > 1
+      ? tr({ daily: "Tous les {n} jours", weekly: "Toutes les {n} semaines", monthly: "Tous les {n} mois", yearly: "Tous les {n} ans", once: "" }[op.frequency], { n: op.interval })
+      : tr({ daily: "Chaque jour", weekly: "Chaque semaine", monthly: "Chaque mois", yearly: "Chaque an", once: "" }[op.frequency]);
+  if (op.frequency === "weekly" && op.weekdays.length) return `${every} (${op.weekdays.map((d) => WEEKDAYS_FR[d].toLowerCase()).join(", ")})`;
   if (op.frequency === "monthly") {
     const days = op.monthDays.length ? op.monthDays : [new Date(toMs(op.start)).getUTCDate()];
-    return `${every}, le ${days.join(" et ")}`;
+    return tr("{every}, le {days}", { every, days: days.join(tr(" et ")) });
   }
   return every;
 }

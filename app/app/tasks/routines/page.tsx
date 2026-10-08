@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
 import type { Routine } from "@/lib/types";
@@ -7,7 +8,9 @@ import { loadWidgetData } from "@/lib/data/widgets";
 import { RoutinesCurvePage } from "@/components/app/widgets/standalone";
 import { todayISO } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Gérer mes routines" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Gérer mes routines") };
+}
 
 export default async function RoutinesPage() {
   const ctx = await getAppContext();

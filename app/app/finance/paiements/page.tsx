@@ -4,7 +4,9 @@ import { getAppContext } from "@/lib/data/context";
 import { WalletSetup } from "@/components/app/finance/wallet-setup";
 import { TransactionList, type Txn } from "@/components/app/finance/transaction-list";
 
-export const metadata: Metadata = { title: "Finance — Paiements" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Finance — Paiements") };
+}
 
 export default async function PaymentsPage() {
   const tr = getT();

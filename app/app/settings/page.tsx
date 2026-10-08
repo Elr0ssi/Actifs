@@ -10,7 +10,9 @@ import { CalendarFeedCard } from "@/components/app/calendar-feed-card";
 import { AppearancePicker } from "@/components/app/appearance-picker";
 import { ACCENT_COOKIE, THEME_COOKIE, parseAccent, parseMode } from "@/lib/theme";
 
-export const metadata: Metadata = { title: "Paramètres" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Paramètres") };
+}
 
 export default async function SettingsPage() {
   const tr = getT();

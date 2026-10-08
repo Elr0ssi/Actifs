@@ -1,10 +1,13 @@
+import { getT } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAppContext } from "@/lib/data/context";
 import { NoteEditor } from "@/components/app/notes/note-editor";
 import { sanitizeBlocks } from "@/lib/notes";
 
-export const metadata: Metadata = { title: "Notes — Page" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Notes — Page") };
+}
 
 export default async function NotePage({ params }: { params: { id: string } }) {
   const ctx = await getAppContext();

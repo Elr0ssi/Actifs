@@ -8,7 +8,9 @@ import { formatEUR, todayISO, cx, MONTHS_FR } from "@/lib/utils";
 import { BudgetBreakdown } from "@/components/app/finance/finance-dashboard";
 import { Icon } from "@/components/app/icons";
 
-export const metadata: Metadata = { title: "Finance — Budgets" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Finance — Budgets") };
+}
 
 const eur0 = (n: number) => new Intl.NumberFormat(intlLocale(), { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n || 0);
 

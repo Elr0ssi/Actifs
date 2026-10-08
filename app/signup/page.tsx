@@ -6,7 +6,9 @@ import { AuthShell } from "@/components/marketing/auth-shell";
 import { GoogleButton } from "@/components/marketing/google-button";
 import { CredentialForm } from "@/components/marketing/credential-form";
 
-export const metadata: Metadata = { title: "Créer mon espace" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Créer mon espace") };
+}
 
 export default function SignupPage({ searchParams }: { searchParams: { error?: string } }) {
   const tr = getT();

@@ -7,7 +7,9 @@ import { updateBalanceAnchor, updateGoal } from "@/app/app/finance/actions";
 import { BalanceHistory } from "@/components/app/finance/balance-history";
 import { SubmitButton } from "@/components/ui/submit-button";
 
-export const metadata: Metadata = { title: "Finance — Comptes" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Finance — Comptes") };
+}
 
 const META: Record<string, { icon: string; hint: string; goalType?: "savings" | "investment" }> = {
   Courant: { icon: "💳", hint: "Trésorerie du quotidien" },

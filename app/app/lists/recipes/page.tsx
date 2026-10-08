@@ -6,7 +6,9 @@ import type { Recipe, RecipeItem } from "@/lib/types";
 import { RecipesTabs } from "@/components/app/recipes/recipes-tabs";
 import { loadCatalog } from "@/lib/data/ingredients";
 
-export const metadata: Metadata = { title: "Recettes" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Recettes") };
+}
 
 export default async function RecipesPage() {
   const tr = getT();

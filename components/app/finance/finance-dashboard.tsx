@@ -37,14 +37,14 @@ const fmtLong = (d: string) =>
   new Date(toMs(d)).toLocaleDateString(intlLocale(), { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 const fmtShort = (d: string) => new Date(toMs(d)).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" });
 
-function tooltip(o: Occurrence) {
+function tooltip(o: Occurrence, tr: (k: string, v?: Record<string, string | number>) => string) {
   const next = occurrencesOf(o.op, addDays(o.date, 1), addDays(o.date, 400))[0];
   return [
     o.op.name,
     `${o.signed > 0 ? "+" : "-"}${formatEUR(o.op.amount)}`,
-    KIND_LABEL[o.op.kind],
-    describeRecurrence(o.op),
-    next ? `Prochaine occurrence : ${fmtShort(next)}` : null,
+    tr(KIND_LABEL[o.op.kind]),
+    describeRecurrence(o.op, tr),
+    next ? tr("Prochaine occurrence : {date}", { date: fmtShort(next) }) : null,
   ]
     .filter(Boolean)
     .join("\n");
@@ -133,7 +133,7 @@ export function FinanceDashboard({
     select(d);
   };
 
-  const title = view === "year" ? String(y) : view === "week" ? `Semaine du ${fmtShort(gridStart)}` : `${MONTHS_FR[m]} ${y}`;
+  const title = view === "year" ? String(y) : view === "week" ? tr("Semaine du {date}", { date: fmtShort(gridStart) }) : `${MONTHS_FR[m]} ${y}`;
 
   return (
     <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
@@ -190,14 +190,14 @@ export function FinanceDashboard({
                       {dayNum(d)}
                     </span>
                     {occ.slice(0, max).map((o, i) => (
-                      <span key={i} title={tooltip(o)} className={cx("w-full truncate text-[10px] font-semibold leading-tight", o.signed > 0 ? "text-emerald-600" : "text-rose-600", outside && "opacity-50")}>
+                      <span key={i} title={tooltip(o, tr)} className={cx("w-full truncate text-[10px] font-semibold leading-tight", o.signed > 0 ? "text-emerald-600" : "text-rose-600", outside && "opacity-50")}>
                         {o.signed > 0 ? "+" : "-"}{formatEUR(o.op.amount)}
                         <span className="block truncate font-normal text-stone-400">{o.op.name}</span>
                       </span>
                     ))}
                     {occ.length > max && <span className="text-[10px] text-stone-400">+{occ.length - max}</span>}
                     {(skippedByDate.get(d) ?? []).map((o, i) => (
-                      <span key={`s${i}`} title={`${o.op.name} — occurrence ignorée`} className="w-full truncate text-[10px] text-stone-300 line-through">
+                      <span key={`s${i}`} title={tr("{name} — occurrence ignorée", { name: o.op.name })} className="w-full truncate text-[10px] text-stone-300 line-through">
                         {formatEUR(o.op.amount)}
                       </span>
                     ))}
@@ -243,7 +243,7 @@ function OccList({ items, onSkip, onDelete }: { items: Occurrence[]; onSkip?: (o
   return (
     <ul className="space-y-1.5">
       {items.map((o, i) => (
-        <li key={i} className="group flex items-center gap-2 text-[12px]" title={tooltip(o)}>
+        <li key={i} className="group flex items-center gap-2 text-[12px]" title={tooltip(o, tr)}>
           <span className="w-12 shrink-0 whitespace-nowrap text-[11px] text-stone-400">{fmtShort(o.date)}</span>
           <span className={cx("h-2 w-2 shrink-0 rounded-full", KIND_STYLE[o.op.kind].dot)} />
           <span className="min-w-0 flex-1 truncate text-stone-700">{o.op.name}{o.op.txn && <span className="text-stone-400"> · {o.op.txn.time ?? "carte"}{o.op.txn.card ? ` · ${o.op.txn.card}` : ""}</span>}</span>
@@ -283,17 +283,17 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
       </div>
 
       <div className="rounded-xl bg-brand-50 p-3">
-        <p className="text-xs font-medium text-brand-800">Reste à vivre au {fmtShort(date)}</p>
+        <p className="text-xs font-medium text-brand-800">{tr("Reste à vivre au {date}", { date: fmtShort(date) })}</p>
         <p className={cx("tabular mt-0.5 text-2xl font-bold", s.balance >= 0 ? "text-brand-800" : "text-rose-600")}>{formatEUR(s.balance)}</p>
         <p className="mt-2 border-t border-brand-100 pt-2 text-xs text-brand-800">
-          Solde prévu au {fmtShort(s.monthEnd)} : <b className={s.endBalance >= 0 ? "" : "text-rose-600"}>{formatEUR(s.endBalance)}</b>
+          {tr("Solde prévu au {date} :", { date: fmtShort(s.monthEnd) })} <b className={s.endBalance >= 0 ? "" : "text-rose-600"}>{formatEUR(s.endBalance)}</b>
         </p>
-        <p className="text-[11px] text-brand-700/70">≈ {formatEUR(s.perDay)}/jour jusqu'à la fin du mois ({s.daysRemaining} j)</p>
+        <p className="text-[11px] text-brand-700/70">{tr("≈ {amount}/jour jusqu'à la fin du mois ({d} j)", { amount: formatEUR(s.perDay), d: s.daysRemaining })}</p>
       </div>
 
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-[12px] font-semibold text-stone-800">Opérations passées <span className="font-normal text-stone-400">{tr("(ce mois)")}</span></p>
+          <p className="text-[12px] font-semibold text-stone-800">{tr("Opérations passées")} <span className="font-normal text-stone-400">{tr("(ce mois)")}</span></p>
         </div>
         {s.past.length === 0 ? <p className="text-sm text-stone-400">{tr("Aucune.")}</p> : <OccList items={s.past} onSkip={skip} onDelete={del} />}
         {s.past.length > 0 && (
@@ -305,7 +305,7 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
       </div>
 
       <div>
-        <p className="mb-2 text-[12px] font-semibold text-stone-800">Opérations à venir <span className="font-normal text-stone-400">(jusqu'au {fmtShort(s.monthEnd)})</span></p>
+        <p className="mb-2 text-[12px] font-semibold text-stone-800">{tr("Opérations à venir")} <span className="font-normal text-stone-400">{tr("(jusqu'au {date})", { date: fmtShort(s.monthEnd) })}</span></p>
         {s.upcoming.length === 0 ? <p className="text-sm text-stone-400">{tr("Rien de prévu.")}</p> : <OccList items={s.upcoming} onSkip={skip} onDelete={del} />}
         {(s.upcomingIn > 0 || s.upcomingOut > 0) && (
           <div className="mt-2 space-y-1 rounded-lg bg-stone-50 px-3 py-2 text-xs">
@@ -337,10 +337,10 @@ type BreakdownMode = "global" | "fixed" | "variable" | "savings";
 const BREAKDOWN_LABEL: Record<BreakdownMode, string> = { global: "Global", fixed: "Charges fixes", variable: "Dépenses variables", savings: "Épargne" };
 
 /** Garde les plus grosses catégories et regroupe le reste : la palette catégorielle n'a que 6 teintes distinctes. */
-function fold(items: { label: string; value: number }[], max = 6) {
-  const list = items.filter((i) => i.value > 0);
+function fold(items: { label: string; value: number }[], tr: (k: string) => string, max = 6) {
+  const list = items.filter((i) => i.value > 0).map((i) => ({ ...i, label: tr(i.label) }));
   if (list.length <= max) return list;
-  return [...list.slice(0, max - 1), { label: "Autres", value: list.slice(max - 1).reduce((s, i) => s + i.value, 0) }];
+  return [...list.slice(0, max - 1), { label: tr("Autres"), value: list.slice(max - 1).reduce((s, i) => s + i.value, 0) }];
 }
 
 export function BudgetBreakdown({ budget, size = 150 }: { budget: ReturnType<typeof getMonthlyBudget>; size?: number }) {
@@ -355,7 +355,7 @@ export function BudgetBreakdown({ budget, size = 150 }: { budget: ReturnType<typ
           { label: tr("Dépenses variables"), value: budget.variable },
           { label: tr("Épargne"), value: budget.savings },
         ].filter((i) => i.value > 0)
-      : fold(mode === "fixed" ? budget.fixedByCategory : mode === "variable" ? budget.variableByCategory : budget.savingsByCategory);
+      : fold(mode === "fixed" ? budget.fixedByCategory : mode === "variable" ? budget.variableByCategory : budget.savingsByCategory, tr);
   const total = items.reduce((s, i) => s + i.value, 0);
   const pickedItem = items.find((i) => i.label === picked);
   const seg = (v: number) => `${spend > 0 ? (v / spend) * 100 : 0}%`;
@@ -367,22 +367,22 @@ export function BudgetBreakdown({ budget, size = 150 }: { budget: ReturnType<typ
         <div className="segmented">
           {(Object.keys(BREAKDOWN_LABEL) as BreakdownMode[]).map((v) => (
             <button key={v} type="button" data-active={mode === v} onClick={() => { setMode(v); setPicked(null); }}>
-              {BREAKDOWN_LABEL[v]}
+              {tr(BREAKDOWN_LABEL[v])}
             </button>
           ))}
         </div>
       </div>
-      <p className="mt-2 text-xs text-stone-500">Total dépensé / réservé : <b className="text-stone-800">{formatEUR(spend)}</b> {budget.income > 0 && `· ${Math.round((spend / budget.income) * 100)} % des revenus`}</p>
+      <p className="mt-2 text-xs text-stone-500">{tr("Total dépensé / réservé :")} <b className="text-stone-800">{formatEUR(spend)}</b> {budget.income > 0 && tr("· {n} % des revenus", { n: Math.round((spend / budget.income) * 100) })}</p>
       <div className="mt-2 flex h-2 gap-[2px] overflow-hidden rounded-full bg-stone-100">
         <div className="bg-rose-400" style={{ width: seg(budget.fixed) }} title={tr("Charges fixes")} />
         <div className="bg-amber-400" style={{ width: seg(budget.variable) }} title={tr("Dépenses variables")} />
         <div className="bg-violet-400" style={{ width: seg(budget.savings) }} title={tr("Épargne")} />
       </div>
       <div className="mt-4">
-        <DonutChart items={items} size={size} strokeWidth={Math.round(size / 7)} centerCaption={mode === "global" ? "budget" : BREAKDOWN_LABEL[mode].toLowerCase()} selected={picked} onSelect={(l) => setPicked(l === picked ? null : l)} />
+        <DonutChart items={items} size={size} strokeWidth={Math.round(size / 7)} centerCaption={mode === "global" ? tr("budget") : tr(BREAKDOWN_LABEL[mode]).toLowerCase()} selected={picked} onSelect={(l) => setPicked(l === picked ? null : l)} />
         {pickedItem && (
           <p className="mt-3 rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-600">
-            <b>{pickedItem.label}</b> : {formatEUR(pickedItem.value)} soit {total > 0 ? Math.round((pickedItem.value / total) * 100) : 0} % {mode === "global" ? tr("du budget") : `des ${BREAKDOWN_LABEL[mode].toLowerCase()}`}
+            <b>{tr(pickedItem.label)}</b> : {formatEUR(pickedItem.value)} {tr("soit {n} %", { n: total > 0 ? Math.round((pickedItem.value / total) * 100) : 0 })} {mode === "global" ? tr("du budget") : tr("des {what}", { what: tr(BREAKDOWN_LABEL[mode]).toLowerCase() })}
             {budget.income > 0 && ` · ${Math.round((pickedItem.value / budget.income) * 100)} % des revenus`}
           </p>
         )}

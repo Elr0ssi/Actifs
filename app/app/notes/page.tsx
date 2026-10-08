@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import { loadWidgetData, loadWidgetLayout } from "@/lib/data/widgets";
 import { WidgetBoard } from "@/components/app/widgets/board";
 
-export const metadata: Metadata = { title: "Notes — Vue d'ensemble" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Notes — Vue d'ensemble") };
+}
 
 export default async function Overview() {
   const tr = getT();

@@ -7,7 +7,9 @@ import { toggleTaskStatus, toggleRoutineLog } from "@/app/app/actions";
 import { createProject, createTask, deleteTask } from "@/app/app/tasks/actions";
 import { todayISO, cx } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Tâches & projets" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Tâches & projets") };
+}
 
 const PRIORITY_LABEL: Record<string, string> = { high: "Haute", medium: "Moyenne", low: "Basse" };
 const PRIORITY_DOT: Record<string, string> = { high: "bg-rose-500", medium: "bg-amber-500", low: "bg-stone-300" };

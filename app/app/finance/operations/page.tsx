@@ -7,7 +7,9 @@ import { formatEUR, todayISO, cx } from "@/lib/utils";
 import { OperationRow } from "@/components/app/finance/operation-row";
 import { NewOperationButton } from "@/components/app/finance/operation-form";
 
-export const metadata: Metadata = { title: "Finance — Opérations" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Finance — Opérations") };
+}
 const ORDER: OpKind[] = ["income", "fixed", "variable", "savings"];
 
 export default async function OperationsPage({ searchParams }: { searchParams: { tri?: string } }) {

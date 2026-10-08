@@ -5,7 +5,9 @@ import { loadTaxProfile } from "@/lib/data/finance-budgets";
 import { todayISO } from "@/lib/utils";
 import { TaxPeriods } from "@/components/app/finance/tax-periods";
 
-export const metadata: Metadata = { title: "Finance — Impôts" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Finance — Impôts") };
+}
 
 export default async function TaxesPage({ searchParams }: { searchParams: { year?: string } }) {
   const tr = getT();

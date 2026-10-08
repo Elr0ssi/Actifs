@@ -7,7 +7,9 @@ import { STORES } from "@/lib/shopping";
 import { createPersonalIngredient } from "@/app/app/lists/actions";
 import { IngredientsTable } from "@/components/app/lists/ingredients-table";
 
-export const metadata: Metadata = { title: "Ingrédients & prix" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Ingrédients & prix") };
+}
 
 export default async function IngredientsPage() {
   const tr = getT();

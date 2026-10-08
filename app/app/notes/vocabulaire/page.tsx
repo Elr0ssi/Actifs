@@ -5,7 +5,9 @@ import { VocabList } from "@/components/app/notes/vocab-list";
 import { addWord, bulkAddWords } from "@/app/app/notes/actions";
 import { SubmitButton } from "@/components/ui/submit-button";
 
-export const metadata: Metadata = { title: "Notes" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Notes") };
+}
 
 export default async function NotesPage() {
   const tr = getT();

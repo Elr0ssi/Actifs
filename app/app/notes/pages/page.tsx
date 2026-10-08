@@ -5,7 +5,9 @@ import { getAppContext } from "@/lib/data/context";
 import { createNote } from "./actions";
 import { Icon } from "@/components/app/icons";
 
-export const metadata: Metadata = { title: "Notes — Mes pages" };
+export function generateMetadata(): Metadata {
+  return { title: getT()("Notes — Mes pages") };
+}
 
 export default async function PagesIndex() {
   const tr = getT();
