@@ -1,3 +1,4 @@
+import { intlLocale } from "@/lib/i18n";
 // Analyse des lignes d'ingrédients écrites en texte libre ("320 g pâtes", "4 cuisses de poulet", "2 c. à soupe huile d'olive")
 // pour en tirer une quantité, une unité et un nom, puis les rapprocher du catalogue (prix) et les mettre à l'échelle.
 import type { CatalogIngredient, IngredientUnit, QtyUnit } from "@/lib/shopping";
@@ -211,4 +212,25 @@ export function scaleIngredientText(text: string, factor: number): string {
 export function scaleQuantityLabel(qty: number | null, unit: string | null, factor: number, fallback?: string | null): string | null {
   if (qty === null || qty === undefined) return fallback ?? null;
   return formatScaled(Number(qty) * factor, (unit as QtyUnit) || "u");
+}
+
+/**
+ * Met à l'échelle une ligne d'ingrédient affichée dans une autre langue que le français
+ * (« 320 g pasta » × 1,5 → « 480 g pasta »). Sans traduction, on retombe sur la version française.
+ */
+export function scaleTranslatedIngredient(label: string, factor: number, tr: (k: string) => string): string {
+  const translated = tr(label);
+  if (translated === label) return scaleIngredientText(label, factor);
+  if (factor === 1) return translated;
+  const m = /^(\s*)(\d+(?:[.,]\d+)?|½|¼|¾)(\s*)(kg|ml|cl|g|L|l)?(?![A-Za-zÀ-ÿ])(.*)$/.exec(translated);
+  if (!m) return translated;
+  const raw = m[2] === "½" ? 0.5 : m[2] === "¼" ? 0.25 : m[2] === "¾" ? 0.75 : parseFloat(m[2].replace(",", "."));
+  const unit = m[4];
+  let out: string;
+  if (unit === "kg") out = formatScaled(raw * 1000 * factor, "g");
+  else if (unit === "L" || unit === "l") out = formatScaled(raw * 1000 * factor, "ml");
+  else if (unit === "cl") out = formatScaled(raw * 10 * factor, "ml");
+  else if (unit === "g" || unit === "ml") out = formatScaled(raw * factor, unit);
+  else out = `${new Intl.NumberFormat(intlLocale(), { maximumFractionDigits: 2 }).format(Math.round(raw * factor * 4) / 4)}${unit ? ` ${unit}` : ""}`;
+  return `${m[1]}${out}${unit || m[3] ? (unit ? "" : " ") : ""}${m[5].startsWith(" ") || m[5] === "" ? m[5] : ` ${m[5]}`}`.replace(/\s{2,}/g, " ");
 }

@@ -2,7 +2,7 @@
 
 import { useT } from "@/components/i18n/provider";
 import { useState, useTransition } from "react";
-import { toggleListItem, deleteListItem, updateListItemQty } from "@/app/app/lists/actions";
+import { toggleListItem, deleteListItem, updateListItemQty } from "@/app/(main)/app/lists/actions";
 import { cx, formatEUR } from "@/lib/utils";
 import type { ListItem } from "@/lib/types";
 

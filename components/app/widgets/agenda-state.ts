@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { toggleRoutineLog, toggleTaskStatus } from "@/app/app/actions";
+import { toggleRoutineLog, toggleTaskStatus } from "@/app/(main)/app/actions";
 import { scheduledOn } from "@/components/app/widgets/helpers";
 import type { WidgetData } from "@/lib/data/widgets";
 import type { Routine, Task } from "@/lib/types";

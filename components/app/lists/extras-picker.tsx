@@ -73,7 +73,7 @@ export function ExtrasPicker({
             {matches.map((m) => (
               <li key={m.id}>
                 <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => add(m.name)} className="flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-left text-sm hover:bg-stone-50">
-                  <span className="truncate">{m.name}</span>
+                  <span className="truncate">{tr(m.name)}</span>
                   {prices[m.id] !== undefined && <span className="ml-2 shrink-0 text-xs text-stone-400">{formatEUR(prices[m.id])} {priceSuffix(m.unit).slice(1)}</span>}
                 </button>
               </li>
@@ -112,7 +112,7 @@ export function ExtrasPicker({
             return (
               <li key={p.name} className="flex items-center gap-2 px-3 py-2">
                 <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-stone-800">
-                  {p.name}
+                  {tr(p.name)}
                   {!known && <span className="ml-1.5 rounded bg-amber-100 px-1 text-[10px] font-normal text-amber-700">{tr("nouveau")}</span>}
                 </span>
                 <input

@@ -3,7 +3,7 @@
 import { useT } from "@/components/i18n/provider";
 import { useMemo, useState, useTransition } from "react";
 import { STORES, priceSuffix, type CatalogIngredient } from "@/lib/shopping";
-import { deleteIngredient, setIngredientPrice } from "@/app/app/lists/actions";
+import { deleteIngredient, setIngredientPrice } from "@/app/(main)/app/lists/actions";
 import { cx } from "@/lib/utils";
 
 type PriceRow = { ingredient_id: string; store: string; price: number; household_id: string | null };

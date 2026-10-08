@@ -2,7 +2,7 @@
 
 import { useT } from "@/components/i18n/provider";
 import { useState } from "react";
-import { regenerateCalendarToken } from "@/app/app/settings/actions";
+import { regenerateCalendarToken } from "@/app/(main)/app/settings/actions";
 
 export function CalendarFeedCard({ token }: { token: string }) {
   const tr = useT();

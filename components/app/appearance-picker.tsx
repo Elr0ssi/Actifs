@@ -2,7 +2,7 @@
 
 import { useT } from "@/components/i18n/provider";
 import { useState, useTransition } from "react";
-import { setAppearance } from "@/app/app/settings/actions";
+import { setAppearance } from "@/app/(main)/app/settings/actions";
 import { ACCENT_CHOICES, THEME_MODES, type Accent, type ThemeMode } from "@/lib/theme";
 import { Icon, type IconName } from "@/components/app/icons";
 import { cx } from "@/lib/utils";

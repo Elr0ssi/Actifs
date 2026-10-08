@@ -2,7 +2,7 @@
 
 import { useT } from "@/components/i18n/provider";
 import { useState } from "react";
-import { createOperation, updateOperation } from "@/app/app/finance/actions";
+import { createOperation, updateOperation } from "@/app/(main)/app/finance/actions";
 import { CATEGORIES, type FinOp, type OpKind, type OpFrequency } from "@/lib/finance-engine";
 import { cx } from "@/lib/utils";
 

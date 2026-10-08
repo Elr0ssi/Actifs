@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { getT } from "@/lib/i18n/server";
+import Link from "@/components/marketing/link";
 import { LogoWordmark } from "@/components/logo";
 
 export function AuthShell({
@@ -12,6 +13,7 @@ export function AuthShell({
   footer: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const tr = getT();
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-stone-50 px-6 py-12">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-grid [mask-image:radial-gradient(ellipse_60%_60%_at_50%_0%,#000_30%,transparent_100%)]" />
@@ -20,8 +22,8 @@ export function AuthShell({
           <LogoWordmark className="text-lg" />
         </Link>
         <div className="card p-8">
-          <h1 className="text-xl font-bold text-stone-900">{title}</h1>
-          <p className="mt-1 text-sm text-stone-500">{subtitle}</p>
+          <h1 className="text-xl font-bold text-stone-900">{tr(title)}</h1>
+          <p className="mt-1 text-sm text-stone-500">{tr(subtitle)}</p>
           <div className="mt-6">{children}</div>
         </div>
         <div className="mt-6 text-center">{footer}</div>

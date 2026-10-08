@@ -4,7 +4,7 @@ import { useT } from "@/components/i18n/provider";
 import { useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { RecipeForm } from "@/components/app/recipes/recipe-form";
-import { deleteRecipe, toggleRecipeFavorite } from "@/app/app/lists/recipes/actions";
+import { deleteRecipe, toggleRecipeFavorite } from "@/app/(main)/app/lists/recipes/actions";
 import type { Recipe, RecipeItem } from "@/lib/types";
 import { cx } from "@/lib/utils";
 import { Inline } from "@/components/app/notes/inline";
@@ -34,7 +34,7 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
       <div className="relative aspect-video cursor-pointer bg-stone-100" onClick={() => setOpen(true)}>
         {recipe.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={recipe.image_url} alt={recipe.name} loading="lazy" className="h-full w-full object-cover" />
+          <img src={recipe.image_url} alt={tr(recipe.name)} loading="lazy" className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full items-center justify-center text-4xl">🍽️</div>
         )}
@@ -50,7 +50,7 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
         )}
       </div>
       <div className="flex flex-1 flex-col p-5">
-        <h3 className="cursor-pointer text-lg font-bold leading-tight text-stone-900 hover:text-brand-700" onClick={() => setOpen(true)}>{recipe.name}</h3>
+        <h3 className="cursor-pointer text-lg font-bold leading-tight text-stone-900 hover:text-brand-700" onClick={() => setOpen(true)}>{tr(recipe.name)}</h3>
         <ul className="mt-2 flex-1 space-y-0.5 text-sm text-stone-600">
           {recipe.recipe_items.slice(0, 5).map((it) => <li key={it.id}>• {it.label}{it.quantity && <span className="text-stone-400"> — {it.quantity}</span>}</li>)}
           {recipe.recipe_items.length > 5 && <li className="text-stone-400">{tr("+ {n} autres", { n: recipe.recipe_items.length - 5 })}</li>}
@@ -70,13 +70,13 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
           <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-surface shadow-2xl sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
             {recipe.image_url && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={recipe.image_url} alt={recipe.name} className="aspect-video w-full object-cover" />
+              <img src={recipe.image_url} alt={tr(recipe.name)} className="aspect-video w-full object-cover" />
             )}
             <div className="p-6">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   {recipe.category && <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700">{tr(recipe.category)}</span>}
-                  <h2 className="mt-2 text-2xl font-bold tracking-tight text-stone-900">{recipe.name}</h2>
+                  <h2 className="mt-2 text-2xl font-bold tracking-tight text-stone-900">{tr(recipe.name)}</h2>
                 </div>
                 <button onClick={() => setOpen(false)} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label={tr("Fermer")}>✕</button>
               </div>

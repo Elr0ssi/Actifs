@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { useT } from "@/components/i18n/provider";
+import Link from "@/components/marketing/link";
 import { useMemo, useState } from "react";
 import { CATEGORIES, RECIPES } from "@/lib/marketing/recipes";
 import { foldText, formatScaled, parseIngredientLine } from "@/lib/ingredient-parse";
@@ -76,6 +77,7 @@ function describe(l: Line) {
 }
 
 export function ShoppingTool() {
+  const tr = useT();
   const [s, setS] = useLocalStorage<State>("allin-courses-v1", { picked: {}, checked: {}, people: 2 });
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
@@ -93,7 +95,7 @@ export function ShoppingTool() {
   const check = (key: string) => setS({ ...s, checked: { ...s.checked, [key]: !s.checked[key] } });
 
   const text = useMemo(() => {
-    const out: string[] = ["Liste de courses"];
+    const out: string[] = [tr("Liste de courses")];
     for (const aisle of AISLE_ORDER) {
       const items = lines.filter((l) => l.aisle === aisle);
       if (!items.length) continue;
@@ -118,54 +120,54 @@ export function ShoppingTool() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr]">
-      <section aria-label="Choisir des recettes">
+      <section aria-label={tr("Choisir des recettes")}>
         <div className="flex flex-wrap items-center gap-2">
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Chercher une recette ou un ingrédient…" className="input min-w-[12rem] flex-1" />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr("Chercher une recette ou un ingrédient…")} className="input min-w-[12rem] flex-1" />
           <div className="flex items-center gap-1.5 rounded-xl border border-line bg-surface px-2.5 py-1.5 text-xs text-stone-500">
-            Nous sommes
-            <button type="button" onClick={() => setS({ ...s, people: Math.max(1, s.people - 1) })} className="h-6 w-6 rounded-md border border-line" aria-label="Moins">−</button>
+            {tr("Nous sommes")}
+            <button type="button" onClick={() => setS({ ...s, people: Math.max(1, s.people - 1) })} className="h-6 w-6 rounded-md border border-line" aria-label={tr("Moins")}>−</button>
             <b className="w-4 text-center text-stone-800">{s.people}</b>
-            <button type="button" onClick={() => setS({ ...s, people: Math.min(20, s.people + 1) })} className="h-6 w-6 rounded-md border border-line" aria-label="Plus">+</button>
+            <button type="button" onClick={() => setS({ ...s, people: Math.min(20, s.people + 1) })} className="h-6 w-6 rounded-md border border-line" aria-label={tr("Plus")}>+</button>
           </div>
         </div>
         <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1">
-          <button type="button" onClick={() => setCategory(null)} className={chip(category === null)}>Toutes</button>
-          {CATEGORIES.map((c) => <button key={c} type="button" onClick={() => setCategory(c === category ? null : c)} className={chip(category === c)}>{c}</button>)}
+          <button type="button" onClick={() => setCategory(null)} className={chip(category === null)}>{tr("Toutes")}</button>
+          {CATEGORIES.map((c) => <button key={c} type="button" onClick={() => setCategory(c === category ? null : c)} className={chip(category === c)}>{tr(c)}</button>)}
         </div>
         <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
           {shown.map((r) => {
             const n = s.picked[r.slug] ?? 0;
             return (
               <article key={r.slug} className={cx("flex flex-col overflow-hidden rounded-2xl border bg-surface transition", n > 0 ? "border-brand-400 ring-2 ring-brand-200" : "border-line")}>
-                <button type="button" onClick={() => toggle(r.slug)} className="flex h-16 items-center justify-center bg-stone-100 text-3xl" aria-label={n > 0 ? `Retirer ${r.name}` : `Ajouter ${r.name}`}>{r.icon}</button>
+                <button type="button" onClick={() => toggle(r.slug)} className="flex h-16 items-center justify-center bg-stone-100 text-3xl" aria-label={n > 0 ? `Retirer ${r.name}` : `Ajouter ${r.name}`}>{tr(r.icon)}</button>
                 <div className="flex flex-1 flex-col gap-1 p-2.5">
-                  <p className="line-clamp-2 min-h-[2.4em] text-[13px] font-semibold leading-tight text-stone-900">{r.name}</p>
-                  <p className="text-[11px] text-stone-500">{r.time} · {r.category}</p>
+                  <p className="line-clamp-2 min-h-[2.4em] text-[13px] font-semibold leading-tight text-stone-900">{tr(r.name)}</p>
+                  <p className="text-[11px] text-stone-500">{tr(r.time)} · {tr(r.category)}</p>
                   {n > 0 ? (
                     <div className="mt-1 flex items-center justify-between rounded-lg bg-brand-50 px-1.5 py-1">
-                      <button type="button" onClick={() => setPeople(r.slug, n - 1)} className="h-6 w-6 rounded-md bg-surface shadow-sm" aria-label="Moins de personnes">−</button>
-                      <span className="text-xs font-semibold text-brand-800">{n} pers.</span>
-                      <button type="button" onClick={() => setPeople(r.slug, n + 1)} className="h-6 w-6 rounded-md bg-surface shadow-sm" aria-label="Plus de personnes">+</button>
+                      <button type="button" onClick={() => setPeople(r.slug, n - 1)} className="h-6 w-6 rounded-md bg-surface shadow-sm" aria-label={tr("Moins de personnes")}>−</button>
+                      <span className="text-xs font-semibold text-brand-800">{n} {tr("pers.")}</span>
+                      <button type="button" onClick={() => setPeople(r.slug, n + 1)} className="h-6 w-6 rounded-md bg-surface shadow-sm" aria-label={tr("Plus de personnes")}>+</button>
                     </div>
                   ) : (
-                    <button type="button" onClick={() => toggle(r.slug)} className="mt-1 rounded-lg bg-stone-100 py-1.5 text-xs font-semibold text-stone-700 hover:bg-brand-50 hover:text-brand-700">+ Ajouter</button>
+                    <button type="button" onClick={() => toggle(r.slug)} className="mt-1 rounded-lg bg-stone-100 py-1.5 text-xs font-semibold text-stone-700 hover:bg-brand-50 hover:text-brand-700">{tr("+ Ajouter")}</button>
                   )}
                 </div>
               </article>
             );
           })}
         </div>
-        {shown.length === 0 && <p className="mt-6 text-center text-sm text-stone-500">Aucune recette ne correspond.</p>}
+        {shown.length === 0 && <p className="mt-6 text-center text-sm text-stone-500">{tr("Aucune recette ne correspond.")}</p>}
       </section>
 
       <aside className="lg:sticky lg:top-24 lg:self-start">
         <div className="rounded-3xl border border-line bg-surface p-5">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-bold text-stone-900">Ta liste de courses</h2>
-            <span className="text-xs text-stone-500">{pickedCount} recette{pickedCount > 1 ? "s" : ""}</span>
+            <h2 className="text-base font-bold text-stone-900">{tr("Ta liste de courses")}</h2>
+            <span className="text-xs text-stone-500">{pickedCount} {tr("recette")}{pickedCount > 1 ? "s" : ""}</span>
           </div>
           {lines.length === 0 ? (
-            <p className="mt-4 rounded-xl bg-stone-50 px-4 py-8 text-center text-sm text-stone-500">Ajoute des recettes : la liste se calcule toute seule, avec les quantités fusionnées.</p>
+            <p className="mt-4 rounded-xl bg-stone-50 px-4 py-8 text-center text-sm text-stone-500">{tr("Ajoute des recettes : la liste se calcule toute seule, avec les quantités fusionnées.")}</p>
           ) : (
             <>
               <div className="mt-3 max-h-[60vh] space-y-4 overflow-y-auto pr-1">
@@ -174,7 +176,7 @@ export function ShoppingTool() {
                   if (!items.length) return null;
                   return (
                     <div key={aisle}>
-                      <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-stone-500">{aisle}</p>
+                      <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-stone-500">{tr(aisle)}</p>
                       <ul className="space-y-0.5">
                         {items.map((l) => {
                           const d = describe(l);
@@ -185,7 +187,7 @@ export function ShoppingTool() {
                                 <input type="checkbox" checked={done} onChange={() => check(l.key)} className="mt-1 h-3.5 w-3.5 shrink-0" />
                                 <span className="min-w-0 flex-1">
                                   <span className={cx("block text-[13px] font-medium", done ? "text-stone-300 line-through" : "text-stone-800")}>
-                                    {d.buy && <b className="mr-1 font-semibold">{d.buy}</b>}{l.name}
+                                    {d.buy && <b className="mr-1 font-semibold">{tr(d.buy)}</b>}{tr(l.name)}
                                   </span>
                                   {(d.pack || d.need) && <span className="block text-[11px] text-stone-500">{[d.pack, d.need ? `besoin ${d.need}` : null].filter(Boolean).join(" · ")}</span>}
                                 </span>
@@ -199,19 +201,19 @@ export function ShoppingTool() {
                 })}
               </div>
               <div className="mt-4 flex flex-wrap gap-2 border-t border-line pt-3">
-                <button type="button" onClick={copy} className="btn-primary px-3.5 py-2 text-xs">{copied ? "Copié ✓" : "Copier la liste"}</button>
-                <button type="button" onClick={() => window.print()} className="btn-secondary px-3.5 py-2 text-xs">Imprimer</button>
-                <button type="button" onClick={() => setS({ ...s, picked: {}, checked: {} })} className="ml-auto text-xs text-stone-500 hover:text-rose-600">Tout effacer</button>
+                <button type="button" onClick={copy} className="btn-primary px-3.5 py-2 text-xs">{copied ? tr("Copié ✓") : tr("Copier la liste")}</button>
+                <button type="button" onClick={() => window.print()} className="btn-secondary px-3.5 py-2 text-xs">{tr("Imprimer")}</button>
+                <button type="button" onClick={() => setS({ ...s, picked: {}, checked: {} })} className="ml-auto text-xs text-stone-500 hover:text-rose-600">{tr("Tout effacer")}</button>
               </div>
             </>
           )}
         </div>
         <div className="mt-4 rounded-2xl bg-stone-900 p-5 text-white">
-          <p className="font-semibold">Dans Flozea, c'est encore plus complet</p>
-          <p className="mt-1 text-sm text-stone-300">Prix par enseigne, liste partagée à deux en direct, menu de la semaine, vos propres recettes et historique de courses.</p>
-          <Link href="/signup" className="mt-3 inline-block rounded-xl bg-white px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-100">Créer mon espace</Link>
+          <p className="font-semibold">{tr("Dans Flozea, c'est encore plus complet")}</p>
+          <p className="mt-1 text-sm text-stone-300">{tr("Prix par enseigne, liste partagée à deux en direct, menu de la semaine, vos propres recettes et historique de courses.")}</p>
+          <Link href="/signup" className="mt-3 inline-block rounded-xl bg-white px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-100">{tr("Créer mon espace")}</Link>
         </div>
-        <p className="mt-3 text-[11px] text-stone-500">Les recettes cochées restent dans ton navigateur uniquement.</p>
+        <p className="mt-3 text-[11px] text-stone-500">{tr("Les recettes cochées restent dans ton navigateur uniquement.")}</p>
       </aside>
     </div>
   );

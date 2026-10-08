@@ -2,7 +2,7 @@
 
 import { useT } from "@/components/i18n/provider";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { saveWidgetLayout } from "@/app/app/widget-actions";
+import { saveWidgetLayout } from "@/app/(main)/app/widget-actions";
 import {
   DEFAULT_LAYOUTS,
   PAGE_SECTIONS,

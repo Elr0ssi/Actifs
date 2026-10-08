@@ -4,8 +4,8 @@ import { useT } from "@/components/i18n/provider";
 import { useMemo, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { addDays } from "@/lib/finance-engine";
-import { addMenuItems, removeMenuItem, setMenuServings, setMenuSlot } from "@/app/app/menu-actions";
-import { setDefaultServings } from "@/app/app/lists/actions";
+import { addMenuItems, removeMenuItem, setMenuServings, setMenuSlot } from "@/app/(main)/app/menu-actions";
+import { setDefaultServings } from "@/app/(main)/app/lists/actions";
 import { RECIPES } from "@/lib/marketing/recipes";
 import { cx } from "@/lib/utils";
 import { DOW } from "@/components/app/widgets/helpers";
@@ -157,7 +157,7 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
                     return (
                       <li key={m.id} className="flex items-center gap-1.5 rounded-xl bg-surface px-2 py-1.5 text-[12px] shadow-soft">
                         <span>{m.icon ?? "🍽️"}</span>
-                        <span className="min-w-0 flex-1 truncate font-medium text-stone-800">{m.name}</span>
+                        <span className="min-w-0 flex-1 truncate font-medium text-stone-800">{tr(m.name)}</span>
                         <span className="flex items-center gap-0.5 text-stone-500">
                           <button type="button" aria-label={tr("Moins de personnes")} onClick={(e) => { e.stopPropagation(); changeMeal(m.id, n - 1); }} className="px-1">−</button>
                           <span className="tabular text-[11px]">{n}</span>
@@ -168,7 +168,7 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
                       </li>
                     );
                   })}
-                  {opt.map((o) => <li key={`o${o.name}`} className="rounded-xl bg-surface px-2 py-1.5 text-[12px] text-stone-500 shadow-soft">{o.icon ?? "🍽️"} {o.name}…</li>)}
+                  {opt.map((o) => <li key={`o${o.name}`} className="rounded-xl bg-surface px-2 py-1.5 text-[12px] text-stone-500 shadow-soft">{o.icon ?? "🍽️"} {tr(o.name)}…</li>)}
                   {mine.length + opt.length === 0 && <li className="px-1 py-2 text-[12px] text-stone-400">{tr("Rien de prévu")}</li>}
                 </ul>
               </div>
@@ -231,7 +231,7 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
                       <span className="absolute bottom-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-base font-bold text-white shadow-md">{used ? "✓" : "+"}</span>
                     </div>
                     <div className="p-2">
-                      <p className="line-clamp-2 min-h-[2.25rem] text-[12px] font-semibold leading-tight text-stone-900">{c.name}</p>
+                      <p className="line-clamp-2 min-h-[2.25rem] text-[12px] font-semibold leading-tight text-stone-900">{tr(c.name)}</p>
                       {c.sub && <p className="mt-0.5 text-[10.5px] text-stone-400">{c.sub}</p>}
                     </div>
                   </button>

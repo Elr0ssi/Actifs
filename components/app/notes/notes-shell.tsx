@@ -4,7 +4,7 @@ import { useT } from "@/components/i18n/provider";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { createNote } from "@/app/app/notes/pages/actions";
+import { createNote } from "@/app/(main)/app/notes/pages/actions";
 import { Icon } from "@/components/app/icons";
 import { cx } from "@/lib/utils";
 import type { NoteMeta } from "@/lib/notes";

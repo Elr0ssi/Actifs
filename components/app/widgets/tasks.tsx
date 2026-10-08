@@ -3,8 +3,8 @@
 import { useT } from "@/components/i18n/provider";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { cx } from "@/lib/utils";
-import { toggleTaskStatus, quickAddTask } from "@/app/app/actions";
-import { createTask, deleteTask, saveTask } from "@/app/app/tasks/actions";
+import { toggleTaskStatus, quickAddTask } from "@/app/(main)/app/actions";
+import { createTask, deleteTask, saveTask } from "@/app/(main)/app/tasks/actions";
 import { Icon } from "@/components/app/icons";
 import { WidgetShell, Empty, Segmented } from "@/components/app/widgets/shell";
 import { PRIORITY_RANK, fmtLong, fmtShort, isDone } from "@/components/app/widgets/helpers";

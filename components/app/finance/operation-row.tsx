@@ -6,7 +6,7 @@ import { describeRecurrence, KIND_STYLE, occurrenceEntries, addDays, type FinOp 
 import { formatEUR, cx } from "@/lib/utils";
 import { ToggleSwitch } from "@/components/app/toggle-switch";
 import { OperationForm } from "@/components/app/finance/operation-form";
-import { deleteOperation, moveOccurrence, restoreOccurrence, skipOccurrence, toggleOperationActive } from "@/app/app/finance/actions";
+import { deleteOperation, moveOccurrence, restoreOccurrence, skipOccurrence, toggleOperationActive } from "@/app/(main)/app/finance/actions";
 
 export function OperationRow({ op, today }: { op: FinOp; today: string }) {
   const tr = useT();

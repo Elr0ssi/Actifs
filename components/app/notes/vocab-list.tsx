@@ -3,7 +3,7 @@
 import { useT } from "@/components/i18n/provider";
 import { intlLocale } from "@/lib/i18n";
 import { useMemo, useState, useTransition } from "react";
-import { deleteWord } from "@/app/app/notes/actions";
+import { deleteWord } from "@/app/(main)/app/notes/actions";
 import { cx } from "@/lib/utils";
 
 export interface VocabWord {

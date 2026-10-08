@@ -148,7 +148,7 @@ export function RecipePicker({
                       key={r.slug}
                       emoji={r.icon}
                       image={r.image}
-                      title={r.name}
+                      title={tr(r.name)}
                       meta={`${r.time} · ${r.difficulty}`}
                       count={c}
                       busy={busy.has(r.slug)}

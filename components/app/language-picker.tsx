@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { LOCALES, type Locale } from "@/lib/i18n";
-import { setLanguage } from "@/app/app/settings/actions";
+import { setLanguage } from "@/app/(main)/app/settings/actions";
 import { useLocale } from "@/components/i18n/provider";
 import { cx } from "@/lib/utils";
 

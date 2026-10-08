@@ -3,7 +3,7 @@
 import { useT } from "@/components/i18n/provider";
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { createRecipe, updateRecipe } from "@/app/app/lists/recipes/actions";
+import { createRecipe, updateRecipe } from "@/app/(main)/app/lists/recipes/actions";
 import type { Recipe, RecipeItem } from "@/lib/types";
 import { IngredientPicker } from "@/components/app/recipes/ingredient-picker";
 import type { CatalogIngredient, QtyUnit } from "@/lib/shopping";

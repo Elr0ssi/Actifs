@@ -3,8 +3,8 @@
 import { useT } from "@/components/i18n/provider";
 import { useState, useTransition } from "react";
 import { createPortal } from "react-dom";
-import { setMenuServings } from "@/app/app/menu-actions";
-import { scaleIngredientText, scaleQuantityLabel } from "@/lib/ingredient-parse";
+import { setMenuServings } from "@/app/(main)/app/menu-actions";
+import { scaleQuantityLabel, scaleTranslatedIngredient } from "@/lib/ingredient-parse";
 import { RECIPES } from "@/lib/marketing/recipes";
 import { Inline } from "@/components/app/notes/inline";
 import { stepsOf } from "@/components/app/recipes/recipe-card";
@@ -55,14 +55,14 @@ export function MenuRecipeView({
     mine && mine.items.length
       ? mine.items.map((i) => ({ label: i.label, quantity: scaleQuantityLabel(i.qty, i.unit, factor, i.quantity) }))
       : idea
-        ? idea.ingredients.map((label) => ({ label: scaleIngredientText(label, factor) }))
+        ? idea.ingredients.map((label) => ({ label: scaleTranslatedIngredient(label, factor, tr) }))
         : [];
   const changePeople = (n: number) => {
     const v = Math.min(100, Math.max(1, n));
     setSv((m) => ({ ...m, [meal.id]: v }));
     start(() => setMenuServings(meal.id, v));
   };
-  const steps = mine && stepsOf(mine.notes).length ? stepsOf(mine.notes) : idea ? idea.steps : [];
+  const steps = (mine && stepsOf(mine.notes).length ? stepsOf(mine.notes) : idea ? idea.steps : []).map((s) => tr(s));
   const found = !!(idea || mine);
 
   return createPortal(
@@ -70,14 +70,14 @@ export function MenuRecipeView({
       <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-surface shadow-2xl sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
         {image && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={image} alt={meal.name} className="aspect-video w-full object-cover" />
+          <img src={image} alt={tr(meal.name)} className="aspect-video w-full object-cover" />
         )}
         <div className="p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-xs font-semibold capitalize text-brand-700">{dayLabel}</p>
-              <h2 className="mt-1 text-2xl font-bold tracking-tight text-stone-900">{meal.icon ?? idea?.icon ?? "🍽️"} {meal.name}</h2>
-              {idea?.desc && <p className="mt-1 text-sm text-stone-500">{idea.desc}</p>}
+              <h2 className="mt-1 text-2xl font-bold tracking-tight text-stone-900">{meal.icon ?? idea?.icon ?? "🍽️"} {tr(meal.name)}</h2>
+              {idea?.desc && <p className="mt-1 text-sm text-stone-500">{tr(idea.desc)}</p>}
             </div>
             <button onClick={onClose} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label={tr("Fermer")}>✕</button>
           </div>
@@ -86,7 +86,7 @@ export function MenuRecipeView({
             <div className="mt-4 flex flex-wrap gap-1.5">
               {meals.map((m) => (
                 <button key={m.id} onClick={() => onSelect(m.id)} className={m.id === meal.id ? "rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white" : "rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600 hover:bg-stone-200"}>
-                  {m.slot === "midi" ? "☀️ " : m.slot === "soir" ? "🌙 " : ""}{m.icon ?? "🍽️"} {m.name}
+                  {m.slot === "midi" ? "☀️ " : m.slot === "soir" ? "🌙 " : ""}{m.icon ?? "🍽️"} {tr(m.name)}
                 </button>
               ))}
             </div>
@@ -94,9 +94,9 @@ export function MenuRecipeView({
 
           <div className="mt-4 flex flex-wrap gap-2 text-xs text-stone-600">
             {category && <span className="rounded-full bg-brand-50 px-2.5 py-1 font-medium text-brand-700">{category}</span>}
-            {idea && <span className="rounded-full bg-stone-100 px-2.5 py-1">⏱ {idea.time}</span>}
+            {idea && <span className="rounded-full bg-stone-100 px-2.5 py-1">⏱ {tr(idea.time)}</span>}
 
-            {idea && <span className="rounded-full bg-stone-100 px-2.5 py-1">{idea.difficulty}</span>}
+            {idea && <span className="rounded-full bg-stone-100 px-2.5 py-1">{tr(idea.difficulty)}</span>}
           </div>
 
           {!found ? (

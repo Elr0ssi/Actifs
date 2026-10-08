@@ -24,10 +24,29 @@ export function localeFromAcceptLanguage(header: string | null | undefined): Loc
 export type Vars = Record<string, string | number>;
 
 /** Traduit une clé (le texte français d'origine) ; sans traduction, la clé elle-même s'affiche. `{nom}` est remplacé par vars.nom. */
-export function translate(dict: Record<string, string> | null | undefined, key: string, vars?: Vars) {
-  const raw = dict?.[key] ?? key;
+export function translate(dict: Record<string, string> | null | undefined, key: string, vars?: Vars): string {
+  if (typeof key !== "string") return key;
+  let raw = dict?.[key];
+  if (raw === undefined && dict) {
+    // Textes à structure fixe (durées, « catégorie · prêt en N min. ») : un seul modèle de traduction pour tous.
+    for (const [re, template, names] of PATTERNS) {
+      const m = key.match(re);
+      if (m && dict[template]) {
+        const found: Vars = {};
+        names.forEach((n, i) => { found[n] = n === "cat" ? translate(dict, m[i + 1]) : m[i + 1]; });
+        return translate(dict, template, found);
+      }
+    }
+    (globalThis as { __i18nMiss?: (k: string) => void }).__i18nMiss?.(key);
+  }
+  raw ??= key;
   return vars ? raw.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m)) : raw;
 }
+
+const PATTERNS: [RegExp, string, string[]][] = [
+  [/^(\d+) min$/, "{n} min", ["n"]],
+  [/^(.+) · prêt en (\d+) min\.$/, "{cat} · prêt en {n} min.", ["cat", "n"]],
+];
 
 // --- Langue courante côté interface : utilisée par les fonctions de date et de format ---
 let current: Locale = DEFAULT_LOCALE;
@@ -52,3 +71,30 @@ export function setUiLocale(code: Locale) {
   for (let m = 0; m < 12; m++) MONTHS_LONG.push(cap(new Intl.DateTimeFormat(intl, { month: "long", timeZone: "UTC" }).format(new Date(Date.UTC(2020, m, 1)))));
 }
 setUiLocale(DEFAULT_LOCALE);
+
+// --- Adresses du site public : le français n'a pas de préfixe, les autres langues ont /en, /es, /de ---
+/** Pages qui ne dépendent pas de la langue de l'URL (la langue vient alors du cookie). */
+const UNPREFIXED = /^\/(app|login|signup|api|auth|_next)(\/|$|\?|#)/;
+
+/** Adresse d'une page publique dans la langue donnée (`/tarifs` → `/en/tarifs`). Les liens externes, ancres et pages de l'appli restent inchangés. */
+export function localizePath(href: string, locale: Locale): string {
+  if (!href.startsWith("/") || href.startsWith("//") || UNPREFIXED.test(href)) return href;
+  if (locale === DEFAULT_LOCALE) return href;
+  if (href === "/") return `/${locale}`;
+  return `/${locale}${href}`;
+}
+
+/** Retire le préfixe de langue d'une adresse (`/en/tarifs` → `/tarifs`) et renvoie la langue trouvée, le cas échéant. */
+export function splitLocalePath(pathname: string): { locale: Locale | null; path: string } {
+  const m = pathname.match(/^\/(fr|en|es|de)(\/.*)?$/);
+  if (!m) return { locale: null, path: pathname || "/" };
+  return { locale: m[1] as Locale, path: m[2] || "/" };
+}
+
+export const OG_LOCALES: Record<Locale, string> = { fr: "fr_FR", en: "en_GB", es: "es_ES", de: "de_DE" };
+
+/** Code de langue complet (fr-FR, en-GB…) pour les données structurées et les formats. */
+export const intlOf = (locale: Locale) => LOCALES.find((l) => l.code === locale)?.intl ?? "fr-FR";
+
+/** Met en minuscules un mot au milieu d'une phrase, sauf en allemand où les noms gardent leur majuscule. */
+export const lowerFor = (locale: Locale, s: string) => (locale === "de" ? s : s.toLowerCase());

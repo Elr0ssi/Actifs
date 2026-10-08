@@ -1,4 +1,6 @@
-import Link from "next/link";
+import { lowerFor } from "@/lib/i18n";
+import { getLocale, getT } from "@/lib/i18n/server";
+import Link from "@/components/marketing/link";
 import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { JsonLd, breadcrumbJsonLd } from "@/components/marketing/json-ld";
 import { Bubble, Float, InView } from "@/components/marketing/fx";
@@ -10,6 +12,7 @@ import { absolute } from "@/lib/marketing/site";
 import { cx } from "@/lib/utils";
 
 export function CategoryView({ category }: { category: CategoryKey }) {
+  const tr = getT();
   const c = CATEGORIES.find((x) => x.key === category)!;
   const list = featuresOf(c);
   const url = absolute(c.href);
@@ -24,10 +27,10 @@ export function CategoryView({ category }: { category: CategoryKey }) {
           <Ambience tone={c.tone} emojis={c.emojis} />
           <div className="relative mx-auto max-w-4xl px-6 pb-14 pt-16 text-center">
             <h1 className="text-6xl font-extrabold tracking-tight text-stone-900 sm:text-8xl">
-              Flozea <span className={cx("bg-gradient-to-r bg-clip-text text-transparent", c.gradient)}>{c.label}</span>
+              {tr("Flozea")} <span className={cx("bg-gradient-to-r bg-clip-text text-transparent", c.gradient)}>{tr(c.label)}</span>
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-xl font-semibold text-stone-800 sm:text-2xl">{c.tagline}</p>
-            <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-stone-600">{c.description}</p>
+            <p className="mx-auto mt-5 max-w-2xl text-xl font-semibold text-stone-800 sm:text-2xl">{tr(c.tagline)}</p>
+            <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-stone-600">{tr(c.description)}</p>
           </div>
         </section>
 
@@ -38,20 +41,20 @@ export function CategoryView({ category }: { category: CategoryKey }) {
               <div className={cx("mx-auto grid max-w-6xl items-center gap-12 px-6 lg:grid-cols-2", i % 2 === 1 && "lg:[&>*:first-child]:order-2")}>
                 <div>
                   <span className={cx("inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold", f.soft)}>
-                    <span className="text-base">{f.icon}</span>{f.name}
-                    {f.soon && <span className="rounded-full bg-white px-1.5 py-px text-[9px] font-bold uppercase text-indigo-700">Bientôt</span>}
+                    <span className="text-base">{tr(f.icon)}</span>{tr(f.name)}
+                    {f.soon && <span className="rounded-full bg-white px-1.5 py-px text-[9px] font-bold uppercase text-indigo-700">{tr("Bientôt")}</span>}
                   </span>
-                  <h2 className="mt-4 text-3xl font-bold leading-tight tracking-tight text-stone-900 sm:text-4xl">{f.h1}</h2>
-                  <p className="mt-4 leading-relaxed text-stone-600">{f.intro}</p>
+                  <h2 className="mt-4 text-3xl font-bold leading-tight tracking-tight text-stone-900 sm:text-4xl">{tr(f.h1)}</h2>
+                  <p className="mt-4 leading-relaxed text-stone-600">{tr(f.intro)}</p>
                   <ul className="mt-6 grid gap-2 sm:grid-cols-2">
                     {f.highlights.slice(0, 4).map((h) => (
                       <li key={h.title} className="flex items-center gap-2.5 rounded-2xl border border-line bg-surface px-3 py-2.5 text-sm font-medium text-stone-800">
-                        <span className={cx("flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-base text-white", f.gradient)}>{h.icon}</span>
-                        {h.title}
+                        <span className={cx("flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-base text-white", f.gradient)}>{tr(h.icon)}</span>
+                        {tr(h.title)}
                       </li>
                     ))}
                   </ul>
-                  <Link href={`/fonctionnalites/${f.slug}`} className="btn-primary mt-7 inline-block px-6 py-3">Découvrir {f.name.toLowerCase()} →</Link>
+                  <Link href={`/fonctionnalites/${f.slug}`} className="btn-primary mt-7 inline-block px-6 py-3">{tr("Découvrir")} {lowerFor(getLocale(), tr(f.name))} →</Link>
                 </div>
                 <InView>
                   <div className="relative mx-auto w-full max-w-xl">
@@ -74,18 +77,18 @@ export function CategoryView({ category }: { category: CategoryKey }) {
             <Ambience tone={c.tone} dots={false} />
             <div className="relative mx-auto max-w-6xl px-6">
               <div className="text-center">
-                <span className={cx("rounded-full px-4 py-1.5 text-xs font-semibold", c.soft)}>{c.icon} Articles</span>
-                <h2 id="articles-titre" className="mt-4 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">Pour aller plus loin avec {c.name}</h2>
-                <p className="mx-auto mt-3 max-w-xl text-stone-600">{articles.length} articles pratiques pour mieux t'organiser, avec des méthodes simples et concrètes.</p>
+                <span className={cx("rounded-full px-4 py-1.5 text-xs font-semibold", c.soft)}>{tr(c.icon)} {tr("Articles")}</span>
+                <h2 id="articles-titre" className="mt-4 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">{tr("Pour aller plus loin avec")} {tr(c.name)}</h2>
+                <p className="mx-auto mt-3 max-w-xl text-stone-600">{articles.length} {tr("articles pratiques pour mieux t'organiser, avec des méthodes simples et concrètes.")}</p>
               </div>
               <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_1.15fr]">
                 <InView>
                   <Link href={`/guides/${topArticle.slug}`} className={cx("fx-in group relative block h-full overflow-hidden rounded-[2rem] bg-gradient-to-br p-8 text-white", c.gradient)}>
                     <span className="fx-gradient pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.14),transparent)]" aria-hidden />
-                    <p className="relative text-xs font-semibold uppercase tracking-widest text-white/70">À lire en premier · {topArticle.minutes} min</p>
-                    <h3 className="relative mt-4 text-2xl font-bold leading-tight sm:text-3xl">{topArticle.h1}</h3>
-                    <p className="relative mt-3 line-clamp-4 text-white/85">{topArticle.description}</p>
-                    <p className="relative mt-6 font-semibold transition group-hover:translate-x-1">Lire l'article →</p>
+                    <p className="relative text-xs font-semibold uppercase tracking-widest text-white/70">{tr("À lire en premier ·")} {topArticle.minutes} {tr("min")}</p>
+                    <h3 className="relative mt-4 text-2xl font-bold leading-tight sm:text-3xl">{tr(topArticle.h1)}</h3>
+                    <p className="relative mt-3 line-clamp-4 text-white/85">{tr(topArticle.description)}</p>
+                    <p className="relative mt-6 font-semibold transition group-hover:translate-x-1">{tr("Lire l'article →")}</p>
                   </Link>
                 </InView>
                 <ol className="divide-y divide-stone-200/80">
@@ -94,8 +97,8 @@ export function CategoryView({ category }: { category: CategoryKey }) {
                       <Link href={`/guides/${g.slug}`} className="group flex items-center gap-4 py-3.5">
                         <span className="w-8 text-xl font-bold text-stone-300 transition group-hover:text-brand-500">{String(i + 2).padStart(2, "0")}</span>
                         <span className="flex-1">
-                          <span className="block font-semibold leading-snug text-stone-900 group-hover:text-brand-700">{g.h1}</span>
-                          <span className="text-xs text-stone-500">{g.minutes} min de lecture</span>
+                          <span className="block font-semibold leading-snug text-stone-900 group-hover:text-brand-700">{tr(g.h1)}</span>
+                          <span className="text-xs text-stone-500">{g.minutes} {tr("min de lecture")}</span>
                         </span>
                         <span className="text-stone-300 transition group-hover:translate-x-1 group-hover:text-brand-500">→</span>
                       </Link>
@@ -108,7 +111,7 @@ export function CategoryView({ category }: { category: CategoryKey }) {
         )}
 
         <section className="mx-auto max-w-5xl px-6 py-20">
-          <CtaBanner title={`Essaie ${c.name}`} text="Un seul espace pour organiser ton temps, tes repas et ton argent, seul ou à deux." secondary={{ href: "/tarifs", label: "Voir les tarifs" }} />
+          <CtaBanner title={`Essaie ${c.name}`} text={tr("Un seul espace pour organiser ton temps, tes repas et ton argent, seul ou à deux.")} secondary={{ href: "/tarifs", label: tr("Voir les tarifs") }} />
         </section>
       </main>
       <SiteFooter />

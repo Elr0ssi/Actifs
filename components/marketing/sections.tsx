@@ -1,23 +1,25 @@
-import Link from "next/link";
+import { getT } from "@/lib/i18n/server";
+import Link from "@/components/marketing/link";
 import { cx } from "@/lib/utils";
 import { Float, InView } from "@/components/marketing/fx";
 
 /** Bandeau d'appel à l'action avec dégradé animé et éléments flottants. */
 export function CtaBanner({ title, text, primary = { href: "/signup", label: "Créer mon espace" }, secondary, className }: { title: string; text: string; primary?: { href: string; label: string }; secondary?: { href: string; label: string }; className?: string }) {
+  const tr = getT();
   const floaters = [["📅", "left-[6%] top-[18%]", 0, 7], ["💶", "right-[8%] top-[14%]", 1.2, 6], ["🛒", "left-[14%] bottom-[14%]", 2, 8], ["✅", "right-[16%] bottom-[16%]", 0.6, 6.5], ["🍝", "left-[48%] top-[8%]", 1.6, 9]] as const;
   return (
     <section className={cx("relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-600 via-violet-700 to-brand-900 px-6 py-16 text-center text-white sm:px-12", className)}>
       <div className="fx-gradient pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.0),rgba(255,255,255,0.14),rgba(255,255,255,0.0))]" aria-hidden />
       {floaters.map(([e, pos, d, t]) => (
         <Float key={e} delay={d} duration={t} amp={14} rot={6} className={cx("pointer-events-none absolute hidden text-3xl opacity-70 sm:block", pos)}>
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/10 backdrop-blur">{e}</span>
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/10 backdrop-blur">{tr(e)}</span>
         </Float>
       ))}
-      <h2 className="relative text-3xl font-bold tracking-tight sm:text-4xl">{title}</h2>
-      <p className="relative mx-auto mt-3 max-w-xl text-brand-100">{text}</p>
+      <h2 className="relative text-3xl font-bold tracking-tight sm:text-4xl">{tr(title)}</h2>
+      <p className="relative mx-auto mt-3 max-w-xl text-brand-100">{tr(text)}</p>
       <div className="relative mt-7 flex flex-wrap items-center justify-center gap-3">
-        <Link href={primary.href} className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-brand-800 shadow-lift transition hover:-translate-y-0.5 hover:bg-brand-50">{primary.label}</Link>
-        {secondary && <Link href={secondary.href} className="px-3 py-3 text-sm font-semibold text-white/90 underline-offset-4 transition hover:text-white hover:underline">{secondary.label}</Link>}
+        <Link href={primary.href} className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-brand-800 shadow-lift transition hover:-translate-y-0.5 hover:bg-brand-50">{tr(primary.label)}</Link>
+        {secondary && <Link href={secondary.href} className="px-3 py-3 text-sm font-semibold text-white/90 underline-offset-4 transition hover:text-white hover:underline">{tr(secondary.label)}</Link>}
       </div>
     </section>
   );
@@ -25,6 +27,7 @@ export function CtaBanner({ title, text, primary = { href: "/signup", label: "Cr
 
 /** Parcours animé : une impulsion voyage d'une étape à la suivante, chaque pastille pulse à son tour. */
 export function FlowChain({ steps }: { steps: { icon: string; title: string; sub: string; tone: string }[] }) {
+  const tr = getT();
   return (
     <InView>
       <div className="relative">
@@ -37,11 +40,11 @@ export function FlowChain({ steps }: { steps: { icon: string; title: string; sub
             <li key={s.title} className="relative flex flex-col items-center text-center">
               <span className="fx-in relative flex h-16 w-16 items-center justify-center" style={{ "--d": `${i * 0.18}s` } as React.CSSProperties}>
                 <span className={cx("fx-ring absolute inset-0 rounded-full bg-gradient-to-br opacity-40", s.tone)} style={{ "--d": `${i * 0.6}s` } as React.CSSProperties} />
-                <span className={cx("relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br text-2xl text-white shadow-lift ring-4 ring-canvas", s.tone)}>{s.icon}</span>
+                <span className={cx("relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br text-2xl text-white shadow-lift ring-4 ring-canvas", s.tone)}>{tr(s.icon)}</span>
                 <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-ink text-[11px] font-bold text-onink ring-2 ring-canvas">{i + 1}</span>
               </span>
-              <p className="mt-4 font-semibold text-stone-900">{s.title}</p>
-              <p className="mt-1 max-w-[14rem] text-sm leading-relaxed text-stone-500">{s.sub}</p>
+              <p className="mt-4 font-semibold text-stone-900">{tr(s.title)}</p>
+              <p className="mt-1 max-w-[14rem] text-sm leading-relaxed text-stone-500">{tr(s.sub)}</p>
               {i < steps.length - 1 && <span className="my-4 text-xl text-brand-300 md:hidden" aria-hidden>↓</span>}
             </li>
           ))}
@@ -53,6 +56,7 @@ export function FlowChain({ steps }: { steps: { icon: string; title: string; sub
 
 /** Pastille numérotée reliée à la suivante : parcours en étapes. */
 export function StepsRail({ steps }: { steps: { title: string; text: string }[] }) {
+  const tr = getT();
   return (
     <InView>
       <ol className="relative grid gap-6 md:grid-cols-4">
@@ -62,8 +66,8 @@ export function StepsRail({ steps }: { steps: { title: string; text: string }[] 
         {steps.map((s, i) => (
           <li key={s.title} className="relative text-center md:px-2">
             <span className="fx-in relative z-10 mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-lg font-bold text-white shadow-lift ring-4 ring-canvas" style={{ "--d": `${0.15 * i}s` } as React.CSSProperties}>{i + 1}</span>
-            <h3 className="mt-3 font-semibold text-stone-900">{s.title}</h3>
-            <p className="mx-auto mt-1 max-w-[16rem] text-sm leading-relaxed text-stone-600">{s.text}</p>
+            <h3 className="mt-3 font-semibold text-stone-900">{tr(s.title)}</h3>
+            <p className="mx-auto mt-1 max-w-[16rem] text-sm leading-relaxed text-stone-600">{tr(s.text)}</p>
           </li>
         ))}
       </ol>
@@ -84,6 +88,7 @@ const EMOJI_POS = ["left-[4%] top-[12%]", "right-[5%] top-[18%]", "left-[9%] bot
 
 /** Décor d'ambiance d'une section : halos qui dérivent, motif de points et petits éléments qui flottent. */
 export function Ambience({ tone, emojis = [], dots = true }: { tone: AmbienceTone; emojis?: string[]; dots?: boolean }) {
+  const tr = getT();
   const [a, b] = BLOB[tone];
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,#000_14%,#000_78%,transparent)]" aria-hidden>
@@ -92,7 +97,7 @@ export function Ambience({ tone, emojis = [], dots = true }: { tone: AmbienceTon
       <div className={cx("fx-drift absolute -right-24 bottom-[5%] h-80 w-80 rounded-full blur-3xl", b)} style={{ "--d": "-6s", "--t": "22s" } as React.CSSProperties} />
       {emojis.map((e, i) => (
         <Float key={e + i} delay={i * 0.9} duration={6 + (i % 3) * 1.5} amp={14} rot={i % 2 ? -8 : 8} className={cx("absolute hidden text-3xl opacity-60 md:block", EMOJI_POS[i % EMOJI_POS.length])}>
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/60 shadow-soft backdrop-blur">{e}</span>
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/60 shadow-soft backdrop-blur">{tr(e)}</span>
         </Float>
       ))}
     </div>

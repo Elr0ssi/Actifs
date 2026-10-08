@@ -24,7 +24,7 @@ import {
 import { formatEUR, MONTHS_FR, cx } from "@/lib/utils";
 import { DonutChart } from "@/components/app/charts/donut-chart";
 import { NewOperationButton } from "@/components/app/finance/operation-form";
-import { skipOccurrence, restoreOccurrence, deleteOperation } from "@/app/app/finance/actions";
+import { skipOccurrence, restoreOccurrence, deleteOperation } from "@/app/(main)/app/finance/actions";
 
 type View = "month" | "week" | "year";
 import { DOW } from "@/components/app/widgets/helpers";

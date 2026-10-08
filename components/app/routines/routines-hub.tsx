@@ -5,8 +5,8 @@ import { useMemo, useState, useTransition } from "react";
 import { DAYS_SHORT_SUN } from "@/lib/i18n";
 import { addDays } from "@/lib/finance-engine";
 import { cx } from "@/lib/utils";
-import { toggleRoutineLog } from "@/app/app/actions";
-import { archiveRoutine, createRoutine, deleteRoutineForever, restoreRoutine, updateRoutine } from "@/app/app/calendar/actions";
+import { toggleRoutineLog } from "@/app/(main)/app/actions";
+import { archiveRoutine, createRoutine, deleteRoutineForever, restoreRoutine, updateRoutine } from "@/app/(main)/app/calendar/actions";
 import { DOW, fmtShort, mondayOf, scheduledOn } from "@/components/app/widgets/helpers";
 import type { Routine } from "@/lib/types";
 

@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { useT } from "@/components/i18n/provider";
+import Link from "@/components/marketing/link";
 import { useEffect, useMemo, useState } from "react";
 import { cx } from "@/lib/utils";
 import { useLocalStorage } from "@/components/marketing/tools/use-local-storage";
@@ -44,6 +45,7 @@ const INITIAL: State = {
 };
 
 export function HabitTool() {
+  const tr = useT();
   const [s, setS, ready] = useLocalStorage<State>("allin-habitudes-v1", INITIAL);
   const [today, setToday] = useState<string | null>(null);
   const [anchor, setAnchor] = useState<string | null>(null);
@@ -113,21 +115,21 @@ export function HabitTool() {
       <section className="rounded-3xl border border-line bg-surface p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-1">
-            <button type="button" onClick={() => setAnchor(addDays(anchor, -7))} className="rounded-md px-2 py-1 text-stone-500 hover:bg-stone-100" aria-label="Semaine précédente">‹</button>
+            <button type="button" onClick={() => setAnchor(addDays(anchor, -7))} className="rounded-md px-2 py-1 text-stone-500 hover:bg-stone-100" aria-label={tr("Semaine précédente")}>‹</button>
             <p className="min-w-[10rem] text-center text-sm font-semibold text-stone-800">{fmt(days[0])} – {fmt(days[6])}</p>
-            <button type="button" onClick={() => setAnchor(addDays(anchor, 7))} className="rounded-md px-2 py-1 text-stone-500 hover:bg-stone-100" aria-label="Semaine suivante">›</button>
+            <button type="button" onClick={() => setAnchor(addDays(anchor, 7))} className="rounded-md px-2 py-1 text-stone-500 hover:bg-stone-100" aria-label={tr("Semaine suivante")}>›</button>
           </div>
-          <button type="button" onClick={() => setAnchor(mondayOf(today))} className="btn-secondary px-2.5 py-1 text-[11px]">Cette semaine</button>
+          <button type="button" onClick={() => setAnchor(mondayOf(today))} className="btn-secondary px-2.5 py-1 text-[11px]">{tr("Cette semaine")}</button>
         </div>
 
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[520px] border-separate border-spacing-y-1.5 text-sm">
             <thead>
               <tr className="text-[11px] text-stone-500">
-                <th className="w-[38%] text-left font-medium">Habitude</th>
+                <th className="w-[38%] text-left font-medium">{tr("Habitude")}</th>
                 {days.map((d, i) => (
                   <th key={d} className="font-medium">
-                    <span className={cx("flex flex-col items-center leading-tight", d === today && "text-brand-700")}>{DOW[i]}<b className="text-[12px]">{Number(d.slice(8))}</b></span>
+                    <span className={cx("flex flex-col items-center leading-tight", d === today && "text-brand-700")}>{tr(DOW[i])}<b className="text-[12px]">{Number(d.slice(8))}</b></span>
                   </th>
                 ))}
                 <th className="w-10 font-medium">%</th>
@@ -139,8 +141,8 @@ export function HabitTool() {
                 return (
                   <tr key={h.id}>
                     <td className="pr-2">
-                      <p className="truncate text-[13px] font-medium text-stone-800">{h.name}</p>
-                      <p className="text-[10px] text-stone-500">{st && st.streak > 1 ? `🔥 ${st.streak} de suite` : h.days.length === 7 ? "Tous les jours" : `${h.days.length} jours / semaine`}</p>
+                      <p className="truncate text-[13px] font-medium text-stone-800">{tr(h.name)}</p>
+                      <p className="text-[10px] text-stone-500">{st && st.streak > 1 ? `🔥 ${st.streak} de suite` : h.days.length === 7 ? tr("Tous les jours") : `${h.days.length} jours / semaine`}</p>
                     </td>
                     {days.map((d) => {
                       const on = scheduled(h, d);
@@ -172,19 +174,19 @@ export function HabitTool() {
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); add(); }} className="mt-4 flex gap-2">
-          <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Nouvelle habitude (ex. Méditation 10 min)" className="input flex-1" />
-          <button className="btn-primary px-4" disabled={!draft.trim()}>Ajouter</button>
+          <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={tr("Nouvelle habitude (ex. Méditation 10 min)")} className="input flex-1" />
+          <button className="btn-primary px-4" disabled={!draft.trim()}>{tr("Ajouter")}</button>
         </form>
 
         <details className="mt-4 text-xs text-stone-500">
-          <summary className="cursor-pointer font-medium text-stone-600">Choisir les jours de chaque habitude</summary>
+          <summary className="cursor-pointer font-medium text-stone-600">{tr("Choisir les jours de chaque habitude")}</summary>
           <ul className="mt-3 space-y-2">
             {s.habits.map((h) => (
               <li key={h.id} className="flex flex-wrap items-center gap-2">
-                <span className="min-w-[8rem] flex-1 truncate text-stone-700">{h.name}</span>
+                <span className="min-w-[8rem] flex-1 truncate text-stone-700">{tr(h.name)}</span>
                 <div className="flex gap-1">
                   {WEEK_DAYS.map((dow, i) => (
-                    <button key={dow} type="button" onClick={() => toggleDay(h, dow)} className={cx("h-7 w-9 rounded-md text-[11px] font-medium", h.days.includes(dow) ? "bg-brand-600 text-white" : "bg-stone-100 text-stone-500")}>{DOW[i]}</button>
+                    <button key={dow} type="button" onClick={() => toggleDay(h, dow)} className={cx("h-7 w-9 rounded-md text-[11px] font-medium", h.days.includes(dow) ? "bg-brand-600 text-white" : "bg-stone-100 text-stone-500")}>{tr(DOW[i])}</button>
                   ))}
                 </div>
                 <button type="button" onClick={() => setS({ ...s, habits: s.habits.filter((x) => x.id !== h.id) })} className="text-stone-300 hover:text-rose-600" aria-label={`Supprimer ${h.name}`}>✕</button>
@@ -196,25 +198,25 @@ export function HabitTool() {
 
       <aside className="space-y-4">
         <div className="rounded-3xl border border-brand-200 bg-brand-50 p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">Régularité de la semaine</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">{tr("Régularité de la semaine")}</p>
           <p className="tabular mt-1 text-5xl font-bold text-stone-900">{stats.pct === null ? "—" : `${stats.pct} %`}</p>
-          <div className="mt-4 flex h-24 items-end gap-1.5" aria-label="Réussite par jour">
+          <div className="mt-4 flex h-24 items-end gap-1.5" aria-label={tr("Réussite par jour")}>
             {stats.perDay.map((v, i) => (
               <div key={i} className="flex flex-1 flex-col items-center gap-1">
                 <div className="flex h-20 w-full items-end overflow-hidden rounded-md bg-white/70">
                   <div className="w-full rounded-md bg-brand-500 transition-all" style={{ height: `${v ?? 0}%` }} />
                 </div>
-                <span className="text-[10px] text-stone-500">{DOW[i]}</span>
+                <span className="text-[10px] text-stone-500">{tr(DOW[i])}</span>
               </div>
             ))}
           </div>
         </div>
         <div className="rounded-2xl bg-stone-900 p-5 text-white">
-          <p className="font-semibold">Tes routines dans ton agenda</p>
-          <p className="mt-1 text-sm text-stone-300">Avec Flozea, tes routines apparaissent à côté de tes tâches dans l'agenda, avec une courbe de régularité par semaine, mois et année.</p>
-          <Link href="/signup" className="mt-3 inline-block rounded-xl bg-white px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-100">Créer mon espace</Link>
+          <p className="font-semibold">{tr("Tes routines dans ton agenda")}</p>
+          <p className="mt-1 text-sm text-stone-300">{tr("Avec Flozea, tes routines apparaissent à côté de tes tâches dans l'agenda, avec une courbe de régularité par semaine, mois et année.")}</p>
+          <Link href="/signup" className="mt-3 inline-block rounded-xl bg-white px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-100">{tr("Créer mon espace")}</Link>
         </div>
-        <p className="text-[11px] text-stone-500">Tes habitudes restent dans ce navigateur : rien n'est envoyé.</p>
+        <p className="text-[11px] text-stone-500">{tr("Tes habitudes restent dans ce navigateur : rien n'est envoyé.")}</p>
       </aside>
     </div>
   );

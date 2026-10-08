@@ -4,7 +4,7 @@ import { useT } from "@/components/i18n/provider";
 import { useMemo, useState } from "react";
 import { formatEUR } from "@/lib/utils";
 import { estimateIncomeTax, taxableIncomeFromPeriods } from "@/lib/tax-fr";
-import { saveTaxProfile } from "@/app/app/finance/actions";
+import { saveTaxProfile } from "@/app/(main)/app/finance/actions";
 import type { TaxProfile } from "@/lib/data/finance-budgets";
 import { SubmitButton } from "@/components/ui/submit-button";
 

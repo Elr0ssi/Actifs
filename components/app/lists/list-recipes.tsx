@@ -2,7 +2,7 @@
 
 import { useT } from "@/components/i18n/provider";
 import { useState, useTransition } from "react";
-import { setListRecipePeople } from "@/app/app/lists/actions";
+import { setListRecipePeople } from "@/app/(main)/app/lists/actions";
 import { cx } from "@/lib/utils";
 
 export interface ListRecipeRow {

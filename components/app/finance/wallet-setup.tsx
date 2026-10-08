@@ -2,7 +2,7 @@
 
 import { useT } from "@/components/i18n/provider";
 import { useState, useTransition } from "react";
-import { addTestPayment, regenerateWalletToken } from "@/app/app/finance/actions";
+import { addTestPayment, regenerateWalletToken } from "@/app/(main)/app/finance/actions";
 
 const CODE = "rounded bg-stone-100 px-1.5 py-0.5 font-mono text-[11px] text-brand-700";
 

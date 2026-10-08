@@ -3,7 +3,7 @@
 import { useT } from "@/components/i18n/provider";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { createNote, deleteNote, saveNote, togglePin } from "@/app/app/notes/pages/actions";
+import { createNote, deleteNote, saveNote, togglePin } from "@/app/(main)/app/notes/pages/actions";
 import { Icon } from "@/components/app/icons";
 import { Inline } from "@/components/app/notes/inline";
 import { cx } from "@/lib/utils";

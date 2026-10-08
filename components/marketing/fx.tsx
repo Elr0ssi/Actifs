@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useEffect, useRef, useState } from "react";
 import { cx } from "@/lib/utils";
 
@@ -40,6 +41,7 @@ export function Float({ children, className, delay = 0, duration = 6, amp = 10, 
 
 /** Bulle « verre » avec icône, façon notification d'appli bancaire. */
 export function Bubble({ icon, title, sub, tone = "violet", className }: { icon: string; title: string; sub?: string; tone?: "violet" | "green" | "amber" | "rose" | "sky"; className?: string }) {
+  const tr = useT();
   const tones = {
     violet: "from-brand-500/20 to-brand-500/5 text-brand-700",
     green: "from-emerald-500/20 to-emerald-500/5 text-emerald-700",
@@ -49,10 +51,10 @@ export function Bubble({ icon, title, sub, tone = "violet", className }: { icon:
   } as const;
   return (
     <div className={cx("flex items-center gap-2.5 rounded-2xl border border-white/60 bg-surface/80 py-2 pl-2 pr-4 shadow-lift backdrop-blur-xl", className)}>
-      <span className={cx("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-lg", tones[tone])}>{icon}</span>
+      <span className={cx("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-lg", tones[tone])}>{tr(icon)}</span>
       <span className="leading-tight">
-        <span className="block text-[12px] font-semibold text-stone-900">{title}</span>
-        {sub && <span className="block text-[10.5px] text-stone-500">{sub}</span>}
+        <span className="block text-[12px] font-semibold text-stone-900">{tr(title)}</span>
+        {sub && <span className="block text-[10.5px] text-stone-500">{tr(sub)}</span>}
       </span>
     </div>
   );
@@ -84,6 +86,7 @@ export function Aurora({ className }: { className?: string }) {
 
 /** Compteur animé quand il devient visible. */
 export function Counter({ to, suffix = "", prefix = "", duration = 1400, className }: { to: number; suffix?: string; prefix?: string; duration?: number; className?: string }) {
+  const tr = useT();
   const ref = useRef<HTMLSpanElement>(null);
   const [v, setV] = useState(0);
   useEffect(() => {
@@ -105,5 +108,5 @@ export function Counter({ to, suffix = "", prefix = "", duration = 1400, classNa
     io.observe(el);
     return () => io.disconnect();
   }, [to, duration]);
-  return <span ref={ref} className={className}>{prefix}{v.toLocaleString("fr-FR")}{suffix}</span>;
+  return <span ref={ref} className={className}>{tr(prefix)}{v.toLocaleString("fr-FR")}{tr(suffix)}</span>;
 }

@@ -18,7 +18,7 @@ import {
   type Occurrence,
 } from "@/lib/finance-engine";
 import { cx, formatEUR, MONTHS_FR } from "@/lib/utils";
-import { updateBalanceAnchor, skipOccurrence, deleteOperation } from "@/app/app/finance/actions";
+import { updateBalanceAnchor, skipOccurrence, deleteOperation } from "@/app/(main)/app/finance/actions";
 import { NewOperationButton } from "@/components/app/finance/operation-form";
 import { DonutChart } from "@/components/app/charts/donut-chart";
 import { Icon, type IconName } from "@/components/app/icons";

@@ -1,10 +1,12 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useEffect, useState } from "react";
 
 const KEY = "actifs:last-email";
 
 export function RememberedEmailInput() {
+  const tr = useT();
   const [email, setEmail] = useState("");
 
   useEffect(() => {
@@ -21,7 +23,7 @@ export function RememberedEmailInput() {
       type="email"
       autoComplete="username email"
       required
-      placeholder="toi@exemple.com"
+      placeholder={tr("toi@exemple.com")}
       value={email}
       onChange={(e) => {
         setEmail(e.target.value);

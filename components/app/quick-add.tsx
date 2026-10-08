@@ -2,7 +2,7 @@
 
 import { useT } from "@/components/i18n/provider";
 import { useEffect, useState, useTransition } from "react";
-import { createTask } from "@/app/app/tasks/actions";
+import { createTask } from "@/app/(main)/app/tasks/actions";
 import { Icon } from "@/components/app/icons";
 import { cx } from "@/lib/utils";
 

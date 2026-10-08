@@ -13,7 +13,7 @@ import { eur0, fmtShort, mondayOf, DOW } from "@/components/app/widgets/helpers"
 import type { WidgetProps } from "@/components/app/widgets/types";
 import { MenuEditor } from "@/components/app/widgets/menu-editor";
 import { MenuRecipeView } from "@/components/app/widgets/menu-recipe-view";
-import { removeMenuItem } from "@/app/app/menu-actions";
+import { removeMenuItem } from "@/app/(main)/app/menu-actions";
 import type { WidgetList } from "@/lib/data/widgets";
 
 const BUDGET_CATEGORY = "Alimentation / Courses";
@@ -102,12 +102,12 @@ export function MenuWeek({ data }: WidgetProps) {
                     <div className="mt-2 aspect-[4/3] overflow-hidden rounded-xl bg-stone-100">
                       {image ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={image} alt={first.name} loading="lazy" draggable={false} className="h-full w-full object-cover transition group-hover:scale-105" />
+                        <img src={image} alt={tr(first.name)} loading="lazy" draggable={false} className="h-full w-full object-cover transition group-hover:scale-105" />
                       ) : (
                         <div className="flex h-full items-center justify-center text-4xl">{first.icon ?? rec?.icon ?? "🍽️"}</div>
                       )}
                     </div>
-                    <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-[13px] font-semibold leading-tight text-stone-900">{first.slot && <span className="mr-1" title={first.slot === "midi" ? tr("Midi") : tr("Soir")}>{first.slot === "midi" ? "☀️" : "🌙"}</span>}{first.name}</p>
+                    <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-[13px] font-semibold leading-tight text-stone-900">{first.slot && <span className="mr-1" title={first.slot === "midi" ? tr("Midi") : tr("Soir")}>{first.slot === "midi" ? "☀️" : "🌙"}</span>}{tr(first.name)}</p>
                     <p className="mt-1 flex items-center gap-1 text-[11px] text-stone-500">
                       <span>⏱</span>
                       {rec?.time ?? "—"}
@@ -181,7 +181,7 @@ export function ListsOverview({ data, size }: WidgetProps) {
               <li key={l.id}>
                 <Link href={`/app/lists/${l.id}`} className="block rounded-lg px-1 py-0.5 hover:bg-stone-50">
                   <div className="flex items-baseline justify-between gap-2 text-[12px]">
-                    <span className="truncate font-medium text-stone-800">{l.name}{l.store && <span className="ml-1.5 text-[10px] font-normal text-stone-400">{l.store}</span>}</span>
+                    <span className="truncate font-medium text-stone-800">{tr(l.name)}{l.store && <span className="ml-1.5 text-[10px] font-normal text-stone-400">{l.store}</span>}</span>
                     <span className="tabular shrink-0 text-[11px] text-stone-500">
                       {done}/{l.items.length}
                       {l.amount > 0 && <b className="ml-2 text-stone-800">{eur0(l.amount)}</b>}

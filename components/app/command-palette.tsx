@@ -5,8 +5,8 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Icon, type IconName } from "@/components/app/icons";
 import { RECIPES } from "@/lib/marketing/recipes";
-import { setAppearance } from "@/app/app/settings/actions";
-import { logout } from "@/app/(auth)/actions";
+import { setAppearance } from "@/app/(main)/app/settings/actions";
+import { logout } from "@/app/(main)/(auth)/actions";
 import { cx } from "@/lib/utils";
 import type { ThemeMode } from "@/lib/theme";
 

@@ -5,8 +5,8 @@ import { useMemo, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 import { ExtrasPicker } from "@/components/app/lists/extras-picker";
 import { RecipePicker } from "@/components/app/lists/recipe-picker";
-import { importInspirationRecipe } from "@/app/app/lists/recipes/actions";
-import { setDefaultServings } from "@/app/app/lists/actions";
+import { importInspirationRecipe } from "@/app/(main)/app/lists/recipes/actions";
+import { setDefaultServings } from "@/app/(main)/app/lists/actions";
 import { RECIPES, type MarketingRecipe } from "@/lib/marketing/recipes";
 import { formatEUR, cx } from "@/lib/utils";
 import { lineCost, type CatalogIngredient, type IngredientUnit, type QtyUnit } from "@/lib/shopping";
@@ -163,7 +163,7 @@ export function ListComposer({
                       r.icon ?? "🍽️"
                     )}
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-stone-800">{r.name}</span>
+                  <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-stone-800">{tr(r.name)}</span>
                   <div className="flex items-center gap-1" title={tr("Nombre de personnes")}>
                     <button type="button" onClick={() => set(r.id, c - 1)} className="h-7 w-7 rounded-lg border border-line text-stone-500 hover:bg-stone-50" aria-label={tr("Moins de personnes")}>−</button>
                     <span className="min-w-[3rem] text-center text-xs font-semibold text-stone-800">{tr("{n} pers.", { n: c })}</span>

@@ -3,7 +3,7 @@
 import { useT } from "@/components/i18n/provider";
 import { intlLocale } from "@/lib/i18n";
 import { useMemo, useState, useTransition } from "react";
-import { deleteTransaction, setTransactionCategory } from "@/app/app/finance/actions";
+import { deleteTransaction, setTransactionCategory } from "@/app/(main)/app/finance/actions";
 import { CATEGORIES } from "@/lib/finance-engine";
 import { cx, formatEUR } from "@/lib/utils";
 

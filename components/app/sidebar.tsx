@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cx } from "@/lib/utils";
 import { LogoWordmark } from "@/components/logo";
-import { logout } from "@/app/(auth)/actions";
+import { logout } from "@/app/(main)/(auth)/actions";
 import { Icon, type IconName } from "@/components/app/icons";
 import type { ThemeMode } from "@/lib/theme";
 

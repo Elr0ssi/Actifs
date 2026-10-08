@@ -3,7 +3,7 @@
 import { useT } from "@/components/i18n/provider";
 import { intlLocale } from "@/lib/i18n";
 import { useState, useTransition } from "react";
-import { deleteBalanceEntry, editBalanceEntry, pruneBalanceHistory } from "@/app/app/finance/actions";
+import { deleteBalanceEntry, editBalanceEntry, pruneBalanceHistory } from "@/app/(main)/app/finance/actions";
 import { cx, formatEUR } from "@/lib/utils";
 
 const fmt = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });

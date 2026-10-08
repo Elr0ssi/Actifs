@@ -5,8 +5,8 @@ import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { addDays, expand, monthBounds, type Occurrence } from "@/lib/finance-engine";
 import { cx, formatEUR, MONTHS_FR } from "@/lib/utils";
-import { toggleTaskStatus, toggleRoutineLog } from "@/app/app/actions";
-import { toggleListItem } from "@/app/app/lists/actions";
+import { toggleTaskStatus, toggleRoutineLog } from "@/app/(main)/app/actions";
+import { toggleListItem } from "@/app/(main)/app/lists/actions";
 import { RECIPES } from "@/lib/marketing/recipes";
 import { ToggleCheckbox } from "@/components/app/toggle-checkbox";
 import { CountUp } from "@/components/app/count-up";
@@ -197,7 +197,7 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
               <ul className="space-y-1">
                 {selFin.map((o, i) => (
                   <li key={i} className="flex justify-between gap-2 px-2 text-[12px]">
-                    <span className="truncate text-stone-700">{o.op.name}</span>
+                    <span className="truncate text-stone-700">{tr(o.op.name)}</span>
                     <span className={cx("tabular shrink-0 font-semibold", o.signed > 0 ? "text-emerald-600" : "text-rose-600")}>{o.signed > 0 ? "+" : "-"}{formatEUR(o.op.amount)}</span>
                   </li>
                 ))}
@@ -299,7 +299,7 @@ export function ListsShopping({ data, size, opts, setOpts }: WidgetProps) {
       right={
         open.length > 1 && size !== "s" ? (
           <select value={list.id} onChange={(e) => setOpts({ listId: e.target.value })} className="max-w-[110px] rounded-md border border-line bg-surface px-1.5 py-1 text-[11px] text-stone-600">
-            {open.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+            {open.map((l) => <option key={l.id} value={l.id}>{tr(l.name)}</option>)}
           </select>
         ) : undefined
       }
@@ -350,15 +350,15 @@ export function RecipesIdeas({ data, size }: WidgetProps) {
               <div className="flex aspect-video items-center justify-center overflow-hidden rounded-xl bg-stone-100 text-[10px] text-stone-300">
                 {r.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={r.image} alt={r.name} className="h-full w-full object-cover" />
+                  <img src={r.image} alt={tr(r.name)} className="h-full w-full object-cover" />
                 ) : (
                   tr("Photo à venir")
                 )}
               </div>
               <span className="absolute -bottom-2.5 left-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 border-surface bg-surface text-sm shadow">{r.icon}</span>
             </div>
-            <p className="mt-3.5 truncate text-[12px] font-semibold text-stone-800 group-hover:text-brand-700">{r.name}</p>
-            <p className="text-[10px] text-stone-400">{r.time} · {r.category}</p>
+            <p className="mt-3.5 truncate text-[12px] font-semibold text-stone-800 group-hover:text-brand-700">{tr(r.name)}</p>
+            <p className="text-[10px] text-stone-400">{tr(r.time)} · {tr(r.category)}</p>
           </Link>
         ))}
       </div>
