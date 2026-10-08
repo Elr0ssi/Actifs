@@ -57,7 +57,7 @@ export default function CalculateursPage() {
             ))}
           </div>
           <FadeIn delay={280}>
-            <p className="mx-auto mt-10 max-w-2xl text-center text-xs text-stone-400">
+            <p className="mx-auto mt-10 max-w-2xl text-center text-xs text-stone-500">
               Estimation indicative à partir de ratios et d'un barème publics. Ne remplace pas ta fiche de paie ni un
               simulateur officiel — utile pour anticiper, pas pour déclarer.
             </p>

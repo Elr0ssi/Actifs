@@ -9,7 +9,7 @@ export function RecipeCard({ recipe, size = "normal" }: { recipe: MarketingRecip
         <div className="aspect-video overflow-hidden rounded-t-2xl bg-stone-100">
           {recipe.image ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={recipe.image} alt={recipe.name} className="h-full w-full object-cover" />
+            <img src={recipe.image} alt={recipe.name} loading="lazy" decoding="async" width={640} height={360} className="h-full w-full object-cover" />
           ) : (
             <div className={`relative flex h-full items-center justify-center bg-gradient-to-br ${recipe.gradient}`}>
               <span className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/30 blur-2xl" />
@@ -25,7 +25,7 @@ export function RecipeCard({ recipe, size = "normal" }: { recipe: MarketingRecip
         {size === "normal" && (
           <div className="flex items-center justify-between">
             <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700">{recipe.category}</span>
-            <span className="text-xs text-stone-400">{recipe.tag}</span>
+            <span className="text-xs text-stone-500">{recipe.tag}</span>
           </div>
         )}
         <h3 className={size === "small" ? "text-sm font-semibold text-stone-900 group-hover:text-brand-700" : "mt-2.5 font-semibold text-stone-900 group-hover:text-brand-700"}>

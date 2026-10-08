@@ -7,7 +7,7 @@ function Window({ title, children, className }: { title: string; children: React
     <div className={cx("overflow-hidden rounded-3xl border border-line bg-surface shadow-lift", className)}>
       <div className="flex items-center gap-1.5 border-b border-line bg-stone-50/70 px-4 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full bg-rose-300" /><span className="h-2.5 w-2.5 rounded-full bg-amber-300" /><span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
-        <span className="ml-3 text-[11px] font-medium text-stone-400">{title}</span>
+        <span className="ml-3 text-[11px] font-medium text-stone-500">{title}</span>
       </div>
       <div className="p-4">{children}</div>
     </div>
@@ -28,7 +28,7 @@ export function AgendaMock({ className }: { className?: string }) {
   return (
     <InView className={className}>
       <Window title="Agenda · semaine du 28 sept.">
-        <div className="grid grid-cols-5 gap-2 text-center text-[10px] font-medium text-stone-400">{days.map((d) => <span key={d}>{d}</span>)}</div>
+        <div className="grid grid-cols-5 gap-2 text-center text-[10px] font-medium text-stone-500">{days.map((d) => <span key={d}>{d}</span>)}</div>
         <div className="relative mt-2 grid h-44 grid-cols-5 gap-2 rounded-2xl bg-[repeating-linear-gradient(to_bottom,transparent,transparent_21px,rgb(var(--line)/0.8)_22px)] p-0">
           {days.map((_, i) => (
             <div key={i} className="relative">
@@ -59,7 +59,7 @@ export function TasksMock({ className }: { className?: string }) {
               <span className={cx("fx-check flex h-5 w-5 items-center justify-center rounded-full border", done ? "border-transparent bg-emerald-500" : "border-stone-300")}>
                 {done && <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7" style={D(0.6)} /></svg>}
               </span>
-              <span className="min-w-0 flex-1"><span className={cx("block truncate text-[12px] font-medium", done ? "text-stone-400 line-through" : "text-stone-800")}>{t}</span><span className="block text-[10px] text-stone-400">{p}</span></span>
+              <span className="min-w-0 flex-1"><span className={cx("block truncate text-[12px] font-medium", done ? "text-stone-500 line-through" : "text-stone-800")}>{t}</span><span className="block text-[10px] text-stone-500">{p}</span></span>
               {i === 1 && <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold text-rose-600">Demain</span>}
             </li>
           ))}
@@ -84,7 +84,7 @@ export function MealsMock({ className }: { className?: string }) {
               <p className="text-[11px] font-bold text-stone-800">{d}</p>
               <p className="my-2 flex h-14 items-center justify-center rounded-xl bg-gradient-to-br from-stone-100 to-stone-50 text-3xl">{e}</p>
               <p className="line-clamp-2 text-[11px] font-semibold leading-tight text-stone-900">{n}</p>
-              <p className="mt-1 text-[10px] text-stone-400">⏱ {t} · 2 pers.</p>
+              <p className="mt-1 text-[10px] text-stone-500">⏱ {t} · 2 pers.</p>
             </div>
           ))}
         </div>
@@ -103,7 +103,7 @@ export function ShoppingMock({ className }: { className?: string }) {
           {rows.map(([n, q, note, p], i) => (
             <li key={n} className="fx-slide flex items-center gap-3 py-2" style={D(0.12 * i)}>
               <span className="h-4 w-4 rounded border border-stone-300" />
-              <span className="min-w-0 flex-1"><span className="block text-[12px] font-medium text-stone-800"><b className="mr-1">{q}</b>{n}</span>{note && <span className="block text-[10px] text-stone-400">{note}</span>}</span>
+              <span className="min-w-0 flex-1"><span className="block text-[12px] font-medium text-stone-800"><b className="mr-1">{q}</b>{n}</span>{note && <span className="block text-[10px] text-stone-500">{note}</span>}</span>
               <span className="text-[12px] font-semibold text-stone-700">{p}</span>
             </li>
           ))}
@@ -139,7 +139,7 @@ export function BudgetMock({ className }: { className?: string }) {
         </div>
         <div className="fx-in mt-3 flex items-center gap-2.5 rounded-xl border border-line px-3 py-2" style={D(0.8)}>
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-base">💳</span>
-          <span className="min-w-0 flex-1"><span className="block text-[12px] font-medium text-stone-800">Carrefour City</span><span className="block text-[10px] text-stone-400">12:31 · Carte • Apple Pay</span></span>
+          <span className="min-w-0 flex-1"><span className="block text-[12px] font-medium text-stone-800">Carrefour City</span><span className="block text-[10px] text-stone-500">12:31 · Carte • Apple Pay</span></span>
           <span className="text-[12px] font-semibold text-rose-600">−12,50 €</span>
         </div>
       </Window>
@@ -155,10 +155,10 @@ export function NotesMock({ className }: { className?: string }) {
         <p className="text-xl font-bold tracking-tight text-stone-900">Idées de voyage</p>
         <div className="mt-3 space-y-1.5 text-[12px] text-stone-700">
           <p className="fx-slide" style={D(0.1)}>Un texte avec <b>gras</b>, <i>italique</i> et <code className="rounded bg-stone-100 px-1 text-brand-700">code</code>.</p>
-          <p className="fx-slide flex items-center gap-2" style={D(0.25)}><span className="flex h-4 w-4 items-center justify-center rounded bg-brand-600 text-[9px] text-white">✓</span><span className="text-stone-400 line-through">Réserver le vol</span></p>
-          <p className="fx-slide flex items-center gap-2" style={D(0.4)}><span className="text-stone-400">•</span>Lisbonne</p>
-          <p className="fx-slide flex items-center gap-2" style={D(0.55)}><span className="text-stone-400">•</span>Porto</p>
-          <p className="fx-slide text-stone-400" style={D(0.7)}>/titre</p>
+          <p className="fx-slide flex items-center gap-2" style={D(0.25)}><span className="flex h-4 w-4 items-center justify-center rounded bg-brand-600 text-[9px] text-white">✓</span><span className="text-stone-500 line-through">Réserver le vol</span></p>
+          <p className="fx-slide flex items-center gap-2" style={D(0.4)}><span className="text-stone-500">•</span>Lisbonne</p>
+          <p className="fx-slide flex items-center gap-2" style={D(0.55)}><span className="text-stone-500">•</span>Porto</p>
+          <p className="fx-slide text-stone-500" style={D(0.7)}>/titre</p>
         </div>
         <div className="fx-in mt-1 w-44 rounded-xl border border-line bg-surface p-1 shadow-lift" style={D(0.9)}>
           {["Titre 1", "Titre 2", "À cocher"].map((t, i) => <p key={t} className={cx("rounded-lg px-2.5 py-1 text-[11px]", i === 0 ? "bg-brand-50 font-semibold text-brand-700" : "text-stone-600")}>{t}</p>)}

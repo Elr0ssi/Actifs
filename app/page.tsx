@@ -18,6 +18,7 @@ export const metadata: Metadata = pageMeta({
     "Remplace Notion, Excel, Jow et Google Agenda par un seul espace : agenda horaire, tâches et routines, listes de courses et recettes à la bonne quantité, budget et calendrier financier, notes. Seul ou à deux, gratuit.",
   path: "/",
 });
+metadata.alternates = { canonical: "/", languages: { fr: "/", en: "/en", "x-default": "/" } };
 
 const PAINS = [
   { icon: "🧩", short: "Tout au même endroit", tone: "from-brand-500 to-violet-600" },
@@ -121,9 +122,9 @@ export default function LandingPage() {
               <FadeIn delay={240}>
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <Link href="/signup" className="btn-primary px-6 py-3 text-base">Créer mon espace</Link>
-                  <Link href="/fonctionnalites" className="btn-secondary px-6 py-3 text-base">Découvrir les fonctionnalités</Link>
+                  <Link href="/fonctionnalites" className="px-2 py-3 text-base font-semibold text-stone-700 underline-offset-4 hover:text-brand-700 hover:underline">Découvrir les fonctionnalités →</Link>
                 </div>
-                <p className="mt-3 text-xs text-stone-400">Gratuit, sans carte bancaire. <Link href="/tarifs" className="underline underline-offset-2 hover:text-brand-600">Voir les tarifs</Link></p>
+                <p className="mt-3 text-xs text-stone-500">Gratuit, sans carte bancaire. <Link href="/tarifs" className="underline underline-offset-2 hover:text-brand-600">Voir les tarifs</Link></p>
               </FadeIn>
             </div>
 
@@ -132,7 +133,7 @@ export default function LandingPage() {
               <div className="relative mx-auto w-full max-w-md" aria-hidden>
                 <div className="card p-4 shadow-lift">
                   <div className="flex items-center justify-between text-xs font-semibold text-stone-800"><span>Agenda · semaine</span><span className="rounded-full bg-brand-50 px-2 py-0.5 text-brand-700">Aujourd'hui</span></div>
-                  <div className="mt-3 grid grid-cols-5 gap-1.5 text-[10px] text-stone-400">
+                  <div className="mt-3 grid grid-cols-5 gap-1.5 text-[10px] text-stone-500">
                     {["Lun", "Mar", "Mer", "Jeu", "Ven"].map((d) => <span key={d} className="text-center">{d}</span>)}
                     <div className="space-y-1"><span className="block rounded-md bg-brand-500/15 px-1 py-2 text-brand-800">Réunion</span><span className="block rounded-md bg-emerald-500/15 px-1 py-1 text-emerald-700">↻ Sport</span></div>
                     <div className="space-y-1"><span className="block rounded-md bg-amber-500/15 px-1 py-4 text-amber-800">Appel client</span></div>
@@ -161,7 +162,7 @@ export default function LandingPage() {
 
         {/* Ce que ça remplace : défilement */}
         <section className="py-6" aria-label="Outils remplacés">
-          <p className="mb-4 text-center text-xs font-semibold uppercase tracking-widest text-stone-400">Fini de jongler entre</p>
+          <p className="mb-4 text-center text-xs font-semibold uppercase tracking-widest text-stone-500">Fini de jongler entre</p>
           <Marquee speed={50} items={REPLACES.map((r) => <span key={r} className="rounded-full border border-line bg-surface px-5 py-2 text-sm font-medium text-stone-500 line-through decoration-brand-400 decoration-2 shadow-soft">{r}</span>)} />
         </section>
 
@@ -219,7 +220,7 @@ export default function LandingPage() {
               <FadeIn key={f.slug} delay={i * 70}>
                 <Link href={`/fonctionnalites/${f.slug}`} className={cx("group block rounded-[1.75rem] bg-gradient-to-br p-6 shadow-soft transition duration-300 hover:-translate-y-2 hover:rotate-0 hover:shadow-lift", FEAT_STYLE[i % FEAT_STYLE.length].bg, FEAT_STYLE[i % FEAT_STYLE.length].rot)}>
                   <span className="fx-float flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-3xl shadow-soft" style={{ "--d": `${i * 0.4}s`, "--a": "5px" } as React.CSSProperties}>{f.icon}</span>
-                  <p className="mt-4 text-[11px] font-bold uppercase tracking-wider text-stone-400">Flozea {categoryOf(f).label}</p>
+                  <p className="mt-4 text-[11px] font-bold uppercase tracking-wider text-stone-500">Flozea {categoryOf(f).label}</p>
                   <h3 className="mt-1 flex items-center gap-2 text-lg font-bold leading-tight text-stone-900">{f.name}{f.soon && <span className="rounded-full bg-indigo-100 px-1.5 py-px text-[9px] font-bold uppercase text-indigo-700">Bientôt</span>}</h3>
                   <p className="mt-1 text-sm text-stone-600">{FEAT_SHORT[f.slug] ?? f.short}</p>
                   <p className="mt-5 text-sm font-semibold text-brand-700 transition group-hover:translate-x-1">Découvrir →</p>

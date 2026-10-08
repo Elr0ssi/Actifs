@@ -16,6 +16,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/recettes", 0.8, "weekly"),
     ...RECIPES.map((r) => page(`/recettes/${r.slug}`, 0.6)),
     page("/tarifs", 0.6),
+    page("/en", 0.9),
+    page("/confidentialite", 0.3),
+    page("/cgu", 0.3),
+    page("/mentions-legales", 0.3),
     page("/login", 0.2),
     page("/signup", 0.5),
   ];

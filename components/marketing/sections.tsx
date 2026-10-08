@@ -17,7 +17,7 @@ export function CtaBanner({ title, text, primary = { href: "/signup", label: "Cr
       <p className="relative mx-auto mt-3 max-w-xl text-brand-100">{text}</p>
       <div className="relative mt-7 flex flex-wrap items-center justify-center gap-3">
         <Link href={primary.href} className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-brand-800 shadow-lift transition hover:-translate-y-0.5 hover:bg-brand-50">{primary.label}</Link>
-        {secondary && <Link href={secondary.href} className="rounded-xl border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">{secondary.label}</Link>}
+        {secondary && <Link href={secondary.href} className="px-3 py-3 text-sm font-semibold text-white/90 underline-offset-4 transition hover:text-white hover:underline">{secondary.label}</Link>}
       </div>
     </section>
   );

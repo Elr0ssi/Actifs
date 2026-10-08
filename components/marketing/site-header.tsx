@@ -34,10 +34,10 @@ export function SiteHeader({ current }: { current?: Current }) {
           {/* Un onglet par catégorie, avec ses pages en sous-menu */}
           {CATEGORIES.map((c) => (
             <div key={c.key} className="group relative">
-              <Link href={c.href} className={item(current === c.key)}>{c.label} <span className="text-[10px] text-stone-400">▾</span></Link>
+              <Link href={c.href} className={item(current === c.key)}>{c.label} <span className="text-[10px] text-stone-500">▾</span></Link>
               <div className={cx(panel, center)}>
                 <div className="w-64 rounded-3xl border border-line bg-surface p-2.5 shadow-lift">
-                  <Link href={c.href} className="block rounded-xl px-2.5 py-1.5 text-xs font-bold uppercase tracking-wide text-stone-400 hover:text-brand-700">{c.name}</Link>
+                  <Link href={c.href} className="block rounded-xl px-2.5 py-1.5 text-xs font-bold uppercase tracking-wide text-stone-500 hover:text-brand-700">{c.name}</Link>
                   {featuresOf(c).map((f) => <FeatureLink key={f.slug} f={f} />)}
                 </div>
               </div>
@@ -59,7 +59,7 @@ export function SiteHeader({ current }: { current?: Current }) {
             <div className="absolute right-0 top-full mt-3 max-h-[75vh] w-72 overflow-y-auto rounded-3xl border border-line bg-surface p-3 shadow-lift">
               {CATEGORIES.map((c) => (
                 <div key={c.key} className="mb-1">
-                  <Link href={c.href} className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-bold uppercase tracking-wide text-stone-400">{c.icon} {c.name}</Link>
+                  <Link href={c.href} className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-bold uppercase tracking-wide text-stone-500">{c.icon} {c.name}</Link>
                   {featuresOf(c).map((f) => <FeatureLink key={f.slug} f={f} />)}
                 </div>
               ))}
@@ -105,7 +105,7 @@ export function SiteFooter() {
           </div>
           {FOOTER_COLUMNS.map((col) => (
             <nav key={col.title} aria-label={col.title}>
-              <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">{col.title}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">{col.title}</p>
               <ul className="mt-3 space-y-2 text-sm text-stone-600">
                 {col.links.map(([href, label]) => (
                   <li key={href}><Link href={href} className="hover:text-stone-900">{label}</Link></li>
@@ -114,7 +114,13 @@ export function SiteFooter() {
             </nav>
           ))}
         </div>
-        <p className="mt-10 text-sm text-stone-400">© {new Date().getFullYear()} Flozea. Organise ta vie, simplement.</p>
+        <nav aria-label="Informations légales" className="mt-10 flex flex-wrap gap-x-5 gap-y-2 text-sm text-stone-500">
+          <Link href="/mentions-legales" className="hover:text-stone-900">Mentions légales</Link>
+          <Link href="/confidentialite" className="hover:text-stone-900">Confidentialité</Link>
+          <Link href="/cgu" className="hover:text-stone-900">CGU</Link>
+          <Link href="/en" hrefLang="en" lang="en" className="hover:text-stone-900">English</Link>
+        </nav>
+        <p className="mt-4 text-sm text-stone-500">© {new Date().getFullYear()} Flozea. Organise ta vie, simplement.</p>
       </div>
     </footer>
   );

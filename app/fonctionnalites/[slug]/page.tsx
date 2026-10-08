@@ -78,7 +78,7 @@ export default function FeaturePage({ params }: { params: { slug: string } }) {
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-stone-600">{f.intro}</p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link href="/signup" className="btn-primary px-6 py-3 text-base">{f.soon ? "Créer mon espace gratuit" : "Créer mon espace"}</Link>
-              <Link href="/tarifs" className="btn-secondary px-6 py-3 text-base">Voir les tarifs</Link>
+              <Link href="/tarifs" className="px-2 py-3 text-base font-semibold text-stone-700 underline-offset-4 hover:text-brand-700 hover:underline">Voir les tarifs →</Link>
             </div>
           </div>
           <div className="relative mx-auto w-full max-w-xl">

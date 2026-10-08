@@ -123,7 +123,7 @@ export function HabitTool() {
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[520px] border-separate border-spacing-y-1.5 text-sm">
             <thead>
-              <tr className="text-[11px] text-stone-400">
+              <tr className="text-[11px] text-stone-500">
                 <th className="w-[38%] text-left font-medium">Habitude</th>
                 {days.map((d, i) => (
                   <th key={d} className="font-medium">
@@ -140,7 +140,7 @@ export function HabitTool() {
                   <tr key={h.id}>
                     <td className="pr-2">
                       <p className="truncate text-[13px] font-medium text-stone-800">{h.name}</p>
-                      <p className="text-[10px] text-stone-400">{st && st.streak > 1 ? `🔥 ${st.streak} de suite` : h.days.length === 7 ? "Tous les jours" : `${h.days.length} jours / semaine`}</p>
+                      <p className="text-[10px] text-stone-500">{st && st.streak > 1 ? `🔥 ${st.streak} de suite` : h.days.length === 7 ? "Tous les jours" : `${h.days.length} jours / semaine`}</p>
                     </td>
                     {days.map((d) => {
                       const on = scheduled(h, d);
@@ -214,7 +214,7 @@ export function HabitTool() {
           <p className="mt-1 text-sm text-stone-300">Avec Flozea, tes routines apparaissent à côté de tes tâches dans l'agenda, avec une courbe de régularité par semaine, mois et année.</p>
           <Link href="/signup" className="mt-3 inline-block rounded-xl bg-white px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-100">Créer mon espace</Link>
         </div>
-        <p className="text-[11px] text-stone-400">Tes habitudes restent dans ce navigateur : rien n'est envoyé.</p>
+        <p className="text-[11px] text-stone-500">Tes habitudes restent dans ce navigateur : rien n'est envoyé.</p>
       </aside>
     </div>
   );

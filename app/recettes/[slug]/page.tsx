@@ -67,7 +67,7 @@ export default function RecipeDetailPage({ params }: { params: { slug: string } 
             <div className="aspect-video overflow-hidden rounded-3xl bg-stone-100">
               {recipe.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={recipe.image} alt={recipe.name} className="h-full w-full object-cover" />
+                <img src={recipe.image} alt={recipe.name} loading="lazy" decoding="async" width={640} height={360} className="h-full w-full object-cover" />
               ) : (
                 <div className={`flex h-full items-center justify-center bg-gradient-to-br ${recipe.gradient}`}><span className="text-8xl drop-shadow-sm">{recipe.icon}</span></div>
               )}
@@ -78,7 +78,7 @@ export default function RecipeDetailPage({ params }: { params: { slug: string } 
           </div>
           <div className="mt-8 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700">{recipe.category}</span>
-            <span className="text-sm text-stone-400">{recipe.time} · {recipe.servings} pers. · {recipe.difficulty}</span>
+            <span className="text-sm text-stone-500">{recipe.time} · {recipe.servings} pers. · {recipe.difficulty}</span>
           </div>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">{recipe.name}</h1>
           <p className="mt-2 text-lg text-stone-600">{recipe.desc}</p>
@@ -116,21 +116,21 @@ export default function RecipeDetailPage({ params }: { params: { slug: string } 
             <h2 className="font-semibold text-stone-900">Détail plus poussé</h2>
             <div className="mt-5 grid gap-6 sm:grid-cols-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">Préparation</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Préparation</p>
                 <p className="mt-1 text-lg font-bold text-stone-900">{recipe.prepMinutes} min</p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">Cuisson</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Cuisson</p>
                 <p className="mt-1 text-lg font-bold text-stone-900">{recipe.cookMinutes > 0 ? `${recipe.cookMinutes} min` : "—"}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">Temps total</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Temps total</p>
                 <p className="mt-1 text-lg font-bold text-stone-900">{recipe.prepMinutes + recipe.cookMinutes} min</p>
               </div>
             </div>
             {recipe.utensils.length > 0 && (
               <div className="mt-6">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Ustensiles nécessaires</p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-500">Ustensiles nécessaires</p>
                 <div className="flex flex-wrap gap-2">
                   {recipe.utensils.map((u) => (
                     <span key={u} className="rounded-full border border-stone-200 bg-surface px-3 py-1 text-sm text-stone-700">
@@ -151,7 +151,7 @@ export default function RecipeDetailPage({ params }: { params: { slug: string } 
               prix estimés par enseigne.
             </p>
             <Link href="/signup" className="btn-primary mt-5 inline-block px-6 py-3 text-base">Créer ma liste de courses →</Link>
-            <p className="mt-3 text-xs text-stone-400">Gratuit, sans carte bancaire.</p>
+            <p className="mt-3 text-xs text-stone-500">Gratuit, sans carte bancaire.</p>
           </div>
         </FadeIn>
 

@@ -39,7 +39,7 @@ function Group({ title, hint, rows, onChange, tone }: { title: string; hint: str
       <div className="mb-3 flex items-baseline justify-between gap-2">
         <div>
           <h3 className="text-sm font-semibold text-stone-900">{title}</h3>
-          <p className="text-[11px] text-stone-400">{hint}</p>
+          <p className="text-[11px] text-stone-500">{hint}</p>
         </div>
         <p className={cx("tabular text-sm font-bold", tone)}>{eur(sum(rows))}</p>
       </div>
@@ -57,7 +57,7 @@ function Group({ title, hint, rows, onChange, tone }: { title: string; hint: str
                 aria-label={`Montant : ${r.label}`}
                 className="input w-full py-1.5 pr-6 text-right text-sm"
               />
-              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-stone-400">€</span>
+              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-stone-500">€</span>
             </div>
             <button type="button" onClick={() => onChange(rows.filter((x) => x.id !== r.id))} className="px-1 text-stone-300 hover:text-rose-600" aria-label={`Supprimer ${r.label}`}>✕</button>
           </li>
@@ -94,7 +94,7 @@ export function BudgetTool() {
             Épargne visée par mois
             <div className="relative mt-1">
               <input type="number" inputMode="decimal" min={0} value={s.savings || ""} onChange={(e) => setS({ ...s, savings: Math.max(0, Number(e.target.value) || 0) })} className="input w-full pr-6 text-right" />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-stone-400">€</span>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-stone-500">€</span>
             </div>
           </label>
           <label className="text-xs text-stone-500">
@@ -102,7 +102,7 @@ export function BudgetTool() {
             <input type="number" min={1} max={62} value={s.days} onChange={(e) => setS({ ...s, days: Math.min(62, Math.max(1, Number(e.target.value) || 30)) })} className="input mt-1 w-full text-right" />
           </label>
         </section>
-        <p className="text-[11px] text-stone-400">Tes saisies restent dans ton navigateur : rien n'est envoyé ni enregistré sur nos serveurs.</p>
+        <p className="text-[11px] text-stone-500">Tes saisies restent dans ton navigateur : rien n'est envoyé ni enregistré sur nos serveurs.</p>
       </div>
 
       <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
@@ -124,7 +124,7 @@ export function BudgetTool() {
 
         <div className="rounded-2xl border border-line bg-surface p-5">
           <h3 className="text-sm font-semibold text-stone-900">Répartition vs règle 50 / 30 / 20</h3>
-          <p className="text-[11px] text-stone-400">Besoins ≈ charges fixes + 60 % des variables · Envies ≈ 40 % des variables · Épargne</p>
+          <p className="text-[11px] text-stone-500">Besoins ≈ charges fixes + 60 % des variables · Envies ≈ 40 % des variables · Épargne</p>
           <div className="mt-4 space-y-3">
             {[
               { l: "Besoins", v: calc.needs, target: 50, color: "bg-sky-500" },

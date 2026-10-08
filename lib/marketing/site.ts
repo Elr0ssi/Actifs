@@ -1,4 +1,4 @@
-export const SITE_URL = "https://actifs.app";
+export const SITE_URL = "https://www.flozea.com";
 export const SITE_NAME = "Flozea";
 
 export const absolute = (path: string) => `${SITE_URL}${path}`;

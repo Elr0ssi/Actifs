@@ -140,7 +140,7 @@ export function ShoppingTool() {
                 <button type="button" onClick={() => toggle(r.slug)} className="flex h-16 items-center justify-center bg-stone-100 text-3xl" aria-label={n > 0 ? `Retirer ${r.name}` : `Ajouter ${r.name}`}>{r.icon}</button>
                 <div className="flex flex-1 flex-col gap-1 p-2.5">
                   <p className="line-clamp-2 min-h-[2.4em] text-[13px] font-semibold leading-tight text-stone-900">{r.name}</p>
-                  <p className="text-[11px] text-stone-400">{r.time} · {r.category}</p>
+                  <p className="text-[11px] text-stone-500">{r.time} · {r.category}</p>
                   {n > 0 ? (
                     <div className="mt-1 flex items-center justify-between rounded-lg bg-brand-50 px-1.5 py-1">
                       <button type="button" onClick={() => setPeople(r.slug, n - 1)} className="h-6 w-6 rounded-md bg-surface shadow-sm" aria-label="Moins de personnes">−</button>
@@ -155,17 +155,17 @@ export function ShoppingTool() {
             );
           })}
         </div>
-        {shown.length === 0 && <p className="mt-6 text-center text-sm text-stone-400">Aucune recette ne correspond.</p>}
+        {shown.length === 0 && <p className="mt-6 text-center text-sm text-stone-500">Aucune recette ne correspond.</p>}
       </section>
 
       <aside className="lg:sticky lg:top-24 lg:self-start">
         <div className="rounded-3xl border border-line bg-surface p-5">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-base font-bold text-stone-900">Ta liste de courses</h2>
-            <span className="text-xs text-stone-400">{pickedCount} recette{pickedCount > 1 ? "s" : ""}</span>
+            <span className="text-xs text-stone-500">{pickedCount} recette{pickedCount > 1 ? "s" : ""}</span>
           </div>
           {lines.length === 0 ? (
-            <p className="mt-4 rounded-xl bg-stone-50 px-4 py-8 text-center text-sm text-stone-400">Ajoute des recettes : la liste se calcule toute seule, avec les quantités fusionnées.</p>
+            <p className="mt-4 rounded-xl bg-stone-50 px-4 py-8 text-center text-sm text-stone-500">Ajoute des recettes : la liste se calcule toute seule, avec les quantités fusionnées.</p>
           ) : (
             <>
               <div className="mt-3 max-h-[60vh] space-y-4 overflow-y-auto pr-1">
@@ -174,7 +174,7 @@ export function ShoppingTool() {
                   if (!items.length) return null;
                   return (
                     <div key={aisle}>
-                      <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-stone-400">{aisle}</p>
+                      <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-stone-500">{aisle}</p>
                       <ul className="space-y-0.5">
                         {items.map((l) => {
                           const d = describe(l);
@@ -187,7 +187,7 @@ export function ShoppingTool() {
                                   <span className={cx("block text-[13px] font-medium", done ? "text-stone-300 line-through" : "text-stone-800")}>
                                     {d.buy && <b className="mr-1 font-semibold">{d.buy}</b>}{l.name}
                                   </span>
-                                  {(d.pack || d.need) && <span className="block text-[11px] text-stone-400">{[d.pack, d.need ? `besoin ${d.need}` : null].filter(Boolean).join(" · ")}</span>}
+                                  {(d.pack || d.need) && <span className="block text-[11px] text-stone-500">{[d.pack, d.need ? `besoin ${d.need}` : null].filter(Boolean).join(" · ")}</span>}
                                 </span>
                               </label>
                             </li>
@@ -201,7 +201,7 @@ export function ShoppingTool() {
               <div className="mt-4 flex flex-wrap gap-2 border-t border-line pt-3">
                 <button type="button" onClick={copy} className="btn-primary px-3.5 py-2 text-xs">{copied ? "Copié ✓" : "Copier la liste"}</button>
                 <button type="button" onClick={() => window.print()} className="btn-secondary px-3.5 py-2 text-xs">Imprimer</button>
-                <button type="button" onClick={() => setS({ ...s, picked: {}, checked: {} })} className="ml-auto text-xs text-stone-400 hover:text-rose-600">Tout effacer</button>
+                <button type="button" onClick={() => setS({ ...s, picked: {}, checked: {} })} className="ml-auto text-xs text-stone-500 hover:text-rose-600">Tout effacer</button>
               </div>
             </>
           )}
@@ -211,7 +211,7 @@ export function ShoppingTool() {
           <p className="mt-1 text-sm text-stone-300">Prix par enseigne, liste partagée à deux en direct, menu de la semaine, vos propres recettes et historique de courses.</p>
           <Link href="/signup" className="mt-3 inline-block rounded-xl bg-white px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-100">Créer mon espace</Link>
         </div>
-        <p className="mt-3 text-[11px] text-stone-400">Les recettes cochées restent dans ton navigateur uniquement.</p>
+        <p className="mt-3 text-[11px] text-stone-500">Les recettes cochées restent dans ton navigateur uniquement.</p>
       </aside>
     </div>
   );

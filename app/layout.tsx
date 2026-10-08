@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { CookieNotice } from "@/components/ui/cookie-notice";
+import { LanguageSuggestion } from "@/components/ui/language-suggestion";
 import { ClickRipple } from "@/components/ui/click-ripple";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://actifs.app"),
+  metadataBase: new URL("https://www.flozea.com"),
   title: {
     default: "Flozea — Agenda, tâches, courses, recettes, budget et notes",
     template: "%s | Flozea",
@@ -52,6 +54,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <ClickRipple />
+        <LanguageSuggestion />
+        <CookieNotice />
         <Analytics />
       </body>
     </html>

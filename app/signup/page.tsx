@@ -20,7 +20,7 @@ export default function SignupPage({ searchParams }: { searchParams: { error?: s
     >
       <div className="mb-4 space-y-4">
         <GoogleButton label="S'inscrire avec Google" />
-        <div className="flex items-center gap-3 text-xs text-stone-400"><span className="h-px flex-1 bg-stone-200" />ou avec ton email<span className="h-px flex-1 bg-stone-200" /></div>
+        <div className="flex items-center gap-3 text-xs text-stone-500"><span className="h-px flex-1 bg-stone-200" />ou avec ton email<span className="h-px flex-1 bg-stone-200" /></div>
       </div>
       <CredentialForm action={signup} className="space-y-4">
         {searchParams?.error && (
@@ -28,15 +28,19 @@ export default function SignupPage({ searchParams }: { searchParams: { error?: s
         )}
         <div>
           <label className="label" htmlFor="displayName">Prénom</label>
-          <input className="input mt-1.5" id="displayName" name="displayName" type="text" required placeholder="Val" />
+          <input className="input mt-1.5" id="displayName" name="displayName" type="text" autoComplete="given-name" maxLength={60} required placeholder="Val" />
+        </div>
+        <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+          <label htmlFor="website">Ne pas remplir</label>
+          <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
         </div>
         <div>
           <label className="label" htmlFor="email">Email</label>
-          <input className="input mt-1.5" id="email" name="email" type="email" autoComplete="email" required placeholder="toi@exemple.com" />
+          <input className="input mt-1.5" id="email" name="email" type="email" autoComplete="email" inputMode="email" maxLength={200} required placeholder="toi@exemple.com" />
         </div>
         <div>
           <label className="label" htmlFor="password">Mot de passe</label>
-          <input className="input mt-1.5" id="password" name="password" type="password" autoComplete="new-password" required minLength={6} placeholder="6 caractères min." />
+          <input className="input mt-1.5" id="password" name="password" type="password" autoComplete="new-password" required minLength={6} maxLength={200} placeholder="6 caractères min." />
         </div>
         <button type="submit" className="btn-primary w-full py-2.5">Créer mon espace</button>
       </CredentialForm>
