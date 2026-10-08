@@ -91,27 +91,22 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
 
       <main>
         {/* Hero */}
-        <section className="mx-auto max-w-6xl px-6 pb-12 pt-16 sm:pt-24">
-          <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
+        <section className="mx-auto flex min-h-[calc(100svh-69px)] max-w-6xl items-center px-6 py-12 lg:py-8">
+          <div className="grid w-full items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
             <div>
-              <FadeIn>
-                <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-xs font-semibold text-brand-700">
-                  {tr("Gratuit · seul ou à deux")}
-                </span>
-              </FadeIn>
               <FadeIn delay={80}>
-                <h1 className="mt-6">
-                  <span className="block bg-gradient-to-r from-brand-500 via-violet-600 to-fuchsia-600 bg-clip-text text-7xl font-extrabold tracking-tight text-transparent sm:text-8xl lg:text-[7.5rem] lg:leading-none">{tr("Flozea")}</span>
-                  <span className="mt-5 block text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl lg:text-4xl lg:leading-tight">{tr("Agenda, courses, budget et notes :")} <span className="text-brand-600">{tr("une seule appli")}</span></span>
+                <h1>
+                  <span className="block bg-gradient-to-r from-brand-500 via-violet-600 to-fuchsia-600 bg-clip-text text-7xl font-extrabold tracking-tight text-transparent sm:text-8xl lg:text-[6.5rem] lg:leading-none">{tr("Flozea")}</span>
+                  <span className="mt-4 block text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl lg:leading-tight">{tr("Agenda, courses, budget et notes :")} <span className="text-brand-600">{tr("une seule appli")}</span></span>
                 </h1>
               </FadeIn>
               <FadeIn delay={160}>
-                <p className="mt-6 max-w-xl text-lg leading-relaxed text-stone-600">
-                  {tr("Flozea remplace Notion, Excel, Jow et Google Agenda. Ton menu de la semaine génère ta liste de courses, tes courses alimentent ton budget, et tout apparaît dans ton agenda.")}
+                <p className="mt-5 max-w-lg text-lg leading-relaxed text-stone-600">
+                  {tr("Ton emploi du temps, tes repas, tes courses et ton budget au même endroit, seul ou à deux.")}
                 </p>
               </FadeIn>
               <FadeIn delay={240}>
-                <div className="mt-8 flex flex-wrap items-center gap-3">
+                <div className="mt-7 flex flex-wrap items-center gap-3">
                   <Link href="/signup" className="btn-primary px-6 py-3 text-base">{tr("Créer mon espace")}</Link>
                   <Link href="/fonctionnalites" className="px-2 py-3 text-base font-semibold text-stone-700 underline-offset-4 hover:text-brand-700 hover:underline">{tr("Découvrir les fonctionnalités →")}</Link>
                 </div>
@@ -181,9 +176,9 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
         <WeekTimeline />
 
         {/* Recettes */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-amber-50/80 to-transparent">
+        <section className="relative flex items-center overflow-hidden bg-gradient-to-b from-amber-50/80 to-transparent lg:min-h-[calc(100svh-69px)]">
           <Ambience tone="amber" emojis={["🍅","🥕","🧅","🧀","🌿"]} />
-          <div className="relative mx-auto max-w-6xl px-6 py-24">
+          <div className="relative mx-auto w-full max-w-6xl px-6 py-24 lg:py-28">
           <FadeIn className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{tr("Des recettes, et la liste de courses qui va avec")}</h2>
             <p className="mt-4 text-stone-600">{tr("Choisis une recette et un nombre de personnes : Flozea calcule les quantités à acheter, avec les prix de ton enseigne.")}</p>
@@ -202,9 +197,9 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
         </section>
 
         {/* Guides : un guide à la une + liste numérotée */}
-        <section className="relative overflow-hidden bg-indigo-50/50" aria-labelledby="guides">
+        <section className="relative flex items-center overflow-hidden bg-indigo-50/50 lg:min-h-[calc(100svh-69px)]" aria-labelledby="guides">
           <Ambience tone="sky" emojis={["📖","💡","🎯"]} />
-          <div className="relative mx-auto max-w-6xl px-6 py-24">
+          <div className="relative mx-auto w-full max-w-6xl px-6 py-24 lg:py-28">
           <FadeIn className="mx-auto max-w-2xl text-center">
             <h2 id="guides" className="text-3xl font-bold tracking-tight sm:text-4xl">{tr("Articles pratiques")}</h2>
             <p className="mt-4 text-stone-600">{tr("Budget, repas, courses, routines : des méthodes simples pour mieux t'organiser.")}</p>
@@ -240,7 +235,7 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
         </section>
 
         {/* FAQ */}
-        <section className="mx-auto max-w-3xl px-6 pb-24" aria-labelledby="faq">
+        <section className="mx-auto max-w-3xl px-6 py-24 lg:py-28" aria-labelledby="faq">
           <h2 id="faq" className="text-center text-3xl font-bold tracking-tight">{tr("Questions fréquentes")}</h2>
           <div className="mt-8 divide-y divide-line border-y border-line">
             {FAQ.map((f) => (
@@ -252,7 +247,7 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
           </div>
         </section>
 
-        <div className="mx-auto max-w-6xl px-6 pb-24">
+        <div className="mx-auto max-w-6xl px-6 pb-28">
           <CtaBanner title={tr("Prêt à tout regrouper ?")} text={tr("Crée ton espace gratuit en quelques secondes.")} secondary={{ href: "/tarifs", label: tr("Voir les tarifs") }} />
         </div>
       </main>

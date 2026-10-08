@@ -1,7 +1,7 @@
 import { getT } from "@/lib/i18n/server";
 import Link from "@/components/marketing/link";
 import { LogoWordmark } from "@/components/logo";
-import { Aurora } from "@/components/marketing/fx";
+import { Aurora, Bubble, Float } from "@/components/marketing/fx";
 import { LanguageMenu } from "@/components/marketing/language-switch";
 
 export function AuthShell({
@@ -16,12 +16,6 @@ export function AuthShell({
   children: React.ReactNode;
 }) {
   const tr = getT();
-  const points = [
-    ["📅", tr("Agenda, tâches et routines")],
-    ["🍽️", tr("Recettes, menu et liste de courses")],
-    ["💶", tr("Budget et paiements automatiques")],
-    ["📝", tr("Notes en pages")],
-  ];
   return (
     <div className="relative isolate min-h-screen overflow-hidden bg-stone-50">
       <Aurora />
@@ -32,24 +26,20 @@ export function AuthShell({
           <LanguageMenu />
         </header>
 
-        <div className="grid flex-1 items-center gap-12 py-10 lg:grid-cols-[1fr_26rem] lg:gap-20">
-          <div className="hidden lg:block">
-            <p className="inline-flex rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1 text-xs font-semibold text-brand-700">{tr("Gratuit · seul ou à deux")}</p>
-            <h2 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight text-stone-900">
+        <div className="grid flex-1 items-center gap-12 py-10 lg:grid-cols-[1fr_26rem] lg:gap-24">
+          {/* Côté gauche : une phrase et quelques bulles flottantes, comme sur la vitrine */}
+          <div className="relative hidden h-[26rem] lg:block" aria-hidden={false}>
+            <h2 className="max-w-md text-5xl font-extrabold leading-[1.1] tracking-tight text-stone-900">
               {tr("Tout ce que tu utilises déjà,")} <span className="bg-gradient-to-r from-brand-500 to-violet-700 bg-clip-text text-transparent">{tr("au même endroit.")}</span>
             </h2>
-            <ul className="mt-8 space-y-3">
-              {points.map(([icon, label]) => (
-                <li key={label} className="flex w-fit items-center gap-3 rounded-2xl border border-white/70 bg-surface/80 px-4 py-2.5 text-sm font-semibold text-stone-800 shadow-soft backdrop-blur-xl">
-                  <span className="text-lg">{icon}</span>{label}
-                </li>
-              ))}
-            </ul>
+            <Float delay={0} duration={7} amp={12} rot={2} className="absolute left-0 top-56"><Bubble icon="🍝" title={tr("Pâtes tomate")} sub={tr("25 min · 2 pers.")} tone="amber" /></Float>
+            <Float delay={1.5} duration={8} amp={14} rot={-2} className="absolute left-56 top-44"><Bubble icon="💶" title="+ 1 845 €" sub={tr("salaire reçu")} tone="green" /></Float>
+            <Float delay={0.8} duration={6.5} amp={10} rot={3} className="absolute left-24 top-[22rem]"><Bubble icon="🔥" title={tr("12 jours")} sub={tr("série de routines")} tone="rose" /></Float>
           </div>
 
           <div className="mx-auto w-full max-w-sm lg:max-w-none">
             <div className="rounded-[2rem] border border-white/70 bg-surface/90 p-8 shadow-lift backdrop-blur-xl">
-              <h1 className="text-xl font-bold text-stone-900">{tr(title)}</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-stone-900">{tr(title)}</h1>
               <p className="mt-1 text-sm text-stone-500">{tr(subtitle)}</p>
               <div className="mt-6">{children}</div>
             </div>

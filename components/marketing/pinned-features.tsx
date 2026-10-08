@@ -64,8 +64,8 @@ export function PinnedFeatures({ groups, eyebrow, title, accent, all }: { groups
       </div>
 
       {/* Grand écran : section figée */}
-      <div ref={runway} className="hidden lg:block" style={{ height: `calc(100vh + ${n * 70}vh)` }}>
-        <div ref={stage} className="sticky top-0 flex h-screen min-h-[40rem] flex-col justify-center">
+      <div ref={runway} className="hidden lg:block" style={{ height: `calc(100svh + ${n * 70}svh)` }}>
+        <div ref={stage} className="sticky top-[69px] flex h-[calc(100svh-69px)] min-h-[34rem] flex-col justify-center">
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-brand-50/50 to-transparent" aria-hidden />
           <div className="relative mx-auto w-full max-w-6xl px-6">
             <div className="flex items-end justify-between gap-6">
@@ -79,7 +79,7 @@ export function PinnedFeatures({ groups, eyebrow, title, accent, all }: { groups
               </div>
             </div>
 
-            <div className="mt-8 grid [&>*]:col-start-1 [&>*]:row-start-1" style={{ perspective: "1600px" }}>
+            <div className="mt-6 grid [&>*]:col-start-1 [&>*]:row-start-1" style={{ perspective: "1600px" }}>
               {groups.map((g, gi) => {
                 const state = gi === phase ? "in" : gi < phase ? "out" : "wait";
                 return (
@@ -90,7 +90,7 @@ export function PinnedFeatures({ groups, eyebrow, title, accent, all }: { groups
               })}
             </div>
 
-            <p className="mt-6 flex items-center justify-between text-sm">
+            <p className="mt-5 flex items-center justify-between text-sm">
               <span className="flex gap-2" aria-hidden>
                 {groups.map((g, i) => <span key={g.key} className={cx("h-1.5 rounded-full transition-all duration-500", i === phase ? "w-8 bg-brand-500" : "w-2 bg-stone-300")} />)}
               </span>

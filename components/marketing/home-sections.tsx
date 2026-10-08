@@ -15,7 +15,7 @@ export function AllInOne() {
     { icon: "💶", name: tr("Budget"), replaces: tr("remplace Excel et Splitwise"), tone: "bg-violet-50 text-violet-700" },
   ];
   return (
-    <section className="mx-auto max-w-5xl px-6 py-20" aria-labelledby="tout-en-un">
+    <section className="mx-auto flex max-w-5xl flex-col justify-center px-6 py-24 lg:min-h-[calc(100svh-69px)] lg:py-16" aria-labelledby="tout-en-un">
       <FadeIn className="mx-auto max-w-2xl text-center">
         <p className="text-xs font-semibold uppercase tracking-widest text-brand-600">{tr("Une seule appli")}</p>
         <h2 id="tout-en-un" className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
@@ -47,43 +47,55 @@ export function AllInOne() {
   );
 }
 
-/** Frise chronologique : tout ce qu'on gère au quotidien, dans l'ordre. */
+const I = { fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" } as const;
+const ICONS: Record<string, React.ReactNode> = {
+  agenda: <><rect x="3.5" y="5" width="17" height="15" rx="3" /><path d="M8 3v4M16 3v4M3.5 10h17" /></>,
+  meal: <><path d="M7 3v8M4.5 3v5a2.5 2.5 0 0 0 5 0V3M7 11v10" /><path d="M17 21V3c-2.2 1.2-3.5 3.7-3.5 7v2.5H17" /></>,
+  cart: <><path d="M3 4h2.2l2.1 10.2a1.5 1.5 0 0 0 1.5 1.2h7.6a1.5 1.5 0 0 0 1.5-1.1L19.5 8H6.2" /><circle cx="9.5" cy="19.5" r="1.3" /><circle cx="16.5" cy="19.5" r="1.3" /></>,
+  wallet: <><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v14H6.5A2.5 2.5 0 0 1 4 16.5z" /><path d="M18 9h2v6h-2a3 3 0 0 1 0-6z" /></>,
+  chart: <><path d="M4 20V4M4 20h16" /><path d="M8 15l3.5-4 3 2.5L19 7" /></>,
+  note: <><path d="M6 3.5h9l3.5 3.5v13.5H6z" /><path d="M14.5 3.5V7.5h4M9 12h6M9 16h6" /></>,
+};
+function StepIcon({ name }: { name: string }) {
+  return <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" aria-hidden {...I}>{ICONS[name]}</svg>;
+}
+
+/** Frise chronologique : tout ce qu'on gère au quotidien, dans l'ordre (horizontale sur grand écran, verticale sinon). */
 export function WeekTimeline() {
   const tr = getT();
   const steps = [
-    { icon: "🍽️", title: tr("Choisis tes repas"), text: tr("Des recettes et un menu pour la semaine, au bon nombre de personnes."), tone: "from-amber-400 to-orange-500" },
-    { icon: "🛒", title: tr("Prépare tes courses"), text: tr("La liste se calcule toute seule, avec les bonnes quantités."), tone: "from-emerald-400 to-teal-500" },
-    { icon: "💶", title: tr("Budgétise"), text: tr("Tu vois ce que coûtent tes courses avant d'y aller."), tone: "from-sky-400 to-blue-500" },
-    { icon: "📅", title: tr("Programme tout dans le temps"), text: tr("Courses, repas, tâches et routines sur la même grille horaire."), tone: "from-brand-500 to-violet-600" },
-    { icon: "📊", title: tr("Suis ton budget de la semaine"), text: tr("Tes paiements arrivent seuls, ton reste à vivre est à jour."), tone: "from-fuchsia-500 to-pink-600" },
-    { icon: "📝", title: tr("Garde tes idées"), text: tr("Notes en pages, pour ne rien oublier."), tone: "from-rose-400 to-red-500" },
+    { icon: "agenda", title: tr("Organise ta semaine"), text: tr("Agenda horaire, tâches et routines au même endroit."), tone: "from-brand-500 to-violet-600" },
+    { icon: "meal", title: tr("Choisis tes repas"), text: tr("Des recettes et un menu pour la semaine, au bon nombre de personnes."), tone: "from-amber-400 to-orange-500" },
+    { icon: "cart", title: tr("Prépare tes courses"), text: tr("La liste se calcule toute seule, avec les bonnes quantités."), tone: "from-emerald-400 to-teal-500" },
+    { icon: "wallet", title: tr("Budgétise"), text: tr("Tu vois ce que coûtent tes courses avant d'y aller."), tone: "from-sky-400 to-blue-500" },
+    { icon: "chart", title: tr("Suis ton budget de la semaine"), text: tr("Tes paiements arrivent seuls, ton reste à vivre est à jour."), tone: "from-fuchsia-500 to-pink-600" },
+    { icon: "note", title: tr("Garde tes idées"), text: tr("Notes en pages, pour ne rien oublier."), tone: "from-rose-400 to-red-500" },
   ];
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-transparent via-sky-50/60 to-transparent" aria-labelledby="quotidien">
-      <div className="mx-auto max-w-4xl px-6 py-20">
+    <section className="relative flex items-center overflow-hidden bg-gradient-to-b from-transparent via-sky-50/60 to-transparent lg:min-h-[calc(100svh-69px)]" aria-labelledby="quotidien">
+      <div className="mx-auto w-full max-w-6xl px-6 py-24 lg:py-16">
         <FadeIn className="mx-auto max-w-2xl text-center">
           <p className="text-xs font-semibold uppercase tracking-widest text-brand-600">{tr("Au quotidien")}</p>
           <h2 id="quotidien" className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
             {tr("Tout ton quotidien,")} <span className="bg-gradient-to-r from-brand-500 to-violet-700 bg-clip-text text-transparent">{tr("étape par étape.")}</span>
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-stone-600">{tr("Du choix de tes repas au suivi de ton budget, chaque étape de ta semaine se gère dans Flozea.")}</p>
+          <p className="mx-auto mt-3 max-w-xl text-stone-600">{tr("De ton emploi du temps à ton budget, chaque étape de ta semaine se gère dans Flozea.")}</p>
         </FadeIn>
 
-        <ol className="relative mt-14">
-          <span className="absolute bottom-4 left-5 top-4 w-0.5 bg-gradient-to-b from-amber-300 via-brand-300 to-rose-300 md:left-1/2 md:-translate-x-1/2" aria-hidden />
+        <ol className="relative mt-14 lg:grid lg:grid-cols-6 lg:gap-4">
+          {/* trait : vertical (mobile) / horizontal (bureau) */}
+          <span className="absolute bottom-4 left-5 top-4 w-0.5 bg-gradient-to-b from-brand-300 via-amber-300 to-rose-300 lg:bottom-auto lg:left-[8%] lg:right-[8%] lg:top-5 lg:h-0.5 lg:w-auto lg:bg-gradient-to-r" aria-hidden />
           {steps.map((s, i) => (
-            <li key={s.title} className="relative pb-8 last:pb-0">
-              <FadeIn delay={i * 70}>
-                <div className={cx("flex items-start gap-4 pl-14 md:w-1/2 md:pl-0", i % 2 === 0 ? "md:pr-12" : "md:ml-auto md:pl-12")}>
-                  <span className={cx("absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br text-base text-white shadow-lift ring-4 ring-surface md:left-1/2 md:-translate-x-1/2")} style={undefined}>
-                    <span className={cx("absolute inset-0 rounded-full bg-gradient-to-br", s.tone)} aria-hidden />
-                    <span className="relative">{s.icon}</span>
-                  </span>
-                  <div className={cx("rounded-2xl border border-line bg-surface px-5 py-4 shadow-soft", i % 2 === 0 ? "md:text-right" : "")}>
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400">{tr("Étape")} {i + 1}</p>
-                    <h3 className="mt-0.5 text-[15px] font-bold text-stone-900">{s.title}</h3>
-                    <p className="mt-1 text-[13px] leading-relaxed text-stone-500">{s.text}</p>
-                  </div>
+            <li key={s.title} className="relative pb-8 pl-14 last:pb-0 lg:pb-0 lg:pl-0 lg:pt-14">
+              <span className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-full text-white shadow-lift ring-4 ring-surface lg:left-1/2 lg:-translate-x-1/2">
+                <span className={cx("absolute inset-0 rounded-full bg-gradient-to-br", s.tone)} aria-hidden />
+                <span className="relative"><StepIcon name={s.icon} /></span>
+              </span>
+              <FadeIn delay={i * 80} className="lg:h-full">
+                <div className="rounded-2xl border border-line bg-surface px-4 py-3.5 shadow-soft lg:h-full lg:text-center">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400">{tr("Étape")} {i + 1}</p>
+                  <h3 className="mt-0.5 text-[15px] font-bold leading-snug text-stone-900">{s.title}</h3>
+                  <p className="mt-1 text-[13px] leading-relaxed text-stone-500">{s.text}</p>
                 </div>
               </FadeIn>
             </li>
