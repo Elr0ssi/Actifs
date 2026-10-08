@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useMemo, useState, useTransition } from "react";
 import { addDays } from "@/lib/finance-engine";
 import { cx } from "@/lib/utils";
@@ -33,6 +34,7 @@ const summary = (r: Routine) => {
 };
 
 export function RoutinesHub({ routines, archived, doneKeys, today, minDate, curve }: { routines: Routine[]; archived: Routine[]; doneKeys: string[]; today: string; minDate: string; curve?: React.ReactNode }) {
+  const tr = useT();
   const [done, setDone] = useState(() => new Set(doneKeys));
   const [pending, start] = useTransition();
   const [week, setWeek] = useState(mondayOf(today));
@@ -89,10 +91,10 @@ export function RoutinesHub({ routines, archived, doneKeys, today, minDate, curv
       {/* Barre : navigation par semaine + création */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
-          <button type="button" disabled={!canPrev} onClick={() => setWeek(addDays(week, -7))} className="flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface text-stone-600 hover:bg-stone-50 disabled:opacity-30" aria-label="Semaine précédente">‹</button>
+          <button type="button" disabled={!canPrev} onClick={() => setWeek(addDays(week, -7))} className="flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface text-stone-600 hover:bg-stone-50 disabled:opacity-30" aria-label={tr("Semaine précédente")}>‹</button>
           <p className="min-w-[10.5rem] px-2 text-center text-sm font-bold text-stone-900">{label}</p>
-          <button type="button" disabled={isCurrent} onClick={() => setWeek(addDays(week, 7))} className="flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface text-stone-600 hover:bg-stone-50 disabled:opacity-30" aria-label="Semaine suivante">›</button>
-          {!isCurrent && <button type="button" onClick={() => setWeek(mondayOf(today))} className="rounded-xl bg-brand-50 px-3 py-2 text-xs font-semibold text-brand-700 hover:bg-brand-100">Aujourd'hui</button>}
+          <button type="button" disabled={isCurrent} onClick={() => setWeek(addDays(week, 7))} className="flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface text-stone-600 hover:bg-stone-50 disabled:opacity-30" aria-label={tr("Semaine suivante")}>›</button>
+          {!isCurrent && <button type="button" onClick={() => setWeek(mondayOf(today))} className="rounded-xl bg-brand-50 px-3 py-2 text-xs font-semibold text-brand-700 hover:bg-brand-100">{tr("Aujourd'hui")}</button>}
           <input
             type="date"
             min={minDate}
@@ -100,11 +102,11 @@ export function RoutinesHub({ routines, archived, doneKeys, today, minDate, curv
             value=""
             onChange={(e) => e.target.value && setWeek(mondayOf(e.target.value))}
             className="h-9 w-9 cursor-pointer rounded-xl border border-line bg-surface px-0 text-transparent [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60"
-            aria-label="Aller à une date"
-            title="Aller à une date"
+            aria-label={tr("Aller à une date")}
+            title={tr("Aller à une date")}
           />
         </div>
-        <button type="button" onClick={() => setEditing("new")} className="btn-primary px-4 py-2.5 text-sm">+ Nouvelle routine</button>
+        <button type="button" onClick={() => setEditing("new")} className="btn-primary px-4 py-2.5 text-sm">{tr("+ Nouvelle routine")}</button>
       </div>
 
       {/* Bilan de la semaine */}
@@ -140,15 +142,15 @@ export function RoutinesHub({ routines, archived, doneKeys, today, minDate, curv
                     <p className="truncate text-xs text-stone-500">{r.category ? `${r.category} · ` : ""}{summary(r)}</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
-                    {s.streak > 1 && <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[11px] font-bold text-orange-600" title="Série en cours">🔥 {s.streak}</span>}
+                    {s.streak > 1 && <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[11px] font-bold text-orange-600" title={tr("Série en cours")}>🔥 {s.streak}</span>}
                     <span className="tabular rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-semibold text-stone-600">{s.done}/{s.due}</span>
-                    <button type="button" onClick={() => setMenu(menu === r.id ? null : r.id)} className="rounded-lg px-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700" aria-label="Options">⋯</button>
+                    <button type="button" onClick={() => setMenu(menu === r.id ? null : r.id)} className="rounded-lg px-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700" aria-label={tr("Options")}>⋯</button>
                   </div>
                 </div>
                 {menu === r.id && (
                   <div className="absolute right-3 top-14 z-10 w-40 rounded-xl border border-line bg-surface p-1 shadow-lift">
-                    <button type="button" className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-stone-50" onClick={() => { setMenu(null); setEditing(r); }}>Modifier</button>
-                    <button type="button" className="block w-full rounded-lg px-3 py-2 text-left text-sm text-rose-600 hover:bg-rose-50" onClick={() => { setMenu(null); start(() => archiveRoutine(r.id)); }}>Archiver</button>
+                    <button type="button" className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-stone-50" onClick={() => { setMenu(null); setEditing(r); }}>{tr("Modifier")}</button>
+                    <button type="button" className="block w-full rounded-lg px-3 py-2 text-left text-sm text-rose-600 hover:bg-rose-50" onClick={() => { setMenu(null); start(() => archiveRoutine(r.id)); }}>{tr("Archiver")}</button>
                   </div>
                 )}
                 <div className="mt-3 grid grid-cols-7 gap-1.5">
@@ -193,8 +195,8 @@ export function RoutinesHub({ routines, archived, doneKeys, today, minDate, curv
               <li key={r.id} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm text-stone-500 hover:bg-stone-50">
                 <span className="truncate"><span className="mr-2">{iconOf(r)}</span>{r.title}</span>
                 <span className="flex shrink-0 items-center gap-3">
-                  <button type="button" onClick={() => start(() => restoreRoutine(r.id))} className="text-xs font-semibold text-brand-600 hover:underline">Restaurer</button>
-                  <button type="button" onClick={() => { if (confirm(`Supprimer définitivement « ${r.title} » ?`)) start(() => deleteRoutineForever(r.id)); }} className="text-xs text-stone-400 hover:text-rose-600">Supprimer</button>
+                  <button type="button" onClick={() => start(() => restoreRoutine(r.id))} className="text-xs font-semibold text-brand-600 hover:underline">{tr("Restaurer")}</button>
+                  <button type="button" onClick={() => { if (confirm(`Supprimer définitivement « ${r.title} » ?`)) start(() => deleteRoutineForever(r.id)); }} className="text-xs text-stone-400 hover:text-rose-600">{tr("Supprimer")}</button>
                 </span>
               </li>
             ))}
@@ -208,6 +210,7 @@ export function RoutinesHub({ routines, archived, doneKeys, today, minDate, curv
 }
 
 function RoutineSheet({ routine, onClose }: { routine: Routine | null; onClose: () => void }) {
+  const tr = useT();
   const [title, setTitle] = useState(routine?.title ?? "");
   const [category, setCategory] = useState(routine?.category && routine.category !== "Général" ? routine.category : "");
   const [every, setEvery] = useState(!routine || routine.frequency === "daily" || (routine.days_of_week ?? []).length >= 7);
@@ -227,15 +230,15 @@ function RoutineSheet({ routine, onClose }: { routine: Routine | null; onClose: 
       <form action={submit} onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-t-3xl bg-surface p-6 shadow-2xl sm:rounded-3xl">
         <div className="flex items-start justify-between">
           <h2 className="text-lg font-bold tracking-tight text-stone-900">{routine ? "Modifier la routine" : "Nouvelle routine"}</h2>
-          <button type="button" onClick={onClose} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label="Fermer">✕</button>
+          <button type="button" onClick={onClose} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label={tr("Fermer")}>✕</button>
         </div>
 
-        <input name="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex. Séance de sport" className="input mt-4 text-base" autoFocus required />
+        <input name="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={tr("Ex. Séance de sport")} className="input mt-4 text-base" autoFocus required />
 
-        <p className="mt-5 text-[11px] font-semibold uppercase tracking-wide text-stone-400">Quand ?</p>
+        <p className="mt-5 text-[11px] font-semibold uppercase tracking-wide text-stone-400">{tr("Quand ?")}</p>
         <div className="segmented mt-2">
-          <button type="button" data-active={every} onClick={() => setEvery(true)}>Tous les jours</button>
-          <button type="button" data-active={!every} onClick={() => setEvery(false)}>Certains jours</button>
+          <button type="button" data-active={every} onClick={() => setEvery(true)}>{tr("Tous les jours")}</button>
+          <button type="button" data-active={!every} onClick={() => setEvery(false)}>{tr("Certains jours")}</button>
         </div>
         <input type="hidden" name="frequency" value={every ? "daily" : "weekly"} />
         {!every && (
@@ -250,13 +253,13 @@ function RoutineSheet({ routine, onClose }: { routine: Routine | null; onClose: 
         )}
         {!every && picked.map((v) => <input key={v} type="hidden" name="days" value={v} />)}
 
-        <p className="mt-5 text-[11px] font-semibold uppercase tracking-wide text-stone-400">Catégorie</p>
+        <p className="mt-5 text-[11px] font-semibold uppercase tracking-wide text-stone-400">{tr("Catégorie")}</p>
         <div className="mt-2 flex flex-wrap gap-1.5">
           {CATEGORY_CHIPS.map((c) => (
             <button key={c.name} type="button" onClick={() => setCategory(category === c.name ? "" : c.name)} className={cx("rounded-full border px-3 py-1.5 text-xs font-semibold transition", category === c.name ? "border-brand-400 bg-brand-50 text-brand-700" : "border-line text-stone-600 hover:border-brand-300")}>{c.icon} {c.name}</button>
           ))}
         </div>
-        <input name="category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Autre catégorie…" className="input mt-2 !h-9 text-[13px]" />
+        <input name="category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder={tr("Autre catégorie…")} className="input mt-2 !h-9 text-[13px]" />
 
         <button type="submit" disabled={!valid || saving} className="btn-primary mt-6 w-full justify-center py-3 disabled:opacity-50">{saving ? "Enregistrement…" : routine ? "Enregistrer" : "Créer la routine"}</button>
       </form>

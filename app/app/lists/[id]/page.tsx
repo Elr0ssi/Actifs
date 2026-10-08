@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n/server";
 import { intlLocale } from "@/lib/i18n";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -29,6 +30,7 @@ function weekLabel(iso: string | null) {
 }
 
 export default async function ListDetailPage({ params, searchParams }: { params: { id: string }; searchParams: { compose?: string; done?: string } }) {
+  const tr = getT();
   const ctx = await getAppContext();
   if (!ctx) return null;
   const { supabase } = ctx;
@@ -90,30 +92,30 @@ export default async function ListDetailPage({ params, searchParams }: { params:
 
   return (
     <div className="space-y-6">
-      <Link href="/app/lists/mes-listes" className="text-sm font-medium text-stone-500 hover:text-stone-800">← Listes</Link>
+      <Link href="/app/lists/mes-listes" className="text-sm font-medium text-stone-500 hover:text-stone-800">{tr("← Listes")}</Link>
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-stone-900">{list.name}</h1>
           <p className="mt-1 text-sm text-stone-500">
             {[list.category, weekLabel(list.week_start), `${checkedCount}/${all.length} cochés`].filter(Boolean).join(" · ")}
-            {list.archived && <span className="ml-2 rounded-full bg-stone-100 px-2 py-0.5 text-xs">Archivée</span>}
+            {list.archived && <span className="ml-2 rounded-full bg-stone-100 px-2 py-0.5 text-xs">{tr("Archivée")}</span>}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <form action={clearCheckedItems.bind(null, list.id)}>
-            <button className="btn-secondary text-xs">Nettoyer les cochés</button>
+            <button className="btn-secondary text-xs">{tr("Nettoyer les cochés")}</button>
           </form>
           {isShopping && !list.archived && (
             <form action={finishShopping.bind(null, list.id)}>
-              <button className="btn-primary text-xs">✓ J'ai fini mes courses</button>
+              <button className="btn-primary text-xs">{tr("✓ J'ai fini mes courses")}</button>
             </form>
           )}
           <form action={setListArchived.bind(null, list.id, !list.archived)}>
             <button className="btn-secondary text-xs">{list.archived ? "Désarchiver" : "Archiver"}</button>
           </form>
           <form action={deleteList.bind(null, list.id)}>
-            <button className="btn-secondary text-xs text-rose-600">Supprimer</button>
+            <button className="btn-secondary text-xs text-rose-600">{tr("Supprimer")}</button>
           </form>
         </div>
       </div>
@@ -122,7 +124,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
         <section id="comparatif" className="card p-6">
           <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
             <div>
-              <h2 className="font-semibold text-stone-900">🧾 Comparatif des enseignes</h2>
+              <h2 className="font-semibold text-stone-900">{tr("🧾 Comparatif des enseignes")}</h2>
               <p className="text-xs text-stone-500">
                 Tes {comparable} article(s) {all.some((i) => i.checked) ? "achetés" : "de la liste"} au prix de référence de chaque enseigne
                 {outsideBase > 0 && ` · ${outsideBase} hors base non comparé(s)`}
@@ -146,7 +148,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
                 <div key={c.store} className="flex items-center gap-3">
                   <span className={`w-28 shrink-0 text-sm ${isCurrent ? "font-semibold text-stone-900" : "text-stone-600"}`}>
                     {c.store}
-                    {isCurrent && <span className="ml-1 text-[10px] text-stone-400">(ta liste)</span>}
+                    {isCurrent && <span className="ml-1 text-[10px] text-stone-400">{tr("(ta liste)")}</span>}
                   </span>
                   <div className="h-7 flex-1 overflow-hidden rounded-lg bg-stone-100">
                     <div
@@ -173,11 +175,11 @@ export default async function ListDetailPage({ params, searchParams }: { params:
             <label className="flex-1 text-xs text-stone-500">
               Enseigne
               <select name="store" defaultValue={list.store ?? ""} className="input mt-1" required>
-                <option value="" disabled>Choisir…</option>
+                <option value="" disabled>{tr("Choisir…")}</option>
                 {STORES.map((st) => <option key={st} value={st}>{st}</option>)}
               </select>
             </label>
-            <button className="btn-secondary">Changer</button>
+            <button className="btn-secondary">{tr("Changer")}</button>
           </form>
           <div className="card flex items-center justify-between p-4">
             <div>
@@ -186,7 +188,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
               {unpriced > 0 && <p className="text-[11px] text-stone-400">{unpriced} article(s) sans prix</p>}
             </div>
             <div className="text-right">
-              <p className="text-xs text-stone-500">Reste à acheter</p>
+              <p className="text-xs text-stone-500">{tr("Reste à acheter")}</p>
               <p className="text-lg font-semibold text-brand-700">{formatEUR(remaining)}</p>
             </div>
           </div>
@@ -233,12 +235,12 @@ export default async function ListDetailPage({ params, searchParams }: { params:
       </div>
 
       <div className="card p-5">
-        <h2 className="mb-3 text-sm font-semibold text-stone-700">Ajouter un article</h2>
+        <h2 className="mb-3 text-sm font-semibold text-stone-700">{tr("Ajouter un article")}</h2>
         <form action={addListItem.bind(null, list.id)} className="grid gap-2 sm:grid-cols-[1fr_160px_1fr_auto]">
-          <input name="label" placeholder="Article" className="input" required />
-          <input name="quantity" placeholder="Quantité" className="input" />
-          <input name="note" placeholder="Note" className="input" />
-          <button className="btn-primary">Ajouter</button>
+          <input name="label" placeholder={tr("Article")} className="input" required />
+          <input name="quantity" placeholder={tr("Quantité")} className="input" />
+          <input name="note" placeholder={tr("Note")} className="input" />
+          <button className="btn-primary">{tr("Ajouter")}</button>
         </form>
       </div>
     </div>

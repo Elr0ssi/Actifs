@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createNote, deleteNote, saveNote, togglePin } from "@/app/app/notes/pages/actions";
@@ -24,6 +25,7 @@ interface Props {
 type Status = "saved" | "dirty" | "saving";
 
 export function NoteEditor({ id, initialTitle, initialIcon, initialBlocks, pinned, trail, children: subPages }: Props) {
+  const tr = useT();
   const [title, setTitle] = useState(initialTitle);
   const [icon, setIcon] = useState<string | null>(initialIcon);
   const [blocks, setBlocks] = useState<Block[]>(initialBlocks.length ? initialBlocks : [emptyBlock()]);
@@ -189,7 +191,7 @@ export function NoteEditor({ id, initialTitle, initialIcon, initialBlocks, pinne
     <div className="card mx-auto max-w-3xl px-5 pb-16 pt-5 sm:px-10 sm:pt-8">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-xs text-stone-400">
         <nav className="flex min-w-0 flex-wrap items-center gap-1">
-          <Link href="/app/notes/pages" className="rounded px-1 py-0.5 hover:bg-stone-100 hover:text-stone-700 lg:hidden">← Toutes les pages</Link>
+          <Link href="/app/notes/pages" className="rounded px-1 py-0.5 hover:bg-stone-100 hover:text-stone-700 lg:hidden">{tr("← Toutes les pages")}</Link>
           {trail.map((t) => (
             <span key={t.id} className="flex items-center gap-1">
               <Link href={`/app/notes/pages/${t.id}`} className="max-w-[140px] truncate rounded px-1 py-0.5 hover:bg-stone-100 hover:text-stone-700">{t.icon || "📄"} {t.title || "Sans titre"}</Link>
@@ -200,19 +202,19 @@ export function NoteEditor({ id, initialTitle, initialIcon, initialBlocks, pinne
         <div className="flex items-center gap-1">
           <span className="mr-1">{status === "saved" ? "Enregistré" : status === "saving" ? "Enregistrement…" : "Modifications non enregistrées"}</span>
           <button type="button" title={isPinned ? "Désépingler" : "Épingler"} onClick={() => { setIsPinned(!isPinned); void togglePin(id, !isPinned); }} className={cx("rounded-md px-1.5 py-1 text-sm hover:bg-stone-100", isPinned ? "text-brand-600" : "text-stone-400")}>{isPinned ? "★" : "☆"}</button>
-          <form action={createNote.bind(null, id)}><button title="Nouvelle sous-page" className="rounded-md p-1.5 hover:bg-stone-100 hover:text-stone-700"><Icon name="plus" className="h-3.5 w-3.5" /></button></form>
+          <form action={createNote.bind(null, id)}><button title={tr("Nouvelle sous-page")} className="rounded-md p-1.5 hover:bg-stone-100 hover:text-stone-700"><Icon name="plus" className="h-3.5 w-3.5" /></button></form>
           <form action={deleteNote.bind(null, id)} onSubmit={(e) => { if (!confirm("Supprimer cette page et ses sous-pages ?")) e.preventDefault(); }}>
-            <button title="Supprimer" className="rounded-md p-1.5 hover:bg-rose-500/10 hover:text-rose-600"><Icon name="close" className="h-3.5 w-3.5" /></button>
+            <button title={tr("Supprimer")} className="rounded-md p-1.5 hover:bg-rose-500/10 hover:text-rose-600"><Icon name="close" className="h-3.5 w-3.5" /></button>
           </form>
         </div>
       </div>
 
       <div className="relative">
-        <button type="button" onClick={() => setEmojiOpen(!emojiOpen)} className="mb-1 rounded-lg px-1 text-5xl leading-none hover:bg-stone-100" title="Changer l'icône">{icon || "📄"}</button>
+        <button type="button" onClick={() => setEmojiOpen(!emojiOpen)} className="mb-1 rounded-lg px-1 text-5xl leading-none hover:bg-stone-100" title={tr("Changer l'icône")}>{icon || "📄"}</button>
         {emojiOpen && (
           <div className="absolute left-0 top-14 z-20 grid w-64 grid-cols-7 gap-1 rounded-xl border border-line bg-surface p-2 shadow-xl">
             {EMOJIS.map((e) => <button key={e} type="button" onClick={() => { setIcon(e); setEmojiOpen(false); }} className="rounded-md p-1 text-xl hover:bg-stone-100">{e}</button>)}
-            <button type="button" onClick={() => { setIcon(null); setEmojiOpen(false); }} className="col-span-7 rounded-md py-1 text-[11px] text-stone-400 hover:bg-stone-100">Retirer l'icône</button>
+            <button type="button" onClick={() => { setIcon(null); setEmojiOpen(false); }} className="col-span-7 rounded-md py-1 text-[11px] text-stone-400 hover:bg-stone-100">{tr("Retirer l'icône")}</button>
           </div>
         )}
       </div>
@@ -220,7 +222,7 @@ export function NoteEditor({ id, initialTitle, initialIcon, initialBlocks, pinne
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setFocus({ id: blocks[0].id, pos: 0 }); } }}
-        placeholder="Sans titre"
+        placeholder={tr("Sans titre")}
         autoFocus={!initialTitle && initialBlocks.length === 0}
         className="w-full bg-transparent text-3xl font-bold tracking-tight text-stone-900 outline-none placeholder:text-stone-300 sm:text-4xl"
       />
@@ -245,14 +247,13 @@ export function NoteEditor({ id, initialTitle, initialIcon, initialBlocks, pinne
             placeholder={blocks.length === 1 && i === 0 ? "Écris quelque chose, ou tape « / » pour les commandes…" : ""}
           />
         ))}
-        <button type="button" onClick={() => { const nb = emptyBlock(); setBlocks((bs) => [...bs, nb]); setFocus({ id: nb.id, pos: 0 }); }} className="mt-2 min-h-[56px] w-full cursor-text rounded-lg text-left text-sm text-transparent hover:text-stone-300" aria-label="Ajouter un bloc à la fin">
-          + Cliquer pour ajouter un bloc
-        </button>
+        <button type="button" onClick={() => { const nb = emptyBlock(); setBlocks((bs) => [...bs, nb]); setFocus({ id: nb.id, pos: 0 }); }} className="mt-2 min-h-[56px] w-full cursor-text rounded-lg text-left text-sm text-transparent hover:text-stone-300" aria-label={tr("Ajouter un bloc à la fin")}>
+          {tr("+ Cliquer pour ajouter un bloc")}</button>
       </div>
 
       {subPages.length > 0 && (
         <div className="mt-6 border-t border-line pt-4">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-stone-400">Sous-pages</p>
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-stone-400">{tr("Sous-pages")}</p>
           <div className="grid gap-1.5 sm:grid-cols-2">
             {subPages.map((s) => (
               <Link key={s.id} href={`/app/notes/pages/${s.id}`} className="flex items-center gap-2 rounded-xl border border-line px-3 py-2 text-sm text-stone-700 hover:border-brand-300 hover:bg-brand-50/50">
@@ -298,6 +299,7 @@ const TEXT_STYLE: Record<BlockType, string> = {
 };
 
 function BlockRow({ block: b, number, focused, placeholder, menu, onFocusDone, onRequestFocus, onChange, onKeyDown, onCheck, onMove, onDelete, onBlur, onPick }: RowProps) {
+  const tr = useT();
   const ref = useRef<HTMLTextAreaElement>(null);
   const [handle, setHandle] = useState(false);
 
@@ -335,18 +337,18 @@ function BlockRow({ block: b, number, focused, placeholder, menu, onFocusDone, o
   return (
     <div className="group relative flex items-start" onMouseLeave={() => setHandle(false)}>
       <div className="absolute -left-9 top-1 hidden items-center opacity-0 transition group-hover:opacity-100 focus-within:opacity-100 sm:flex">
-        <button type="button" onClick={() => setHandle(!handle)} className="rounded p-1 text-stone-300 hover:bg-stone-100 hover:text-stone-600" aria-label="Options du bloc"><Icon name="drag" className="h-3.5 w-3.5" /></button>
+        <button type="button" onClick={() => setHandle(!handle)} className="rounded p-1 text-stone-300 hover:bg-stone-100 hover:text-stone-600" aria-label={tr("Options du bloc")}><Icon name="drag" className="h-3.5 w-3.5" /></button>
         {handle && (
           <div className="absolute left-7 top-0 z-20 w-36 rounded-xl border border-line bg-surface p-1 text-xs shadow-xl">
-            <button type="button" onClick={() => { onMove(-1); setHandle(false); }} className="block w-full rounded-lg px-2 py-1.5 text-left hover:bg-stone-100">↑ Monter</button>
-            <button type="button" onClick={() => { onMove(1); setHandle(false); }} className="block w-full rounded-lg px-2 py-1.5 text-left hover:bg-stone-100">↓ Descendre</button>
-            <button type="button" onClick={onDelete} className="block w-full rounded-lg px-2 py-1.5 text-left text-rose-600 hover:bg-rose-500/10">Supprimer</button>
+            <button type="button" onClick={() => { onMove(-1); setHandle(false); }} className="block w-full rounded-lg px-2 py-1.5 text-left hover:bg-stone-100">{tr("↑ Monter")}</button>
+            <button type="button" onClick={() => { onMove(1); setHandle(false); }} className="block w-full rounded-lg px-2 py-1.5 text-left hover:bg-stone-100">{tr("↓ Descendre")}</button>
+            <button type="button" onClick={onDelete} className="block w-full rounded-lg px-2 py-1.5 text-left text-rose-600 hover:bg-rose-500/10">{tr("Supprimer")}</button>
           </div>
         )}
       </div>
 
       {b.type === "divider" ? (
-        <button type="button" onClick={onDelete} className="my-3 block w-full" aria-label="Séparateur"><hr className="border-line" /></button>
+        <button type="button" onClick={onDelete} className="my-3 block w-full" aria-label={tr("Séparateur")}><hr className="border-line" /></button>
       ) : (
         <div className={cx("flex min-w-0 flex-1 items-start", b.type === "callout" && "gap-2")}>
           {marker}
@@ -371,7 +373,7 @@ function BlockRow({ block: b, number, focused, placeholder, menu, onFocusDone, o
             )}
             {menu && (
               <div className="absolute left-0 top-full z-30 mt-1 w-64 overflow-hidden rounded-xl border border-line bg-surface p-1 text-sm shadow-xl">
-                {menu.options.length === 0 && <p className="px-3 py-2 text-xs text-stone-400">Aucun bloc trouvé</p>}
+                {menu.options.length === 0 && <p className="px-3 py-2 text-xs text-stone-400">{tr("Aucun bloc trouvé")}</p>}
                 {menu.options.map((o, i) => (
                   <button
                     key={o.type}

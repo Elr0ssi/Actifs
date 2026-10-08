@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { cx } from "@/lib/utils";
 import { toggleTaskStatus, quickAddTask } from "@/app/app/actions";
@@ -18,6 +19,7 @@ import type { Task } from "@/lib/types";
 type Project = { id: string; name: string; color: string };
 
 export function TaskRow({ task, today, project, onTouch, onOpen }: { task: Task; today: string; project?: Project; onTouch?: (id: string) => void; onOpen?: (t: Task) => void }) {
+  const tr = useT();
   const [done, setDone] = useState(isDone(task));
   const [, start] = useTransition();
   useEffect(() => setDone(isDone(task)), [task]);
@@ -53,10 +55,10 @@ export function TaskRow({ task, today, project, onTouch, onOpen }: { task: Task;
       >
         ✓
       </button>
-      <button type="button" onClick={() => onOpen?.(task)} className="min-w-0 flex-1 text-left" title="Ouvrir la tâche">
+      <button type="button" onClick={() => onOpen?.(task)} className="min-w-0 flex-1 text-left" title={tr("Ouvrir la tâche")}>
         <span className={cx("flex items-center gap-1.5 truncate text-[13px] font-medium", done ? "text-stone-400 line-through" : "text-stone-800")}>
           <span className="truncate">{task.title}</span>
-          {task.description && <span title="Contient des notes" className="shrink-0 text-[10px] text-stone-300">📝</span>}
+          {task.description && <span title={tr("Contient des notes")} className="shrink-0 text-[10px] text-stone-300">📝</span>}
         </span>
         {(project || sub) && (
           <span className={cx("flex items-center gap-1.5 truncate text-[11px]", late ? "text-rose-500" : "text-stone-400")}>
@@ -80,6 +82,7 @@ export function TaskRow({ task, today, project, onTouch, onOpen }: { task: Task;
 type Tab = "todo" | "done" | "all";
 
 export function TasksList({ data, size }: WidgetProps) {
+  const tr = useT();
   const [tab, setTab] = useState<Tab>("todo");
   const [touched, setTouched] = useState<Set<string>>(new Set());
   const [draft, setDraft] = useState("");
@@ -108,7 +111,7 @@ export function TasksList({ data, size }: WidgetProps) {
   return (
     <WidgetShell
       icon="tasks"
-      title="Tâches"
+      title={tr("Tâches")}
       subtitle={`${todo.length} à faire · ${finished.length} faites`}
       href="/app/tasks/list"
       right={
@@ -130,7 +133,7 @@ export function TasksList({ data, size }: WidgetProps) {
       )}
       {rows.length > limit && <p className="mt-1 px-1.5 text-[11px] text-stone-400">+ {rows.length - limit} autre(s)</p>}
       <form action={(fd) => start(async () => { await quickAddTask(fd); setDraft(""); })} className={cx("mt-2 flex gap-1.5", pending && "opacity-60")}>
-        <input name="title" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Ajouter une tâche pour aujourd'hui…" className="input py-1.5 text-xs" />
+        <input name="title" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={tr("Ajouter une tâche pour aujourd'hui…")} className="input py-1.5 text-xs" />
         <button disabled={!draft.trim()} className="btn-primary shrink-0 px-2.5 py-1.5"><Icon name="plus" /></button>
       </form>
       {open && (
@@ -155,6 +158,7 @@ export function TasksList({ data, size }: WidgetProps) {
 /* ---------- Agenda : tâches + routines, façon Google Agenda ---------- */
 
 export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
+  const tr = useT();
   const [selected, setSelected] = useState(data.today);
   const [anchor, setAnchor] = useState(data.today);
   const [view, setView] = useState<CalView>(opts.view === "day" || opts.view === "week" || opts.view === "month" ? opts.view : "week");
@@ -244,14 +248,14 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
   return (
     <WidgetShell
       icon="calendar"
-      title="Agenda"
+      title={tr("Agenda")}
       subtitle={wide ? "Tes tâches et tes routines au même endroit : coche directement dans le calendrier" : undefined}
       right={
         <div className="flex items-center gap-1.5">
           <button type="button" onClick={() => openCreate(timeView && view === "day" ? anchor : selected)} className="btn-primary px-2.5 py-1 text-[11px]"><Icon name="plus" className="h-3 w-3" />Tâche</button>
           {data.projects.length > 0 && (
           <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className="max-w-[130px] rounded-md border border-line bg-surface px-1.5 py-1 text-[11px] text-stone-600">
-            <option value="">Tous les projets</option>
+            <option value="">{tr("Tous les projets")}</option>
             {data.projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
           )}
@@ -259,8 +263,8 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
       }
     >
       <div className="mb-3 flex flex-wrap items-center gap-1.5">
-        <button type="button" onClick={() => setOpts({ tasks: !showTasks })} className={chip(showTasks)}>Tâches</button>
-        <button type="button" onClick={() => setOpts({ routines: !showRoutines })} className={chip(showRoutines)}>Routines</button>
+        <button type="button" onClick={() => setOpts({ tasks: !showTasks })} className={chip(showTasks)}>{tr("Tâches")}</button>
+        <button type="button" onClick={() => setOpts({ routines: !showRoutines })} className={chip(showRoutines)}>{tr("Routines")}</button>
         {timeView && (
           <div className="ml-auto flex items-center gap-1.5 text-[11px] text-stone-400">
             Taille
@@ -304,13 +308,13 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
           <p className="text-[12px] font-semibold capitalize text-stone-800">{fmtLong(selected)}</p>
           {overdue.length > 0 && (
             <div className="mt-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-rose-500">En retard</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-rose-500">{tr("En retard")}</p>
               {overdue.map((t) => <CheckRow key={t.id} onOpen={() => openEdit(t)} checked={toggles.taskDone(t)} onChange={() => toggles.toggleTask(t)} label={t.title} sub={`En retard · ${fmtShort(t.due_date!)}`} dot={(t.project_id && projectOf.get(t.project_id)?.color) || undefined} />)}
             </div>
           )}
           {dayTasks.length > 0 && (
             <div className="mt-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400">Tâches</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400">{tr("Tâches")}</p>
               {dayTasks.map((t) => (
                 <CheckRow
                   key={t.id}
@@ -326,7 +330,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
           )}
           {dayRoutines.length > 0 && (
             <div className="mt-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400">Routines</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400">{tr("Routines")}</p>
               {dayRoutines.map((r) => (
                 <CheckRow
                   key={r.id}
@@ -339,7 +343,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
               ))}
             </div>
           )}
-          {empty && <p className="mt-2 text-[11px] text-stone-400">Journée libre.</p>}
+          {empty && <p className="mt-2 text-[11px] text-stone-400">{tr("Journée libre.")}</p>}
 
           {!adding ? (
             <button type="button" onClick={() => setAdding(true)} className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-line py-2 text-[12px] font-medium text-stone-500 transition hover:border-brand-300 hover:text-brand-700">
@@ -348,17 +352,17 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
           ) : (
             <form key={formKey} action={(fd) => start(async () => { await createTask(fd); setFormKey((k) => k + 1); setAdding(false); })} className="mt-3 space-y-1.5 border-t border-line pt-3">
               <input type="hidden" name="due_date" value={selected} />
-              <input name="title" placeholder="Nouvelle tâche ce jour-là…" className="input py-1.5 text-xs" required autoFocus />
+              <input name="title" placeholder={tr("Nouvelle tâche ce jour-là…")} className="input py-1.5 text-xs" required autoFocus />
               <div className="grid grid-cols-2 gap-1.5">
-                <input name="due_time" type="time" className="input min-w-0 py-1 text-xs" aria-label="Heure" />
-                <select key={projectFilter} name="project_id" defaultValue={projectFilter} className="input min-w-0 py-1 text-xs" aria-label="Projet">
-                  <option value="">Sans projet</option>
+                <input name="due_time" type="time" className="input min-w-0 py-1 text-xs" aria-label={tr("Heure")} />
+                <select key={projectFilter} name="project_id" defaultValue={projectFilter} className="input min-w-0 py-1 text-xs" aria-label={tr("Projet")}>
+                  <option value="">{tr("Sans projet")}</option>
                   {data.projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
               <div className="flex gap-1.5">
                 <button className="btn-primary flex-1 py-1.5 text-xs"><Icon name="plus" className="h-3.5 w-3.5" />Ajouter</button>
-                <button type="button" onClick={() => setAdding(false)} className="btn-secondary px-3 py-1.5 text-xs">Annuler</button>
+                <button type="button" onClick={() => setAdding(false)} className="btn-secondary px-3 py-1.5 text-xs">{tr("Annuler")}</button>
               </div>
             </form>
           )}

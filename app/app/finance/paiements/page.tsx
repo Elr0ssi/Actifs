@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
 import { WalletSetup } from "@/components/app/finance/wallet-setup";
@@ -6,6 +7,7 @@ import { TransactionList, type Txn } from "@/components/app/finance/transaction-
 export const metadata: Metadata = { title: "Finance — Paiements" };
 
 export default async function PaymentsPage() {
+  const tr = getT();
   const ctx = await getAppContext();
   if (!ctx) return null;
   const { supabase, profile, household } = ctx;
@@ -31,7 +33,7 @@ export default async function PaymentsPage() {
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-stone-500">Tes paiements quotidiens par carte. Ils sont retirés de ton solde à leur date et comptés dans tes budgets.</p>
+      <p className="text-xs text-stone-500">{tr("Tes paiements quotidiens par carte. Ils sont retirés de ton solde à leur date et comptés dans tes budgets.")}</p>
       <WalletSetup token={token} defaultOpen={txns.length === 0} />
       <TransactionList txns={txns} />
     </div>

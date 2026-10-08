@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useMemo, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { CATEGORIES, EQUIPMENT, RECIPES, filterRecipes, type MarketingRecipe } from "@/lib/marketing/recipes";
@@ -7,6 +8,7 @@ import { setInspirationFavorite } from "@/app/app/lists/recipes/actions";
 import { cx } from "@/lib/utils";
 
 export function InspirationBrowser({ favoriteKeys }: { favoriteKeys: { slugs: string[]; names: string[] } }) {
+  const tr = useT();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [equipment, setEquipment] = useState<string[]>([]);
@@ -24,7 +26,7 @@ export function InspirationBrowser({ favoriteKeys }: { favoriteKeys: { slugs: st
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Rechercher une recette ou un ingrédient…"
+          placeholder={tr("Rechercher une recette ou un ingrédient…")}
           className="input flex-1"
         />
         <button
@@ -43,8 +45,7 @@ export function InspirationBrowser({ favoriteKeys }: { favoriteKeys: { slugs: st
           onClick={() => setCategory(null)}
           className={cx("rounded-full px-3 py-1 text-xs font-medium transition", category === null ? "bg-ink text-onink" : "bg-stone-100 text-stone-600 hover:bg-stone-200")}
         >
-          Toutes
-        </button>
+          {tr("Toutes")}</button>
         {CATEGORIES.map((c) => (
           <button
             key={c}
@@ -58,7 +59,7 @@ export function InspirationBrowser({ favoriteKeys }: { favoriteKeys: { slugs: st
 
       {showEquipment && (
         <div className="mt-3 rounded-2xl border border-stone-200 bg-stone-50 p-4">
-          <p className="mb-3 text-xs text-stone-500">Coche ce que tu as chez toi : on ne montre que les recettes réalisables avec.</p>
+          <p className="mb-3 text-xs text-stone-500">{tr("Coche ce que tu as chez toi : on ne montre que les recettes réalisables avec.")}</p>
           <div className="flex flex-wrap gap-2">
             {EQUIPMENT.map((e) => (
               <button
@@ -76,8 +77,7 @@ export function InspirationBrowser({ favoriteKeys }: { favoriteKeys: { slugs: st
           </div>
           {equipment.length > 0 && (
             <button onClick={() => setEquipment([])} className="mt-3 text-xs text-stone-400 hover:text-stone-700">
-              Réinitialiser
-            </button>
+              {tr("Réinitialiser")}</button>
           )}
         </div>
       )}
@@ -93,13 +93,14 @@ export function InspirationBrowser({ favoriteKeys }: { favoriteKeys: { slugs: st
       </div>
 
       {results.length === 0 && (
-        <p className="mt-10 text-center text-sm text-stone-400">Aucune recette ne correspond. Essaie un autre mot-clé ou un autre équipement.</p>
+        <p className="mt-10 text-center text-sm text-stone-400">{tr("Aucune recette ne correspond. Essaie un autre mot-clé ou un autre équipement.")}</p>
       )}
     </div>
   );
 }
 
 function InspirationCard({ recipe, initialFav }: { recipe: MarketingRecipe; initialFav: boolean }) {
+  const tr = useT();
   const [pending, start] = useTransition();
   const [fav, setFav] = useState(initialFav);
   const [open, setOpen] = useState(false);
@@ -117,7 +118,7 @@ function InspirationCard({ recipe, initialFav }: { recipe: MarketingRecipe; init
             // eslint-disable-next-line @next/next/no-img-element
             <img src={recipe.image} alt={recipe.name} className="h-full w-full object-cover" />
           ) : (
-            <div className="flex h-full items-center justify-center text-xs text-stone-300">Photo à venir</div>
+            <div className="flex h-full items-center justify-center text-xs text-stone-300">{tr("Photo à venir")}</div>
           )}
         </div>
         <span className="absolute -bottom-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 border-surface bg-surface text-lg shadow-md">
@@ -133,8 +134,7 @@ function InspirationCard({ recipe, initialFav }: { recipe: MarketingRecipe; init
         <p className="mt-1 flex-1 text-xs text-stone-500">{recipe.desc}</p>
         <div className="mt-3 flex items-center gap-2">
           <button onClick={() => setOpen(true)} className="btn-secondary py-1.5 text-xs">
-            Voir la recette
-          </button>
+            {tr("Voir la recette")}</button>
           <button
             disabled={pending}
             aria-pressed={fav}
@@ -159,24 +159,24 @@ function InspirationCard({ recipe, initialFav }: { recipe: MarketingRecipe; init
                   <h2 className="mt-2 text-2xl font-bold tracking-tight text-stone-900">{recipe.name}</h2>
                   <p className="mt-1 text-sm text-stone-500">{recipe.desc}</p>
                 </div>
-                <button onClick={() => setOpen(false)} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label="Fermer">✕</button>
+                <button onClick={() => setOpen(false)} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label={tr("Fermer")}>✕</button>
               </div>
               <div className="mt-4 flex flex-wrap gap-2 text-xs text-stone-600">
                 <span className="rounded-full bg-stone-100 px-2.5 py-1">⏱ {recipe.time}</span>
                 <span className="rounded-full bg-stone-100 px-2.5 py-1">🍽 {recipe.servings} pers.</span>
                 <span className="rounded-full bg-stone-100 px-2.5 py-1">{recipe.difficulty}</span>
               </div>
-              <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Ingrédients</h3>
+              <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">{tr("Ingrédients")}</h3>
               <ul className="grid gap-x-6 gap-y-1 text-sm text-stone-700 sm:grid-cols-2">
                 {recipe.ingredients.map((i) => <li key={i}>• {i}</li>)}
               </ul>
               {recipe.utensils.length > 0 && (
                 <>
-                  <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Ustensiles</h3>
+                  <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">{tr("Ustensiles")}</h3>
                   <p className="text-sm text-stone-600">{recipe.utensils.join(" · ")}</p>
                 </>
               )}
-              <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Préparation</h3>
+              <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">{tr("Préparation")}</h3>
               <ol className="space-y-2.5">
                 {recipe.steps.map((line, i) => (
                   <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-stone-800">
@@ -187,7 +187,7 @@ function InspirationCard({ recipe, initialFav }: { recipe: MarketingRecipe; init
               </ol>
               <div className="mt-6 flex items-center gap-2 border-t border-line pt-4">
                 <button onClick={toggleFav} disabled={pending} className={fav ? "btn-secondary" : "btn-primary"}>{fav ? "★ Dans mes favoris" : "☆ Ajouter aux favoris"}</button>
-                <button onClick={() => setOpen(false)} className="btn-secondary ml-auto">Fermer</button>
+                <button onClick={() => setOpen(false)} className="btn-secondary ml-auto">{tr("Fermer")}</button>
               </div>
             </div>
           </div>

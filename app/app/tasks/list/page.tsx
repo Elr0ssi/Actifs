@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
 import type { Project, Task, Routine, RoutineLog } from "@/lib/types";
@@ -12,6 +13,7 @@ const PRIORITY_LABEL: Record<string, string> = { high: "Haute", medium: "Moyenne
 const PRIORITY_DOT: Record<string, string> = { high: "bg-rose-500", medium: "bg-amber-500", low: "bg-stone-300" };
 
 export default async function TasksPage() {
+  const tr = getT();
   const ctx = await getAppContext();
   if (!ctx) return null;
   const { supabase, profile } = ctx;
@@ -48,18 +50,18 @@ export default async function TasksPage() {
   return (
     <div className="space-y-8">
       <section className="card p-6">
-        <h2 className="mb-4 font-semibold text-stone-900">Aujourd'hui</h2>
+        <h2 className="mb-4 font-semibold text-stone-900">{tr("Aujourd'hui")}</h2>
         <div className="grid gap-6 sm:grid-cols-2">
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Tâches</p>
-            {dueToday.length === 0 && overdue.length === 0 && <p className="text-sm text-stone-400">Rien de prévu aujourd'hui.</p>}
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">{tr("Tâches")}</p>
+            {dueToday.length === 0 && overdue.length === 0 && <p className="text-sm text-stone-400">{tr("Rien de prévu aujourd'hui.")}</p>}
             <div className="space-y-1.5">
               {overdue.map((t) => (
                 <div key={t.id} className="flex items-center gap-2">
                   <div className="flex-1">
                     <ToggleCheckbox initialChecked={false} onToggle={toggleTaskStatus.bind(null, t.id)} label={t.title} />
                   </div>
-                  <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-600">reportée</span>
+                  <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-600">{tr("reportée")}</span>
                   <span className={cx("h-2 w-2 shrink-0 rounded-full", PRIORITY_DOT[t.priority])} title={PRIORITY_LABEL[t.priority]} />
                 </div>
               ))}
@@ -74,8 +76,8 @@ export default async function TasksPage() {
             </div>
           </div>
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Routines</p>
-            {todayRoutines.length === 0 && <p className="text-sm text-stone-400">Aucune routine aujourd'hui.</p>}
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">{tr("Routines")}</p>
+            {todayRoutines.length === 0 && <p className="text-sm text-stone-400">{tr("Aucune routine aujourd'hui.")}</p>}
             <div className="space-y-1.5">
               {todayRoutines.map((r) => (
                 <ToggleCheckbox
@@ -92,12 +94,12 @@ export default async function TasksPage() {
       </section>
 
       <div className="card p-5">
-        <h2 className="mb-3 text-sm font-semibold text-stone-700">Nouveau projet</h2>
+        <h2 className="mb-3 text-sm font-semibold text-stone-700">{tr("Nouveau projet")}</h2>
         <form action={createProject} className="flex flex-wrap items-center gap-2">
           <input name="icon" defaultValue="📁" className="input w-16 text-center" maxLength={2} />
-          <input name="name" placeholder="Ex. Création boîte" className="input flex-1 min-w-[180px]" required />
+          <input name="name" placeholder={tr("Ex. Création boîte")} className="input flex-1 min-w-[180px]" required />
           <input name="color" type="color" defaultValue="#8b5cf6" className="h-11 w-14 rounded-xl border border-stone-200" />
-          <button className="btn-primary">Créer</button>
+          <button className="btn-primary">{tr("Créer")}</button>
         </form>
       </div>
 
@@ -111,7 +113,7 @@ export default async function TasksPage() {
             </div>
 
             <div className="space-y-1">
-              {g.tasks.length === 0 && <p className="text-sm text-stone-400">Aucune tâche.</p>}
+              {g.tasks.length === 0 && <p className="text-sm text-stone-400">{tr("Aucune tâche.")}</p>}
               {g.tasks.map((t) => {
                 const isOverdue = t.status !== "done" && t.due_date && t.due_date < today;
                 return (
@@ -124,7 +126,7 @@ export default async function TasksPage() {
                         sublabel={[t.due_date, t.due_time].filter(Boolean).join(" ") || undefined}
                       />
                     </div>
-                    {isOverdue && <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-600">reportée</span>}
+                    {isOverdue && <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-600">{tr("reportée")}</span>}
                     <span className={`h-2 w-2 rounded-full ${PRIORITY_DOT[t.priority]}`} title={PRIORITY_LABEL[t.priority]} />
                     <form action={deleteTask.bind(null, t.id)}>
                       <button className="rounded-lg px-2 py-1 text-xs text-stone-400 hover:bg-stone-100 hover:text-rose-600">✕</button>
@@ -136,15 +138,15 @@ export default async function TasksPage() {
 
             <form action={createTask} className="mt-4 flex flex-wrap items-center gap-2 border-t border-stone-100 pt-4">
               <input type="hidden" name="project_id" value={g.project?.id ?? ""} />
-              <input name="title" placeholder="Nouvelle tâche…" className="input flex-1 min-w-[160px]" required />
+              <input name="title" placeholder={tr("Nouvelle tâche…")} className="input flex-1 min-w-[160px]" required />
               <select name="priority" defaultValue="medium" className="input w-32">
-                <option value="low">Basse</option>
-                <option value="medium">Moyenne</option>
-                <option value="high">Haute</option>
+                <option value="low">{tr("Basse")}</option>
+                <option value="medium">{tr("Moyenne")}</option>
+                <option value="high">{tr("Haute")}</option>
               </select>
               <input name="due_date" type="date" className="input w-40" />
-              <input name="due_time" type="time" className="input w-28" title="Heure (optionnel)" />
-              <button className="btn-secondary">Ajouter</button>
+              <input name="due_time" type="time" className="input w-28" title={tr("Heure (optionnel)")} />
+              <button className="btn-secondary">{tr("Ajouter")}</button>
             </form>
           </section>
         ))}

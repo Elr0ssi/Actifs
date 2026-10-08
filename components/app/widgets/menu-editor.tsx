@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useMemo, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { addDays } from "@/lib/finance-engine";
@@ -29,6 +30,7 @@ interface Card {
 }
 
 export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: WidgetData; weekStart: string; initialDay: string; onClose: () => void }) {
+  const tr = useT();
   const [pending, start] = useTransition();
   const [day, setDay] = useState(initialDay);
   const [slot, setSlot] = useState<Slot>("soir");
@@ -121,10 +123,10 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
       <div className={cx("max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-surface p-5 shadow-2xl sm:rounded-3xl sm:p-6", pending && "opacity-90")} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold tracking-tight text-stone-900">Planifier les repas</h2>
-            <p className="text-xs text-stone-500">Choisis un jour et un moment, puis ajoute un repas. Tes listes de courses ne changent pas.</p>
+            <h2 className="text-lg font-bold tracking-tight text-stone-900">{tr("Planifier les repas")}</h2>
+            <p className="text-xs text-stone-500">{tr("Choisis un jour et un moment, puis ajoute un repas. Tes listes de courses ne changent pas.")}</p>
           </div>
-          <button onClick={onClose} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label="Fermer">✕</button>
+          <button onClick={onClose} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label={tr("Fermer")}>✕</button>
         </div>
 
         {/* Jour */}
@@ -147,7 +149,7 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
               <div key={s.key} onClick={() => setSlot(s.key)} className={cx("cursor-pointer rounded-2xl border p-3 transition", on ? "border-brand-400 bg-brand-50/60 ring-2 ring-brand-200" : "border-line hover:bg-stone-50")}>
                 <div className="flex items-center justify-between">
                   <p className="text-[13px] font-bold text-stone-900">{s.icon} {s.label}</p>
-                  {on && <span className="rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-semibold text-white">j'ajoute ici</span>}
+                  {on && <span className="rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-semibold text-white">{tr("j'ajoute ici")}</span>}
                 </div>
                 <ul className="mt-2 space-y-1.5">
                   {mine.map((m) => {
@@ -157,9 +159,9 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
                         <span>{m.icon ?? "🍽️"}</span>
                         <span className="min-w-0 flex-1 truncate font-medium text-stone-800">{m.name}</span>
                         <span className="flex items-center gap-0.5 text-stone-500">
-                          <button type="button" aria-label="Moins de personnes" onClick={(e) => { e.stopPropagation(); changeMeal(m.id, n - 1); }} className="px-1">−</button>
+                          <button type="button" aria-label={tr("Moins de personnes")} onClick={(e) => { e.stopPropagation(); changeMeal(m.id, n - 1); }} className="px-1">−</button>
                           <span className="tabular text-[11px]">{n}</span>
-                          <button type="button" aria-label="Plus de personnes" onClick={(e) => { e.stopPropagation(); changeMeal(m.id, n + 1); }} className="px-1">+</button>
+                          <button type="button" aria-label={tr("Plus de personnes")} onClick={(e) => { e.stopPropagation(); changeMeal(m.id, n + 1); }} className="px-1">+</button>
                         </span>
                         <button type="button" title={s.key === "midi" ? "Passer au soir" : "Passer au midi"} onClick={(e) => { e.stopPropagation(); moveSlot(m.id, s.key === "midi" ? "soir" : "midi"); }} className="text-[13px] opacity-60 hover:opacity-100">{s.key === "midi" ? "🌙" : "☀️"}</button>
                         <button aria-label={`Retirer ${m.name}`} onClick={(e) => { e.stopPropagation(); setRemoved((r) => [...r, m.id]); start(() => removeMenuItem(m.id)); }} className="text-stone-400 hover:text-rose-600">✕</button>
@@ -167,7 +169,7 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
                     );
                   })}
                   {opt.map((o) => <li key={`o${o.name}`} className="rounded-xl bg-surface px-2 py-1.5 text-[12px] text-stone-500 shadow-soft">{o.icon ?? "🍽️"} {o.name}…</li>)}
-                  {mine.length + opt.length === 0 && <li className="px-1 py-2 text-[12px] text-stone-400">Rien de prévu</li>}
+                  {mine.length + opt.length === 0 && <li className="px-1 py-2 text-[12px] text-stone-400">{tr("Rien de prévu")}</li>}
                 </ul>
               </div>
             );
@@ -179,11 +181,11 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
 
         {/* Personnes */}
         <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-stone-50 px-3.5 py-2">
-          <p className="text-[12px] font-medium text-stone-700">Pour combien de personnes ?</p>
+          <p className="text-[12px] font-medium text-stone-700">{tr("Pour combien de personnes ?")}</p>
           <div className="flex items-center gap-1">
-            <button type="button" onClick={() => changePeople(people - 1)} className="h-7 w-7 rounded-lg border border-line bg-surface text-stone-600" aria-label="Moins de personnes">−</button>
-            <span className="min-w-[3rem] text-center text-sm font-bold text-stone-900">{people}<span className="ml-0.5 text-[10px] font-medium text-stone-400">pers.</span></span>
-            <button type="button" onClick={() => changePeople(people + 1)} className="h-7 w-7 rounded-lg border border-line bg-surface text-stone-600" aria-label="Plus de personnes">+</button>
+            <button type="button" onClick={() => changePeople(people - 1)} className="h-7 w-7 rounded-lg border border-line bg-surface text-stone-600" aria-label={tr("Moins de personnes")}>−</button>
+            <span className="min-w-[3rem] text-center text-sm font-bold text-stone-900">{people}<span className="ml-0.5 text-[10px] font-medium text-stone-400">{tr("pers.")}</span></span>
+            <button type="button" onClick={() => changePeople(people + 1)} className="h-7 w-7 rounded-lg border border-line bg-surface text-stone-600" aria-label={tr("Plus de personnes")}>+</button>
           </div>
         </div>
 
@@ -195,17 +197,17 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
                 <button key={t.key} type="button" data-active={!query && tab === t.key} onClick={() => { setQ(""); setTab(t.key); }}>{t.label}</button>
               ))}
             </div>
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher…" className="input !h-8 min-w-[8rem] flex-1 !py-0 text-[12px]" />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr("Rechercher…")} className="input !h-8 min-w-[8rem] flex-1 !py-0 text-[12px]" />
           </div>
 
           {flash && <p className="mt-2 rounded-lg bg-emerald-50 px-3 py-1.5 text-[12px] font-medium text-emerald-700">✓ {flash}</p>}
 
           {tab === "course" && !query && !lastCourse ? (
-            <p className="mt-3 text-xs text-stone-400">Les recettes que tu choisis en créant une liste de courses apparaîtront ici.</p>
+            <p className="mt-3 text-xs text-stone-400">{tr("Les recettes que tu choisis en créant une liste de courses apparaîtront ici.")}</p>
           ) : visible.length === 0 ? (
             <p className="mt-3 rounded-xl bg-stone-50 px-3 py-4 text-center text-xs text-stone-500">
               {cards.length === 0 ? (tab === "mine" && !query ? "Tu n'as pas encore de recette. " : "Aucune recette trouvée. ") : "Tout est déjà planifié 🎉 "}
-              {tab === "mine" && !query && <a href="/app/lists/recipes" className="font-medium text-brand-600 hover:underline">Créer une recette</a>}
+              {tab === "mine" && !query && <a href="/app/lists/recipes" className="font-medium text-brand-600 hover:underline">{tr("Créer une recette")}</a>}
             </p>
           ) : (
             <DragScroller className="mt-3 -mx-1 px-1">
@@ -244,10 +246,10 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
               <button type="button" onClick={() => setShowUsed((v) => !v)} className="font-medium text-brand-600 hover:underline">{showUsed ? "Les masquer" : "Les afficher"}</button>
             </p>
           )}
-          <a href="/app/lists/recipes" className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline">+ Créer une nouvelle recette</a>
+          <a href="/app/lists/recipes" className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline">{tr("+ Créer une nouvelle recette")}</a>
         </div>
 
-        <button onClick={onClose} className="btn-primary mt-6 w-full justify-center">Terminé</button>
+        <button onClick={onClose} className="btn-primary mt-6 w-full justify-center">{tr("Terminé")}</button>
       </div>
     </div>,
     document.body

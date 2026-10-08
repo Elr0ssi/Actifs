@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useMemo, useState } from "react";
 import { addDays } from "@/lib/finance-engine";
 import { cx } from "@/lib/utils";
@@ -10,11 +11,12 @@ import type { WidgetProps } from "@/components/app/widgets/types";
 /* ---------- Projets ---------- */
 
 export function Projects({ data, size }: WidgetProps) {
+  const tr = useT();
   const list = data.projects;
   return (
-    <WidgetShell icon="target" title="Projets" subtitle={`${list.length} en cours`} href="/app/tasks/list">
+    <WidgetShell icon="target" title={tr("Projets")} subtitle={`${list.length} en cours`} href="/app/tasks/list">
       {list.length === 0 ? (
-        <Empty>Crée un projet pour regrouper tes tâches.</Empty>
+        <Empty>{tr("Crée un projet pour regrouper tes tâches.")}</Empty>
       ) : (
         <ul className={cx("grid gap-x-5 gap-y-2.5", size === "l" && "sm:grid-cols-2")}>
           {list.slice(0, size === "s" ? 4 : 8).map((p) => {
@@ -43,18 +45,20 @@ export function Projects({ data, size }: WidgetProps) {
 /* ---------- Vocabulaire ---------- */
 
 export function VocabStats({ data }: WidgetProps) {
+  const tr = useT();
   const weekAgo = addDays(data.today, -6);
   const week = data.words.filter((w) => w.created_at.slice(0, 10) >= weekAgo).length;
   return (
-    <WidgetShell icon="chart" title="Compteur de mots" href="/app/notes/vocabulaire">
+    <WidgetShell icon="chart" title={tr("Compteur de mots")} href="/app/notes/vocabulaire">
       <p className="tabular text-3xl font-bold text-stone-900"><CountUp value={data.wordsTotal} kind="int" /></p>
-      <p className="text-[11px] text-stone-500">mots enregistrés</p>
+      <p className="text-[11px] text-stone-500">{tr("mots enregistrés")}</p>
       <span className="mt-2 inline-block rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700">+{week} cette semaine</span>
     </WidgetShell>
   );
 }
 
 export function VocabQuiz({ data }: WidgetProps) {
+  const tr = useT();
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [reverse, setReverse] = useState(false);
@@ -65,8 +69,8 @@ export function VocabQuiz({ data }: WidgetProps) {
 
   if (order.length === 0) {
     return (
-      <WidgetShell icon="book" title="Révision éclair">
-        <Empty>Ajoute quelques mots pour commencer à réviser.</Empty>
+      <WidgetShell icon="book" title={tr("Révision éclair")}>
+        <Empty>{tr("Ajoute quelques mots pour commencer à réviser.")}</Empty>
       </WidgetShell>
     );
   }
@@ -80,7 +84,7 @@ export function VocabQuiz({ data }: WidgetProps) {
   return (
     <WidgetShell
       icon="book"
-      title="Révision éclair"
+      title={tr("Révision éclair")}
       subtitle={`Carte ${(index % order.length) + 1} / ${order.length}`}
       right={
         <button onClick={() => { setReverse((r) => !r); setRevealed(false); }} className="rounded-md border border-line px-2 py-1 text-[11px] font-medium text-stone-500 hover:text-stone-800">
@@ -96,8 +100,8 @@ export function VocabQuiz({ data }: WidgetProps) {
         <span className={cx("mt-1 text-sm", revealed ? "font-semibold text-brand-700" : "text-stone-300")}>{revealed ? back : "Touche pour voir la traduction"}</span>
       </button>
       <div className="mt-2 flex gap-2">
-        <button onClick={next} className="btn-secondary flex-1 py-1.5 text-xs">À revoir</button>
-        <button onClick={next} className="btn-primary flex-1 py-1.5 text-xs">Je savais</button>
+        <button onClick={next} className="btn-secondary flex-1 py-1.5 text-xs">{tr("À revoir")}</button>
+        <button onClick={next} className="btn-primary flex-1 py-1.5 text-xs">{tr("Je savais")}</button>
       </div>
     </WidgetShell>
   );

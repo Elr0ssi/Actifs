@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useEffect, useRef, useState } from "react";
 import { addDays, monthBounds } from "@/lib/finance-engine";
 import { cx, MONTHS_FR } from "@/lib/utils";
@@ -121,19 +122,20 @@ export function CalendarNav({
   onAnchor: (a: string) => void;
   onToday: () => void;
 }) {
+  const tr = useT();
   return (
     <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
       <div className="flex items-center gap-1">
-        <button type="button" onClick={() => onAnchor(calShift(view, anchor, -1))} className="rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label="Précédent">
+        <button type="button" onClick={() => onAnchor(calShift(view, anchor, -1))} className="rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label={tr("Précédent")}>
           <Icon name="chevronLeft" />
         </button>
         <p className="min-w-[120px] text-center text-[13px] font-semibold capitalize text-stone-800">{calTitle(view, anchor)}</p>
-        <button type="button" onClick={() => onAnchor(calShift(view, anchor, 1))} className="rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label="Suivant">
+        <button type="button" onClick={() => onAnchor(calShift(view, anchor, 1))} className="rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label={tr("Suivant")}>
           <Icon name="chevronRight" />
         </button>
       </div>
       <div className="flex items-center gap-2">
-        <button type="button" onClick={onToday} className="btn-secondary px-2.5 py-1 text-[11px]">Aujourd'hui</button>
+        <button type="button" onClick={onToday} className="btn-secondary px-2.5 py-1 text-[11px]">{tr("Aujourd'hui")}</button>
         <Segmented<CalView> value={view} onChange={onView} options={[{ v: "day" as CalView, l: "Jour" }, { v: "week" as CalView, l: "Semaine" }, { v: "month" as CalView, l: "Mois" }].filter((o) => views.includes(o.v))} />
       </div>
     </div>
@@ -197,6 +199,7 @@ export function Chip({ item }: { item: CalItem }) {
 
 /** Ligne de détail (panneau du jour) : case à cocher pilotée par le parent pour rester synchronisée avec le calendrier. */
 export function CheckRow({ checked, onChange, label, sub, disabled, dot, onOpen }: { checked: boolean; onChange: () => void; label: string; sub?: string; disabled?: boolean; dot?: string; onOpen?: () => void }) {
+  const tr = useT();
   const text = (
     <>
       <span className={cx("block truncate text-[13px] font-medium", checked ? "text-stone-400 line-through" : "text-stone-800")}>{label}</span>
@@ -213,7 +216,7 @@ export function CheckRow({ checked, onChange, label, sub, disabled, dot, onOpen 
     return (
       <div className="flex items-start gap-2.5 rounded-lg px-1.5 py-1 transition hover:bg-stone-50">
         <input type="checkbox" checked={checked} disabled={disabled} onChange={onChange} aria-label={`Cocher : ${label}`} className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-        <button type="button" onClick={onOpen} className="min-w-0 flex-1 text-left" title="Ouvrir la tâche">{text}</button>
+        <button type="button" onClick={onOpen} className="min-w-0 flex-1 text-left" title={tr("Ouvrir la tâche")}>{text}</button>
       </div>
     );
   }

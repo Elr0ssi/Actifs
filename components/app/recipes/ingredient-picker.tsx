@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useMemo, useState } from "react";
 import type { PickedIngredient } from "@/lib/data/ingredients";
 import { QTY_UNITS, defaultQtyUnit, priceSuffix, unitForQty, type CatalogIngredient, type QtyUnit } from "@/lib/shopping";
@@ -26,6 +27,7 @@ export function IngredientPicker({
   priceStore?: string | null;
   placeholder?: string;
 }) {
+  const tr = useT();
   const [picked, setPicked] = useState<PickedIngredient[]>(initial);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -59,7 +61,7 @@ export function IngredientPicker({
               <li key={p.name} className="flex flex-wrap items-center gap-2 rounded-xl bg-stone-50 px-3 py-1.5 text-sm">
                 <span className="min-w-[110px] flex-1 font-medium text-stone-800">
                   {p.name}
-                  {isNew && <span className="ml-1.5 rounded bg-amber-100 px-1 text-[10px] font-normal text-amber-700">nouveau</span>}
+                  {isNew && <span className="ml-1.5 rounded bg-amber-100 px-1 text-[10px] font-normal text-amber-700">{tr("nouveau")}</span>}
                 </span>
                 <input
                   type="number"
@@ -67,7 +69,7 @@ export function IngredientPicker({
                   step="any"
                   value={p.qty ?? ""}
                   onChange={(e) => update(i, { qty: e.target.value === "" ? null : Number(e.target.value) })}
-                  placeholder="Qté"
+                  placeholder={tr("Qté")}
                   className="w-20 rounded-lg border border-stone-200 bg-surface px-2 py-1 text-right text-sm"
                 />
                 <select
@@ -85,7 +87,7 @@ export function IngredientPicker({
                       step="0.01"
                       value={p.price ?? ""}
                       onChange={(e) => update(i, { price: e.target.value === "" ? null : Number(e.target.value) })}
-                      placeholder="Prix"
+                      placeholder={tr("Prix")}
                       className="w-20 rounded-lg border border-stone-200 bg-surface px-2 py-1 text-right text-sm"
                     />
                     {priceSuffix(unitForQty(p.qtyUnit))} ({priceStore})
@@ -120,7 +122,7 @@ export function IngredientPicker({
                 <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => add(m.name)} className="flex w-full justify-between rounded-lg px-3 py-1.5 text-left text-sm hover:bg-stone-50">
                   <span>
                     {m.name}
-                    {m.personal && <span className="ml-1.5 text-[10px] text-stone-400">perso</span>}
+                    {m.personal && <span className="ml-1.5 text-[10px] text-stone-400">{tr("perso")}</span>}
                   </span>
                   {prices?.[m.id] !== undefined && <span className="text-xs text-stone-400">{formatEUR(prices[m.id])} {priceSuffix(m.unit).slice(1)}</span>}
                 </button>

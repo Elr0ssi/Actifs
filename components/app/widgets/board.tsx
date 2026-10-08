@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { saveWidgetLayout } from "@/app/app/widget-actions";
 import {
@@ -66,6 +67,7 @@ const SIZE_SHORT: Record<WidgetSize, string> = { s: "S", m: "M", l: "L", xl: "XL
 const SIZE_COLS: Record<WidgetSize, number> = { s: 1, m: 2, l: 3, xl: 4 };
 
 export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage; initial: WidgetItem[]; data: WidgetData; toolbar?: React.ReactNode }) {
+  const tr = useT();
   const [items, setItems] = useState(initial);
   const [editing, setEditing] = useState(false);
   const [drawer, setDrawer] = useState(false);
@@ -122,22 +124,22 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
         <div className="min-w-0">
           {page === "finance" ? (
             <div className="flex items-center gap-1">
-              <button type="button" onClick={() => shiftMonth(-1)} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label="Mois précédent"><Icon name="chevronLeft" /></button>
+              <button type="button" onClick={() => shiftMonth(-1)} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label={tr("Mois précédent")}><Icon name="chevronLeft" /></button>
               <p className="min-w-[140px] text-center text-[15px] font-bold text-stone-900">{MONTHS_FR[viewMonth.m]} {viewMonth.y}</p>
-              <button type="button" onClick={() => shiftMonth(1)} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label="Mois suivant"><Icon name="chevronRight" /></button>
-              {!isReal && <button type="button" onClick={() => setViewMonth(realMonth)} className="btn-secondary ml-1 px-2.5 py-1 text-[11px]">Aujourd'hui</button>}
+              <button type="button" onClick={() => shiftMonth(1)} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label={tr("Mois suivant")}><Icon name="chevronRight" /></button>
+              {!isReal && <button type="button" onClick={() => setViewMonth(realMonth)} className="btn-secondary ml-1 px-2.5 py-1 text-[11px]">{tr("Aujourd'hui")}</button>}
             </div>
           ) : (
             toolbar
           )}
         </div>
         <div className="flex items-center gap-2">
-          {saving && <span className="text-[11px] text-stone-400">Enregistrement…</span>}
+          {saving && <span className="text-[11px] text-stone-400">{tr("Enregistrement…")}</span>}
           {editing ? (
             <>
-              <button onClick={() => persist(DEFAULT_LAYOUTS[page])} className="btn-secondary px-3 py-1.5 text-xs">Réinitialiser</button>
+              <button onClick={() => persist(DEFAULT_LAYOUTS[page])} className="btn-secondary px-3 py-1.5 text-xs">{tr("Réinitialiser")}</button>
               <button onClick={() => setDrawer(true)} className="btn-secondary px-3 py-1.5 text-xs"><Icon name="plus" className="h-3.5 w-3.5" />Ajouter un widget</button>
-              <button onClick={() => { setEditing(false); setDrawer(false); }} className="btn-primary px-3 py-1.5 text-xs">Terminé</button>
+              <button onClick={() => { setEditing(false); setDrawer(false); }} className="btn-primary px-3 py-1.5 text-xs">{tr("Terminé")}</button>
             </>
           ) : (
             <button onClick={() => setEditing(true)} className="btn-secondary px-3 py-1.5 text-xs"><Icon name="grid" className="h-3.5 w-3.5" />Personnaliser</button>
@@ -180,17 +182,17 @@ export function WidgetBoard({ page, initial, data, toolbar }: { page: WidgetPage
                   <div title={`${def.title} · glisse pour déplacer`} className="absolute left-1/2 top-1.5 -translate-x-1/2 rounded-md bg-surface/95 px-2 py-0.5 text-stone-400 shadow-sm">
                     <Icon name="drag" className="h-3.5 w-3.5 rotate-90" />
                   </div>
-                  <button onClick={() => persist(items.filter((i) => i.id !== it.id))} title="Retirer" className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-ink text-onink shadow hover:bg-rose-600">
+                  <button onClick={() => persist(items.filter((i) => i.id !== it.id))} title={tr("Retirer")} className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-ink text-onink shadow hover:bg-rose-600">
                     <Icon name="close" className="h-3 w-3" />
                   </button>
                   <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-xl bg-surface/95 p-1 shadow-md">
-                    <button onClick={() => move(it.id, -1)} disabled={idx === 0} title="Avancer" className="rounded-md p-1 text-stone-500 hover:bg-stone-100 disabled:opacity-30"><Icon name="chevronLeft" className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => move(it.id, -1)} disabled={idx === 0} title={tr("Avancer")} className="rounded-md p-1 text-stone-500 hover:bg-stone-100 disabled:opacity-30"><Icon name="chevronLeft" className="h-3.5 w-3.5" /></button>
                     {def.sizes.map((s) => (
                       <button key={s} onClick={() => update(it.id, { size: s })} title={SIZE_LABEL[s]} className={cx("min-w-[26px] rounded-md px-1.5 py-0.5 text-[11px] font-bold", it.size === s ? "bg-brand-600 text-white" : "text-stone-500 hover:bg-stone-100")}>
                         {SIZE_SHORT[s]}
                       </button>
                     ))}
-                    <button onClick={() => move(it.id, 1)} disabled={idx === items.length - 1} title="Reculer" className="rounded-md p-1 text-stone-500 hover:bg-stone-100 disabled:opacity-30"><Icon name="chevronRight" className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => move(it.id, 1)} disabled={idx === items.length - 1} title={tr("Reculer")} className="rounded-md p-1 text-stone-500 hover:bg-stone-100 disabled:opacity-30"><Icon name="chevronRight" className="h-3.5 w-3.5" /></button>
                   </div>
                 </div>
               )}
@@ -249,6 +251,7 @@ const PREVIEW_W = 316;
 
 /** Vrai rendu du widget (données d'exemple), réduit et non cliquable, à la largeur qu'il aurait sur la page. */
 function WidgetPreview({ type, size, data }: { type: WidgetType; size: WidgetSize; data: WidgetData }) {
+  const tr = useT();
   const Comp = RENDER[type];
   const cols = PREVIEW_COLS[size];
   const full = 290 * cols + 16 * (cols - 1);
@@ -272,12 +275,13 @@ function WidgetPreview({ type, size, data }: { type: WidgetType; size: WidgetSiz
         </div>
       </div>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-canvas to-transparent" />
-      <span className="absolute right-1.5 top-1.5 rounded-full bg-surface/90 px-1.5 py-px text-[9px] font-medium text-stone-400">exemple</span>
+      <span className="absolute right-1.5 top-1.5 rounded-full bg-surface/90 px-1.5 py-px text-[9px] font-medium text-stone-400">{tr("exemple")}</span>
     </div>
   );
 }
 
 function WidgetDrawer({ page, today, items, onAdd, onClose }: { page: WidgetPage; today: string; items: WidgetItem[]; onAdd: (t: WidgetType, s: WidgetSize) => void; onClose: () => void }) {
+  const tr = useT();
   const allowed = PAGE_SECTIONS[page];
   const [section, setSection] = useState<WidgetSection | "all">("all");
   const [sizes, setSizes] = useState<Partial<Record<WidgetType, WidgetSize>>>({});
@@ -291,8 +295,8 @@ function WidgetDrawer({ page, today, items, onAdd, onClose }: { page: WidgetPage
       <aside className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[380px] animate-slideIn flex-col border-l border-line bg-canvas shadow-2xl">
         <div className="flex items-center justify-between border-b border-line px-5 py-4">
           <div>
-            <p className="text-sm font-bold text-stone-900">Ajouter un widget</p>
-            <p className="text-[11px] text-stone-500">Choisis un format, puis ajoute-le à ta page.</p>
+            <p className="text-sm font-bold text-stone-900">{tr("Ajouter un widget")}</p>
+            <p className="text-[11px] text-stone-500">{tr("Choisis un format, puis ajoute-le à ta page.")}</p>
           </div>
           <button onClick={onClose} className="rounded-lg p-1.5 text-stone-400 hover:bg-stone-100"><Icon name="close" /></button>
         </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useMemo, useRef, useState } from "react";
 import { addDays } from "@/lib/finance-engine";
 import { cx, MONTHS_FR } from "@/lib/utils";
@@ -69,6 +70,7 @@ function buckets(gran: Gran, today: string, off: number) {
 }
 
 export function RoutinesCurve({ data, size, opts, setOpts }: WidgetProps) {
+  const tr = useT();
   const gran: Gran = opts.g === "week" || opts.g === "month" ? opts.g : "day";
   const [hover, setHover] = useState<number | null>(null);
   const [off, setOff] = useState(0);
@@ -128,22 +130,22 @@ export function RoutinesCurve({ data, size, opts, setOpts }: WidgetProps) {
   return (
     <WidgetShell
       icon="trend"
-      title="Courbe des routines"
+      title={tr("Courbe des routines")}
       subtitle={HELP[gran]}
       href="/app/tasks/routines"
       right={<Segmented<Gran> value={gran} onChange={changeGran} options={GRANS} />}
     >
       {data.routines.length === 0 ? (
-        <Empty>Crée une routine pour suivre ta régularité.</Empty>
+        <Empty>{tr("Crée une routine pour suivre ta régularité.")}</Empty>
       ) : (
         <div className="flex h-full flex-col">
           <div className="mb-2 flex items-center justify-between gap-2">
             <div className="flex items-center gap-1">
-              <button type="button" onClick={() => setOff(off - 1)} className="rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label="Période précédente"><Icon name="chevronLeft" /></button>
+              <button type="button" onClick={() => setOff(off - 1)} className="rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label={tr("Période précédente")}><Icon name="chevronLeft" /></button>
               <p className="min-w-[110px] text-center text-[13px] font-semibold capitalize text-stone-800">{period.title}</p>
-              <button type="button" onClick={() => setOff(off + 1)} className="rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label="Période suivante"><Icon name="chevronRight" /></button>
+              <button type="button" onClick={() => setOff(off + 1)} className="rounded-md p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label={tr("Période suivante")}><Icon name="chevronRight" /></button>
             </div>
-            {off !== 0 && <button type="button" onClick={() => setOff(0)} className="btn-secondary px-2.5 py-1 text-[11px]">Aujourd'hui</button>}
+            {off !== 0 && <button type="button" onClick={() => setOff(0)} className="btn-secondary px-2.5 py-1 text-[11px]">{tr("Aujourd'hui")}</button>}
           </div>
           <div className="flex items-end justify-between gap-3">
             <p className="tabular text-3xl font-bold tracking-tight text-stone-900">
@@ -158,7 +160,7 @@ export function RoutinesCurve({ data, size, opts, setOpts }: WidgetProps) {
                   {shown.pct !== null && <span className="text-stone-400"> · {shown.done}/{shown.due}</span>}
                 </>
               ) : (
-                <span className="text-stone-400">Survole la courbe pour le détail</span>
+                <span className="text-stone-400">{tr("Survole la courbe pour le détail")}</span>
               )}
             </p>
           </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useMemo, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 import { ExtrasPicker } from "@/components/app/lists/extras-picker";
@@ -68,6 +69,7 @@ export function ListComposer({
   store: string | null;
   defaultServings: number;
 }) {
+  const tr = useT();
   const [people, setPeople] = useState<Record<string, number>>({});
   const [defaultPeople, setDefaultPeople] = useState(defaultServings);
   const [picker, setPicker] = useState<"discover" | "mine" | null>(null);
@@ -137,12 +139,12 @@ export function ListComposer({
       {/* Recettes */}
       <section className="rounded-2xl border border-line bg-surface p-4">
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className="mr-auto text-sm font-semibold text-stone-900">Recettes</h3>
-          <div className="flex items-center gap-1 text-[11px] text-stone-500" title="Nombre de personnes proposé pour chaque nouvelle recette">
+          <h3 className="mr-auto text-sm font-semibold text-stone-900">{tr("Recettes")}</h3>
+          <div className="flex items-center gap-1 text-[11px] text-stone-500" title={tr("Nombre de personnes proposé pour chaque nouvelle recette")}>
             Par défaut
-            <button type="button" onClick={() => changeDefault(defaultPeople - 1)} className="h-6 w-6 rounded-md border border-line text-stone-500" aria-label="Moins">−</button>
+            <button type="button" onClick={() => changeDefault(defaultPeople - 1)} className="h-6 w-6 rounded-md border border-line text-stone-500" aria-label={tr("Moins")}>−</button>
             <b className="min-w-[2.2rem] text-center text-xs text-stone-800">{defaultPeople} pers.</b>
-            <button type="button" onClick={() => changeDefault(defaultPeople + 1)} className="h-6 w-6 rounded-md border border-line text-stone-500" aria-label="Plus">+</button>
+            <button type="button" onClick={() => changeDefault(defaultPeople + 1)} className="h-6 w-6 rounded-md border border-line text-stone-500" aria-label={tr("Plus")}>+</button>
           </div>
         </div>
 
@@ -161,10 +163,10 @@ export function ListComposer({
                     )}
                   </span>
                   <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-stone-800">{r.name}</span>
-                  <div className="flex items-center gap-1" title="Nombre de personnes">
-                    <button type="button" onClick={() => set(r.id, c - 1)} className="h-7 w-7 rounded-lg border border-line text-stone-500 hover:bg-stone-50" aria-label="Moins de personnes">−</button>
+                  <div className="flex items-center gap-1" title={tr("Nombre de personnes")}>
+                    <button type="button" onClick={() => set(r.id, c - 1)} className="h-7 w-7 rounded-lg border border-line text-stone-500 hover:bg-stone-50" aria-label={tr("Moins de personnes")}>−</button>
                     <span className="min-w-[3rem] text-center text-xs font-semibold text-stone-800">{c} pers.</span>
-                    <button type="button" onClick={() => set(r.id, c + 1)} className="h-7 w-7 rounded-lg border border-line text-stone-500 hover:bg-stone-50" aria-label="Plus de personnes">+</button>
+                    <button type="button" onClick={() => set(r.id, c + 1)} className="h-7 w-7 rounded-lg border border-line text-stone-500 hover:bg-stone-50" aria-label={tr("Plus de personnes")}>+</button>
                   </div>
                   <button type="button" onClick={() => set(r.id, 0)} className="px-1 text-stone-300 hover:text-rose-600" aria-label={`Retirer ${r.name}`}>✕</button>
                 </li>
@@ -174,8 +176,8 @@ export function ListComposer({
         )}
 
         <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={() => setPicker("discover")} className="btn-primary px-3.5 py-2 text-xs">+ Choisir des recettes</button>
-          {recipes.length > 0 && <button type="button" onClick={() => setPicker("mine")} className="btn-secondary px-3.5 py-2 text-xs">Mes recettes</button>}
+          <button type="button" onClick={() => setPicker("discover")} className="btn-primary px-3.5 py-2 text-xs">{tr("+ Choisir des recettes")}</button>
+          {recipes.length > 0 && <button type="button" onClick={() => setPicker("mine")} className="btn-secondary px-3.5 py-2 text-xs">{tr("Mes recettes")}</button>}
         </div>
       </section>
 
@@ -184,13 +186,13 @@ export function ListComposer({
         <section className="rounded-2xl border border-brand-200 bg-brand-50/30 p-4">
           <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
             <div>
-              <h3 className="text-sm font-semibold text-stone-900">Quantités à acheter</h3>
-              <p className="text-xs text-stone-500">Arrondies aux formats vendus en magasin. Modifie ce que tu veux.</p>
+              <h3 className="text-sm font-semibold text-stone-900">{tr("Quantités à acheter")}</h3>
+              <p className="text-xs text-stone-500">{tr("Arrondies aux formats vendus en magasin. Modifie ce que tu veux.")}</p>
             </div>
-            <button type="button" onClick={() => setReview(null)} className="text-xs font-medium text-brand-600 hover:underline">← Modifier les recettes</button>
+            <button type="button" onClick={() => setReview(null)} className="text-xs font-medium text-brand-600 hover:underline">{tr("← Modifier les recettes")}</button>
           </div>
           {kept.length === 0 ? (
-            <p className="rounded-xl bg-surface px-3 py-4 text-center text-xs text-stone-400">Aucune ligne.</p>
+            <p className="rounded-xl bg-surface px-3 py-4 text-center text-xs text-stone-400">{tr("Aucune ligne.")}</p>
           ) : (
             <ul className="divide-y divide-line/70 rounded-xl border border-line bg-surface">
               {review.map((l) => {
@@ -216,7 +218,7 @@ export function ListComposer({
                       aria-label={`Quantité : ${l.label}`}
                       className="input w-20 py-1 text-right text-xs"
                     />
-                    <select value={l.unit} onChange={(e) => updateLine(l.key, { unit: e.target.value as QtyUnit })} disabled={l.removed} className="input w-24 py-1 text-xs" aria-label="Unité">
+                    <select value={l.unit} onChange={(e) => updateLine(l.key, { unit: e.target.value as QtyUnit })} disabled={l.removed} className="input w-24 py-1 text-xs" aria-label={tr("Unité")}>
                       {unitOpts.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
                     </select>
                     <span className={cx("tabular w-16 text-right text-xs", cost === null ? "text-stone-300" : "font-semibold text-stone-700")}>{cost === null ? (store ? "sans prix" : "") : formatEUR(cost)}</span>
@@ -237,7 +239,7 @@ export function ListComposer({
 
       {/* Autres produits */}
       <section className="rounded-2xl border border-line bg-surface p-4">
-        <h3 className="mb-3 text-sm font-semibold text-stone-900">Autres produits</h3>
+        <h3 className="mb-3 text-sm font-semibold text-stone-900">{tr("Autres produits")}</h3>
         <ExtrasPicker name="extras" catalog={catalog} suggestions={recommendations} prices={prices} store={store} />
       </section>
 

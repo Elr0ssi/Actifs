@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { intlLocale } from "@/lib/i18n";
 import { useMemo, useState, useTransition } from "react";
 import { deleteWord } from "@/app/app/notes/actions";
@@ -13,6 +14,7 @@ export interface VocabWord {
 }
 
 export function VocabList({ words }: { words: VocabWord[] }) {
+  const tr = useT();
   const [query, setQuery] = useState("");
   const [pending, start] = useTransition();
 
@@ -25,11 +27,11 @@ export function VocabList({ words }: { words: VocabWord[] }) {
   return (
     <div className={cx("card overflow-hidden p-0", pending && "opacity-70")}>
       <div className="flex items-center gap-3 border-b border-stone-100 p-4">
-        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Rechercher un mot…" className="input max-w-xs" />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr("Rechercher un mot…")} className="input max-w-xs" />
         <p className="ml-auto text-xs text-stone-400">{rows.length} mot(s)</p>
       </div>
       {rows.length === 0 ? (
-        <p className="p-4 text-sm text-stone-400">Aucun mot pour l'instant.</p>
+        <p className="p-4 text-sm text-stone-400">{tr("Aucun mot pour l'instant.")}</p>
       ) : (
         <ul className="divide-y divide-stone-100">
           {rows.map((w) => (

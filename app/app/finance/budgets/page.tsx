@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n/server";
 import { intlLocale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -12,6 +13,7 @@ export const metadata: Metadata = { title: "Finance — Budgets" };
 const eur0 = (n: number) => new Intl.NumberFormat(intlLocale(), { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n || 0);
 
 export default async function BudgetsPage({ searchParams }: { searchParams: { year?: string; month?: string } }) {
+  const tr = getT();
   const data = await loadFinanceData();
   if (!data) return null;
   const { ops, anchor } = data;
@@ -37,9 +39,9 @@ export default async function BudgetsPage({ searchParams }: { searchParams: { ye
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-1">
-          <Link href={`/app/finance/budgets?year=${prev.y}&month=${prev.m}`} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label="Mois précédent"><Icon name="chevronLeft" /></Link>
+          <Link href={`/app/finance/budgets?year=${prev.y}&month=${prev.m}`} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label={tr("Mois précédent")}><Icon name="chevronLeft" /></Link>
           <p className="min-w-[130px] text-center text-[15px] font-bold text-stone-900">{MONTHS_FR[month]} {year}</p>
-          <Link href={`/app/finance/budgets?year=${next.y}&month=${next.m}`} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label="Mois suivant"><Icon name="chevronRight" /></Link>
+          <Link href={`/app/finance/budgets?year=${next.y}&month=${next.m}`} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-800" aria-label={tr("Mois suivant")}><Icon name="chevronRight" /></Link>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href="/app/finance/operations" className={actionCls}><Icon name="list" className="text-brand-600" />Gérer mes opérations</Link>
@@ -50,8 +52,8 @@ export default async function BudgetsPage({ searchParams }: { searchParams: { ye
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <BudgetBreakdown budget={budget} size={190} />
         <section className="card p-4">
-          <p className="text-[13px] font-semibold text-stone-900">Marge des 6 derniers mois</p>
-          <p className="text-[11px] text-stone-400">Revenus moins toutes les sorties prévues, mois par mois.</p>
+          <p className="text-[13px] font-semibold text-stone-900">{tr("Marge des 6 derniers mois")}</p>
+          <p className="text-[11px] text-stone-400">{tr("Revenus moins toutes les sorties prévues, mois par mois.")}</p>
           <div className="mt-4 flex h-52 items-stretch gap-3">
             {history.map((h) => (
               <div key={h.label} className="flex flex-1 flex-col items-center gap-1" title={formatEUR(h.margin)}>

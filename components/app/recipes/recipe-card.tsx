@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { RecipeForm } from "@/components/app/recipes/recipe-form";
@@ -15,6 +16,7 @@ export function stepsOf(notes: string | null) {
 }
 
 export function RecipeCard({ recipe, householdId, categories, catalog }: { recipe: Recipe & { recipe_items: RecipeItem[] }; householdId: string; categories: string[]; catalog: CatalogIngredient[] }) {
+  const tr = useT();
   const [editing, setEditing] = useState(false);
   const [open, setOpen] = useState(false);
   const [pending, start] = useTransition();
@@ -54,14 +56,13 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
           {recipe.recipe_items.length > 5 && <li className="text-stone-400">+ {recipe.recipe_items.length - 5} autres</li>}
         </ul>
         <div className="mt-4 flex items-center gap-2">
-          <button onClick={() => setOpen(true)} className="btn-primary py-2 text-xs">Consulter</button>
-          <button onClick={() => setEditing(true)} className="btn-secondary py-2 text-xs">Modifier</button>
+          <button onClick={() => setOpen(true)} className="btn-primary py-2 text-xs">{tr("Consulter")}</button>
+          <button onClick={() => setEditing(true)} className="btn-secondary py-2 text-xs">{tr("Modifier")}</button>
           <button
             onClick={() => confirm(`Supprimer "${recipe.name}" ?`) && start(() => deleteRecipe(recipe.id))}
             className="ml-auto text-xs text-stone-300 hover:text-rose-600"
           >
-            Supprimer
-          </button>
+            {tr("Supprimer")}</button>
         </div>
       </div>
       {open && createPortal(
@@ -77,19 +78,19 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
                   {recipe.category && <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700">{recipe.category}</span>}
                   <h2 className="mt-2 text-2xl font-bold tracking-tight text-stone-900">{recipe.name}</h2>
                 </div>
-                <button onClick={() => setOpen(false)} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label="Fermer">✕</button>
+                <button onClick={() => setOpen(false)} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label={tr("Fermer")}>✕</button>
               </div>
               <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Ingrédients ({recipe.recipe_items.length})</h3>
               {recipe.recipe_items.length === 0 ? (
-                <p className="text-sm text-stone-400">Aucun ingrédient renseigné.</p>
+                <p className="text-sm text-stone-400">{tr("Aucun ingrédient renseigné.")}</p>
               ) : (
                 <ul className="grid gap-x-6 gap-y-1 text-sm text-stone-700 sm:grid-cols-2">
                   {recipe.recipe_items.map((it) => <li key={it.id}>• {it.label}{it.quantity && <span className="text-stone-400"> — {it.quantity}</span>}</li>)}
                 </ul>
               )}
-              <h3 className="mb-2 mt-6 text-xs font-semibold uppercase tracking-wide text-stone-400">Préparation</h3>
+              <h3 className="mb-2 mt-6 text-xs font-semibold uppercase tracking-wide text-stone-400">{tr("Préparation")}</h3>
               {stepsOf(recipe.notes).length === 0 ? (
-                <p className="text-sm text-stone-400">Pas encore d'étapes. Clique sur « Modifier » pour les ajouter.</p>
+                <p className="text-sm text-stone-400">{tr("Pas encore d'étapes. Clique sur « Modifier » pour les ajouter.")}</p>
               ) : (
                 <ol className="space-y-2.5">
                   {stepsOf(recipe.notes).map((line, i) => (
@@ -101,9 +102,9 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
                 </ol>
               )}
               <div className="mt-6 flex items-center gap-2 border-t border-line pt-4">
-                <button onClick={() => { setOpen(false); setEditing(true); }} className="btn-primary">Modifier</button>
+                <button onClick={() => { setOpen(false); setEditing(true); }} className="btn-primary">{tr("Modifier")}</button>
                 <button onClick={() => start(() => toggleRecipeFavorite(recipe.id, !recipe.is_favorite))} className="btn-secondary">{recipe.is_favorite ? "★ Favori" : "☆ Favori"}</button>
-                <button onClick={() => confirm(`Supprimer "${recipe.name}" ?`) && start(() => deleteRecipe(recipe.id))} className="ml-auto text-xs text-stone-400 hover:text-rose-600">Supprimer</button>
+                <button onClick={() => confirm(`Supprimer "${recipe.name}" ?`) && start(() => deleteRecipe(recipe.id))} className="ml-auto text-xs text-stone-400 hover:text-rose-600">{tr("Supprimer")}</button>
               </div>
             </div>
           </div>

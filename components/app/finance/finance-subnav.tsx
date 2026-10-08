@@ -1,9 +1,11 @@
+import { getT } from "@/lib/i18n/server";
 import { SectionTabs } from "@/components/app/section-tabs";
 
 export function FinanceSubnav() {
+  const tr = getT();
   return (
     <SectionTabs
-      label="Sections Finance"
+      label={tr("Sections Finance")}
       tabs={[
         { href: "/app/finance", label: "Vue d'ensemble" },
         { href: "/app/finance/calendar", label: "Calendrier" },

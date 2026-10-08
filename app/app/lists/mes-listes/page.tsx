@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n/server";
 import { intlLocale } from "@/lib/i18n";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -12,6 +13,7 @@ export const metadata: Metadata = { title: "Courses" };
 const TYPE_LABEL: Record<string, string> = { generic: "Générale", shopping: "Courses", recipe: "Recette" };
 
 export default async function ListsPage() {
+  const tr = getT();
   const ctx = await getAppContext();
   if (!ctx) return null;
   const { supabase, profile } = ctx;
@@ -60,23 +62,23 @@ export default async function ListsPage() {
   return (
     <div className="space-y-8">
       <div className="card p-5">
-        <h2 className="mb-3 text-sm font-semibold text-stone-700">Nouvelle liste de courses</h2>
+        <h2 className="mb-3 text-sm font-semibold text-stone-700">{tr("Nouvelle liste de courses")}</h2>
         <form action={createList} className="grid gap-2 sm:grid-cols-[1fr_170px_200px_auto]">
           <input type="hidden" name="type" value="shopping" />
-          <input name="name" placeholder="Nom (ex. Courses semaine 42)" className="input" required />
-          <label className="sr-only" htmlFor="week_start">Semaine</label>
-          <input id="week_start" name="week_start" type="date" defaultValue={monday} title="Début de la semaine" className="input" />
+          <input name="name" placeholder={tr("Nom (ex. Courses semaine 42)")} className="input" required />
+          <label className="sr-only" htmlFor="week_start">{tr("Semaine")}</label>
+          <input id="week_start" name="week_start" type="date" defaultValue={monday} title={tr("Début de la semaine")} className="input" />
           <select name="store" defaultValue="" className="input" required>
-            <option value="" disabled>Enseigne…</option>
+            <option value="" disabled>{tr("Enseigne…")}</option>
             {STORES.map((st) => <option key={st} value={st}>{st}</option>)}
           </select>
-          <button className="btn-primary">Créer et choisir les recettes</button>
+          <button className="btn-primary">{tr("Créer et choisir les recettes")}</button>
         </form>
       </div>
 
       <section>
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">En cours</h3>
-        {active.length === 0 && <p className="text-sm text-stone-400">Aucune liste en cours.</p>}
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">{tr("En cours")}</h3>
+        {active.length === 0 && <p className="text-sm text-stone-400">{tr("Aucune liste en cours.")}</p>}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{active.map(card)}</div>
       </section>
 

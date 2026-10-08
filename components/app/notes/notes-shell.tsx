@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -13,6 +14,7 @@ function fold(s: string) {
 }
 
 export function NotesShell({ notes, children }: { notes: NoteMeta[]; children: React.ReactNode }) {
+  const tr = useT();
   const pathname = usePathname();
   const activeId = pathname.split("/")[4] ?? null;
   const [q, setQ] = useState("");
@@ -57,7 +59,7 @@ export function NotesShell({ notes, children }: { notes: NoteMeta[]; children: R
             <span className="truncate">{n.title || "Sans titre"}</span>
           </Link>
           <form action={createNote.bind(null, n.id)} className="opacity-0 transition group-hover:opacity-100 focus-within:opacity-100">
-            <button title="Nouvelle sous-page" className="rounded p-1 text-stone-400 hover:bg-stone-200/60 hover:text-stone-700"><Icon name="plus" className="h-3 w-3" /></button>
+            <button title={tr("Nouvelle sous-page")} className="rounded p-1 text-stone-400 hover:bg-stone-200/60 hover:text-stone-700"><Icon name="plus" className="h-3 w-3" /></button>
           </form>
         </div>
         {expanded && kids.length > 0 && <ul>{kids.map((k) => <Row key={k.id} n={k} depth={depth + 1} />)}</ul>}
@@ -74,7 +76,7 @@ export function NotesShell({ notes, children }: { notes: NoteMeta[]; children: R
         <div className="card p-2.5 lg:sticky lg:top-4">
           <div className="relative">
             <Icon name="search" className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher une note…" className="input pl-8 text-[13px]" />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr("Rechercher une note…")} className="input pl-8 text-[13px]" />
           </div>
           <form action={createNote.bind(null, null)} className="mt-2">
             <button className="btn-primary w-full justify-center py-1.5 text-xs"><Icon name="plus" className="h-3.5 w-3.5" />Nouvelle page</button>
@@ -82,7 +84,7 @@ export function NotesShell({ notes, children }: { notes: NoteMeta[]; children: R
           <div className="mt-2 max-h-[60vh] overflow-y-auto">
             {query ? (
               results.length === 0 ? (
-                <p className="px-2 py-3 text-xs text-stone-400">Aucune note trouvée.</p>
+                <p className="px-2 py-3 text-xs text-stone-400">{tr("Aucune note trouvée.")}</p>
               ) : (
                 <ul>
                   {results.map((n) => (
@@ -99,7 +101,7 @@ export function NotesShell({ notes, children }: { notes: NoteMeta[]; children: R
               <>
                 {pinned.length > 0 && (
                   <div className="mb-2">
-                    <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-stone-400">Épinglées</p>
+                    <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-stone-400">{tr("Épinglées")}</p>
                     <ul>
                       {pinned.map((n) => (
                         <li key={n.id}>
@@ -112,8 +114,8 @@ export function NotesShell({ notes, children }: { notes: NoteMeta[]; children: R
                     </ul>
                   </div>
                 )}
-                <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-stone-400">Pages</p>
-                {roots.length === 0 ? <p className="px-2 py-3 text-xs text-stone-400">Aucune page pour l'instant.</p> : <ul>{roots.map((n) => <Row key={n.id} n={n} depth={0} />)}</ul>}
+                <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-stone-400">{tr("Pages")}</p>
+                {roots.length === 0 ? <p className="px-2 py-3 text-xs text-stone-400">{tr("Aucune page pour l'instant.")}</p> : <ul>{roots.map((n) => <Row key={n.id} n={n} depth={0} />)}</ul>}
               </>
             )}
           </div>

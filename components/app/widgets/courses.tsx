@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { intlLocale } from "@/lib/i18n";
 import { useMemo, useRef, useState } from "react";
 import { RECIPES } from "@/lib/marketing/recipes";
@@ -23,6 +24,7 @@ const shopping = (lists: WidgetList[]) => lists.filter((l) => l.type === "shoppi
 const DAY_SHORT = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
 export function MenuWeek({ data }: WidgetProps) {
+  const tr = useT();
   const realToday = data.realToday ?? data.today;
   const weekStart = mondayOf(realToday);
   const [editDay, setEditDay] = useState<string | null>(null);
@@ -75,9 +77,9 @@ export function MenuWeek({ data }: WidgetProps) {
   return (
     <WidgetShell
       icon="chef"
-      title="Repas de la semaine"
+      title={tr("Repas de la semaine")}
       subtitle={`Semaine du ${fmtShort(weekStart)}`}
-      right={<button type="button" onClick={() => setEditDay(realToday)} className="btn-secondary px-2.5 py-1 text-[11px]">Planifier</button>}
+      right={<button type="button" onClick={() => setEditDay(realToday)} className="btn-secondary px-2.5 py-1 text-[11px]">{tr("Planifier")}</button>}
     >
       <div className="relative">
         <div ref={scroller} {...dragProps} className="-mx-1 flex cursor-grab select-none gap-3 overflow-x-auto px-1 pb-2 active:cursor-grabbing [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -117,7 +119,7 @@ export function MenuWeek({ data }: WidgetProps) {
                 ) : (
                   <>
                     <div className="mt-2 flex aspect-[4/3] items-center justify-center rounded-xl border border-dashed border-line text-2xl text-stone-300 transition group-hover:border-brand-300 group-hover:text-brand-500">+</div>
-                    <p className="mt-2 min-h-[2.5rem] text-[12px] text-stone-400">Rien de prévu</p>
+                    <p className="mt-2 min-h-[2.5rem] text-[12px] text-stone-400">{tr("Rien de prévu")}</p>
                     <p className="mt-1 text-[11px] text-transparent">.</p>
                   </>
                 )}
@@ -125,8 +127,8 @@ export function MenuWeek({ data }: WidgetProps) {
             );
           })}
         </div>
-        <button type="button" onClick={() => scrollBy(-1)} aria-label="Précédent" className="absolute -left-2 top-1/2 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-stone-500 shadow-md hover:text-stone-900 sm:flex">‹</button>
-        <button type="button" onClick={() => scrollBy(1)} aria-label="Suivant" className="absolute -right-2 top-1/2 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-stone-500 shadow-md hover:text-stone-900 sm:flex">›</button>
+        <button type="button" onClick={() => scrollBy(-1)} aria-label={tr("Précédent")} className="absolute -left-2 top-1/2 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-stone-500 shadow-md hover:text-stone-900 sm:flex">‹</button>
+        <button type="button" onClick={() => scrollBy(1)} aria-label={tr("Suivant")} className="absolute -right-2 top-1/2 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-stone-500 shadow-md hover:text-stone-900 sm:flex">›</button>
       </div>
 
       {planned.length > 0 && (
@@ -138,7 +140,7 @@ export function MenuWeek({ data }: WidgetProps) {
       {upcoming === 0 && (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-brand-50 px-3.5 py-2.5 text-[12px] text-brand-800">
           <span>Aucun repas prévu à partir du {nextWord}.</span>
-          <button type="button" onClick={() => setEditDay(realToday)} className="rounded-lg border border-brand-300 bg-surface px-3 py-1.5 font-semibold text-brand-700 hover:bg-brand-50">Planifier des repas</button>
+          <button type="button" onClick={() => setEditDay(realToday)} className="rounded-lg border border-brand-300 bg-surface px-3 py-1.5 font-semibold text-brand-700 hover:bg-brand-50">{tr("Planifier des repas")}</button>
         </div>
       )}
       {viewDay && (
@@ -165,11 +167,12 @@ export function MenuWeek({ data }: WidgetProps) {
 /* ---------- Listes en cours ---------- */
 
 export function ListsOverview({ data, size }: WidgetProps) {
+  const tr = useT();
   const open = data.lists.filter((l) => !l.archived);
   return (
-    <WidgetShell icon="list" title="Listes en cours" subtitle={open.length ? `${open.length} liste(s)` : undefined}>
+    <WidgetShell icon="list" title={tr("Listes en cours")} subtitle={open.length ? `${open.length} liste(s)` : undefined}>
       {open.length === 0 ? (
-        <Empty>Aucune liste en cours.</Empty>
+        <Empty>{tr("Aucune liste en cours.")}</Empty>
       ) : (
         <ul className={cx("grid gap-x-5 gap-y-2.5", size === "m" && "sm:grid-cols-2")}>
           {open.slice(0, 6).map((l) => {
@@ -201,6 +204,7 @@ export function ListsOverview({ data, size }: WidgetProps) {
 /* ---------- Dépenses vs budget ---------- */
 
 export function CoursesBudget({ data, size }: WidgetProps) {
+  const tr = useT();
   const month = data.today.slice(0, 7);
   const budget = useMemo(() => {
     if (!data.finance) return 0;
@@ -215,7 +219,7 @@ export function CoursesBudget({ data, size }: WidgetProps) {
   const scale = Math.max(budget, total, 1);
 
   return (
-    <WidgetShell icon="wallet" title="Budget courses" subtitle="Dépenses vs budget · ce mois-ci">
+    <WidgetShell icon="wallet" title={tr("Budget courses")} subtitle="Dépenses vs budget · ce mois-ci">
       <p className="tabular text-2xl font-bold tracking-tight text-stone-900">
         <CountUp value={total} kind="eur0" />
         {budget > 0 && <span className="ml-1.5 text-[12px] font-normal tracking-normal text-stone-400">/ {eur0(budget)}</span>}
@@ -241,6 +245,7 @@ export function CoursesBudget({ data, size }: WidgetProps) {
 /* ---------- Dernière course ---------- */
 
 export function CoursesLast({ data }: WidgetProps) {
+  const tr = useT();
   const finished = useMemo(
     () => shopping(data.lists).filter((l) => l.archived && l.amount > 0).sort((a, b) => b.date.localeCompare(a.date)),
     [data.lists]
@@ -251,9 +256,9 @@ export function CoursesLast({ data }: WidgetProps) {
   const avgMeal = withMeals.length ? withMeals.reduce((s, l) => s + l.amount, 0) / withMeals.reduce((s, l) => s + meals(l), 0) : null;
 
   return (
-    <WidgetShell icon="cart" title="Dernière course" subtitle={last ? `${last.name} · ${fmtShort(last.date)}` : undefined}>
+    <WidgetShell icon="cart" title={tr("Dernière course")} subtitle={last ? `${last.name} · ${fmtShort(last.date)}` : undefined}>
       {!last ? (
-        <Empty>Termine une liste de courses pour voir ce qu'elle coûte.</Empty>
+        <Empty>{tr("Termine une liste de courses pour voir ce qu'elle coûte.")}</Empty>
       ) : (
         <>
           <p className="tabular text-2xl font-bold tracking-tight text-stone-900"><CountUp value={last.amount} kind="eur0" /></p>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useState } from "react";
 import { createOperation, updateOperation } from "@/app/app/finance/actions";
 import { CATEGORIES, type FinOp, type OpKind, type OpFrequency } from "@/lib/finance-engine";
@@ -22,6 +23,7 @@ const WEEKDAYS = ["L", "M", "M", "J", "V", "S", "D"];
 const WEEKDAY_VALUES = [1, 2, 3, 4, 5, 6, 0];
 
 export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: FinOp; defaultDate?: string; defaultKind?: OpKind; onDone?: () => void }) {
+  const tr = useT();
   const [kind, setKind] = useState<OpKind>(op?.kind ?? defaultKind ?? "fixed");
   const [freq, setFreq] = useState<OpFrequency>(op?.frequency ?? "monthly");
   const [pending, setPending] = useState(false);
@@ -53,7 +55,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
         ))}
       </div>
 
-      <input name="name" defaultValue={op?.name} placeholder="Nom (ex. Loyer, Netflix, Salaire…)" className="input" required />
+      <input name="name" defaultValue={op?.name} placeholder={tr("Nom (ex. Loyer, Netflix, Salaire…)")} className="input" required />
       <div className="grid grid-cols-2 gap-2">
         <label className="text-xs text-stone-500">
           Montant
@@ -67,7 +69,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
         </label>
         <label className="col-span-2 text-xs text-stone-500">
           Compte (optionnel)
-          <input name="account" list="finance-accounts" defaultValue={op?.account ?? ""} placeholder="Ex. Compte courant, Compte joint…" className="input mt-1" />
+          <input name="account" list="finance-accounts" defaultValue={op?.account ?? ""} placeholder={tr("Ex. Compte courant, Compte joint…")} className="input mt-1" />
           <datalist id="finance-accounts">
             <option value="Compte courant" />
             <option value="Compte joint" />
@@ -77,7 +79,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
       </div>
 
       <div className="rounded-xl border border-stone-100 p-3">
-        <p className="label mb-2">Date & récurrence</p>
+        <p className="label mb-2">{tr("Date & récurrence")}</p>
         <input type="hidden" name="frequency" value={freq} />
         <select value={freq} onChange={(e) => setFreq(e.target.value as OpFrequency)} className="input">
           {FREQS.map((f) => (
@@ -91,7 +93,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
           </label>
           {freq !== "once" && (
             <label className="text-xs text-stone-500">
-              Date de fin <span className="text-stone-400">(optionnelle)</span>
+              Date de fin <span className="text-stone-400">{tr("(optionnelle)")}</span>
               <input name="end_date" type="date" defaultValue={op?.end ?? ""} className="input mt-1" />
             </label>
           )}
@@ -112,15 +114,15 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
               </div>
             )}
             {freq === "monthly" && (
-              <input name="month_days" defaultValue={op?.monthDays.join(", ")} placeholder="Jour(s) du mois, ex. 5 ou 15, 30 (vide = date de début)" className="input" />
+              <input name="month_days" defaultValue={op?.monthDays.join(", ")} placeholder={tr("Jour(s) du mois, ex. 5 ou 15, 30 (vide = date de début)")} className="input" />
             )}
             {(freq === "monthly" || freq === "yearly") && (
               <label className="block text-xs text-stone-500">
                 Si la date tombe un week-end
                 <select key={kind} name="weekend_rule" defaultValue={op?.weekendRule ?? (kind === "income" ? "next" : "none")} className="input mt-1">
-                  <option value="none">Ne pas décaler</option>
-                  <option value="next">Reporter au lundi suivant</option>
-                  <option value="prev">Avancer au vendredi précédent</option>
+                  <option value="none">{tr("Ne pas décaler")}</option>
+                  <option value="next">{tr("Reporter au lundi suivant")}</option>
+                  <option value="prev">{tr("Avancer au vendredi précédent")}</option>
                 </select>
               </label>
             )}
@@ -128,7 +130,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
         )}
       </div>
 
-      <input name="note" defaultValue={op?.note ?? ""} placeholder="Note (optionnel)" className="input" />
+      <input name="note" defaultValue={op?.note ?? ""} placeholder={tr("Note (optionnel)")} className="input" />
       <button disabled={pending} className="btn-primary w-full">{pending ? "Enregistrement…" : "Enregistrer"}</button>
     </form>
   );
@@ -145,6 +147,7 @@ export function NewOperationButton({
   label?: string;
   className?: string;
 }) {
+  const tr = useT();
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -153,7 +156,7 @@ export function NewOperationButton({
         <div className="fixed inset-0 z-50 flex animate-fade items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setOpen(false)}>
           <div className="max-h-[90vh] w-full max-w-lg animate-modal overflow-y-auto rounded-3xl border border-line bg-surface p-6 shadow-lift" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-stone-900">Nouvelle opération</h3>
+              <h3 className="text-lg font-bold text-stone-900">{tr("Nouvelle opération")}</h3>
               <button onClick={() => setOpen(false)} className="text-stone-400 hover:text-stone-700">✕</button>
             </div>
             <OperationForm defaultDate={defaultDate} defaultKind={defaultKind} onDone={() => setOpen(false)} />

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { intlLocale } from "@/lib/i18n";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
@@ -58,6 +59,7 @@ export function FinanceDashboard({
   anchor: BalanceAnchor;
   today: string;
 }) {
+  const tr = useT();
   const [view, setView] = useState<View>("month");
   const [mode, setMode] = useState<"month" | "carried">("carried");
   const [selected, setSelected] = useState(today);
@@ -141,12 +143,12 @@ export function FinanceDashboard({
             <button onClick={() => nav(-1)} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-800">‹</button>
             <h2 className="min-w-[140px] text-center text-[15px] font-bold capitalize text-stone-900">{title}</h2>
             <button onClick={() => nav(1)} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-800">›</button>
-            <button onClick={() => { select(today); if (view === "year") setView("month"); }} className="btn-secondary ml-1 px-2.5 py-1 text-[11px]">Aujourd'hui</button>
+            <button onClick={() => { select(today); if (view === "year") setView("month"); }} className="btn-secondary ml-1 px-2.5 py-1 text-[11px]">{tr("Aujourd'hui")}</button>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="segmented" title={mode === "carried" ? "Part du solde réel du compte courant" : "Repart de 0 au début du mois"}>
-              <button data-active={mode === "carried"} onClick={() => setMode("carried")}>Solde reporté</button>
-              <button data-active={mode === "month"} onClick={() => setMode("month")}>Mois seul</button>
+              <button data-active={mode === "carried"} onClick={() => setMode("carried")}>{tr("Solde reporté")}</button>
+              <button data-active={mode === "month"} onClick={() => setMode("month")}>{tr("Mois seul")}</button>
             </div>
             <div className="segmented">
               {(["month", "week", "year"] as View[]).map((v) => (
@@ -209,7 +211,7 @@ export function FinanceDashboard({
           {(["income", "fixed", "variable", "savings"] as const).map((k) => (
             <span key={k} className="flex items-center gap-1"><span className={cx("h-1.5 w-1.5 rounded-full", KIND_STYLE[k].dot)} />{KIND_LABEL[k]}</span>
           ))}
-          <span className="ml-auto hidden sm:inline">Astuce : fais glisser le calendrier pour changer de mois.</span>
+          <span className="ml-auto hidden sm:inline">{tr("Astuce : fais glisser le calendrier pour changer de mois.")}</span>
         </div>
       </section>
 
@@ -221,6 +223,7 @@ export function FinanceDashboard({
 }
 
 function SkippedList({ items, onRestore }: { items: Occurrence[]; onRestore: (o: Occurrence) => void }) {
+  const tr = useT();
   return (
     <ul className="space-y-1">
       {items.map((o, i) => (
@@ -228,7 +231,7 @@ function SkippedList({ items, onRestore }: { items: Occurrence[]; onRestore: (o:
           <span className="w-12 shrink-0 whitespace-nowrap text-[11px]">{fmtShort(o.date)}</span>
           <span className="min-w-0 flex-1 truncate line-through">{o.op.name}</span>
           <span className="shrink-0 line-through">{formatEUR(o.op.amount)}</span>
-          <button onClick={() => onRestore(o)} className="shrink-0 text-[11px] font-medium text-brand-600 hover:underline">Rétablir</button>
+          <button onClick={() => onRestore(o)} className="shrink-0 text-[11px] font-medium text-brand-600 hover:underline">{tr("Rétablir")}</button>
         </li>
       ))}
     </ul>
@@ -260,6 +263,7 @@ function OccList({ items, onSkip, onDelete }: { items: Occurrence[]; onSkip?: (o
 }
 
 function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; date: string }) {
+  const tr = useT();
   const s = useMemo(() => getDateSituation(ops, anchor, date), [ops, anchor, date]);
   const [pending, start] = useTransition();
   const skip = (o: Occurrence) => start(() => skipOccurrence(o.op.table, o.op.id, o.date));
@@ -274,7 +278,7 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
     <aside className={cx("card space-y-4 p-4", pending && "opacity-70")}>
       <div className="flex items-center justify-between gap-2">
         <p className="text-[13px] font-semibold capitalize text-stone-900">{fmtLong(date)}</p>
-        <NewOperationButton defaultDate={date} label="+ Ajouter" className="btn-ghost shrink-0" />
+        <NewOperationButton defaultDate={date} label={tr("+ Ajouter")} className="btn-ghost shrink-0" />
       </div>
 
       <div className="rounded-xl bg-brand-50 p-3">
@@ -288,9 +292,9 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
 
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-[12px] font-semibold text-stone-800">Opérations passées <span className="font-normal text-stone-400">(ce mois)</span></p>
+          <p className="text-[12px] font-semibold text-stone-800">Opérations passées <span className="font-normal text-stone-400">{tr("(ce mois)")}</span></p>
         </div>
-        {s.past.length === 0 ? <p className="text-sm text-stone-400">Aucune.</p> : <OccList items={s.past} onSkip={skip} onDelete={del} />}
+        {s.past.length === 0 ? <p className="text-sm text-stone-400">{tr("Aucune.")}</p> : <OccList items={s.past} onSkip={skip} onDelete={del} />}
         {s.past.length > 0 && (
           <div className="mt-2 flex justify-between rounded-lg bg-stone-50 px-3 py-1.5 text-xs">
             <span className="text-emerald-600">+{formatEUR(s.pastIn)}</span>
@@ -301,14 +305,14 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
 
       <div>
         <p className="mb-2 text-[12px] font-semibold text-stone-800">Opérations à venir <span className="font-normal text-stone-400">(jusqu'au {fmtShort(s.monthEnd)})</span></p>
-        {s.upcoming.length === 0 ? <p className="text-sm text-stone-400">Rien de prévu.</p> : <OccList items={s.upcoming} onSkip={skip} onDelete={del} />}
+        {s.upcoming.length === 0 ? <p className="text-sm text-stone-400">{tr("Rien de prévu.")}</p> : <OccList items={s.upcoming} onSkip={skip} onDelete={del} />}
         {(s.upcomingIn > 0 || s.upcomingOut > 0) && (
           <div className="mt-2 space-y-1 rounded-lg bg-stone-50 px-3 py-2 text-xs">
-            <div className="flex justify-between"><span className="text-stone-500">Entrées à venir</span><span className="font-semibold text-emerald-600">+{formatEUR(s.upcomingIn)}</span></div>
-            <div className="flex justify-between"><span className="text-stone-500">Sorties à venir</span><span className="font-semibold text-rose-600">-{formatEUR(s.upcomingOut)}</span></div>
+            <div className="flex justify-between"><span className="text-stone-500">{tr("Entrées à venir")}</span><span className="font-semibold text-emerald-600">+{formatEUR(s.upcomingIn)}</span></div>
+            <div className="flex justify-between"><span className="text-stone-500">{tr("Sorties à venir")}</span><span className="font-semibold text-rose-600">-{formatEUR(s.upcomingOut)}</span></div>
             {s.outflowByAccount.length > 0 && (
               <div className="border-t border-stone-200 pt-1">
-                <p className="mb-0.5 text-stone-400">À provisionner par compte</p>
+                <p className="mb-0.5 text-stone-400">{tr("À provisionner par compte")}</p>
                 {s.outflowByAccount.map((a) => (
                   <div key={a.account} className="flex justify-between"><span className="text-stone-600">{a.account}</span><span className="font-semibold text-stone-800">{formatEUR(a.amount)}</span></div>
                 ))}
@@ -320,7 +324,7 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
 
       {skipped.length > 0 && (
         <div>
-          <p className="mb-2 text-sm font-semibold text-stone-400">Ignorées ce mois</p>
+          <p className="mb-2 text-sm font-semibold text-stone-400">{tr("Ignorées ce mois")}</p>
           <SkippedList items={skipped} onRestore={(o) => start(() => restoreOccurrence(o.op.table, o.op.id, o.date))} />
         </div>
       )}
@@ -339,6 +343,7 @@ function fold(items: { label: string; value: number }[], max = 6) {
 }
 
 export function BudgetBreakdown({ budget, size = 150 }: { budget: ReturnType<typeof getMonthlyBudget>; size?: number }) {
+  const tr = useT();
   const [mode, setMode] = useState<BreakdownMode>("global");
   const [picked, setPicked] = useState<string | null>(null);
   const spend = budget.fixed + budget.variable + budget.savings;
@@ -357,7 +362,7 @@ export function BudgetBreakdown({ budget, size = 150 }: { budget: ReturnType<typ
   return (
     <section className="card p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[13px] font-semibold text-stone-900">Répartition du budget</p>
+        <p className="text-[13px] font-semibold text-stone-900">{tr("Répartition du budget")}</p>
         <div className="segmented">
           {(Object.keys(BREAKDOWN_LABEL) as BreakdownMode[]).map((v) => (
             <button key={v} type="button" data-active={mode === v} onClick={() => { setMode(v); setPicked(null); }}>
@@ -368,9 +373,9 @@ export function BudgetBreakdown({ budget, size = 150 }: { budget: ReturnType<typ
       </div>
       <p className="mt-2 text-xs text-stone-500">Total dépensé / réservé : <b className="text-stone-800">{formatEUR(spend)}</b> {budget.income > 0 && `· ${Math.round((spend / budget.income) * 100)} % des revenus`}</p>
       <div className="mt-2 flex h-2 gap-[2px] overflow-hidden rounded-full bg-stone-100">
-        <div className="bg-rose-400" style={{ width: seg(budget.fixed) }} title="Charges fixes" />
-        <div className="bg-amber-400" style={{ width: seg(budget.variable) }} title="Dépenses variables" />
-        <div className="bg-violet-400" style={{ width: seg(budget.savings) }} title="Épargne" />
+        <div className="bg-rose-400" style={{ width: seg(budget.fixed) }} title={tr("Charges fixes")} />
+        <div className="bg-amber-400" style={{ width: seg(budget.variable) }} title={tr("Dépenses variables")} />
+        <div className="bg-violet-400" style={{ width: seg(budget.savings) }} title={tr("Épargne")} />
       </div>
       <div className="mt-4">
         <DonutChart items={items} size={size} strokeWidth={Math.round(size / 7)} centerCaption={mode === "global" ? "budget" : BREAKDOWN_LABEL[mode].toLowerCase()} selected={picked} onSelect={(l) => setPicked(l === picked ? null : l)} />

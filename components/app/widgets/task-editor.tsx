@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { cx } from "@/lib/utils";
@@ -32,6 +33,7 @@ export function TaskEditor({
   onDelete?: () => void;
   onClose: () => void;
 }) {
+  const tr = useT();
   const [v, setV] = useState(initial);
   const set = (p: Partial<EditorValues>) => setV((x) => ({ ...x, ...p }));
   const badRange = !!v.start && !!v.end && v.end <= v.start;
@@ -49,9 +51,9 @@ export function TaskEditor({
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold tracking-tight text-stone-900">{mode === "create" ? "Nouvelle tâche" : "Tâche"}</h2>
-          <button type="button" onClick={onClose} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label="Fermer">✕</button>
+          <button type="button" onClick={onClose} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label={tr("Fermer")}>✕</button>
         </div>
-        <input value={v.title} onChange={(e) => set({ title: e.target.value })} placeholder="Titre (ex. Salle de sport, Appel client…)" className="input mt-4 py-2.5 text-base font-medium" autoFocus required />
+        <input value={v.title} onChange={(e) => set({ title: e.target.value })} placeholder={tr("Titre (ex. Salle de sport, Appel client…)")} className="input mt-4 py-2.5 text-base font-medium" autoFocus required />
         <div className="mt-3 grid grid-cols-3 gap-2">
           <label className="col-span-3 text-xs text-stone-500 sm:col-span-1">
             Jour
@@ -66,11 +68,11 @@ export function TaskEditor({
             <input type="time" value={v.end} onChange={(e) => set({ end: e.target.value })} disabled={!v.start} className="input mt-1" />
           </label>
         </div>
-        {badRange && <p className="mt-1 text-xs text-rose-600">L'heure de fin doit être après le début.</p>}
-        {!v.start && <p className="mt-1 text-[11px] text-stone-400">Sans heure, la tâche apparaît en haut de la journée.</p>}
+        {badRange && <p className="mt-1 text-xs text-rose-600">{tr("L'heure de fin doit être après le début.")}</p>}
+        {!v.start && <p className="mt-1 text-[11px] text-stone-400">{tr("Sans heure, la tâche apparaît en haut de la journée.")}</p>}
         <label className="mt-3 block text-xs text-stone-500">
           Notes
-          <textarea value={v.notes} onChange={(e) => set({ notes: e.target.value })} rows={4} placeholder="Détails, étapes, liens… (facultatif)" className="input mt-1 min-h-[6rem] resize-y leading-relaxed" />
+          <textarea value={v.notes} onChange={(e) => set({ notes: e.target.value })} rows={4} placeholder={tr("Détails, étapes, liens… (facultatif)")} className="input mt-1 min-h-[6rem] resize-y leading-relaxed" />
         </label>
         <div className="mt-3 text-xs text-stone-500">
           Priorité
@@ -84,15 +86,15 @@ export function TaskEditor({
           <label className="mt-3 block text-xs text-stone-500">
             Projet
             <select value={v.projectId} onChange={(e) => set({ projectId: e.target.value })} className="input mt-1">
-              <option value="">Sans projet</option>
+              <option value="">{tr("Sans projet")}</option>
               {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </label>
         )}
         <div className="mt-5 flex items-center gap-2">
           <button className="btn-primary" disabled={saving || badRange}>{mode === "create" ? "Ajouter" : "Enregistrer"}</button>
-          <button type="button" onClick={onClose} className="btn-secondary">Annuler</button>
-          {onDelete && <button type="button" onClick={onDelete} className="ml-auto text-xs text-stone-400 hover:text-rose-600">Supprimer</button>}
+          <button type="button" onClick={onClose} className="btn-secondary">{tr("Annuler")}</button>
+          {onDelete && <button type="button" onClick={onDelete} className="ml-auto text-xs text-stone-400 hover:text-rose-600">{tr("Supprimer")}</button>}
         </div>
       </form>
     </div>,

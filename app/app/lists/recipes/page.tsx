@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n/server";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
@@ -8,6 +9,7 @@ import { loadCatalog } from "@/lib/data/ingredients";
 export const metadata: Metadata = { title: "Recettes" };
 
 export default async function RecipesPage() {
+  const tr = getT();
   const ctx = await getAppContext();
   if (!ctx) return null;
   const { supabase, profile } = ctx;
@@ -31,7 +33,7 @@ export default async function RecipesPage() {
 
   return (
     <div className="space-y-8">
-      <p className="text-xs text-stone-500">Compose tes repas avec tes ingrédients ; ils serviront à remplir tes listes de courses.</p>
+      <p className="text-xs text-stone-500">{tr("Compose tes repas avec tes ingrédients ; ils serviront à remplir tes listes de courses.")}</p>
 
       <RecipesTabs recipes={typed} householdId={householdId} categories={categories} catalog={catalog} />
     </div>

@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { loadFinanceData } from "@/lib/data/finance";
@@ -10,6 +11,7 @@ export const metadata: Metadata = { title: "Finance — Opérations" };
 const ORDER: OpKind[] = ["income", "fixed", "variable", "savings"];
 
 export default async function OperationsPage({ searchParams }: { searchParams: { tri?: string } }) {
+  const tr = getT();
   const data = await loadFinanceData();
   if (!data) return null;
   const ops = data.ops.filter((o) => !o.txn);
@@ -24,8 +26,8 @@ export default async function OperationsPage({ searchParams }: { searchParams: {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-stone-500">{byDate ? "Triées par prochaine date, la plus proche d'abord." : "Rangées par catégorie."}</p>
         <div className="segmented">
-          <Link href="/app/finance/operations" data-active={!byDate}>Par catégorie</Link>
-          <Link href="/app/finance/operations?tri=date" data-active={byDate}>Par date</Link>
+          <Link href="/app/finance/operations" data-active={!byDate}>{tr("Par catégorie")}</Link>
+          <Link href="/app/finance/operations?tri=date" data-active={byDate}>{tr("Par date")}</Link>
         </div>
       </div>
 
@@ -48,10 +50,10 @@ export default async function OperationsPage({ searchParams }: { searchParams: {
                 </h2>
                 <div className="flex items-center gap-2">
                   {monthly > 0 && <span className="text-[11px] text-stone-500">≈ {formatEUR(monthly)} / mois</span>}
-                  <NewOperationButton defaultDate={today} defaultKind={kind} label="+ Ajouter" className="btn-ghost" />
+                  <NewOperationButton defaultDate={today} defaultKind={kind} label={tr("+ Ajouter")} className="btn-ghost" />
                 </div>
               </div>
-              {list.length === 0 && <p className="rounded-xl bg-stone-50 py-4 text-center text-xs text-stone-400">Aucune opération.</p>}
+              {list.length === 0 && <p className="rounded-xl bg-stone-50 py-4 text-center text-xs text-stone-400">{tr("Aucune opération.")}</p>}
               {byDate ? (
                 <ul className="space-y-1.5">
                   {sorted.map((op) => <OperationRow key={`${op.table}-${op.id}`} op={op} today={today} />)}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useEffect, useMemo, useState } from "react";
 import { CATEGORIES, EQUIPMENT, RECIPES, filterRecipes, type MarketingRecipe } from "@/lib/marketing/recipes";
 import { Icon } from "@/components/app/icons";
@@ -33,6 +34,7 @@ export function RecipePicker({
   onPickInspiration: (recipe: MarketingRecipe) => void;
   onClose: () => void;
 }) {
+  const tr = useT();
   const [tab, setTab] = useState<Tab>(initialTab);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
@@ -67,17 +69,17 @@ export function RecipePicker({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Choisir des recettes"
+        aria-label={tr("Choisir des recettes")}
         onClick={(e) => e.stopPropagation()}
         className="flex h-full w-full max-w-[980px] animate-modal flex-col overflow-hidden bg-canvas shadow-2xl sm:h-[min(680px,90vh)] sm:rounded-3xl"
       >
         <header className="flex flex-wrap items-center gap-3 border-b border-line bg-surface px-5 py-3">
-          <p className="mr-auto text-base font-bold text-stone-900">Choisir des recettes</p>
+          <p className="mr-auto text-base font-bold text-stone-900">{tr("Choisir des recettes")}</p>
           <div className="segmented">
-            <button type="button" data-active={tab === "discover"} onClick={() => setTab("discover")}>Découvrir</button>
+            <button type="button" data-active={tab === "discover"} onClick={() => setTab("discover")}>{tr("Découvrir")}</button>
             <button type="button" data-active={tab === "mine"} onClick={() => setTab("mine")}>Mes recettes ({mine.length})</button>
           </div>
-          <button type="button" onClick={onClose} aria-label="Fermer" className="rounded-lg p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-700">
+          <button type="button" onClick={onClose} aria-label={tr("Fermer")} className="rounded-lg p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-700">
             <Icon name="close" />
           </button>
         </header>
@@ -103,20 +105,20 @@ export function RecipePicker({
           </div>
           {tab === "discover" ? (
             <div className="flex gap-1.5 overflow-x-auto pb-0.5">
-              <button type="button" onClick={() => setCategory(null)} className={chip(category === null)}>Toutes</button>
+              <button type="button" onClick={() => setCategory(null)} className={chip(category === null)}>{tr("Toutes")}</button>
               {CATEGORIES.map((c) => (
                 <button key={c} type="button" onClick={() => setCategory(c === category ? null : c)} className={chip(category === c)}>{c}</button>
               ))}
             </div>
           ) : (
             <div className="flex gap-1.5">
-              <button type="button" onClick={() => setOnlyFavorites(false)} className={chip(!onlyFavorites)}>Toutes</button>
-              <button type="button" onClick={() => setOnlyFavorites(true)} className={chip(onlyFavorites)}>★ Favoris</button>
+              <button type="button" onClick={() => setOnlyFavorites(false)} className={chip(!onlyFavorites)}>{tr("Toutes")}</button>
+              <button type="button" onClick={() => setOnlyFavorites(true)} className={chip(onlyFavorites)}>{tr("★ Favoris")}</button>
             </div>
           )}
           {tab === "discover" && showEquipment && (
             <div className="flex flex-wrap items-center gap-1.5 rounded-xl bg-stone-50 p-2">
-              <span className="mr-1 text-[11px] text-stone-500">Ce que tu as :</span>
+              <span className="mr-1 text-[11px] text-stone-500">{tr("Ce que tu as :")}</span>
               {EQUIPMENT.map((e) => (
                 <button
                   key={e.key}
@@ -127,7 +129,7 @@ export function RecipePicker({
                   <span>{e.icon}</span>{e.label}
                 </button>
               ))}
-              {equipment.length > 0 && <button type="button" onClick={() => setEquipment([])} className="ml-1 text-[11px] text-stone-400 hover:text-stone-700">Réinitialiser</button>}
+              {equipment.length > 0 && <button type="button" onClick={() => setEquipment([])} className="ml-1 text-[11px] text-stone-400 hover:text-stone-700">{tr("Réinitialiser")}</button>}
             </div>
           )}
         </div>
@@ -135,7 +137,7 @@ export function RecipePicker({
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
           {tab === "discover" ? (
             discover.length === 0 ? (
-              <p className="p-10 text-center text-sm text-stone-400">Aucune recette ne correspond.</p>
+              <p className="p-10 text-center text-sm text-stone-400">{tr("Aucune recette ne correspond.")}</p>
             ) : (
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
                 {discover.map((r) => {
@@ -193,6 +195,7 @@ export function RecipePicker({
 
 /** Carte compacte : tout est toujours visible, sans défilement interne. */
 function Card({ emoji, image, title, meta, count, busy, onAdd, onCount }: { emoji: string; image: string | null; title: string; meta: string; count: number; busy: boolean; onAdd: () => void; onCount: (n: number) => void }) {
+  const tr = useT();
   const on = count > 0;
   return (
     <article className={cx("flex flex-col overflow-hidden rounded-2xl border bg-surface transition", on ? "border-brand-400 ring-2 ring-brand-200" : "border-line hover:border-stone-300")}>
@@ -209,9 +212,9 @@ function Card({ emoji, image, title, meta, count, busy, onAdd, onCount }: { emoj
         <p className="truncate text-[11px] text-stone-400">{meta}</p>
         {on ? (
           <div className="mt-1 flex items-center justify-between rounded-lg bg-brand-50 px-1.5 py-1">
-            <button type="button" onClick={() => onCount(count - 1)} className="h-6 w-6 rounded-md bg-surface text-stone-600 shadow-sm" aria-label="Moins de personnes">−</button>
+            <button type="button" onClick={() => onCount(count - 1)} className="h-6 w-6 rounded-md bg-surface text-stone-600 shadow-sm" aria-label={tr("Moins de personnes")}>−</button>
             <span className="text-xs font-semibold text-brand-800">{count} pers.</span>
-            <button type="button" onClick={() => onCount(count + 1)} className="h-6 w-6 rounded-md bg-surface text-stone-600 shadow-sm" aria-label="Plus de personnes">+</button>
+            <button type="button" onClick={() => onCount(count + 1)} className="h-6 w-6 rounded-md bg-surface text-stone-600 shadow-sm" aria-label={tr("Plus de personnes")}>+</button>
           </div>
         ) : (
           <button type="button" onClick={onAdd} disabled={busy} className="mt-1 rounded-lg bg-stone-100 py-1.5 text-xs font-semibold text-stone-700 transition hover:bg-brand-50 hover:text-brand-700">{busy ? "…" : "+ Ajouter"}</button>

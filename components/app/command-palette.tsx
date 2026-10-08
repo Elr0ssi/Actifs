@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Icon, type IconName } from "@/components/app/icons";
@@ -23,6 +24,7 @@ const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCa
 
 /** Recherche et raccourcis globaux : Ctrl/Cmd + K depuis n'importe quelle page de l'app. */
 export function CommandPalette({ mode }: { mode: ThemeMode }) {
+  const tr = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -134,7 +136,7 @@ export function CommandPalette({ mode }: { mode: ThemeMode }) {
 
   return (
     <div className="fixed inset-0 z-[70] flex animate-fade items-start justify-center bg-black/40 px-4 pt-[12vh] backdrop-blur-sm" onClick={() => setOpen(false)}>
-      <div role="dialog" aria-modal="true" aria-label="Recherche" onClick={(e) => e.stopPropagation()} className="w-full max-w-[620px] animate-modal overflow-hidden rounded-3xl border border-line bg-surface shadow-lift">
+      <div role="dialog" aria-modal="true" aria-label={tr("Recherche")} onClick={(e) => e.stopPropagation()} className="w-full max-w-[620px] animate-modal overflow-hidden rounded-3xl border border-line bg-surface shadow-lift">
         <div className="flex items-center gap-3 border-b border-line px-4 py-3.5">
           <Icon name="search" className="h-[18px] w-[18px] text-stone-400" />
           <input
@@ -142,10 +144,10 @@ export function CommandPalette({ mode }: { mode: ThemeMode }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Chercher une page, une action, une recette…"
+            placeholder={tr("Chercher une page, une action, une recette…")}
             className="flex-1 bg-transparent text-[15px] text-stone-900 outline-none placeholder:text-stone-400"
           />
-          <kbd className="rounded-md border border-line bg-stone-50 px-1.5 py-0.5 font-sans text-[10px] text-stone-400">Échap</kbd>
+          <kbd className="rounded-md border border-line bg-stone-50 px-1.5 py-0.5 font-sans text-[10px] text-stone-400">{tr("Échap")}</kbd>
         </div>
         <div ref={listRef} className="max-h-[52vh] overflow-y-auto p-2">
           {results.length === 0 && <p className="px-3 py-8 text-center text-sm text-stone-400">Aucun résultat pour « {query} »</p>}
@@ -174,7 +176,7 @@ export function CommandPalette({ mode }: { mode: ThemeMode }) {
           })}
         </div>
         <div className="flex items-center justify-between border-t border-line px-4 py-2 text-[11px] text-stone-400">
-          <span>↑ ↓ pour naviguer · ↵ pour ouvrir</span>
+          <span>{tr("↑ ↓ pour naviguer · ↵ pour ouvrir")}</span>
           <span className="hidden items-center gap-1 sm:flex"><Icon name="sparkle" className="h-3 w-3" />Astuce : tape une recette ou un ingrédient</span>
         </div>
       </div>

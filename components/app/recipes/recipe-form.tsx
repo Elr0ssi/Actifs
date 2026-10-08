@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { createRecipe, updateRecipe } from "@/app/app/lists/recipes/actions";
@@ -33,6 +34,7 @@ export function RecipeForm({
   catalog: CatalogIngredient[];
   onDone?: () => void;
 }) {
+  const tr = useT();
   const [preview, setPreview] = useState<string | null>(recipe?.image_url ?? null);
   const [file, setFile] = useState<File | null>(null);
   const [pending, setPending] = useState(false);
@@ -102,8 +104,7 @@ export function RecipeForm({
             }}
             className="absolute right-1.5 top-1.5 hidden rounded-full bg-surface/90 px-2 py-0.5 text-[11px] text-stone-600 shadow group-hover:block"
           >
-            Retirer
-          </button>
+            {tr("Retirer")}</button>
         )}
       </label>
 
@@ -111,7 +112,7 @@ export function RecipeForm({
         <input
           name="name"
           defaultValue={recipe?.name}
-          placeholder="Nom de la recette (ex. Poulet basquaise)"
+          placeholder={tr("Nom de la recette (ex. Poulet basquaise)")}
           className="input py-3 text-lg font-semibold"
           required
         />
@@ -121,12 +122,12 @@ export function RecipeForm({
           </select>
           <label className="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 text-xs text-stone-500">
             Pour
-            <input name="servings" type="number" min={1} max={50} defaultValue={recipe?.servings ?? 2} className="w-12 bg-transparent text-center text-sm font-semibold text-stone-800 outline-none" aria-label="Nombre de personnes" />
+            <input name="servings" type="number" min={1} max={50} defaultValue={recipe?.servings ?? 2} className="w-12 bg-transparent text-center text-sm font-semibold text-stone-800 outline-none" aria-label={tr("Nombre de personnes")} />
             pers.
           </label>
         </div>
         <div>
-          <p className="label mb-1.5">Ingrédients</p>
+          <p className="label mb-1.5">{tr("Ingrédients")}</p>
           <IngredientPicker
             key={resetKey}
             name="ingredients"
@@ -142,7 +143,7 @@ export function RecipeForm({
           />
         </div>
         <div>
-          <p className="label mb-1.5">Étapes &amp; notes</p>
+          <p className="label mb-1.5">{tr("Étapes & notes")}</p>
           <textarea
             name="notes"
             defaultValue={recipe?.notes ?? ""}
@@ -165,12 +166,12 @@ export function RecipeForm({
               el.setRangeText("\n- ", el.selectionStart, el.selectionEnd, "end");
             }}
           />
-          <button type="button" className="mt-1 text-xs text-brand-600 hover:underline" onClick={(e) => { const t = e.currentTarget.previousElementSibling as HTMLTextAreaElement; if (!t.value.trim()) t.value = "- "; t.focus(); t.setSelectionRange(t.value.length, t.value.length); }}>+ Commencer une liste à puces</button>
+          <button type="button" className="mt-1 text-xs text-brand-600 hover:underline" onClick={(e) => { const t = e.currentTarget.previousElementSibling as HTMLTextAreaElement; if (!t.value.trim()) t.value = "- "; t.focus(); t.setSelectionRange(t.value.length, t.value.length); }}>{tr("+ Commencer une liste à puces")}</button>
         </div>
         {error && <p className="text-sm text-rose-600">{error}</p>}
         <div className="flex gap-2">
           <button disabled={pending} className="btn-primary">{pending ? "Enregistrement…" : recipe ? "Enregistrer" : "Créer la recette"}</button>
-          {onDone && recipe && <button type="button" onClick={onDone} className="btn-secondary">Annuler</button>}
+          {onDone && recipe && <button type="button" onClick={onDone} className="btn-secondary">{tr("Annuler")}</button>}
         </div>
       </div>
     </form>

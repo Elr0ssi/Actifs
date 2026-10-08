@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useState, useTransition } from "react";
 import { setAppearance } from "@/app/app/settings/actions";
 import { ACCENT_CHOICES, THEME_MODES, type Accent, type ThemeMode } from "@/lib/theme";
@@ -10,6 +11,7 @@ const MODE_ICON: Record<ThemeMode, IconName> = { light: "sun", dark: "moon", aut
 
 /** Mode d'affichage et couleur d'accent : appliqués tout de suite, mémorisés sur cet appareil. */
 export function AppearancePicker({ mode, accent }: { mode: ThemeMode; accent: Accent }) {
+  const tr = useT();
   const [m, setM] = useState(mode);
   const [a, setA] = useState(accent);
   const [pending, start] = useTransition();
@@ -26,7 +28,7 @@ export function AppearancePicker({ mode, accent }: { mode: ThemeMode; accent: Ac
   return (
     <div className={cx("space-y-5", pending && "opacity-80")}>
       <div>
-        <p className="label mb-2">Mode</p>
+        <p className="label mb-2">{tr("Mode")}</p>
         <div className="grid grid-cols-3 gap-2">
           {THEME_MODES.map((t) => (
             <button
@@ -46,7 +48,7 @@ export function AppearancePicker({ mode, accent }: { mode: ThemeMode; accent: Ac
         </div>
       </div>
       <div>
-        <p className="label mb-2">Couleur d'accent</p>
+        <p className="label mb-2">{tr("Couleur d'accent")}</p>
         <div className="flex flex-wrap gap-3">
           {ACCENT_CHOICES.map((c) => (
             <button

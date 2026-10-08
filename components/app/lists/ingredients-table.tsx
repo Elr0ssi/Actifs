@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useMemo, useState, useTransition } from "react";
 import { STORES, priceSuffix, type CatalogIngredient } from "@/lib/shopping";
 import { deleteIngredient, setIngredientPrice } from "@/app/app/lists/actions";
@@ -8,6 +9,7 @@ import { cx } from "@/lib/utils";
 type PriceRow = { ingredient_id: string; store: string; price: number; household_id: string | null };
 
 export function IngredientsTable({ catalog, prices }: { catalog: CatalogIngredient[]; prices: PriceRow[] }) {
+  const tr = useT();
   const [query, setQuery] = useState("");
   const [onlyMine, setOnlyMine] = useState(false);
   const [pending, start] = useTransition();
@@ -25,12 +27,12 @@ export function IngredientsTable({ catalog, prices }: { catalog: CatalogIngredie
   return (
     <div className={cx("card overflow-hidden p-0", pending && "opacity-70")}>
       <div className="flex flex-wrap items-center gap-3 border-b border-stone-100 p-4">
-        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Rechercher un ingrédient…" className="input max-w-xs" />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr("Rechercher un ingrédient…")} className="input max-w-xs" />
         <label className="flex items-center gap-2 text-sm text-stone-600">
           <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} className="h-4 w-4 rounded border-stone-300" />
           Seulement mes ajouts
         </label>
-        <p className="ml-auto text-xs text-stone-400">Gris = prix de référence · saisis ton prix pour le remplacer (vide = revenir à la référence)</p>
+        <p className="ml-auto text-xs text-stone-400">{tr("Gris = prix de référence · saisis ton prix pour le remplacer (vide = revenir à la référence)")}</p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -47,7 +49,7 @@ export function IngredientsTable({ catalog, prices }: { catalog: CatalogIngredie
                 <td className="px-4 py-1.5">
                   <span className="font-medium text-stone-800">{ing.name}</span>
                   <span className="ml-1.5 text-[11px] text-stone-400">{priceSuffix(ing.unit)}</span>
-                  {ing.personal && <span className="ml-1.5 rounded bg-brand-50 px-1 text-[10px] text-brand-700">perso</span>}
+                  {ing.personal && <span className="ml-1.5 rounded bg-brand-50 px-1 text-[10px] text-brand-700">{tr("perso")}</span>}
                 </td>
                 {STORES.map((s) => {
                   const key = `${ing.id}|${s}`;

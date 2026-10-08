@@ -1,11 +1,13 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useMemo, useState } from "react";
 import { formatEUR } from "@/lib/utils";
 import { grossToNet, estimateIncomeTax, bracketBreakdown, taxQuotient } from "@/lib/tax-fr";
 
 /** Pure client calculator: brut annuel → net mensuel, et une fourchette d'impôt indicative. Rien n'est enregistré. */
 export function TaxCalculator() {
+  const tr = useT();
   const [brut, setBrut] = useState(36000);
   const [statut, setStatut] = useState<"non-cadre" | "cadre">("non-cadre");
   const [parts, setParts] = useState(1);
@@ -36,8 +38,8 @@ export function TaxCalculator() {
           <label className="text-xs font-medium text-stone-500">
             Statut
             <select value={statut} onChange={(e) => setStatut(e.target.value as "non-cadre" | "cadre")} className="input mt-1">
-              <option value="non-cadre">Non-cadre</option>
-              <option value="cadre">Cadre</option>
+              <option value="non-cadre">{tr("Non-cadre")}</option>
+              <option value="cadre">{tr("Cadre")}</option>
             </select>
           </label>
           <label className="text-xs font-medium text-stone-500">
@@ -52,21 +54,21 @@ export function TaxCalculator() {
 
       <div className="space-y-3">
         <div className="rounded-2xl bg-stone-50 p-4">
-          <p className="text-xs font-medium text-stone-500">Net mensuel estimé (avant impôt)</p>
+          <p className="text-xs font-medium text-stone-500">{tr("Net mensuel estimé (avant impôt)")}</p>
           <p className="mt-1 text-2xl font-bold text-stone-900">{formatEUR(net.netMensuel)}</p>
           <p className="text-[11px] text-stone-400">Fourchette : {formatEUR(net.low)} – {formatEUR(net.high)}</p>
         </div>
         <div className="rounded-2xl bg-brand-50 p-4">
-          <p className="text-xs font-medium text-brand-800">Impôt sur le revenu — à provisionner chaque mois</p>
+          <p className="text-xs font-medium text-brand-800">{tr("Impôt sur le revenu — à provisionner chaque mois")}</p>
           <p className="mt-1 text-2xl font-bold text-brand-700">{formatEUR(tax.monthlyProvision)}</p>
           <p className="text-[11px] text-brand-700/70">
             Fourchette : {formatEUR(tax.low / 12)} – {formatEUR(tax.high / 12)} · soit {formatEUR(tax.annualTax)}/an · taux calculé ≈ {tax.withholdingRate.toFixed(1)}%
           </p>
         </div>
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4">
-          <p className="text-xs font-medium text-emerald-800">Net réel estimé après impôt</p>
+          <p className="text-xs font-medium text-emerald-800">{tr("Net réel estimé après impôt")}</p>
           <p className="mt-1 text-2xl font-bold text-emerald-700">{formatEUR(netAfterTaxMonthly)}</p>
-          <p className="text-[11px] text-emerald-700/70">par mois, si l'impôt n'est pas déjà prélevé à la source</p>
+          <p className="text-[11px] text-emerald-700/70">{tr("par mois, si l'impôt n'est pas déjà prélevé à la source")}</p>
         </div>
 
         <button type="button" onClick={() => setShowBrackets((v) => !v)} className="text-xs font-medium text-stone-500 hover:text-stone-800">
@@ -77,8 +79,8 @@ export function TaxCalculator() {
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-left text-stone-400">
-                  <th className="pb-1.5 font-medium">Tranche (par part)</th>
-                  <th className="pb-1.5 text-right font-medium">Taux</th>
+                  <th className="pb-1.5 font-medium">{tr("Tranche (par part)")}</th>
+                  <th className="pb-1.5 text-right font-medium">{tr("Taux")}</th>
                   <th className="pb-1.5 text-right font-medium">Impôt (× {parts} part{parts > 1 ? "s" : ""})</th>
                 </tr>
               </thead>

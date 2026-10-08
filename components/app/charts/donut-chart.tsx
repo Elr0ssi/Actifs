@@ -1,3 +1,4 @@
+import { useT } from "@/components/i18n/provider";
 import { formatEUR } from "@/lib/utils";
 import { categoryColor } from "@/components/app/charts/palette";
 
@@ -16,6 +17,7 @@ export function DonutChart({
   selected?: string | null;
   onSelect?: (label: string) => void;
 }) {
+  const tr = useT();
   const total = items.reduce((s, i) => s + i.value, 0);
   const r = (size - strokeWidth) / 2;
   const cx = size / 2;
@@ -23,7 +25,7 @@ export function DonutChart({
   const circumference = 2 * Math.PI * r;
 
   if (total <= 0) {
-    return <p className="text-sm text-stone-400">Aucune donnée pour l'instant.</p>;
+    return <p className="text-sm text-stone-400">{tr("Aucune donnée pour l'instant.")}</p>;
   }
 
   // Color follows the category's identity (alphabetical slot), never its rank by
@@ -46,7 +48,7 @@ export function DonutChart({
 
   return (
     <div className="flex flex-wrap items-center gap-6">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0 animate-pop" role="img" aria-label="Répartition des charges par catégorie">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0 animate-pop" role="img" aria-label={tr("Répartition des charges par catégorie")}>
         <g transform={`rotate(-90 ${cx} ${cy})`}>
           <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgb(var(--stone-200))" strokeWidth={strokeWidth} />
           {segments.map((s, i) => (

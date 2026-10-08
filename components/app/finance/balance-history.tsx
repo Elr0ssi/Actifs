@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { intlLocale } from "@/lib/i18n";
 import { useState, useTransition } from "react";
 import { deleteBalanceEntry, editBalanceEntry, pruneBalanceHistory } from "@/app/app/finance/actions";
@@ -14,6 +15,7 @@ const shift = (iso: string, months: number) => {
 
 /** Soldes saisis d'un compte : chaque ligne est un montant précis à une date (pas un cumul). Modifiable, supprimable, nettoyable. */
 export function BalanceHistory({ account, entries, today }: { account: string; entries: { date: string; balance: number }[]; today: string }) {
+  const tr = useT();
   const [pending, start] = useTransition();
   const [editing, setEditing] = useState<string | null>(null);
   const [gone, setGone] = useState<string[]>([]);
@@ -23,7 +25,7 @@ export function BalanceHistory({ account, entries, today }: { account: string; e
   return (
     <details className="text-xs">
       <summary className="cursor-pointer text-stone-400">Historique des soldes ({list.length})</summary>
-      <p className="mt-2 text-[11px] text-stone-400">Chaque ligne est le solde réel à cette date, pas un montant à additionner.</p>
+      <p className="mt-2 text-[11px] text-stone-400">{tr("Chaque ligne est le solde réel à cette date, pas un montant à additionner.")}</p>
       <ul className={cx("mt-2 space-y-1", pending && "opacity-60")}>
         {list.map((h) =>
           editing === h.date ? (
@@ -34,7 +36,7 @@ export function BalanceHistory({ account, entries, today }: { account: string; e
               >
                 <input name="entry_date" type="date" defaultValue={h.date} className="input min-w-0 px-2 py-1 text-xs" required />
                 <input name="balance" type="number" step="0.01" defaultValue={h.balance} className="input w-24 min-w-0 px-2 py-1 text-xs" required />
-                <button className="btn-primary px-2 py-1 text-xs">OK</button>
+                <button className="btn-primary px-2 py-1 text-xs">{tr("OK")}</button>
                 <button type="button" onClick={() => setEditing(null)} className="text-stone-400">✕</button>
               </form>
             </li>
@@ -42,15 +44,15 @@ export function BalanceHistory({ account, entries, today }: { account: string; e
             <li key={h.date} className="group flex items-center justify-between gap-2 text-stone-500">
               <span>
                 {fmt(h.date)}
-                {h.date > today && <span className="ml-1 rounded-full bg-amber-100 px-1.5 py-px text-[10px] font-medium text-amber-700">à venir</span>}
+                {h.date > today && <span className="ml-1 rounded-full bg-amber-100 px-1.5 py-px text-[10px] font-medium text-amber-700">{tr("à venir")}</span>}
               </span>
               <span className="flex items-center gap-2">
                 <span className="font-medium text-stone-700">{formatEUR(h.balance)}</span>
-                <button type="button" onClick={() => setEditing(h.date)} title="Modifier" className="text-stone-300 hover:text-brand-600">✎</button>
+                <button type="button" onClick={() => setEditing(h.date)} title={tr("Modifier")} className="text-stone-300 hover:text-brand-600">✎</button>
                 <button
                   type="button"
                   onClick={() => { setGone((g) => [...g, h.date]); start(() => deleteBalanceEntry(account, h.date)); }}
-                  title="Supprimer cette date"
+                  title={tr("Supprimer cette date")}
                   className="text-stone-300 hover:text-rose-600"
                 >
                   ✕

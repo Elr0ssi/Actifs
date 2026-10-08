@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { setMenuServings } from "@/app/app/menu-actions";
@@ -37,6 +38,7 @@ export function MenuRecipeView({
   onPlan: () => void;
   onRemove: (id: string) => void;
 }) {
+  const tr = useT();
   const meal = meals.find((m) => m.id === activeId) ?? meals[0];
   const [sv, setSv] = useState<Record<string, number>>({});
   const [, start] = useTransition();
@@ -77,7 +79,7 @@ export function MenuRecipeView({
               <h2 className="mt-1 text-2xl font-bold tracking-tight text-stone-900">{meal.icon ?? idea?.icon ?? "🍽️"} {meal.name}</h2>
               {idea?.desc && <p className="mt-1 text-sm text-stone-500">{idea.desc}</p>}
             </div>
-            <button onClick={onClose} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label="Fermer">✕</button>
+            <button onClick={onClose} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label={tr("Fermer")}>✕</button>
           </div>
 
           {meals.length > 1 && (
@@ -99,7 +101,7 @@ export function MenuRecipeView({
 
           {!found ? (
             <p className="mt-5 rounded-xl bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">
-              Ce repas n'est lié à aucune recette enregistrée. Crée-la dans <a href="/app/lists/recipes" className="font-medium text-brand-600 hover:underline">Mes recettes</a> avec le même nom pour retrouver ici ses ingrédients et ses étapes.
+              Ce repas n'est lié à aucune recette enregistrée. Crée-la dans <a href="/app/lists/recipes" className="font-medium text-brand-600 hover:underline">{tr("Mes recettes")}</a> avec le même nom pour retrouver ici ses ingrédients et ses étapes.
             </p>
           ) : (
             <>
@@ -107,14 +109,14 @@ export function MenuRecipeView({
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-stone-400">Ingrédients ({ingredients.length})</h3>
                 <div className="flex items-center gap-1 text-xs text-stone-500">
                   Pour
-                  <button type="button" onClick={() => changePeople(people - 1)} className="h-6 w-6 rounded-md border border-line text-stone-600" aria-label="Moins de personnes">−</button>
+                  <button type="button" onClick={() => changePeople(people - 1)} className="h-6 w-6 rounded-md border border-line text-stone-600" aria-label={tr("Moins de personnes")}>−</button>
                   <b className="min-w-[1.5rem] text-center text-sm text-stone-900">{people}</b>
-                  <button type="button" onClick={() => changePeople(people + 1)} className="h-6 w-6 rounded-md border border-line text-stone-600" aria-label="Plus de personnes">+</button>
+                  <button type="button" onClick={() => changePeople(people + 1)} className="h-6 w-6 rounded-md border border-line text-stone-600" aria-label={tr("Plus de personnes")}>+</button>
                   pers.
                 </div>
               </div>
               {ingredients.length === 0 ? (
-                <p className="text-sm text-stone-400">Aucun ingrédient renseigné.</p>
+                <p className="text-sm text-stone-400">{tr("Aucun ingrédient renseigné.")}</p>
               ) : (
                 <ul className="grid gap-x-6 gap-y-1 text-sm text-stone-700 sm:grid-cols-2">
                   {ingredients.map((i, k) => <li key={k}>• {i.quantity && <b className="font-semibold">{i.quantity} </b>}{i.label}</li>)}
@@ -122,13 +124,13 @@ export function MenuRecipeView({
               )}
               {idea && idea.utensils.length > 0 && (
                 <>
-                  <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Ustensiles</h3>
+                  <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">{tr("Ustensiles")}</h3>
                   <p className="text-sm text-stone-600">{idea.utensils.join(" · ")}</p>
                 </>
               )}
-              <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Préparation</h3>
+              <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">{tr("Préparation")}</h3>
               {steps.length === 0 ? (
-                <p className="text-sm text-stone-400">Pas encore d'étapes pour cette recette.</p>
+                <p className="text-sm text-stone-400">{tr("Pas encore d'étapes pour cette recette.")}</p>
               ) : (
                 <ol className="space-y-2.5">
                   {steps.map((line, i) => (
@@ -143,9 +145,9 @@ export function MenuRecipeView({
           )}
 
           <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-line pt-4">
-            <button onClick={onPlan} className="btn-secondary">Modifier le menu de ce jour</button>
-            <button onClick={onClose} className="btn-primary">Fermer</button>
-            <button onClick={() => onRemove(meal.id)} className="ml-auto text-xs text-stone-400 hover:text-rose-600">Retirer du menu</button>
+            <button onClick={onPlan} className="btn-secondary">{tr("Modifier le menu de ce jour")}</button>
+            <button onClick={onClose} className="btn-primary">{tr("Fermer")}</button>
+            <button onClick={() => onRemove(meal.id)} className="ml-auto text-xs text-stone-400 hover:text-rose-600">{tr("Retirer du menu")}</button>
           </div>
         </div>
       </div>

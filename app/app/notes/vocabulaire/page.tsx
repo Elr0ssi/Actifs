@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
 import { VocabList } from "@/components/app/notes/vocab-list";
@@ -7,6 +8,7 @@ import { SubmitButton } from "@/components/ui/submit-button";
 export const metadata: Metadata = { title: "Notes" };
 
 export default async function NotesPage() {
+  const tr = getT();
   const ctx = await getAppContext();
   if (!ctx) return null;
   const { supabase, profile } = ctx;
@@ -22,29 +24,29 @@ export default async function NotesPage() {
     <div className="space-y-8">
       <section className="card p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-semibold text-stone-900">📚 Vocabulaire</h2>
-          <p className="text-xs text-stone-400">Un mot enregistré à sa date — de quoi le retester plus tard.</p>
+          <h2 className="font-semibold text-stone-900">{tr("📚 Vocabulaire")}</h2>
+          <p className="text-xs text-stone-400">{tr("Un mot enregistré à sa date — de quoi le retester plus tard.")}</p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <form action={addWord} className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">Ajout manuel</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">{tr("Ajout manuel")}</p>
             <div className="flex gap-2">
-              <input name="french" placeholder="Français (ex. chat)" className="input" required />
-              <input name="english" placeholder="Anglais (ex. cat)" className="input" required />
+              <input name="french" placeholder={tr("Français (ex. chat)")} className="input" required />
+              <input name="english" placeholder={tr("Anglais (ex. cat)")} className="input" required />
             </div>
-            <SubmitButton className="btn-primary w-full">Ajouter le mot</SubmitButton>
+            <SubmitButton className="btn-primary w-full">{tr("Ajouter le mot")}</SubmitButton>
           </form>
 
           <form action={bulkAddWords} className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">Ajout massif</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">{tr("Ajout massif")}</p>
             <textarea
               name="bulk"
               rows={3}
               placeholder={"Une paire par ligne :\nchat - cat\nmaison : house\nvoiture, car"}
               className="input"
             />
-            <SubmitButton className="btn-secondary w-full">Importer la liste</SubmitButton>
+            <SubmitButton className="btn-secondary w-full">{tr("Importer la liste")}</SubmitButton>
           </form>
         </div>
       </section>

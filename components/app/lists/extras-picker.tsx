@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useMemo, useState } from "react";
 import type { PickedIngredient } from "@/lib/data/ingredients";
 import { defaultQtyUnit, priceSuffix, type CatalogIngredient, type QtyUnit } from "@/lib/shopping";
@@ -25,6 +26,7 @@ export function ExtrasPicker({
   prices: Record<string, number>;
   store: string | null;
 }) {
+  const tr = useT();
   const [picked, setPicked] = useState<PickedIngredient[]>([]);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -63,7 +65,7 @@ export function ExtrasPicker({
               add(matches[0] ? matches[0].name : query);
             }
           }}
-          placeholder="Chercher un produit : lait, café, lessive…"
+          placeholder={tr("Chercher un produit : lait, café, lessive…")}
           className="input"
         />
         {open && q && (matches.length > 0 || !exact) && (
@@ -111,7 +113,7 @@ export function ExtrasPicker({
               <li key={p.name} className="flex items-center gap-2 px-3 py-2">
                 <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-stone-800">
                   {p.name}
-                  {!known && <span className="ml-1.5 rounded bg-amber-100 px-1 text-[10px] font-normal text-amber-700">nouveau</span>}
+                  {!known && <span className="ml-1.5 rounded bg-amber-100 px-1 text-[10px] font-normal text-amber-700">{tr("nouveau")}</span>}
                 </span>
                 <input
                   type="number"
@@ -123,7 +125,7 @@ export function ExtrasPicker({
                   aria-label={`Quantité : ${p.name}`}
                   className="w-16 rounded-lg border border-line bg-surface px-2 py-1 text-right text-sm"
                 />
-                <select value={p.qtyUnit ?? "u"} onChange={(e) => update(i, { qtyUnit: e.target.value as QtyUnit })} className="w-[5.5rem] rounded-lg border border-line bg-surface px-1.5 py-1 text-xs" aria-label="Unité">
+                <select value={p.qtyUnit ?? "u"} onChange={(e) => update(i, { qtyUnit: e.target.value as QtyUnit })} className="w-[5.5rem] rounded-lg border border-line bg-surface px-1.5 py-1 text-xs" aria-label={tr("Unité")}>
                   {units.map((u) => <option key={u.v} value={u.v}>{u.l}</option>)}
                 </select>
                 {!known && store && (
@@ -133,7 +135,7 @@ export function ExtrasPicker({
                     step="0.01"
                     value={p.price ?? ""}
                     onChange={(e) => update(i, { price: e.target.value === "" ? null : Number(e.target.value) })}
-                    placeholder="€ (facultatif)"
+                    placeholder={tr("€ (facultatif)")}
                     title={`Prix chez ${store}`}
                     className="hidden w-24 rounded-lg border border-line bg-surface px-2 py-1 text-right text-xs sm:block"
                   />

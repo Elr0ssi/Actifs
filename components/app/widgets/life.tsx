@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { addDays, expand, monthBounds, type Occurrence } from "@/lib/finance-engine";
@@ -25,11 +26,12 @@ function useLogIndex(data: WidgetProps["data"]) {
 /* ---------- Tâches ---------- */
 
 export function TasksStat({ data }: WidgetProps) {
+  const tr = useT();
   const open = data.tasks.filter((t) => t.status !== "done");
   const late = open.filter((t) => t.due_date && t.due_date < data.today).length;
   const todayCount = open.filter((t) => t.due_date === data.today).length;
   return (
-    <WidgetShell icon="tasks" title="Tâches en cours" href="/app/tasks/list" hrefLabel="Gérer">
+    <WidgetShell icon="tasks" title={tr("Tâches en cours")} href="/app/tasks/list" hrefLabel="Gérer">
       <p className="tabular text-3xl font-bold text-stone-900"><CountUp value={open.length} kind="int" /></p>
       <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
         <span className="rounded-full bg-brand-50 px-2 py-0.5 font-medium text-brand-700">{todayCount} aujourd'hui</span>
@@ -54,6 +56,7 @@ function Ring({ value, total }: { value: number; total: number }) {
 }
 
 export function RoutinesToday({ data }: WidgetProps) {
+  const tr = useT();
   const done = useLogIndex(data);
   const today = data.routines.filter((r) => scheduledOn(r, data.today));
   const count = today.filter((r) => done.has(`${r.id}_${data.today}`)).length;
@@ -61,7 +64,7 @@ export function RoutinesToday({ data }: WidgetProps) {
   return (
     <WidgetShell
       icon="repeat"
-      title="Routines du jour"
+      title={tr("Routines du jour")}
       href="/app/tasks/routines"
       hrefLabel="Gérer"
       right={
@@ -74,7 +77,7 @@ export function RoutinesToday({ data }: WidgetProps) {
       }
     >
       {today.length === 0 ? (
-        <Empty>Aucune routine prévue aujourd'hui.</Empty>
+        <Empty>{tr("Aucune routine prévue aujourd'hui.")}</Empty>
       ) : (
         <>
           <div className="mb-1 flex items-center gap-3">
@@ -110,6 +113,7 @@ function useDayIndex(data: WidgetProps["data"], from: string, to: string, fin: F
 }
 
 export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
+  const tr = useT();
   const fin = (opts.fin as FinFilter) ?? "all";
   const showTasks = opts.tasks !== false;
   const showRoutines = opts.routines !== false;
@@ -150,10 +154,10 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
   const selFin = finBy.get(selected) ?? [];
 
   return (
-    <WidgetShell icon="calendar" title="Agenda" subtitle={wide ? "Tâches, routines et argent au même endroit" : undefined} href="/app/tasks/calendar" hrefLabel="Ouvrir">
+    <WidgetShell icon="calendar" title={tr("Agenda")} subtitle={wide ? "Tâches, routines et argent au même endroit" : undefined} href="/app/tasks/calendar" hrefLabel="Ouvrir">
       <div className="mb-3 flex flex-wrap items-center gap-1.5">
-        <button onClick={() => setOpts({ tasks: !showTasks })} className={chip(showTasks)}>Tâches</button>
-        <button onClick={() => setOpts({ routines: !showRoutines })} className={chip(showRoutines)}>Routines</button>
+        <button onClick={() => setOpts({ tasks: !showTasks })} className={chip(showTasks)}>{tr("Tâches")}</button>
+        <button onClick={() => setOpts({ routines: !showRoutines })} className={chip(showRoutines)}>{tr("Routines")}</button>
         <Segmented<FinFilter> value={fin} onChange={(v) => setOpts({ fin: v })} options={[{ v: "all", l: "Tous flux" }, { v: "in", l: "Entrées" }, { v: "out", l: "Sorties" }, { v: "off", l: "Sans argent" }]} />
       </div>
       <div className={cx("grid gap-4", wide && "lg:grid-cols-[minmax(0,1fr)_260px]")}>
@@ -172,16 +176,16 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
         </div>
         <div className="min-w-0 rounded-xl border border-line bg-stone-50/50 p-3">
           <p className="text-[12px] font-semibold capitalize text-stone-800">{fmtLong(selected)}</p>
-          {selTasks.length + selRoutines.length + selFin.length === 0 && <p className="mt-2 text-[11px] text-stone-400">Journée libre.</p>}
+          {selTasks.length + selRoutines.length + selFin.length === 0 && <p className="mt-2 text-[11px] text-stone-400">{tr("Journée libre.")}</p>}
           {selTasks.length > 0 && (
             <div className="mt-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400">Tâches</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400">{tr("Tâches")}</p>
               {selTasks.map((t) => <CheckRow key={t.id} checked={ag.taskDone(t)} onChange={() => ag.toggleTask(t)} label={t.title} sub={t.due_time?.slice(0, 5)} dot={(t.project_id && projectOf.get(t.project_id)?.color) || undefined} />)}
             </div>
           )}
           {selRoutines.length > 0 && (
             <div className="mt-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400">Routines</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400">{tr("Routines")}</p>
               {selRoutines.map((r) => (
                 <CheckRow key={r.id} checked={ag.routineDone(r.id, selected)} onChange={() => ag.toggleRoutine(r.id, selected)} label={r.title} disabled={selected > data.today} sub={selected > data.today ? "À venir" : undefined} />
               ))}
@@ -189,7 +193,7 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
           )}
           {selFin.length > 0 && (
             <div className="mt-2">
-              <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-stone-400">Argent</p>
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-stone-400">{tr("Argent")}</p>
               <ul className="space-y-1">
                 {selFin.map((o, i) => (
                   <li key={i} className="flex justify-between gap-2 px-2 text-[12px]">
@@ -207,6 +211,7 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
 }
 
 export function CalWeek({ data, size }: WidgetProps) {
+  const tr = useT();
   const days = Array.from({ length: 7 }, (_, i) => addDays(data.today, i));
   const [picked, setPicked] = useState<string | null>(null);
   const { tasksBy, finBy } = useDayIndex(data, days[0], days[6], "all");
@@ -219,7 +224,7 @@ export function CalWeek({ data, size }: WidgetProps) {
   const routinesOn = (d: string) => data.routines.filter((r) => scheduledOn(r, d)).length;
   const focus = picked ?? data.today;
   return (
-    <WidgetShell icon="list" title="Cette semaine" subtitle={picked ? `${fmtLong(picked)} · touche à nouveau pour tout voir` : "Touche un jour pour le détail"} href="/app/tasks/calendar">
+    <WidgetShell icon="list" title={tr("Cette semaine")} subtitle={picked ? `${fmtLong(picked)} · touche à nouveau pour tout voir` : "Touche un jour pour le détail"} href="/app/tasks/calendar">
       <div className="grid grid-cols-7 gap-1">
         {days.map((d) => {
           const n = (tasksBy.get(d)?.length ?? 0) + (finBy.get(d)?.length ?? 0);
@@ -269,14 +274,15 @@ export function CalWeek({ data, size }: WidgetProps) {
 /* ---------- Courses ---------- */
 
 export function ListsShopping({ data, size, opts, setOpts }: WidgetProps) {
+  const tr = useT();
   const open = data.lists.filter((l) => !l.archived);
   const list = open.find((l) => l.id === opts.listId) ?? open.find((l) => l.type === "shopping") ?? open[0];
   const [pending, start] = useTransition();
   const [override, setOverride] = useState<Record<string, boolean>>({});
   if (!list) {
     return (
-      <WidgetShell icon="cart" title="Liste de courses" href="/app/lists/mes-listes">
-        <Empty>Aucune liste en cours.</Empty>
+      <WidgetShell icon="cart" title={tr("Liste de courses")} href="/app/lists/mes-listes">
+        <Empty>{tr("Aucune liste en cours.")}</Empty>
       </WidgetShell>
     );
   }
@@ -286,7 +292,7 @@ export function ListsShopping({ data, size, opts, setOpts }: WidgetProps) {
   return (
     <WidgetShell
       icon="cart"
-      title="Liste de courses"
+      title={tr("Liste de courses")}
       subtitle={size === "s" ? `${list.name} · ${remaining} à acheter` : `${list.name} · ${remaining} article(s) à acheter`}
       href={`/app/lists/${list.id}`}
       hrefLabel="Ouvrir"
@@ -299,7 +305,7 @@ export function ListsShopping({ data, size, opts, setOpts }: WidgetProps) {
       }
     >
       {items.length === 0 ? (
-        <Empty>Cette liste est vide.</Empty>
+        <Empty>{tr("Cette liste est vide.")}</Empty>
       ) : (
         <ul className={cx("grid gap-x-4", size === "m" && "sm:grid-cols-2", pending && "opacity-70")}>
           {items.slice(0, size === "s" ? 7 : 14).map((i) => {
@@ -331,11 +337,12 @@ export function ListsShopping({ data, size, opts, setOpts }: WidgetProps) {
 /* ---------- Recettes ---------- */
 
 export function RecipesIdeas({ data, size }: WidgetProps) {
+  const tr = useT();
   const count = size === "m" ? 2 : size === "l" ? 3 : 5;
   const seed = Math.floor(new Date(`${data.today}T00:00:00Z`).getTime() / 86_400_000);
   const picks = Array.from({ length: count }, (_, i) => RECIPES[(seed * 7 + i * 17) % RECIPES.length]);
   return (
-    <WidgetShell icon="chef" title="Idées de recettes" subtitle="Sélection du jour" href="/app/lists/recipes" hrefLabel="Toutes">
+    <WidgetShell icon="chef" title={tr("Idées de recettes")} subtitle="Sélection du jour" href="/app/lists/recipes" hrefLabel="Toutes">
       <div className={cx("grid gap-3", size === "m" ? "grid-cols-2" : size === "l" ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2 sm:grid-cols-3 xl:grid-cols-5")}>
         {picks.map((r) => (
           <Link key={r.slug} href={`/recettes/${r.slug}`} className="group min-w-0">
@@ -362,10 +369,11 @@ export function RecipesIdeas({ data, size }: WidgetProps) {
 /* ---------- Notes ---------- */
 
 export function NotesRecent({ data, size }: WidgetProps) {
+  const tr = useT();
   return (
-    <WidgetShell icon="notes" title="Pages récentes" href="/app/notes/pages" hrefLabel="Ouvrir">
+    <WidgetShell icon="notes" title={tr("Pages récentes")} href="/app/notes/pages" hrefLabel="Ouvrir">
       {data.notes.length === 0 ? (
-        <Empty>Aucune page pour l'instant. Crée ta première note !</Empty>
+        <Empty>{tr("Aucune page pour l'instant. Crée ta première note !")}</Empty>
       ) : (
         <ul className={cx("grid gap-x-4 divide-y divide-line/70", size !== "s" && "sm:grid-cols-2 sm:divide-y-0")}>
           {data.notes.slice(0, size === "s" ? 4 : 8).map((n) => (
@@ -381,16 +389,17 @@ export function NotesRecent({ data, size }: WidgetProps) {
           ))}
         </ul>
       )}
-      <Link href="/app/notes/pages" className="mt-2 inline-block text-[12px] font-medium text-brand-600 hover:underline">+ Nouvelle page</Link>
+      <Link href="/app/notes/pages" className="mt-2 inline-block text-[12px] font-medium text-brand-600 hover:underline">{tr("+ Nouvelle page")}</Link>
     </WidgetShell>
   );
 }
 
 export function NotesVocab({ data, size }: WidgetProps) {
+  const tr = useT();
   return (
-    <WidgetShell icon="book" title="Vocabulaire récent" href="/app/notes/vocabulaire">
+    <WidgetShell icon="book" title={tr("Vocabulaire récent")} href="/app/notes/vocabulaire">
       {data.words.length === 0 ? (
-        <Empty>Aucun mot enregistré pour l'instant.</Empty>
+        <Empty>{tr("Aucun mot enregistré pour l'instant.")}</Empty>
       ) : (
         <ul className={cx("grid gap-x-4 divide-y divide-line/70", size === "m" && "sm:grid-cols-2 sm:divide-y-0")}>
           {data.words.slice(0, size === "s" ? 5 : 10).map((w) => (

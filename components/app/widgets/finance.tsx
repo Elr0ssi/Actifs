@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { intlLocale } from "@/lib/i18n";
 import { useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
@@ -33,7 +34,8 @@ const eur0 = (n: number) => new Intl.NumberFormat(intlLocale(), { style: "curren
 const ym = (d: string) => ({ y: Number(d.slice(0, 4)), m: Number(d.slice(5, 7)) - 1 });
 
 function NoFinance() {
-  return <Empty>Ajoute tes premières opérations dans Finance pour voir ce widget s'animer.</Empty>;
+  const tr = useT();
+  return <Empty>{tr("Ajoute tes premières opérations dans Finance pour voir ce widget s'animer.")}</Empty>;
 }
 
 /* ---------- Situation des comptes ---------- */
@@ -45,6 +47,7 @@ const ACCOUNT_META: { name: "Courant" | "Épargne" | "Investissement"; icon: Ico
 ];
 
 function AccountTile({ name, icon, tint, value, today, editable }: { name: string; icon: IconName; tint: string; value: { date: string; balance: number } | null; today: string; editable: boolean }) {
+  const tr = useT();
   const [editing, setEditing] = useState(false);
   const [pending, start] = useTransition();
   return (
@@ -62,7 +65,7 @@ function AccountTile({ name, icon, tint, value, today, editable }: { name: strin
             >
               <input type="hidden" name="entry_date" value={today} />
               <input name="current_balance" type="number" step="0.01" autoFocus defaultValue={value?.balance} className="input min-w-0 px-2 py-1 text-xs" />
-              <button className="btn-primary px-2 py-1 text-xs">OK</button>
+              <button className="btn-primary px-2 py-1 text-xs">{tr("OK")}</button>
             </form>
           ) : (
             <p className="tabular truncate text-base font-bold text-stone-900">{value ? <CountUp value={value.balance} /> : "—"}</p>
@@ -70,7 +73,7 @@ function AccountTile({ name, icon, tint, value, today, editable }: { name: strin
         </div>
       </div>
       {!editing && editable && (
-        <button onClick={() => setEditing(true)} title="Mettre à jour le solde" className="absolute right-2 top-2 rounded-md p-1 text-stone-300 transition hover:bg-stone-100 hover:text-stone-600">
+        <button onClick={() => setEditing(true)} title={tr("Mettre à jour le solde")} className="absolute right-2 top-2 rounded-md p-1 text-stone-300 transition hover:bg-stone-100 hover:text-stone-600">
           <Icon name="pencil" className="h-3.5 w-3.5" />
         </button>
       )}
@@ -80,8 +83,9 @@ function AccountTile({ name, icon, tint, value, today, editable }: { name: strin
 }
 
 export function FinAccounts({ data, size }: WidgetProps) {
+  const tr = useT();
   const f = data.finance;
-  if (!f) return <WidgetShell icon="bank" title="Situation des comptes"><NoFinance /></WidgetShell>;
+  if (!f) return <WidgetShell icon="bank" title={tr("Situation des comptes")}><NoFinance /></WidgetShell>;
   const realToday = data.realToday ?? data.today;
   const viewing = realToday !== data.today;
   // Autre mois : le compte courant est projeté à la date consultée, l'épargne garde son dernier solde connu.
@@ -96,7 +100,7 @@ export function FinAccounts({ data, size }: WidgetProps) {
           <AccountTile key={a.name} name={a.name} icon={a.icon} tint={a.tint} value={valueOf(a.name)} today={realToday} editable={!viewing} />
         ))}
         <div className={cx("flex min-w-0 flex-col justify-center rounded-xl bg-brand-50 p-3", size === "m" && "col-span-2")}>
-          <p className="text-[11px] font-medium text-brand-800">Solde total</p>
+          <p className="text-[11px] font-medium text-brand-800">{tr("Solde total")}</p>
           <p className="tabular text-xl font-bold text-brand-800"><CountUp value={total} /></p>
         </div>
       </div>
@@ -107,13 +111,14 @@ export function FinAccounts({ data, size }: WidgetProps) {
 /* ---------- Reste à vivre ---------- */
 
 export function FinReste({ data }: WidgetProps) {
+  const tr = useT();
   const f = data.finance;
   const s = useMemo(() => (f ? getDateSituation(f.ops, f.anchor, data.today) : null), [f, data.today]);
-  if (!f || !s) return <WidgetShell icon="target" title="Reste à vivre"><NoFinance /></WidgetShell>;
+  if (!f || !s) return <WidgetShell icon="target" title={tr("Reste à vivre")}><NoFinance /></WidgetShell>;
   const planned = s.pastOut + s.upcomingOut;
   const leftPct = planned > 0 ? Math.round((s.upcomingOut / planned) * 100) : 0;
   return (
-    <WidgetShell icon="target" title="Reste à vivre" href="/app/finance/calendar" hrefLabel="Détail">
+    <WidgetShell icon="target" title={tr("Reste à vivre")} href="/app/finance/calendar" hrefLabel="Détail">
       <p className={cx("tabular text-3xl font-bold tracking-tight", s.endBalance >= 0 ? "text-stone-900" : "text-rose-600")}><CountUp value={s.endBalance} /></p>
       <p className="mt-0.5 text-[11px] text-stone-500">
         ≈ <b className="text-stone-700">{eur0(s.perDay)}</b> / jour · {s.daysRemaining} j jusqu'au {fmtShort(s.monthEnd)}
@@ -133,6 +138,7 @@ export function FinReste({ data }: WidgetProps) {
 type Flow = "all" | "in" | "out";
 
 export function FinCalendar({ data, size, opts, setOpts }: WidgetProps) {
+  const tr = useT();
   const f = data.finance;
   const flow = (opts.flow as Flow) ?? "all";
   const [selected, setSelected] = useState(data.today);
@@ -158,7 +164,7 @@ export function FinCalendar({ data, size, opts, setOpts }: WidgetProps) {
     return map;
   }, [f, gridStart, gridEnd, flow]);
 
-  if (!f) return <WidgetShell icon="calendar" title="Calendrier financier"><NoFinance /></WidgetShell>;
+  if (!f) return <WidgetShell icon="calendar" title={tr("Calendrier financier")}><NoFinance /></WidgetShell>;
 
   const days: string[] = [];
   for (let d = gridStart; d <= gridEnd; d = addDays(d, 1)) days.push(d);
@@ -171,7 +177,7 @@ export function FinCalendar({ data, size, opts, setOpts }: WidgetProps) {
   return (
     <WidgetShell
       icon="calendar"
-      title="Calendrier financier"
+      title={tr("Calendrier financier")}
       subtitle={wide ? "Revenus, dépenses et solde jour par jour" : undefined}
       right={<Segmented<Flow> value={flow} onChange={(v) => setOpts({ flow: v })} options={[{ v: "all", l: "Tout" }, { v: "in", l: "Entrées" }, { v: "out", l: "Sorties" }]} />}
     >
@@ -220,6 +226,7 @@ export function FinCalendar({ data, size, opts, setOpts }: WidgetProps) {
 }
 
 function DayDetail({ date, ops, anchor, flow }: { date: string; ops: NonNullable<WidgetProps["data"]["finance"]>["ops"]; anchor: NonNullable<WidgetProps["data"]["finance"]>["anchor"]; flow: Flow }) {
+  const tr = useT();
   const [pending, start] = useTransition();
   const occ = useMemo(() => expand(ops, date, date).filter((o) => (flow === "in" ? o.signed > 0 : flow === "out" ? o.signed < 0 : true)), [ops, date, flow]);
   const all = useMemo(() => expand(ops, date, date), [ops, date]);
@@ -234,17 +241,17 @@ function DayDetail({ date, ops, anchor, flow }: { date: string; ops: NonNullable
     <div className={cx("min-w-0 rounded-xl border border-line bg-stone-50/50 p-3", pending && "opacity-60")}>
       <div className="flex items-center justify-between gap-2">
         <p className="truncate text-[12px] font-semibold capitalize text-stone-800">{fmtLong(date)}</p>
-        <NewOperationButton defaultDate={date} label="+ Ajouter" className="btn-ghost shrink-0" />
+        <NewOperationButton defaultDate={date} label={tr("+ Ajouter")} className="btn-ghost shrink-0" />
       </div>
       <dl className="tabular mt-2 space-y-1 text-[11px]">
-        <div className="flex justify-between"><dt className="text-stone-500">Solde début de journée</dt><dd className="font-medium text-stone-700">{formatEUR(startBal)}</dd></div>
-        <div className="flex justify-between"><dt className="text-stone-500">Dépenses</dt><dd className="font-medium text-rose-600">{outflow ? `-${formatEUR(outflow)}` : formatEUR(0)}</dd></div>
-        <div className="flex justify-between"><dt className="text-stone-500">Revenus</dt><dd className="font-medium text-emerald-600">+{formatEUR(inflow)}</dd></div>
-        <div className="flex justify-between rounded-lg bg-brand-50 px-2 py-1.5 text-[12px]"><dt className="font-semibold text-brand-800">Solde fin de journée</dt><dd className={cx("font-bold", endBal >= 0 ? "text-brand-800" : "text-rose-600")}>{formatEUR(endBal)}</dd></div>
+        <div className="flex justify-between"><dt className="text-stone-500">{tr("Solde début de journée")}</dt><dd className="font-medium text-stone-700">{formatEUR(startBal)}</dd></div>
+        <div className="flex justify-between"><dt className="text-stone-500">{tr("Dépenses")}</dt><dd className="font-medium text-rose-600">{outflow ? `-${formatEUR(outflow)}` : formatEUR(0)}</dd></div>
+        <div className="flex justify-between"><dt className="text-stone-500">{tr("Revenus")}</dt><dd className="font-medium text-emerald-600">+{formatEUR(inflow)}</dd></div>
+        <div className="flex justify-between rounded-lg bg-brand-50 px-2 py-1.5 text-[12px]"><dt className="font-semibold text-brand-800">{tr("Solde fin de journée")}</dt><dd className={cx("font-bold", endBal >= 0 ? "text-brand-800" : "text-rose-600")}>{formatEUR(endBal)}</dd></div>
       </dl>
       <p className="mb-1 mt-3 text-[11px] font-semibold text-stone-500">Opérations du jour ({occ.length})</p>
       {occ.length === 0 ? (
-        <p className="text-[11px] text-stone-400">Rien ce jour-là.</p>
+        <p className="text-[11px] text-stone-400">{tr("Rien ce jour-là.")}</p>
       ) : (
         <ul className="space-y-1">
           {occ.map((o, i) => (
@@ -266,11 +273,12 @@ function DayDetail({ date, ops, anchor, flow }: { date: string; ops: NonNullable
 /* ---------- Répartition du mois ---------- */
 
 export function FinBreakdown({ data }: WidgetProps) {
+  const tr = useT();
   const f = data.finance;
   const { y, m } = ym(data.today);
   const budget = useMemo(() => (f ? getMonthlyBudget(f.ops, f.anchor, y, m) : null), [f, y, m]);
   const [picked, setPicked] = useState<string | null>(null);
-  if (!f || !budget) return <WidgetShell icon="pie" title="Répartition du mois"><NoFinance /></WidgetShell>;
+  if (!f || !budget) return <WidgetShell icon="pie" title={tr("Répartition du mois")}><NoFinance /></WidgetShell>;
   const items = [
     { label: "Charges fixes", value: budget.fixed },
     ...budget.variableByCategory.slice(0, 4),
@@ -278,7 +286,7 @@ export function FinBreakdown({ data }: WidgetProps) {
     { label: "Épargne", value: budget.savings },
   ].filter((i) => i.value > 0);
   return (
-    <WidgetShell icon="pie" title="Répartition du mois" subtitle={`${MONTHS_FR[m]} · revenus ${eur0(budget.income)}`} href="/app/finance/budgets" hrefLabel="Budgets">
+    <WidgetShell icon="pie" title={tr("Répartition du mois")} subtitle={`${MONTHS_FR[m]} · revenus ${eur0(budget.income)}`} href="/app/finance/budgets" hrefLabel="Budgets">
       <DonutChart items={items} size={132} strokeWidth={18} centerCaption="dépensé" selected={picked} onSelect={(l) => setPicked(l === picked ? null : l)} />
     </WidgetShell>
   );
@@ -287,6 +295,7 @@ export function FinBreakdown({ data }: WidgetProps) {
 /* ---------- Budgets par catégorie ---------- */
 
 export function FinBudgets({ data }: WidgetProps) {
+  const tr = useT();
   const f = data.finance;
   const { y, m } = ym(data.today);
   const rows = useMemo(() => {
@@ -304,9 +313,9 @@ export function FinBudgets({ data }: WidgetProps) {
     return [...byCat.entries()].map(([label, v]) => ({ label, ...v })).sort((a, b) => b.planned - a.planned);
   }, [f, y, m, data.today, data.realToday]);
   return (
-    <WidgetShell icon="chart" title="Budgets" subtitle="Dépenses variables du mois" href="/app/finance/budgets">
+    <WidgetShell icon="chart" title={tr("Budgets")} subtitle="Dépenses variables du mois" href="/app/finance/budgets">
       {!f || rows.length === 0 ? (
-        <Empty>Aucune dépense variable prévue ce mois-ci.</Empty>
+        <Empty>{tr("Aucune dépense variable prévue ce mois-ci.")}</Empty>
       ) : (
         <ul className="space-y-2.5">
           {rows.slice(0, 5).map((r) => {
@@ -368,13 +377,14 @@ export const FinCharges = (p: WidgetProps) => <UpcomingList {...p} income={false
 /* ---------- Évolution du solde ---------- */
 
 export function FinTrend({ data, size }: WidgetProps) {
+  const tr = useT();
   const f = data.finance;
   const { y, m } = ym(data.today);
   const { start, end } = monthBounds(y, m);
   const points = useMemo(() => (f ? getDailyBalances(f.ops, f.anchor, start, end) : []), [f, start, end]);
   const [hover, setHover] = useState<number | null>(null);
   const ref = useRef<SVGSVGElement>(null);
-  if (!f || points.length === 0) return <WidgetShell icon="trend" title="Évolution du solde"><NoFinance /></WidgetShell>;
+  if (!f || points.length === 0) return <WidgetShell icon="trend" title={tr("Évolution du solde")}><NoFinance /></WidgetShell>;
 
   const W = 320;
   const H = size === "s" ? 90 : 120;
@@ -395,12 +405,12 @@ export function FinTrend({ data, size }: WidgetProps) {
   };
 
   return (
-    <WidgetShell icon="trend" title="Évolution du solde" subtitle={`${MONTHS_FR[m]} ${y}`}>
+    <WidgetShell icon="trend" title={tr("Évolution du solde")} subtitle={`${MONTHS_FR[m]} ${y}`}>
       <div className="flex items-baseline justify-between">
         <p className="text-[11px] text-stone-500">{fmtShort(points[shown].date)}</p>
         <p className={cx("tabular text-lg font-bold", points[shown].balance >= 0 ? "text-stone-900" : "text-rose-600")}>{formatEUR(points[shown].balance)}</p>
       </div>
-      <svg ref={ref} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="mt-1 h-auto w-full touch-none" onPointerMove={onMove} onPointerLeave={() => setHover(null)} role="img" aria-label="Solde prévu jour par jour">
+      <svg ref={ref} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="mt-1 h-auto w-full touch-none" onPointerMove={onMove} onPointerLeave={() => setHover(null)} role="img" aria-label={tr("Solde prévu jour par jour")}>
         {lo < 0 && <line x1={0} x2={W} y1={yv(0)} y2={yv(0)} stroke="rgb(var(--stone-300))" strokeDasharray="3 3" strokeWidth={1} vectorEffect="non-scaling-stroke" />}
         <path d={area} fill="rgb(var(--brand-500))" fillOpacity={0.12} className="animate-fade" />
         <path d={line} pathLength={1} className="stroke-draw" fill="none" stroke="rgb(var(--brand-600))" strokeWidth={2.25} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
@@ -418,12 +428,13 @@ export function FinTrend({ data, size }: WidgetProps) {
 /* ---------- Actions rapides ---------- */
 
 export function FinActions({ data }: WidgetProps) {
+  const tr = useT();
   const tile = "flex items-center gap-2 rounded-xl border border-line px-3 py-2.5 text-left text-[12px] font-semibold text-stone-700 transition hover:border-brand-200 hover:bg-brand-50/50";
   return (
-    <WidgetShell icon="bolt" title="Actions rapides">
+    <WidgetShell icon="bolt" title={tr("Actions rapides")}>
       <div className="grid grid-cols-2 gap-2">
-        <NewOperationButton defaultDate={data.today} defaultKind="variable" label="+ Dépense" className={tile} />
-        <NewOperationButton defaultDate={data.today} defaultKind="income" label="+ Revenu" className={tile} />
+        <NewOperationButton defaultDate={data.today} defaultKind="variable" label={tr("+ Dépense")} className={tile} />
+        <NewOperationButton defaultDate={data.today} defaultKind="income" label={tr("+ Revenu")} className={tile} />
         <Link href="/app/finance/accounts" className={tile}><Icon name="bank" className="text-brand-600" />Soldes</Link>
         <Link href="/app/finance/operations" className={tile}><Icon name="list" className="text-brand-600" />Opérations</Link>
       </div>

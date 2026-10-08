@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n/server";
 import { intlLocale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { loadFinanceData, ACCOUNTS } from "@/lib/data/finance";
@@ -15,6 +16,7 @@ const META: Record<string, { icon: string; hint: string; goalType?: "savings" | 
 };
 
 export default async function AccountsPage() {
+  const tr = getT();
   const data = await loadFinanceData();
   if (!data) return null;
   const today = todayISO();
@@ -46,19 +48,19 @@ export default async function AccountsPage() {
                     <p className="mt-1 text-[11px] text-stone-400">{pct}% de l'objectif ({formatEUR(goal)})</p>
                   </>
                 ) : (
-                  <p className="text-[11px] text-stone-400">Aucun objectif fixé.</p>
+                  <p className="text-[11px] text-stone-400">{tr("Aucun objectif fixé.")}</p>
                 )}
                 <form action={updateGoal.bind(null, meta.goalType)} className="mt-1.5 flex gap-1.5">
-                  <input name="goal" type="number" step="0.01" placeholder="Objectif €" defaultValue={goal || ""} className="input min-w-0 px-2 py-1 text-xs" />
-                  <SubmitButton className="btn-secondary shrink-0 px-2 py-1 text-xs">Fixer</SubmitButton>
+                  <input name="goal" type="number" step="0.01" placeholder={tr("Objectif €")} defaultValue={goal || ""} className="input min-w-0 px-2 py-1 text-xs" />
+                  <SubmitButton className="btn-secondary shrink-0 px-2 py-1 text-xs">{tr("Fixer")}</SubmitButton>
                 </form>
               </div>
             )}
 
             <form action={updateBalanceAnchor.bind(null, name)} className="flex gap-1.5 border-t border-stone-100 pt-3">
               <input name="entry_date" type="date" defaultValue={today} className="input min-w-0 px-2 py-1 text-xs" />
-              <input name="current_balance" type="number" step="0.01" placeholder="Solde" className="input w-20 min-w-0 px-2 py-1 text-xs" required />
-              <SubmitButton className="btn-primary shrink-0 px-2.5 py-1 text-xs">OK</SubmitButton>
+              <input name="current_balance" type="number" step="0.01" placeholder={tr("Solde")} className="input w-20 min-w-0 px-2 py-1 text-xs" required />
+              <SubmitButton className="btn-primary shrink-0 px-2.5 py-1 text-xs">{tr("OK")}</SubmitButton>
             </form>
 
             <BalanceHistory account={name} entries={acc.history} today={today} />
