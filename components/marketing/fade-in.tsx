@@ -1,6 +1,5 @@
 "use client";
 
-import { useT } from "@/components/i18n/provider";
 import { useEffect, useRef, useState } from "react";
 import { cx } from "@/lib/utils";
 
@@ -13,7 +12,6 @@ export function FadeIn({
   delay?: number;
   className?: string;
 }) {
-  const tr = useT();
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 
@@ -37,7 +35,7 @@ export function FadeIn({
     <div
       ref={ref}
       style={{ animationDelay: visible ? `${delay}ms` : undefined }}
-      className={cx(visible ? tr("animate-fadeUp") : "opacity-0", className)}
+      className={cx(visible ? "animate-fadeUp" : "opacity-0", className)}
     >
       {children}
     </div>

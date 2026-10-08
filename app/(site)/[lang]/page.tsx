@@ -3,7 +3,9 @@ import { getLocale, getT, setRequestLocale } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import Link from "@/components/marketing/link";
 import { FadeIn } from "@/components/marketing/fade-in";
-import { Aurora, Counter, Float, InView, Marquee } from "@/components/marketing/fx";
+import { Aurora, Counter, Float, InView } from "@/components/marketing/fx";
+import { DayTimeline } from "@/components/marketing/day-timeline";
+import { PlanDemo } from "@/components/marketing/plan-demo";
 import { Ambience, CtaBanner } from "@/components/marketing/sections";
 import { CATEGORIES, FEATURES, categoryOf, featuresOf } from "@/lib/marketing/features";
 import { cx } from "@/lib/utils";
@@ -25,29 +27,8 @@ export function generateMetadata({ params }: { params: { lang: string } }): Meta
 });
 }
 
-const PAINS = [
-  { icon: "🧩", short: "Tout au même endroit", tone: "from-brand-500 to-violet-600" },
-  { icon: "🛒", short: "Courses sans gaspillage", tone: "from-emerald-500 to-teal-600" },
-  { icon: "💶", short: "Argent sous contrôle", tone: "from-amber-500 to-orange-600" },
-  { icon: "🔥", short: "Habitudes qui tiennent", tone: "from-rose-500 to-pink-600" },
-];
 
-const CHAOS = [
-  { n: "Notion", i: "📄", tone: "border-stone-200 bg-white text-stone-600" },
-  { n: "Excel", i: "📊", tone: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-  { n: "Jow", i: "🍲", tone: "border-amber-200 bg-amber-50 text-amber-700" },
-  { n: "Agenda", i: "📆", tone: "border-sky-200 bg-sky-50 text-sky-700" },
-  { n: "Notes", i: "🗒️", tone: "border-yellow-200 bg-yellow-50 text-yellow-700" },
-];
 
-const REPLACES = ["Notion", "Excel", "Google Sheets", "Jow", "Google Agenda", "Todoist", "Apple Notes", "Listes papier", "Splitwise"];
-
-const CASCADE = [
-  { icon: "🍽️", t: "Pâtes tomate ajoutées", s: "Menu de samedi · 2 personnes", tone: "from-amber-400 to-orange-500" },
-  { icon: "🛒", t: "+ 160 g de pâtes, 400 g de tomates", s: "Ta liste de courses", tone: "from-emerald-400 to-teal-500" },
-  { icon: "💶", t: "− 3,40 € prévus", s: "Budget courses", tone: "from-sky-400 to-blue-500" },
-  { icon: "📅", t: "Courses samedi, 10 h", s: "Dans ton agenda", tone: "from-brand-400 to-violet-600" },
-];
 
 const FEAT_STYLE = [
   { rot: "-rotate-1", bg: "from-violet-100 to-indigo-50" },
@@ -167,52 +148,8 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
           </div>
         </section>
 
-        {/* Ce que ça remplace : défilement */}
-        <section className="py-6" aria-label={tr("Outils remplacés")}>
-          <p className="mb-4 text-center text-xs font-semibold uppercase tracking-widest text-stone-500">{tr("Fini de jongler entre")}</p>
-          <Marquee speed={50} items={REPLACES.map((r) => <span key={r} className="rounded-full border border-line bg-surface px-5 py-2 text-sm font-medium text-stone-500 line-through decoration-brand-400 decoration-2 shadow-soft">{tr(r)}</span>)} />
-        </section>
-
-        {/* Problèmes → solutions : lignes alternées, sans cartes */}
-        <section className="relative overflow-hidden" aria-labelledby="besoins">
-          <Ambience tone="violet" emojis={["✨", "🧩"]} />
-          <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
-            <FadeIn>
-              <h2 id="besoins" className="text-4xl font-extrabold tracking-tight sm:text-5xl">{tr("5 applis.")} <span className="bg-gradient-to-r from-brand-500 to-violet-700 bg-clip-text text-transparent">{tr("Une seule.")}</span></h2>
-              <p className="mx-auto mt-3 max-w-md text-stone-600">{tr("Fini de jongler : Flozea réunit tout au même endroit.")}</p>
-            </FadeIn>
-
-            <div className="relative mx-auto mt-14 h-[19rem] w-[19rem] sm:h-[22rem] sm:w-[22rem]" aria-hidden>
-              <span className="absolute inset-0 rounded-full border border-dashed border-brand-300/70" />
-              <span className="absolute inset-[18%] rounded-full border border-brand-200/70" />
-              <span className="fx-ring absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border border-brand-400" />
-              <span className="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[1.75rem] bg-gradient-to-br from-brand-500 to-violet-700 shadow-lift">
-                <svg viewBox="0 0 32 32" className="h-14 w-14" fill="none"><circle cx="11" cy="12" r="3.4" fill="white" fillOpacity="0.55" /><circle cx="21" cy="12" r="3.4" fill="white" fillOpacity="0.55" /><circle cx="16" cy="20" r="4.6" fill="white" /></svg>
-              </span>
-              <div className="fx-orbit absolute inset-0" style={{ "--t": "48s" } as React.CSSProperties}>
-                {CHAOS.map((c, i) => {
-                  const ang = (i / CHAOS.length) * Math.PI * 2 - Math.PI / 2;
-                  return (
-                    <span key={c.n} className="absolute" style={{ left: `${50 + 44 * Math.cos(ang)}%`, top: `${50 + 44 * Math.sin(ang)}%`, transform: "translate(-50%, -50%)" }}>
-                      <span className="fx-orbit-rev block" style={{ "--t": "48s" } as React.CSSProperties}>
-                        <span className={cx("inline-flex items-center gap-1.5 whitespace-nowrap rounded-2xl border px-3 py-1.5 text-xs font-semibold shadow-soft sm:text-sm", c.tone)}><span>{tr(c.i)}</span>{tr(c.n)}</span>
-                      </span>
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mx-auto mt-14 grid max-w-3xl grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
-              {PAINS.map((n, i) => (
-                <FadeIn key={n.short} delay={i * 80}>
-                  <span className={cx("mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br text-xl text-white shadow-lift", n.tone)}>{tr(n.icon)}</span>
-                  <p className="mt-2 text-sm font-semibold text-stone-800">{tr(n.short)}</p>
-                </FadeIn>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* Une journée avec Flozea */}
+        <DayTimeline />
 
         {/* Fonctionnalités : cartes inclinées vers les pages dédiées */}
         <section id="fonctionnalites" className="relative overflow-hidden bg-gradient-to-b from-transparent via-brand-50/70 to-transparent">
@@ -239,31 +176,17 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
         </div>
         </section>
 
-        {/* Tout est relié : cascade de notifications */}
-        <section className="relative overflow-hidden bg-sky-50/60">
-          <Ambience tone="sky" emojis={["🔗", "⚡"]} />
-          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 py-24 lg:grid-cols-[1fr_1.1fr]">
-            <FadeIn>
-              <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">{tr("Un repas planifié.")}<br /><span className="bg-gradient-to-r from-brand-500 to-violet-700 bg-clip-text text-transparent">{tr("Tout le reste suit.")}</span></h2>
-              <p className="mt-4 max-w-sm text-stone-600">{tr("Menu, courses, budget et agenda se mettent à jour ensemble.")}</p>
+        {/* Démo : un repas planifié, tout le reste suit */}
+        <section className="relative overflow-hidden bg-gradient-to-br from-brand-700 via-violet-800 to-brand-950 text-white" aria-labelledby="demo">
+          <div className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-fuchsia-500/25 blur-3xl" aria-hidden />
+          <div className="pointer-events-none absolute -right-24 bottom-0 h-80 w-80 rounded-full bg-sky-400/20 blur-3xl" aria-hidden />
+          <div className="relative mx-auto max-w-6xl px-6 py-24">
+            <FadeIn className="mx-auto max-w-2xl text-center">
+              <p className="text-xs font-semibold uppercase tracking-widest text-white/60">{tr("Essaie, c'est interactif")}</p>
+              <h2 id="demo" className="mt-3 text-4xl font-extrabold tracking-tight sm:text-5xl">{tr("Change le nombre de personnes.")} <span className="text-amber-300">{tr("Tout se recalcule.")}</span></h2>
+              <p className="mx-auto mt-4 max-w-lg text-white/70">{tr("Les quantités, la liste de courses, le budget et l'agenda restent synchronisés : tu ne ressaisis rien.")}</p>
             </FadeIn>
-            <InView>
-              <div className="relative mx-auto w-full max-w-md">
-                <span className="pointer-events-none absolute left-[1.65rem] top-6 bottom-6 w-px border-l-2 border-dashed border-brand-300" aria-hidden />
-                <ul className="space-y-4">
-                  {CASCADE.map((c, i) => (
-                    <li key={c.t} className="fx-in relative flex items-center gap-3 rounded-2xl border border-white/70 bg-surface/85 p-3 pr-4 shadow-lift backdrop-blur-xl" style={{ "--d": `${i * 0.25}s`, marginLeft: `${i % 2 ? 1.5 : 0}rem` } as React.CSSProperties}>
-                      <span className={cx("flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-xl text-white", c.tone)}>{tr(c.icon)}</span>
-                      <span className="min-w-0 flex-1 leading-tight">
-                        <span className="block text-sm font-semibold text-stone-900">{tr(c.t)}</span>
-                        <span className="block text-xs text-stone-500">{tr(c.s)}</span>
-                      </span>
-                      <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">{i === 0 ? tr("Toi") : tr("Auto")}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </InView>
+            <div className="mt-12"><PlanDemo /></div>
           </div>
         </section>
 
