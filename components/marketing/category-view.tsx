@@ -25,7 +25,7 @@ export function CategoryView({ category }: { category: CategoryKey }) {
       <main>
         <section className="relative">
           <Ambience tone={c.tone} emojis={c.emojis} />
-          <div className="relative mx-auto max-w-4xl px-6 pb-14 pt-16 text-center">
+          <div className="relative mx-auto max-w-4xl px-6 pb-20 pt-20 text-center">
             <h1 className="text-6xl font-extrabold tracking-tight text-stone-900 sm:text-8xl">
               {tr("Flozea")} <span className={cx("bg-gradient-to-r bg-clip-text text-transparent", c.gradient)}>{tr(c.label)}</span>
             </h1>
@@ -37,8 +37,8 @@ export function CategoryView({ category }: { category: CategoryKey }) {
         {list.map((f, i) => {
           const Mock = MOCKS[f.mock];
           return (
-            <section key={f.slug} className={cx("relative overflow-hidden py-16", i % 2 === 0 ? "bg-transparent" : "bg-stone-50/80")}>
-              <div className={cx("mx-auto grid max-w-6xl items-center gap-12 px-6 lg:grid-cols-2", i % 2 === 1 && "lg:[&>*:first-child]:order-2")}>
+            <section key={f.slug} className={cx("relative flex items-center overflow-hidden py-24 lg:min-h-[calc(100svh-69px)] lg:py-20", i % 2 === 0 ? "bg-transparent" : "bg-stone-50/80")}>
+              <div className={cx("mx-auto grid w-full max-w-6xl items-center gap-14 px-6 lg:grid-cols-2 lg:gap-16", i % 2 === 1 && "lg:[&>*:first-child]:order-2")}>
                 <div>
                   <span className={cx("inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold", f.soft)}>
                     <span className="text-base">{tr(f.icon)}</span>{tr(f.name)}
@@ -73,7 +73,7 @@ export function CategoryView({ category }: { category: CategoryKey }) {
         })}
 
         {topArticle && (
-          <section id="articles" className="relative overflow-hidden py-20" aria-labelledby="articles-titre">
+          <section id="articles" className="relative overflow-hidden py-28" aria-labelledby="articles-titre">
             <Ambience tone={c.tone} dots={false} />
             <div className="relative mx-auto max-w-6xl px-6">
               <div className="text-center">
@@ -110,7 +110,7 @@ export function CategoryView({ category }: { category: CategoryKey }) {
           </section>
         )}
 
-        <section className="mx-auto max-w-5xl px-6 py-20">
+        <section className="mx-auto max-w-5xl px-6 py-28">
           <CtaBanner title={`Essaie ${c.name}`} text={tr("Un seul espace pour organiser ton temps, tes repas et ton argent, seul ou à deux.")} secondary={{ href: "/tarifs", label: tr("Voir les tarifs") }} />
         </section>
       </main>

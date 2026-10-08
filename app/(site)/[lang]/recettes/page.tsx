@@ -25,7 +25,7 @@ export default function RecipesPage({ params }: { params: { lang: string } }) {
       <main>
         <section className="relative">
           <Ambience tone="amber" emojis={["🍅", "🥕", "🧅", "🧀", "🌿"]} />
-          <div className="relative mx-auto max-w-4xl px-6 pb-10 pt-16 text-center">
+          <div className="relative mx-auto max-w-4xl px-6 pb-16 pt-20 text-center">
             <FadeIn>
               <span className="rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-xs font-semibold text-amber-800">{tr("🍽️ Flozea Recettes · plus de 90 recettes")}</span>
               <h1 className="mt-5 text-4xl font-bold tracking-tight text-stone-900 sm:text-6xl">
@@ -38,13 +38,13 @@ export default function RecipesPage({ params }: { params: { lang: string } }) {
           </div>
         </section>
 
-        <section className="mx-auto max-w-6xl px-6 pb-24">
+        <section className="mx-auto max-w-6xl px-6 pb-32">
           <FadeIn>
             <RecipesBrowser />
           </FadeIn>
         </section>
 
-        <section className="mx-auto max-w-5xl px-6 pb-24">
+        <section className="mx-auto max-w-5xl px-6 pb-28">
           <CtaBanner title={tr("Ta liste de courses, générée toute seule")} text={tr("Choisis une ou plusieurs recettes : la liste se crée avec les quantités ajustées et les prix estimés, rien à recopier.")} secondary={{ href: "/repas", label: tr("Voir Repas & courses") }} />
         </section>
       </main>
