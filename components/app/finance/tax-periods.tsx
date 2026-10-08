@@ -64,7 +64,7 @@ export function TaxPeriods({ year, profile }: { year: number; profile: TaxProfil
           <p className="mb-3 font-semibold text-stone-900">{tr("Prélèvement à la source")}</p>
           <div className="mb-3 flex items-center justify-between gap-3 text-sm">
             <span className="text-stone-600">{tr("Taux calculé")}</span>
-            <span className="font-semibold text-stone-800">{estimate ? `${estimate.withholdingRate.toFixed(1)} %` : "à calculer"}</span>
+            <span className="font-semibold text-stone-800">{estimate ? `${estimate.withholdingRate.toFixed(1)} %` : tr("à calculer")}</span>
           </div>
           <p className="mb-3 text-[11px] text-stone-400">{tr("Calculé à partir de tes revenus imposables et du barème — pas à saisir toi-même.")}</p>
           <label className="flex items-center justify-between gap-3 text-sm">

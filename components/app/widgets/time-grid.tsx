@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cx } from "@/lib/utils";
 import { DOW } from "@/components/app/widgets/helpers";
@@ -87,6 +88,7 @@ export function TimeGrid({
   onToggle: (id: string) => void;
   onPickDay?: (day: string) => void;
 }) {
+  const tr = useT();
   const n = days.length;
   const cfg = ZOOM[zoom];
   const HOUR_PX = cfg.px;
@@ -300,7 +302,7 @@ export function TimeGrid({
                         <div className="flex items-start gap-1">
                           <button
                             type="button"
-                            aria-label={ev.done ? "Décocher" : "Cocher"}
+                            aria-label={ev.done ? tr("Décocher") : tr("Cocher")}
                             onPointerDown={(e) => e.stopPropagation()}
                             onClick={(e) => { e.stopPropagation(); onToggle(ev.id); }}
                             className={cx("mt-px flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border text-[8px] font-bold leading-none", ev.done ? "border-transparent bg-emerald-500 text-white" : "border-stone-400/70 bg-surface text-transparent hover:border-emerald-500 hover:text-emerald-500")}

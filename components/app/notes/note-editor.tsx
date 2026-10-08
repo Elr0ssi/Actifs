@@ -194,14 +194,14 @@ export function NoteEditor({ id, initialTitle, initialIcon, initialBlocks, pinne
           <Link href="/app/notes/pages" className="rounded px-1 py-0.5 hover:bg-stone-100 hover:text-stone-700 lg:hidden">{tr("← Toutes les pages")}</Link>
           {trail.map((t) => (
             <span key={t.id} className="flex items-center gap-1">
-              <Link href={`/app/notes/pages/${t.id}`} className="max-w-[140px] truncate rounded px-1 py-0.5 hover:bg-stone-100 hover:text-stone-700">{t.icon || "📄"} {t.title || "Sans titre"}</Link>
+              <Link href={`/app/notes/pages/${t.id}`} className="max-w-[140px] truncate rounded px-1 py-0.5 hover:bg-stone-100 hover:text-stone-700">{t.icon || "📄"} {t.title || tr("Sans titre")}</Link>
               <span>/</span>
             </span>
           ))}
         </nav>
         <div className="flex items-center gap-1">
-          <span className="mr-1">{status === "saved" ? "Enregistré" : status === "saving" ? "Enregistrement…" : "Modifications non enregistrées"}</span>
-          <button type="button" title={isPinned ? "Désépingler" : "Épingler"} onClick={() => { setIsPinned(!isPinned); void togglePin(id, !isPinned); }} className={cx("rounded-md px-1.5 py-1 text-sm hover:bg-stone-100", isPinned ? "text-brand-600" : "text-stone-400")}>{isPinned ? "★" : "☆"}</button>
+          <span className="mr-1">{status === "saved" ? tr("Enregistré") : status === "saving" ? tr("Enregistrement…") : tr("Modifications non enregistrées")}</span>
+          <button type="button" title={isPinned ? tr("Désépingler") : tr("Épingler")} onClick={() => { setIsPinned(!isPinned); void togglePin(id, !isPinned); }} className={cx("rounded-md px-1.5 py-1 text-sm hover:bg-stone-100", isPinned ? "text-brand-600" : "text-stone-400")}>{isPinned ? "★" : "☆"}</button>
           <form action={createNote.bind(null, id)}><button title={tr("Nouvelle sous-page")} className="rounded-md p-1.5 hover:bg-stone-100 hover:text-stone-700"><Icon name="plus" className="h-3.5 w-3.5" /></button></form>
           <form action={deleteNote.bind(null, id)} onSubmit={(e) => { if (!confirm("Supprimer cette page et ses sous-pages ?")) e.preventDefault(); }}>
             <button title={tr("Supprimer")} className="rounded-md p-1.5 hover:bg-rose-500/10 hover:text-rose-600"><Icon name="close" className="h-3.5 w-3.5" /></button>
@@ -244,7 +244,7 @@ export function NoteEditor({ id, initialTitle, initialIcon, initialBlocks, pinne
             onBlur={() => setMenu((m) => (m?.id === b.id ? null : m))}
             menu={menu?.id === b.id ? { options: options(menu.q), index: menu.index } : null}
             onPick={(t) => applyType(b.id, t)}
-            placeholder={blocks.length === 1 && i === 0 ? "Écris quelque chose, ou tape « / » pour les commandes…" : ""}
+            placeholder={blocks.length === 1 && i === 0 ? tr("Écris quelque chose, ou tape « / » pour les commandes…") : ""}
           />
         ))}
         <button type="button" onClick={() => { const nb = emptyBlock(); setBlocks((bs) => [...bs, nb]); setFocus({ id: nb.id, pos: 0 }); }} className="mt-2 min-h-[56px] w-full cursor-text rounded-lg text-left text-sm text-transparent hover:text-stone-300" aria-label={tr("Ajouter un bloc à la fin")}>
@@ -257,7 +257,7 @@ export function NoteEditor({ id, initialTitle, initialIcon, initialBlocks, pinne
           <div className="grid gap-1.5 sm:grid-cols-2">
             {subPages.map((s) => (
               <Link key={s.id} href={`/app/notes/pages/${s.id}`} className="flex items-center gap-2 rounded-xl border border-line px-3 py-2 text-sm text-stone-700 hover:border-brand-300 hover:bg-brand-50/50">
-                <span>{s.icon || "📄"}</span><span className="truncate">{s.title || "Sans titre"}</span>
+                <span>{s.icon || "📄"}</span><span className="truncate">{s.title || tr("Sans titre")}</span>
               </Link>
             ))}
           </div>
@@ -359,7 +359,7 @@ function BlockRow({ block: b, number, focused, placeholder, menu, onFocusDone, o
                 rows={1}
                 value={b.text}
                 spellCheck
-                placeholder={placeholder || (b.type.startsWith("h") ? "Titre" : "")}
+                placeholder={placeholder || (b.type.startsWith("h") ? tr("Titre") : "")}
                 onFocus={() => setEditing(true)}
                 onBlur={() => { setEditing(false); onBlur(); }}
                 onChange={(e) => onChange(e.target.value)}

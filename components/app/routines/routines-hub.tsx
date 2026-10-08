@@ -84,7 +84,7 @@ export function RoutinesHub({ routines, archived, doneKeys, today, minDate, curv
 
   const total = [...stats.values()].reduce((a, s) => ({ done: a.done + s.done, due: a.due + s.due }), { done: 0, due: 0 });
   const pct = total.due ? Math.round((total.done / total.due) * 100) : 0;
-  const label = isCurrent ? "Cette semaine" : `Semaine du ${fmtShort(week)} au ${fmtShort(addDays(week, 6))}`;
+  const label = isCurrent ? tr("Cette semaine") : `Semaine du ${fmtShort(week)} au ${fmtShort(addDays(week, 6))}`;
 
   return (
     <div className={cx("space-y-5", pending && "opacity-90")}>
@@ -118,7 +118,7 @@ export function RoutinesHub({ routines, archived, doneKeys, today, minDate, curv
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-stone-900">{total.done} sur {total.due} faites</p>
-            <p className="text-xs text-stone-500">{isCurrent ? "Coche au fil de la semaine, un jour oublié se rattrape." : "Tu peux corriger une journée passée : la courbe se met à jour."}</p>
+            <p className="text-xs text-stone-500">{isCurrent ? tr("Coche au fil de la semaine, un jour oublié se rattrape.") : tr("Tu peux corriger une journée passée : la courbe se met à jour.")}</p>
           </div>
         </div>
       )}
@@ -229,7 +229,7 @@ function RoutineSheet({ routine, onClose }: { routine: Routine | null; onClose: 
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-6" onClick={onClose}>
       <form action={submit} onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-t-3xl bg-surface p-6 shadow-2xl sm:rounded-3xl">
         <div className="flex items-start justify-between">
-          <h2 className="text-lg font-bold tracking-tight text-stone-900">{routine ? "Modifier la routine" : "Nouvelle routine"}</h2>
+          <h2 className="text-lg font-bold tracking-tight text-stone-900">{routine ? tr("Modifier la routine") : tr("Nouvelle routine")}</h2>
           <button type="button" onClick={onClose} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label={tr("Fermer")}>✕</button>
         </div>
 
@@ -261,7 +261,7 @@ function RoutineSheet({ routine, onClose }: { routine: Routine | null; onClose: 
         </div>
         <input name="category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder={tr("Autre catégorie…")} className="input mt-2 !h-9 text-[13px]" />
 
-        <button type="submit" disabled={!valid || saving} className="btn-primary mt-6 w-full justify-center py-3 disabled:opacity-50">{saving ? "Enregistrement…" : routine ? "Enregistrer" : "Créer la routine"}</button>
+        <button type="submit" disabled={!valid || saving} className="btn-primary mt-6 w-full justify-center py-3 disabled:opacity-50">{saving ? tr("Enregistrement…") : routine ? tr("Enregistrer") : tr("Créer la routine")}</button>
       </form>
     </div>
   );

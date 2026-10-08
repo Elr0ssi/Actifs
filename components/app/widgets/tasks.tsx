@@ -25,15 +25,15 @@ export function TaskRow({ task, today, project, onTouch, onOpen }: { task: Task;
   useEffect(() => setDone(isDone(task)), [task]);
   const late = !done && !!task.due_date && task.due_date < today;
   const sub = done
-    ? "Terminée"
+    ? tr("Terminée")
     : late
       ? `En retard · ${fmtShort(task.due_date!)}`
       : task.due_date === today
-        ? "Aujourd'hui"
+        ? tr("Aujourd'hui")
         : task.due_date
           ? `Échéance ${fmtShort(task.due_date)}`
           : task.priority === "high"
-            ? "Priorité haute"
+            ? tr("Priorité haute")
             : "";
   const toggle = () => {
     const next = !done;
@@ -46,7 +46,7 @@ export function TaskRow({ task, today, project, onTouch, onOpen }: { task: Task;
       <button
         type="button"
         onClick={toggle}
-        aria-label={done ? "Marquer comme à faire" : "Marquer comme faite"}
+        aria-label={done ? tr("Marquer comme à faire") : tr("Marquer comme faite")}
         aria-pressed={done}
         className={cx(
           "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[9px] font-bold leading-none transition",
@@ -118,12 +118,12 @@ export function TasksList({ data, size }: WidgetProps) {
         <Segmented<Tab>
           value={tab}
           onChange={switchTab}
-          options={[{ v: "todo", l: "À faire" }, { v: "done", l: "Faites" }, { v: "all", l: "Toutes" }]}
+          options={[{ v: "todo", l: tr("À faire") }, { v: "done", l: tr("Faites") }, { v: "all", l: tr("Toutes") }]}
         />
       }
     >
       {rows.length === 0 ? (
-        <Empty>{tab === "done" ? "Aucune tâche terminée pour l'instant." : "Rien en attente. Profites-en."}</Empty>
+        <Empty>{tab === "done" ? tr("Aucune tâche terminée pour l'instant.") : tr("Rien en attente. Profites-en.")}</Empty>
       ) : (
         <div className={cx("grid gap-x-4", size === "l" && "sm:grid-cols-2")}>
           {rows.slice(0, limit).map((t) => (
@@ -249,7 +249,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
     <WidgetShell
       icon="calendar"
       title={tr("Agenda")}
-      subtitle={wide ? "Tes tâches et tes routines au même endroit : coche directement dans le calendrier" : undefined}
+      subtitle={wide ? tr("Tes tâches et tes routines au même endroit : coche directement dans le calendrier") : undefined}
       right={
         <div className="flex items-center gap-1.5">
           <button type="button" onClick={() => openCreate(timeView && view === "day" ? anchor : selected)} className="btn-primary px-2.5 py-1 text-[11px]"><Icon name="plus" className="h-3 w-3" />Tâche</button>
@@ -268,7 +268,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
         {timeView && (
           <div className="ml-auto flex items-center gap-1.5 text-[11px] text-stone-400">
             Taille
-            <Segmented<Zoom> value={zoom} onChange={(z) => setOpts({ zoom: z })} options={[{ v: "compact", l: "Compact" }, { v: "normal", l: "Normal" }, { v: "large", l: "Grand" }]} />
+            <Segmented<Zoom> value={zoom} onChange={(z) => setOpts({ zoom: z })} options={[{ v: "compact", l: tr("Compact") }, { v: "normal", l: tr("Normal") }, { v: "large", l: tr("Grand") }]} />
           </div>
         )}
       </div>
@@ -337,7 +337,7 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
                   checked={toggles.routineDone(r.id, selected)}
                   onChange={() => toggles.toggleRoutine(r.id, selected)}
                   label={r.title}
-                  sub={selected > data.today ? "Prévue" : r.category ?? undefined}
+                  sub={selected > data.today ? tr("Prévue") : r.category ?? undefined}
                   disabled={selected > data.today}
                 />
               ))}

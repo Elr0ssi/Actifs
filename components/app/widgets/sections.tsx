@@ -97,7 +97,7 @@ export function VocabQuiz({ data }: WidgetProps) {
         className="flex w-full flex-col items-center justify-center rounded-xl border border-line bg-stone-50/70 px-3 py-6 text-center transition hover:border-brand-200"
       >
         <span className="text-lg font-bold text-stone-900">{front}</span>
-        <span className={cx("mt-1 text-sm", revealed ? "font-semibold text-brand-700" : "text-stone-300")}>{revealed ? back : "Touche pour voir la traduction"}</span>
+        <span className={cx("mt-1 text-sm", revealed ? "font-semibold text-brand-700" : "text-stone-300")}>{revealed ? back : tr("Touche pour voir la traduction")}</span>
       </button>
       <div className="mt-2 flex gap-2">
         <button onClick={next} className="btn-secondary flex-1 py-1.5 text-xs">{tr("À revoir")}</button>

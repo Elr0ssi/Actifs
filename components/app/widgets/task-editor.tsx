@@ -50,7 +50,7 @@ export function TaskEditor({
         }}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold tracking-tight text-stone-900">{mode === "create" ? "Nouvelle tâche" : "Tâche"}</h2>
+          <h2 className="text-lg font-bold tracking-tight text-stone-900">{mode === "create" ? tr("Nouvelle tâche") : tr("Tâche")}</h2>
           <button type="button" onClick={onClose} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label={tr("Fermer")}>✕</button>
         </div>
         <input value={v.title} onChange={(e) => set({ title: e.target.value })} placeholder={tr("Titre (ex. Salle de sport, Appel client…)")} className="input mt-4 py-2.5 text-base font-medium" autoFocus required />
@@ -77,7 +77,7 @@ export function TaskEditor({
         <div className="mt-3 text-xs text-stone-500">
           Priorité
           <div className="mt-1 grid grid-cols-3 gap-1 rounded-xl bg-stone-100 p-1 text-xs font-medium">
-            {([["low", "Basse"], ["medium", "Normale"], ["high", "Haute"]] as const).map(([k, l]) => (
+            {([["low", tr("Basse")], ["medium", tr("Normale")], ["high", tr("Haute")]] as const).map(([k, l]) => (
               <button key={k} type="button" onClick={() => set({ priority: k })} className={cx("rounded-lg py-1.5 transition", v.priority === k ? "bg-surface text-stone-900 shadow-sm" : "text-stone-500")}>{l}</button>
             ))}
           </div>
@@ -92,7 +92,7 @@ export function TaskEditor({
           </label>
         )}
         <div className="mt-5 flex items-center gap-2">
-          <button className="btn-primary" disabled={saving || badRange}>{mode === "create" ? "Ajouter" : "Enregistrer"}</button>
+          <button className="btn-primary" disabled={saving || badRange}>{mode === "create" ? tr("Ajouter") : tr("Enregistrer")}</button>
           <button type="button" onClick={onClose} className="btn-secondary">{tr("Annuler")}</button>
           {onDelete && <button type="button" onClick={onDelete} className="ml-auto text-xs text-stone-400 hover:text-rose-600">{tr("Supprimer")}</button>}
         </div>

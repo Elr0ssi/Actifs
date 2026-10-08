@@ -146,14 +146,14 @@ export function FinanceDashboard({
             <button onClick={() => { select(today); if (view === "year") setView("month"); }} className="btn-secondary ml-1 px-2.5 py-1 text-[11px]">{tr("Aujourd'hui")}</button>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <div className="segmented" title={mode === "carried" ? "Part du solde réel du compte courant" : "Repart de 0 au début du mois"}>
+            <div className="segmented" title={mode === "carried" ? tr("Part du solde réel du compte courant") : tr("Repart de 0 au début du mois")}>
               <button data-active={mode === "carried"} onClick={() => setMode("carried")}>{tr("Solde reporté")}</button>
               <button data-active={mode === "month"} onClick={() => setMode("month")}>{tr("Mois seul")}</button>
             </div>
             <div className="segmented">
               {(["month", "week", "year"] as View[]).map((v) => (
                 <button key={v} data-active={view === v} onClick={() => setView(v)}>
-                  {v === "month" ? "Mois" : v === "week" ? "Semaine" : "Année"}
+                  {v === "month" ? tr("Mois") : v === "week" ? tr("Semaine") : tr("Année")}
                 </button>
               ))}
             </div>
@@ -239,6 +239,7 @@ function SkippedList({ items, onRestore }: { items: Occurrence[]; onRestore: (o:
 }
 
 function OccList({ items, onSkip, onDelete }: { items: Occurrence[]; onSkip?: (o: Occurrence) => void; onDelete?: (o: Occurrence) => void }) {
+  const tr = useT();
   return (
     <ul className="space-y-1.5">
       {items.map((o, i) => (
@@ -250,7 +251,7 @@ function OccList({ items, onSkip, onDelete }: { items: Occurrence[]; onSkip?: (o
             <button
               onClick={() => (o.op.frequency !== "once" ? onSkip?.(o) : onDelete?.(o))}
               className="hidden text-[11px] text-stone-400 hover:text-rose-600 group-hover:inline"
-              title={o.op.frequency !== "once" ? "Ignorer cette occurrence" : "Supprimer"}
+              title={o.op.frequency !== "once" ? tr("Ignorer cette occurrence") : tr("Supprimer")}
             >
               ✕
             </button>
@@ -350,9 +351,9 @@ export function BudgetBreakdown({ budget, size = 150 }: { budget: ReturnType<typ
   const items =
     mode === "global"
       ? [
-          { label: "Charges fixes", value: budget.fixed },
-          { label: "Dépenses variables", value: budget.variable },
-          { label: "Épargne", value: budget.savings },
+          { label: tr("Charges fixes"), value: budget.fixed },
+          { label: tr("Dépenses variables"), value: budget.variable },
+          { label: tr("Épargne"), value: budget.savings },
         ].filter((i) => i.value > 0)
       : fold(mode === "fixed" ? budget.fixedByCategory : mode === "variable" ? budget.variableByCategory : budget.savingsByCategory);
   const total = items.reduce((s, i) => s + i.value, 0);
@@ -381,7 +382,7 @@ export function BudgetBreakdown({ budget, size = 150 }: { budget: ReturnType<typ
         <DonutChart items={items} size={size} strokeWidth={Math.round(size / 7)} centerCaption={mode === "global" ? "budget" : BREAKDOWN_LABEL[mode].toLowerCase()} selected={picked} onSelect={(l) => setPicked(l === picked ? null : l)} />
         {pickedItem && (
           <p className="mt-3 rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-600">
-            <b>{pickedItem.label}</b> : {formatEUR(pickedItem.value)} soit {total > 0 ? Math.round((pickedItem.value / total) * 100) : 0} % {mode === "global" ? "du budget" : `des ${BREAKDOWN_LABEL[mode].toLowerCase()}`}
+            <b>{pickedItem.label}</b> : {formatEUR(pickedItem.value)} soit {total > 0 ? Math.round((pickedItem.value / total) * 100) : 0} % {mode === "global" ? tr("du budget") : `des ${BREAKDOWN_LABEL[mode].toLowerCase()}`}
             {budget.income > 0 && ` · ${Math.round((pickedItem.value / budget.income) * 100)} % des revenus`}
           </p>
         )}

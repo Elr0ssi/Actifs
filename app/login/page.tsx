@@ -14,7 +14,7 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
   return (
     <AuthShell
       title={tr("Content de te revoir")}
-      subtitle="Connecte-toi à ton espace Flozea."
+      subtitle={tr("Connecte-toi à ton espace Flozea.")}
       footer={
         <p className="text-sm text-stone-500">
           Pas encore de compte ? <Link href="/signup" className="font-semibold text-brand-600">{tr("Créer un espace")}</Link>

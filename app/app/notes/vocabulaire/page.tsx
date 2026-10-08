@@ -43,7 +43,7 @@ export default async function NotesPage() {
             <textarea
               name="bulk"
               rows={3}
-              placeholder={"Une paire par ligne :\nchat - cat\nmaison : house\nvoiture, car"}
+              placeholder={tr("Une paire par ligne :\nchat - cat\nmaison : house\nvoiture, car")}
               className="input"
             />
             <SubmitButton className="btn-secondary w-full">{tr("Importer la liste")}</SubmitButton>

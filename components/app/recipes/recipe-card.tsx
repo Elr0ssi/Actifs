@@ -40,7 +40,7 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
         )}
         <button
           onClick={(e) => { e.stopPropagation(); start(() => toggleRecipeFavorite(recipe.id, !recipe.is_favorite)); }}
-          title={recipe.is_favorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+          title={recipe.is_favorite ? tr("Retirer des favoris") : tr("Ajouter aux favoris")}
           className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-surface/90 text-lg shadow"
         >
           {recipe.is_favorite ? "★" : "☆"}
@@ -103,7 +103,7 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
               )}
               <div className="mt-6 flex items-center gap-2 border-t border-line pt-4">
                 <button onClick={() => { setOpen(false); setEditing(true); }} className="btn-primary">{tr("Modifier")}</button>
-                <button onClick={() => start(() => toggleRecipeFavorite(recipe.id, !recipe.is_favorite))} className="btn-secondary">{recipe.is_favorite ? "★ Favori" : "☆ Favori"}</button>
+                <button onClick={() => start(() => toggleRecipeFavorite(recipe.id, !recipe.is_favorite))} className="btn-secondary">{recipe.is_favorite ? tr("★ Favori") : tr("☆ Favori")}</button>
                 <button onClick={() => confirm(`Supprimer "${recipe.name}" ?`) && start(() => deleteRecipe(recipe.id))} className="ml-auto text-xs text-stone-400 hover:text-rose-600">{tr("Supprimer")}</button>
               </div>
             </div>

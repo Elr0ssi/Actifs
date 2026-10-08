@@ -88,7 +88,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
         </select>
         <div className="mt-2 grid grid-cols-2 gap-2">
           <label className="text-xs text-stone-500">
-            {freq === "once" ? "Date" : "Date de début"}
+            {freq === "once" ? tr("Date") : tr("Date de début")}
             <input name="start" type="date" defaultValue={op?.start ?? defaultDate} className="input mt-1" required />
           </label>
           {freq !== "once" && (
@@ -131,7 +131,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
       </div>
 
       <input name="note" defaultValue={op?.note ?? ""} placeholder={tr("Note (optionnel)")} className="input" />
-      <button disabled={pending} className="btn-primary w-full">{pending ? "Enregistrement…" : "Enregistrer"}</button>
+      <button disabled={pending} className="btn-primary w-full">{pending ? tr("Enregistrement…") : tr("Enregistrer")}</button>
     </form>
   );
 }
@@ -151,7 +151,7 @@ export function NewOperationButton({
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button onClick={() => setOpen(true)} className={className ?? "btn-primary"}>{label}</button>
+      <button onClick={() => setOpen(true)} className={className ?? "btn-primary"}>{tr(label)}</button>
       {open && (
         <div className="fixed inset-0 z-50 flex animate-fade items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setOpen(false)}>
           <div className="max-h-[90vh] w-full max-w-lg animate-modal overflow-y-auto rounded-3xl border border-line bg-surface p-6 shadow-lift" onClick={(e) => e.stopPropagation()}>

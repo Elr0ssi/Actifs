@@ -27,7 +27,7 @@ export function OperationRow({ op, today }: { op: FinOp; today: string }) {
         </div>
         <span className={cx("tabular shrink-0 text-[13px] font-semibold", KIND_STYLE[op.kind].text)}>{formatEUR(op.amount)}</span>
         <ToggleSwitch initialChecked={op.active} onToggle={toggleOperationActive.bind(null, op.table, op.id)} />
-        <button onClick={() => setEditing((e) => !e)} className="text-xs font-medium text-brand-600">{editing ? "Fermer" : "Modifier"}</button>
+        <button onClick={() => setEditing((e) => !e)} className="text-xs font-medium text-brand-600">{editing ? tr("Fermer") : tr("Modifier")}</button>
         <button
           onClick={() => confirm(`Supprimer "${op.name}" et toute sa récurrence ?`) && start(() => deleteOperation(op.table, op.id))}
           className="text-xs text-stone-300 hover:text-rose-600"

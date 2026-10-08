@@ -36,7 +36,7 @@ export default async function AccountsPage() {
             </div>
 
             <div>
-              <p className="text-2xl font-bold text-stone-900">{acc.last ? formatEUR(acc.last.balance) : "Solde inconnu"}</p>
+              <p className="text-2xl font-bold text-stone-900">{acc.last ? formatEUR(acc.last.balance) : tr("Solde inconnu")}</p>
               {acc.last && <p className="text-[11px] text-stone-400">au {new Date(`${acc.last.date}T00:00:00Z`).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" })}, mouvements ultérieurs non compris ici</p>}
             </div>
 

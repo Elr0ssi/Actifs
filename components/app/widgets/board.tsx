@@ -302,7 +302,7 @@ function WidgetDrawer({ page, today, items, onAdd, onClose }: { page: WidgetPage
         </div>
         {allowed.length > 1 && (
           <div className="flex gap-1.5 overflow-x-auto border-b border-line px-5 py-3">
-            {[{ key: "all" as const, label: "Tous" }, ...SECTIONS.filter((s) => allowed.includes(s.key))].map((s) => (
+            {[{ key: "all" as const, label: tr("Tous") }, ...SECTIONS.filter((s) => allowed.includes(s.key))].map((s) => (
               <button key={s.key} onClick={() => setSection(s.key)} className={cx("shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition", section === s.key ? "bg-ink text-onink" : "bg-surface text-stone-500 hover:text-stone-800")}>
                 {tr(s.label)}
               </button>
@@ -344,7 +344,7 @@ function WidgetDrawer({ page, today, items, onAdd, onClose }: { page: WidgetPage
                     onClick={() => { onAdd(w.type, chosen); setJustAdded(w.type); setTimeout(() => setJustAdded((t) => (t === w.type ? null : t)), 1200); }}
                     className={cx("shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition", justAdded === w.type ? "bg-emerald-600 text-white" : "bg-brand-600 text-white hover:bg-brand-700")}
                   >
-                    {justAdded === w.type ? "Ajouté ✓" : "Ajouter"}
+                    {justAdded === w.type ? tr("Ajouté ✓") : tr("Ajouter")}
                   </button>
                 </div>
               </div>

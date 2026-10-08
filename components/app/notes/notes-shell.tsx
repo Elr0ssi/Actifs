@@ -51,12 +51,12 @@ export function NotesShell({ notes, children }: { notes: NoteMeta[]; children: R
     return (
       <li>
         <div className={cx("group flex items-center gap-1 rounded-lg pr-1 transition", n.id === activeId ? "bg-brand-50 text-brand-700" : "text-stone-600 hover:bg-stone-100")} style={{ paddingLeft: 4 + depth * 14 }}>
-          <button type="button" onClick={() => setOpen((o) => ({ ...o, [n.id]: !expanded }))} className={cx("flex h-5 w-5 shrink-0 items-center justify-center rounded text-stone-400 hover:bg-stone-200/60", kids.length === 0 && "invisible")} aria-label={expanded ? "Replier" : "Déplier"}>
+          <button type="button" onClick={() => setOpen((o) => ({ ...o, [n.id]: !expanded }))} className={cx("flex h-5 w-5 shrink-0 items-center justify-center rounded text-stone-400 hover:bg-stone-200/60", kids.length === 0 && "invisible")} aria-label={expanded ? tr("Replier") : tr("Déplier")}>
             <Icon name="chevronRight" className={cx("h-3 w-3 transition-transform", expanded && "rotate-90")} />
           </button>
           <Link href={`/app/notes/pages/${n.id}`} className="flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-[13px]">
             <span className="w-4 shrink-0 text-center">{n.icon || "📄"}</span>
-            <span className="truncate">{n.title || "Sans titre"}</span>
+            <span className="truncate">{n.title || tr("Sans titre")}</span>
           </Link>
           <form action={createNote.bind(null, n.id)} className="opacity-0 transition group-hover:opacity-100 focus-within:opacity-100">
             <button title={tr("Nouvelle sous-page")} className="rounded p-1 text-stone-400 hover:bg-stone-200/60 hover:text-stone-700"><Icon name="plus" className="h-3 w-3" /></button>
@@ -91,7 +91,7 @@ export function NotesShell({ notes, children }: { notes: NoteMeta[]; children: R
                     <li key={n.id}>
                       <Link href={`/app/notes/pages/${n.id}`} className={cx("flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[13px] hover:bg-stone-100", n.id === activeId && "bg-brand-50 text-brand-700")}>
                         <span className="w-4 text-center">{n.icon || "📄"}</span>
-                        <span className="truncate">{n.title || "Sans titre"}</span>
+                        <span className="truncate">{n.title || tr("Sans titre")}</span>
                       </Link>
                     </li>
                   ))}
@@ -107,7 +107,7 @@ export function NotesShell({ notes, children }: { notes: NoteMeta[]; children: R
                         <li key={n.id}>
                           <Link href={`/app/notes/pages/${n.id}`} className={cx("flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[13px] hover:bg-stone-100", n.id === activeId ? "bg-brand-50 text-brand-700" : "text-stone-600")}>
                             <span className="w-4 text-center">{n.icon || "📄"}</span>
-                            <span className="truncate">{n.title || "Sans titre"}</span>
+                            <span className="truncate">{n.title || tr("Sans titre")}</span>
                           </Link>
                         </li>
                       ))}

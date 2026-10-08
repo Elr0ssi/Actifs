@@ -156,7 +156,7 @@ export function RoutinesCurve({ data, size, opts, setOpts }: WidgetProps) {
               {shown ? (
                 <>
                   <span className="block font-medium capitalize text-stone-700">{shown.label}</span>
-                  <b className="text-stone-900">{shown.pct === null ? "Aucune routine" : `${shown.pct} %`}</b>
+                  <b className="text-stone-900">{shown.pct === null ? tr("Aucune routine") : `${shown.pct} %`}</b>
                   {shown.pct !== null && <span className="text-stone-400"> · {shown.done}/{shown.due}</span>}
                 </>
               ) : (

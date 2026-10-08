@@ -117,7 +117,7 @@ export function RecipeForm({
           required
         />
         <div className="grid grid-cols-[1fr_auto] gap-2">
-          <select name="category" defaultValue={recipe?.category ?? "Rapide"} className="input">
+          <select name="category" defaultValue={recipe?.category ?? tr("Rapide")} className="input">
             {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
           <label className="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 text-xs text-stone-500">
@@ -149,7 +149,7 @@ export function RecipeForm({
             defaultValue={recipe?.notes ?? ""}
             key={`n${resetKey}`}
             rows={5}
-            placeholder={"- Préchauffer le four à 180 °C\n- Faire revenir l'oignon…\nUne ligne par étape."}
+            placeholder={tr("- Préchauffer le four à 180 °C\n- Faire revenir l'oignon…\nUne ligne par étape.")}
             className="input min-h-[7rem] resize-y leading-relaxed"
             onKeyDown={(e) => {
               if (e.key !== "Enter" || e.shiftKey) return;
@@ -170,7 +170,7 @@ export function RecipeForm({
         </div>
         {error && <p className="text-sm text-rose-600">{error}</p>}
         <div className="flex gap-2">
-          <button disabled={pending} className="btn-primary">{pending ? "Enregistrement…" : recipe ? "Enregistrer" : "Créer la recette"}</button>
+          <button disabled={pending} className="btn-primary">{pending ? tr("Enregistrement…") : recipe ? tr("Enregistrer") : tr("Créer la recette")}</button>
           {onDone && recipe && <button type="button" onClick={onDone} className="btn-secondary">{tr("Annuler")}</button>}
         </div>
       </div>

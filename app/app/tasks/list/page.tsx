@@ -108,7 +108,7 @@ export default async function TasksPage() {
           <section key={g.project?.id ?? "none"} className="card p-6">
             <div className="mb-4 flex items-center gap-2">
               <span className="text-xl">{g.project?.icon ?? "📌"}</span>
-              <h2 className="font-semibold text-stone-900">{g.project?.name ?? "Sans projet"}</h2>
+              <h2 className="font-semibold text-stone-900">{g.project?.name ?? tr("Sans projet")}</h2>
               <span className="ml-auto text-xs text-stone-400">{g.tasks.filter((t) => t.status !== "done").length} en cours</span>
             </div>
 

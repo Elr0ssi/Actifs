@@ -94,7 +94,7 @@ export function FinAccounts({ data, size }: WidgetProps) {
   const shown = ACCOUNT_META.filter((a) => a.name !== "Investissement" || f.accounts.Investissement);
   const total = shown.reduce((s, a) => s + (valueOf(a.name)?.balance ?? 0), 0);
   return (
-    <WidgetShell icon="bank" title={`${viewing ? "Prévision au" : "Situation au"} ${fmtShort(data.today)}`} href="/app/finance/accounts" hrefLabel="Comptes">
+    <WidgetShell icon="bank" title={`${viewing ? tr("Prévision au") : tr("Situation au")} ${fmtShort(data.today)}`} href="/app/finance/accounts" hrefLabel={tr("Comptes")}>
       <div className={cx("grid gap-2.5", size === "m" ? "grid-cols-2" : "grid-cols-2 lg:grid-cols-4")}>
         {shown.map((a) => (
           <AccountTile key={a.name} name={a.name} icon={a.icon} tint={a.tint} value={valueOf(a.name)} today={realToday} editable={!viewing} />
@@ -118,7 +118,7 @@ export function FinReste({ data }: WidgetProps) {
   const planned = s.pastOut + s.upcomingOut;
   const leftPct = planned > 0 ? Math.round((s.upcomingOut / planned) * 100) : 0;
   return (
-    <WidgetShell icon="target" title={tr("Reste à vivre")} href="/app/finance/calendar" hrefLabel="Détail">
+    <WidgetShell icon="target" title={tr("Reste à vivre")} href="/app/finance/calendar" hrefLabel={tr("Détail")}>
       <p className={cx("tabular text-3xl font-bold tracking-tight", s.endBalance >= 0 ? "text-stone-900" : "text-rose-600")}><CountUp value={s.endBalance} /></p>
       <p className="mt-0.5 text-[11px] text-stone-500">
         ≈ <b className="text-stone-700">{eur0(s.perDay)}</b> {tr("/ jour · {d} j jusqu'au {date}", { d: s.daysRemaining, date: fmtShort(s.monthEnd) })}
@@ -178,8 +178,8 @@ export function FinCalendar({ data, size, opts, setOpts }: WidgetProps) {
     <WidgetShell
       icon="calendar"
       title={tr("Calendrier financier")}
-      subtitle={wide ? "Revenus, dépenses et solde jour par jour" : undefined}
-      right={<Segmented<Flow> value={flow} onChange={(v) => setOpts({ flow: v })} options={[{ v: "all", l: "Tout" }, { v: "in", l: "Entrées" }, { v: "out", l: "Sorties" }]} />}
+      subtitle={wide ? tr("Revenus, dépenses et solde jour par jour") : undefined}
+      right={<Segmented<Flow> value={flow} onChange={(v) => setOpts({ flow: v })} options={[{ v: "all", l: tr("Tout") }, { v: "in", l: tr("Entrées") }, { v: "out", l: tr("Sorties") }]} />}
     >
       <div className={cx("grid gap-4", wide && "lg:grid-cols-[minmax(0,1fr)_240px]")}>
         <div className="flex min-w-0 flex-col">
@@ -258,7 +258,7 @@ function DayDetail({ date, ops, anchor, flow }: { date: string; ops: NonNullable
             <li key={i} className="group flex items-center gap-2 text-[12px]" title={KIND_LABEL[o.op.kind]}>
               <span className={cx("h-1.5 w-1.5 shrink-0 rounded-full", KIND_STYLE[o.op.kind].dot)} />
               <span className="min-w-0 flex-1 truncate text-stone-700">{o.op.name}{o.op.txn && <span className="text-stone-400"> · {o.op.txn.time ?? "carte"}{o.op.txn.card ? ` · ${o.op.txn.card}` : ""}</span>}</span>
-              <button onClick={() => remove(o)} title={o.op.frequency === "once" ? "Supprimer" : "Ignorer cette occurrence"} className="hidden text-stone-300 hover:text-rose-600 group-hover:block">
+              <button onClick={() => remove(o)} title={o.op.frequency === "once" ? tr("Supprimer") : tr("Ignorer cette occurrence")} className="hidden text-stone-300 hover:text-rose-600 group-hover:block">
                 <Icon name="close" className="h-3 w-3" />
               </button>
               <span className={cx("tabular shrink-0 font-semibold", o.signed > 0 ? "text-emerald-600" : "text-rose-600")}>{o.signed > 0 ? "+" : "-"}{formatEUR(o.op.amount)}</span>
@@ -280,14 +280,14 @@ export function FinBreakdown({ data }: WidgetProps) {
   const [picked, setPicked] = useState<string | null>(null);
   if (!f || !budget) return <WidgetShell icon="pie" title={tr("Répartition du mois")}><NoFinance /></WidgetShell>;
   const items = [
-    { label: "Charges fixes", value: budget.fixed },
+    { label: tr("Charges fixes"), value: budget.fixed },
     ...budget.variableByCategory.slice(0, 4),
-    ...(budget.variableByCategory.length > 4 ? [{ label: "Autres dépenses", value: budget.variableByCategory.slice(4).reduce((s, i) => s + i.value, 0) }] : []),
-    { label: "Épargne", value: budget.savings },
+    ...(budget.variableByCategory.length > 4 ? [{ label: tr("Autres dépenses"), value: budget.variableByCategory.slice(4).reduce((s, i) => s + i.value, 0) }] : []),
+    { label: tr("Épargne"), value: budget.savings },
   ].filter((i) => i.value > 0);
   return (
-    <WidgetShell icon="pie" title={tr("Répartition du mois")} subtitle={`${MONTHS_FR[m]} · revenus ${eur0(budget.income)}`} href="/app/finance/budgets" hrefLabel="Budgets">
-      <DonutChart items={items} size={132} strokeWidth={18} centerCaption="dépensé" selected={picked} onSelect={(l) => setPicked(l === picked ? null : l)} />
+    <WidgetShell icon="pie" title={tr("Répartition du mois")} subtitle={`${MONTHS_FR[m]} · revenus ${eur0(budget.income)}`} href="/app/finance/budgets" hrefLabel={tr("Budgets")}>
+      <DonutChart items={items} size={132} strokeWidth={18} centerCaption={tr("dépensé")} selected={picked} onSelect={(l) => setPicked(l === picked ? null : l)} />
     </WidgetShell>
   );
 }
@@ -313,7 +313,7 @@ export function FinBudgets({ data }: WidgetProps) {
     return [...byCat.entries()].map(([label, v]) => ({ label, ...v })).sort((a, b) => b.planned - a.planned);
   }, [f, y, m, data.today, data.realToday]);
   return (
-    <WidgetShell icon="chart" title={tr("Budgets")} subtitle="Dépenses variables du mois" href="/app/finance/budgets">
+    <WidgetShell icon="chart" title={tr("Budgets")} subtitle={tr("Dépenses variables du mois")} href="/app/finance/budgets">
       {!f || rows.length === 0 ? (
         <Empty>{tr("Aucune dépense variable prévue ce mois-ci.")}</Empty>
       ) : (
@@ -341,15 +341,16 @@ export function FinBudgets({ data }: WidgetProps) {
 /* ---------- Revenus / charges à venir ---------- */
 
 function UpcomingList({ data, size, income }: WidgetProps & { income: boolean }) {
+  const tr = useT();
   const f = data.finance;
   const items = useMemo(
     () => (f ? expand(f.ops.filter((o) => (income ? o.kind === "income" : o.kind !== "income")), data.today, addDays(data.today, 120)).slice(0, size === "s" ? 4 : 7) : []),
     [f, data.today, income, size]
   );
   return (
-    <WidgetShell icon={income ? "arrowIn" : "arrowOut"} title={income ? "Revenus à venir" : "Charges à venir"} href="/app/finance/operations">
+    <WidgetShell icon={income ? "arrowIn" : "arrowOut"} title={income ? tr("Revenus à venir") : tr("Charges à venir")} href="/app/finance/operations">
       {items.length === 0 ? (
-        <Empty>{income ? "Aucun revenu prévu." : "Aucune charge prévue."}</Empty>
+        <Empty>{income ? tr("Aucun revenu prévu.") : tr("Aucune charge prévue.")}</Empty>
       ) : (
         <ul className="divide-y divide-line/70">
           {items.map((o, i) => (
@@ -366,7 +367,7 @@ function UpcomingList({ data, size, income }: WidgetProps & { income: boolean })
           ))}
         </ul>
       )}
-      <NewOperationButton defaultDate={data.today} defaultKind={income ? "income" : "fixed"} label={income ? "+ Ajouter un revenu" : "+ Ajouter une charge"} className="mt-2 w-full rounded-lg bg-brand-50 py-1.5 text-[11px] font-semibold text-brand-700 hover:bg-brand-100" />
+      <NewOperationButton defaultDate={data.today} defaultKind={income ? "income" : "fixed"} label={income ? tr("+ Ajouter un revenu") : tr("+ Ajouter une charge")} className="mt-2 w-full rounded-lg bg-brand-50 py-1.5 text-[11px] font-semibold text-brand-700 hover:bg-brand-100" />
     </WidgetShell>
   );
 }

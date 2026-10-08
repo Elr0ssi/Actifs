@@ -92,7 +92,7 @@ export function ExtrasPicker({
       {free.length > 0 && (
         <div className="mt-2">
           <button type="button" onClick={() => setShowSuggestions((v) => !v)} className="text-xs font-medium text-brand-600 hover:underline">
-            {showSuggestions ? "Masquer les suggestions" : `Suggestions de tes dernières courses (${free.length})`}
+            {showSuggestions ? tr("Masquer les suggestions") : `Suggestions de tes dernières courses (${free.length})`}
           </button>
           {showSuggestions && (
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -108,7 +108,7 @@ export function ExtrasPicker({
         <ul className="mt-3 divide-y divide-line/70 rounded-xl border border-line bg-surface">
           {picked.map((p, i) => {
             const known = p.id ? catalog.find((c) => c.id === p.id) : undefined;
-            const units = known ? UNIT_OPTIONS[known.unit] : [{ v: "u" as QtyUnit, l: "pièce(s)" }, { v: "g" as QtyUnit, l: "g" }, { v: "kg" as QtyUnit, l: "kg" }, { v: "ml" as QtyUnit, l: "ml" }, { v: "l" as QtyUnit, l: "L" }];
+            const units = known ? UNIT_OPTIONS[known.unit] : [{ v: "u" as QtyUnit, l: tr("pièce(s)") }, { v: "g" as QtyUnit, l: "g" }, { v: "kg" as QtyUnit, l: "kg" }, { v: "ml" as QtyUnit, l: "ml" }, { v: "l" as QtyUnit, l: "L" }];
             return (
               <li key={p.name} className="flex items-center gap-2 px-3 py-2">
                 <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-stone-800">

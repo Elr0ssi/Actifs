@@ -113,9 +113,9 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
 
   const label = (d: string) => `${DOW[(new Date(`${d}T00:00:00Z`).getUTCDay() + 6) % 7]} ${Number(d.slice(8))}`;
   const tabs = [
-    { key: "course" as const, label: "Ma dernière course" },
-    { key: "mine" as const, label: "Mes recettes" },
-    { key: "ideas" as const, label: "Idées" },
+    { key: "course" as const, label: tr("Ma dernière course") },
+    { key: "mine" as const, label: tr("Mes recettes") },
+    { key: "ideas" as const, label: tr("Idées") },
   ];
 
   return createPortal(
@@ -163,7 +163,7 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
                           <span className="tabular text-[11px]">{n}</span>
                           <button type="button" aria-label={tr("Plus de personnes")} onClick={(e) => { e.stopPropagation(); changeMeal(m.id, n + 1); }} className="px-1">+</button>
                         </span>
-                        <button type="button" title={s.key === "midi" ? "Passer au soir" : "Passer au midi"} onClick={(e) => { e.stopPropagation(); moveSlot(m.id, s.key === "midi" ? "soir" : "midi"); }} className="text-[13px] opacity-60 hover:opacity-100">{s.key === "midi" ? "🌙" : "☀️"}</button>
+                        <button type="button" title={s.key === "midi" ? tr("Passer au soir") : tr("Passer au midi")} onClick={(e) => { e.stopPropagation(); moveSlot(m.id, s.key === "midi" ? "soir" : "midi"); }} className="text-[13px] opacity-60 hover:opacity-100">{s.key === "midi" ? "🌙" : "☀️"}</button>
                         <button aria-label={`Retirer ${m.name}`} onClick={(e) => { e.stopPropagation(); setRemoved((r) => [...r, m.id]); start(() => removeMenuItem(m.id)); }} className="text-stone-400 hover:text-rose-600">✕</button>
                       </li>
                     );
@@ -206,7 +206,7 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
             <p className="mt-3 text-xs text-stone-400">{tr("Les recettes que tu choisis en créant une liste de courses apparaîtront ici.")}</p>
           ) : visible.length === 0 ? (
             <p className="mt-3 rounded-xl bg-stone-50 px-3 py-4 text-center text-xs text-stone-500">
-              {cards.length === 0 ? (tab === "mine" && !query ? "Tu n'as pas encore de recette. " : "Aucune recette trouvée. ") : "Tout est déjà planifié 🎉 "}
+              {cards.length === 0 ? (tab === "mine" && !query ? tr("Tu n'as pas encore de recette. ") : tr("Aucune recette trouvée. ")) : tr("Tout est déjà planifié 🎉 ")}
               {tab === "mine" && !query && <a href="/app/lists/recipes" className="font-medium text-brand-600 hover:underline">{tr("Créer une recette")}</a>}
             </p>
           ) : (
@@ -242,8 +242,8 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
 
           {hiddenCount > 0 && (
             <p className="mt-1 text-[11px] text-stone-400">
-              {hiddenCount} repas déjà planifié{hiddenCount > 1 ? "s" : ""} {showUsed ? "affiché" + (hiddenCount > 1 ? "s" : "") : "masqué" + (hiddenCount > 1 ? "s" : "")} ·{" "}
-              <button type="button" onClick={() => setShowUsed((v) => !v)} className="font-medium text-brand-600 hover:underline">{showUsed ? "Les masquer" : "Les afficher"}</button>
+              {hiddenCount} repas déjà planifié{hiddenCount > 1 ? "s" : ""} {showUsed ? tr("affiché") + (hiddenCount > 1 ? "s" : "") : tr("masqué") + (hiddenCount > 1 ? "s" : "")} ·{" "}
+              <button type="button" onClick={() => setShowUsed((v) => !v)} className="font-medium text-brand-600 hover:underline">{showUsed ? tr("Les masquer") : tr("Les afficher")}</button>
             </p>
           )}
           <a href="/app/lists/recipes" className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline">{tr("+ Créer une nouvelle recette")}</a>

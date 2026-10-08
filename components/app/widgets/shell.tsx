@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/provider";
 import { createContext, useContext } from "react";
 import Link from "next/link";
 import { Icon, type IconName } from "@/components/app/icons";
@@ -29,6 +30,7 @@ export function WidgetShell({
   children: React.ReactNode;
   className?: string;
 }) {
+  const tr = useT();
   const compact = useContext(WidgetSizeContext) === "s";
   const showLink = useContext(WidgetPageContext) === "dashboard";
   return (
@@ -46,8 +48,8 @@ export function WidgetShell({
         <div className="flex shrink-0 items-center gap-1.5">
           {right}
           {href && showLink && (
-            <Link href={href} className={cx("btn-ghost", compact && "px-1.5")} title={hrefLabel}>
-              {!compact && hrefLabel} <Icon name="chevronRight" className="h-3 w-3" />
+            <Link href={href} className={cx("btn-ghost", compact && "px-1.5")} title={tr(hrefLabel)}>
+              {!compact && tr(hrefLabel)} <Icon name="chevronRight" className="h-3 w-3" />
             </Link>
           )}
         </div>

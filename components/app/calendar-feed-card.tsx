@@ -14,7 +14,7 @@ export function CalendarFeedCard({ token }: { token: string }) {
       <div className="flex gap-2">
         <input readOnly value={url} onFocus={(e) => e.currentTarget.select()} className="input flex-1 font-mono text-xs" aria-label={tr("Adresse du flux calendrier")} />
         <button type="button" className="btn-primary" onClick={async () => { try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch {} }}>
-          {copied ? "Copié ✓" : "Copier"}
+          {copied ? tr("Copié ✓") : tr("Copier")}
         </button>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">

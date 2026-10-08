@@ -141,7 +141,7 @@ function InspirationCard({ recipe, initialFav }: { recipe: MarketingRecipe; init
             onClick={toggleFav}
             className={cx("ml-auto rounded-xl px-3 py-1.5 text-xs font-medium transition", fav ? "bg-amber-500/15 text-amber-700 hover:bg-amber-500/25" : "btn-primary")}
           >
-            {fav ? "★ Dans mes favoris" : "☆ Ajouter aux favoris"}
+            {fav ? tr("★ Dans mes favoris") : tr("☆ Ajouter aux favoris")}
           </button>
         </div>
       </div>
@@ -186,7 +186,7 @@ function InspirationCard({ recipe, initialFav }: { recipe: MarketingRecipe; init
                 ))}
               </ol>
               <div className="mt-6 flex items-center gap-2 border-t border-line pt-4">
-                <button onClick={toggleFav} disabled={pending} className={fav ? "btn-secondary" : "btn-primary"}>{fav ? "★ Dans mes favoris" : "☆ Ajouter aux favoris"}</button>
+                <button onClick={toggleFav} disabled={pending} className={fav ? "btn-secondary" : "btn-primary"}>{fav ? tr("★ Dans mes favoris") : tr("☆ Ajouter aux favoris")}</button>
                 <button onClick={() => setOpen(false)} className="btn-secondary ml-auto">{tr("Fermer")}</button>
               </div>
             </div>

@@ -77,13 +77,13 @@ export function RecipesTabs({
               <option value="fav">{tr("Favoris d'abord")}</option>
               <option value="items">{tr("Moins d'ingrédients")}</option>
             </select>
-            <button onClick={() => setCreating(!creating)} className="btn-primary">{creating ? "Fermer" : "+ Nouvelle recette"}</button>
+            <button onClick={() => setCreating(!creating)} className="btn-primary">{creating ? tr("Fermer") : tr("+ Nouvelle recette")}</button>
           </div>
           {usedCats.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {[null, ...usedCats].map((c) => (
                 <button key={c ?? "all"} onClick={() => setCat(c === cat ? null : c)} className={cx("rounded-full px-3 py-1 text-xs font-medium transition", cat === c ? "bg-ink text-onink" : "bg-stone-100 text-stone-600 hover:bg-stone-200")}>
-                  {c ?? "Toutes"}
+                  {c ?? tr("Toutes")}
                 </button>
               ))}
             </div>
@@ -99,8 +99,8 @@ export function RecipesTabs({
           {mine.length === 0 && <p className="text-sm text-stone-400">{tr("Aucune recette pour l'instant. Crée-en une avec « + Nouvelle recette », ou mets en favori celles de « Trouver des recettes ».")}</p>}
           {mine.length > 0 && shown.length === 0 && <p className="text-sm text-stone-400">{tr("Aucune recette ne correspond.")}</p>}
           {[
-            { title: "Mes créations", icon: "✍️", list: shown.filter((r) => !r.source_slug) },
-            { title: "Mes favorites", icon: "★", list: shown.filter((r) => !!r.source_slug) },
+            { title: tr("Mes créations"), icon: "✍️", list: shown.filter((r) => !r.source_slug) },
+            { title: tr("Mes favorites"), icon: "★", list: shown.filter((r) => !!r.source_slug) },
           ].map((sec) =>
             sec.list.length === 0 ? null : (
               <section key={sec.title}>

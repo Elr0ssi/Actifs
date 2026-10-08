@@ -65,7 +65,7 @@ export function BalanceHistory({ account, entries, today }: { account: string; e
       {list.length > 1 && (
         <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-line pt-2 text-[11px] text-stone-400">
           Nettoyer :
-          {[{ l: "+ d'1 mois", m: 1 }, { l: "+ de 3 mois", m: 3 }, { l: "+ de 6 mois", m: 6 }].map((o) => (
+          {[{ l: tr("+ d'1 mois"), m: 1 }, { l: tr("+ de 3 mois"), m: 3 }, { l: tr("+ de 6 mois"), m: 6 }].map((o) => (
             <button
               key={o.m}
               type="button"

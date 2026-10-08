@@ -31,7 +31,7 @@ export function WalletSetup({ token, defaultOpen }: { token: string; defaultOpen
           <h2 className="font-semibold text-stone-900">{tr("📱 Connecter mes paiements iPhone (Apple Pay)")}</h2>
           <p className="text-xs text-stone-500">{tr("Chaque paiement Wallet arrive ici tout seul : commerçant, heure, montant.")}</p>
         </div>
-        <span className="text-xs font-medium text-brand-600">{open ? "Masquer" : "Configurer"}</span>
+        <span className="text-xs font-medium text-brand-600">{open ? tr("Masquer") : tr("Configurer")}</span>
       </button>
 
       {open && (
@@ -40,7 +40,7 @@ export function WalletSetup({ token, defaultOpen }: { token: string; defaultOpen
             <p className="label mb-1.5">{tr("1 · Copie ton adresse privée (garde-la pour toi)")}</p>
             <div className="flex gap-2">
               <input readOnly value={template} onFocus={(e) => e.currentTarget.select()} className="input flex-1 font-mono text-xs" aria-label={tr("Adresse de réception des paiements")} />
-              <button type="button" className="btn-primary" onClick={() => copy("url", template)}>{copied === "url" ? "Copié ✓" : "Copier"}</button>
+              <button type="button" className="btn-primary" onClick={() => copy("url", template)}>{copied === "url" ? tr("Copié ✓") : tr("Copier")}</button>
             </div>
           </div>
 
@@ -65,10 +65,10 @@ export function WalletSetup({ token, defaultOpen }: { token: string; defaultOpen
                 Appuie sur <b>{tr("« Ajouter nouveau champ »")}</b>, et crée ces <b>{tr("4 champs")}</b> :
                 <div className="mt-2 overflow-hidden rounded-xl border border-line text-[12px]">
                   {[
-                    { type: "Nombre", key: "amount", prop: "Montant" },
-                    { type: "Texte", key: "merchant", prop: "Commerçant" },
-                    { type: "Texte", key: "name", prop: "Nom" },
-                    { type: "Texte", key: "card", prop: "Carte ou billet" },
+                    { type: "Nombre", key: "amount", prop: tr("Montant") },
+                    { type: "Texte", key: "merchant", prop: tr("Commerçant") },
+                    { type: "Texte", key: "name", prop: tr("Nom") },
+                    { type: "Texte", key: "card", prop: tr("Carte ou billet") },
                   ].map((f) => (
                     <div key={f.key} className="flex flex-wrap items-center gap-x-3 gap-y-0.5 border-b border-line/70 px-3 py-2 last:border-0">
                       <span className="w-14 text-stone-400">{f.type}</span>
@@ -91,7 +91,7 @@ export function WalletSetup({ token, defaultOpen }: { token: string; defaultOpen
             <p className="label mb-1.5">{tr("3 · Vérifier")}</p>
             <div className="flex flex-wrap items-center gap-2">
               <button type="button" disabled={pending} onClick={() => start(async () => { await addTestPayment(); setTested(true); })} className="btn-secondary">{tr("Ajouter un paiement test de 1 €")}</button>
-              <button type="button" className="btn-secondary" onClick={() => copy("test", `${url}?merchant=Test%20Safari&amount=1,50`)}>{copied === "test" ? "Copié ✓" : "Copier un lien de test"}</button>
+              <button type="button" className="btn-secondary" onClick={() => copy("test", `${url}?merchant=Test%20Safari&amount=1,50`)}>{copied === "test" ? tr("Copié ✓") : tr("Copier un lien de test")}</button>
               {tested && <span className="text-xs text-emerald-600">{tr("Ajouté : il apparaît dans la liste ci-dessous.")}</span>}
             </div>
             <p className="mt-1.5 text-[11px] text-stone-500">{tr("Le lien de test s'ouvre dans Safari et enregistre un paiement de 1,50 € — tu peux le supprimer ensuite.")}</p>

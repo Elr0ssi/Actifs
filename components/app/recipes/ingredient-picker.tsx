@@ -112,7 +112,7 @@ export function IngredientPicker({
               add(matches[0] && q ? matches[0].name : query);
             }
           }}
-          placeholder={placeholder}
+          placeholder={tr(placeholder)}
           className="input"
         />
         {open && (matches.length > 0 || (q && !exact)) && (
@@ -141,7 +141,7 @@ export function IngredientPicker({
 
       {freeSuggestions.length > 0 && (
         <div>
-          <p className="mb-1 text-[11px] text-stone-400">{suggestionsLabel}</p>
+          <p className="mb-1 text-[11px] text-stone-400">{tr(suggestionsLabel)}</p>
           <div className="flex flex-wrap gap-1">
             {freeSuggestions.map((s) => (
               <button key={s} type="button" onClick={() => add(s)} className="rounded-full border border-stone-200 px-2.5 py-0.5 text-xs text-stone-600 hover:border-brand-300 hover:text-brand-700">

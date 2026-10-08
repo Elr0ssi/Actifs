@@ -89,7 +89,7 @@ export function RecipePicker({
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={tab === "discover" ? "Rechercher une recette ou un ingrédient…" : "Rechercher dans mes recettes…"}
+              placeholder={tab === "discover" ? tr("Rechercher une recette ou un ingrédient…") : tr("Rechercher dans mes recettes…")}
               className="input py-2"
               autoFocus
             />
@@ -161,7 +161,7 @@ export function RecipePicker({
             )
           ) : mineFiltered.length === 0 ? (
             <p className="p-8 text-center text-sm text-stone-400">
-              {mine.length === 0 ? "Tu n'as pas encore de recette. Pioche dans « Découvrir »." : "Aucune recette ne correspond."}
+              {mine.length === 0 ? tr("Tu n'as pas encore de recette. Pioche dans « Découvrir ».") : tr("Aucune recette ne correspond.")}
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
@@ -184,9 +184,9 @@ export function RecipePicker({
 
         <footer className="flex items-center justify-between gap-3 border-t border-line bg-surface px-5 py-2.5">
           <p className="text-sm text-stone-500">
-            {total > 0 ? <><b className="text-stone-900">{total}</b> recette{total > 1 ? "s" : ""} choisie{total > 1 ? "s" : ""}</> : "Aucune recette choisie"}
+            {total > 0 ? <><b className="text-stone-900">{total}</b> recette{total > 1 ? "s" : ""} choisie{total > 1 ? "s" : ""}</> : tr("Aucune recette choisie")}
           </p>
-          <button type="button" onClick={onClose} className="btn-primary">{total > 0 ? "Terminé" : "Fermer"}</button>
+          <button type="button" onClick={onClose} className="btn-primary">{total > 0 ? tr("Terminé") : tr("Fermer")}</button>
         </footer>
       </div>
     </div>
@@ -217,7 +217,7 @@ function Card({ emoji, image, title, meta, count, busy, onAdd, onCount }: { emoj
             <button type="button" onClick={() => onCount(count + 1)} className="h-6 w-6 rounded-md bg-surface text-stone-600 shadow-sm" aria-label={tr("Plus de personnes")}>+</button>
           </div>
         ) : (
-          <button type="button" onClick={onAdd} disabled={busy} className="mt-1 rounded-lg bg-stone-100 py-1.5 text-xs font-semibold text-stone-700 transition hover:bg-brand-50 hover:text-brand-700">{busy ? "…" : "+ Ajouter"}</button>
+          <button type="button" onClick={onAdd} disabled={busy} className="mt-1 rounded-lg bg-stone-100 py-1.5 text-xs font-semibold text-stone-700 transition hover:bg-brand-50 hover:text-brand-700">{busy ? "…" : tr("+ Ajouter")}</button>
         )}
       </div>
     </article>

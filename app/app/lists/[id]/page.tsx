@@ -112,7 +112,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
             </form>
           )}
           <form action={setListArchived.bind(null, list.id, !list.archived)}>
-            <button className="btn-secondary text-xs">{list.archived ? "Désarchiver" : "Archiver"}</button>
+            <button className="btn-secondary text-xs">{list.archived ? tr("Désarchiver") : tr("Archiver")}</button>
           </form>
           <form action={deleteList.bind(null, list.id)}>
             <button className="btn-secondary text-xs text-rose-600">{tr("Supprimer")}</button>
@@ -126,7 +126,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
             <div>
               <h2 className="font-semibold text-stone-900">{tr("🧾 Comparatif des enseignes")}</h2>
               <p className="text-xs text-stone-500">
-                Tes {comparable} article(s) {all.some((i) => i.checked) ? "achetés" : "de la liste"} au prix de référence de chaque enseigne
+                Tes {comparable} article(s) {all.some((i) => i.checked) ? tr("achetés") : tr("de la liste")} au prix de référence de chaque enseigne
                 {outsideBase > 0 && ` · ${outsideBase} hors base non comparé(s)`}
               </p>
             </div>

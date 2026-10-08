@@ -29,10 +29,11 @@ const norm = (s: string) => s.trim().toLowerCase();
 const ICON_BY_NAME = new Map(RECIPES.map((r) => [norm(r.name), r.icon]));
 
 function Submit({ label }: { label: string }) {
+  const tr = useT();
   const { pending } = useFormStatus();
   return (
     <button disabled={pending} className="btn-primary">
-      {pending ? "Ajout en cours…" : label}
+      {pending ? tr("Ajout en cours…") : label}
     </button>
   );
 }
@@ -198,7 +199,7 @@ export function ListComposer({
               {review.map((l) => {
                 const cost = costOf(l);
                 const opts = l.catalogUnit ? UNITS_FOR[l.catalogUnit] : ALL_UNITS;
-                const unitOpts = opts.some((o) => o.v === l.unit) ? opts : [{ v: l.unit, l: l.unit === "u" ? "pièce(s)" : l.unit }, ...opts];
+                const unitOpts = opts.some((o) => o.v === l.unit) ? opts : [{ v: l.unit, l: l.unit === "u" ? tr("pièce(s)") : l.unit }, ...opts];
                 const edited = qtyOf(l) !== l.qty;
                 return (
                   <li key={l.key} className={cx("flex flex-wrap items-center gap-2 px-3 py-2", l.removed && "opacity-40")}>
@@ -222,7 +223,7 @@ export function ListComposer({
                       {unitOpts.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
                     </select>
                     <span className={cx("tabular w-16 text-right text-xs", cost === null ? "text-stone-300" : "font-semibold text-stone-700")}>{cost === null ? (store ? "sans prix" : "") : formatEUR(cost)}</span>
-                    <button type="button" onClick={() => updateLine(l.key, { removed: !l.removed })} title={l.removed ? "Remettre" : "Retirer"} className="rounded-md px-1.5 py-1 text-xs text-stone-300 hover:bg-stone-100 hover:text-rose-600">{l.removed ? "↺" : "✕"}</button>
+                    <button type="button" onClick={() => updateLine(l.key, { removed: !l.removed })} title={l.removed ? tr("Remettre") : tr("Retirer")} className="rounded-md px-1.5 py-1 text-xs text-stone-300 hover:bg-stone-100 hover:text-rose-600">{l.removed ? "↺" : "✕"}</button>
                   </li>
                 );
               })}
@@ -245,13 +246,13 @@ export function ListComposer({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-stone-500">
-          {chosen.length > 0 ? `${chosen.length} recette${chosen.length > 1 ? "s" : ""}` : "Aucune recette"}
+          {chosen.length > 0 ? `${chosen.length} recette${chosen.length > 1 ? "s" : ""}` : tr("Aucune recette")}
           {!review && store && estimate > 0 && <> · ≈ <b className="text-stone-800">{formatEUR(estimate)}</b> chez {store}</>}
         </p>
         {chosen.length > 0 && !review ? (
-          <button type="button" onClick={openReview} disabled={loading} className="btn-primary">{loading ? "Calcul…" : "Voir les quantités →"}</button>
+          <button type="button" onClick={openReview} disabled={loading} className="btn-primary">{loading ? tr("Calcul…") : tr("Voir les quantités →")}</button>
         ) : (
-          <Submit label={review ? "Ajouter à la liste" : "Ajouter à la liste"} />
+          <Submit label={review ? tr("Ajouter à la liste") : tr("Ajouter à la liste")} />
         )}
       </div>
 

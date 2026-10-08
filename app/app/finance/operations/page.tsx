@@ -24,7 +24,7 @@ export default async function OperationsPage({ searchParams }: { searchParams: {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-stone-500">{byDate ? "Triées par prochaine date, la plus proche d'abord." : "Rangées par catégorie."}</p>
+        <p className="text-xs text-stone-500">{byDate ? tr("Triées par prochaine date, la plus proche d'abord.") : tr("Rangées par catégorie.")}</p>
         <div className="segmented">
           <Link href="/app/finance/operations" data-active={!byDate}>{tr("Par catégorie")}</Link>
           <Link href="/app/finance/operations?tri=date" data-active={byDate}>{tr("Par date")}</Link>

@@ -48,9 +48,9 @@ export function QuickAdd() {
   }, [toast]);
 
   const chips = [
-    { l: "Aujourd'hui", v: shift(0) },
-    { l: "Demain", v: shift(1) },
-    { l: "Dans 1 semaine", v: shift(7) },
+    { l: tr("Aujourd'hui"), v: shift(0) },
+    { l: tr("Demain"), v: shift(1) },
+    { l: tr("Dans 1 semaine"), v: shift(7) },
   ];
 
   return (
@@ -106,7 +106,7 @@ export function QuickAdd() {
                 ))}
               </div>
             </div>
-            <button disabled={pending} className="btn-primary w-full py-2.5">{pending ? "Ajout…" : "Ajouter la tâche"}</button>
+            <button disabled={pending} className="btn-primary w-full py-2.5">{pending ? tr("Ajout…") : tr("Ajouter la tâche")}</button>
           </form>
         </div>
       )}

@@ -36,8 +36,8 @@ export default async function PagesIndex() {
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {notes.map((n) => (
               <Link key={n.id} href={`/app/notes/pages/${n.id}`} className="card card-hover p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold text-stone-900"><span>{n.icon || "📄"}</span><span className="truncate">{n.title || "Sans titre"}</span></p>
-                <p className="mt-1.5 line-clamp-2 text-xs text-stone-500">{n.search || "Page vide"}</p>
+                <p className="flex items-center gap-2 text-sm font-semibold text-stone-900"><span>{n.icon || "📄"}</span><span className="truncate">{n.title || tr("Sans titre")}</span></p>
+                <p className="mt-1.5 line-clamp-2 text-xs text-stone-500">{n.search || tr("Page vide")}</p>
               </Link>
             ))}
           </div>

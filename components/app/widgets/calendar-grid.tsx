@@ -136,17 +136,18 @@ export function CalendarNav({
       </div>
       <div className="flex items-center gap-2">
         <button type="button" onClick={onToday} className="btn-secondary px-2.5 py-1 text-[11px]">{tr("Aujourd'hui")}</button>
-        <Segmented<CalView> value={view} onChange={onView} options={[{ v: "day" as CalView, l: "Jour" }, { v: "week" as CalView, l: "Semaine" }, { v: "month" as CalView, l: "Mois" }].filter((o) => views.includes(o.v))} />
+        <Segmented<CalView> value={view} onChange={onView} options={[{ v: "day" as CalView, l: tr("Jour") }, { v: "week" as CalView, l: tr("Semaine") }, { v: "month" as CalView, l: tr("Mois") }].filter((o) => views.includes(o.v))} />
       </div>
     </div>
   );
 }
 
 function Check({ done, onToggle, label }: { done?: boolean; onToggle: () => void; label: string }) {
+  const tr = useT();
   return (
     <button
       type="button"
-      aria-label={`${done ? "Décocher" : "Cocher"} : ${label}`}
+      aria-label={`${done ? tr("Décocher") : tr("Cocher")} : ${label}`}
       aria-pressed={!!done}
       onClick={(e) => {
         e.stopPropagation();

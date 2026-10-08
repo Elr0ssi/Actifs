@@ -72,7 +72,7 @@ export function TaxCalculator() {
         </div>
 
         <button type="button" onClick={() => setShowBrackets((v) => !v)} className="text-xs font-medium text-stone-500 hover:text-stone-800">
-          {showBrackets ? "Masquer" : "Voir"} le détail par tranche du barème →
+          {showBrackets ? tr("Masquer") : tr("Voir")} le détail par tranche du barème →
         </button>
         {showBrackets && (
           <div className="rounded-2xl border border-stone-100 p-3">

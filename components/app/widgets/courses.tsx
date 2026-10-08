@@ -108,7 +108,7 @@ export function MenuWeek({ data }: WidgetProps) {
                         <div className="flex h-full items-center justify-center text-4xl">{first.icon ?? rec?.icon ?? "🍽️"}</div>
                       )}
                     </div>
-                    <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-[13px] font-semibold leading-tight text-stone-900">{first.slot && <span className="mr-1" title={first.slot === "midi" ? "Midi" : "Soir"}>{first.slot === "midi" ? "☀️" : "🌙"}</span>}{first.name}</p>
+                    <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-[13px] font-semibold leading-tight text-stone-900">{first.slot && <span className="mr-1" title={first.slot === "midi" ? tr("Midi") : tr("Soir")}>{first.slot === "midi" ? "☀️" : "🌙"}</span>}{first.name}</p>
                     <p className="mt-1 flex items-center gap-1 text-[11px] text-stone-500">
                       <span>⏱</span>
                       {rec?.time ?? "—"}
@@ -219,7 +219,7 @@ export function CoursesBudget({ data, size }: WidgetProps) {
   const scale = Math.max(budget, total, 1);
 
   return (
-    <WidgetShell icon="wallet" title={tr("Budget courses")} subtitle="Dépenses vs budget · ce mois-ci">
+    <WidgetShell icon="wallet" title={tr("Budget courses")} subtitle={tr("Dépenses vs budget · ce mois-ci")}>
       <p className="tabular text-2xl font-bold tracking-tight text-stone-900">
         <CountUp value={total} kind="eur0" />
         {budget > 0 && <span className="ml-1.5 text-[12px] font-normal tracking-normal text-stone-400">/ {eur0(budget)}</span>}
@@ -266,7 +266,7 @@ export function CoursesLast({ data }: WidgetProps) {
             {avgMeal !== null ? (
               <>{tr("Prix moyen par repas :")} <b className="tabular text-stone-800">{avgMeal.toLocaleString(intlLocale(), { style: "currency", currency: "EUR", maximumFractionDigits: 2 })}</b></>
             ) : (
-              "Choisis des recettes dans tes listes pour connaître ton prix par repas."
+              tr("Choisis des recettes dans tes listes pour connaître ton prix par repas.")
             )}
           </p>
         </>
