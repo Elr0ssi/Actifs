@@ -120,13 +120,16 @@ export function SiteFooter() {
             </nav>
           ))}
         </div>
-        <nav aria-label={tr("Informations légales")} className="mt-10 flex flex-wrap gap-x-5 gap-y-2 text-sm text-stone-500">
-          <Link href="/mentions-legales" className="hover:text-stone-900">{tr("Mentions légales")}</Link>
-          <Link href="/confidentialite" className="hover:text-stone-900">{tr("Confidentialité")}</Link>
-          <Link href="/cgu" className="hover:text-stone-900">{tr("CGU")}</Link>
-        </nav>
-        <LanguageLinks className="mt-4 text-sm text-stone-500" />
-        <p className="mt-4 text-sm text-stone-500">© {new Date().getFullYear()} {tr("Flozea. Organise ta vie, simplement.")}</p>
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-4 border-t border-stone-200 pt-6 text-sm text-stone-500">
+          <nav aria-label={tr("Informations légales")} className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <Link href="/mentions-legales" className="hover:text-stone-900">{tr("Mentions légales")}</Link>
+            <Link href="/confidentialite" className="hover:text-stone-900">{tr("Confidentialité")}</Link>
+            <Link href="/cgu" className="hover:text-stone-900">{tr("CGU")}</Link>
+            <span className="hidden text-stone-300 sm:inline" aria-hidden>·</span>
+            <span>© {new Date().getFullYear()} {tr("Flozea. Organise ta vie, simplement.")}</span>
+          </nav>
+          <LanguageLinks />
+        </div>
       </div>
     </footer>
   );

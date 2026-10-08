@@ -4,8 +4,8 @@ import type { Metadata } from "next";
 import Link from "@/components/marketing/link";
 import { FadeIn } from "@/components/marketing/fade-in";
 import { Aurora, Counter, Float, InView } from "@/components/marketing/fx";
-import { DayTimeline } from "@/components/marketing/day-timeline";
-import { PlanDemo } from "@/components/marketing/plan-demo";
+import { AllInOne, WeekTimeline } from "@/components/marketing/home-sections";
+import { PinnedFeatures } from "@/components/marketing/pinned-features";
 import { Ambience, CtaBanner } from "@/components/marketing/sections";
 import { CATEGORIES, FEATURES, categoryOf, featuresOf } from "@/lib/marketing/features";
 import { cx } from "@/lib/utils";
@@ -65,7 +65,7 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
   const tr = getT();
   const [featGuide, ...otherGuides] = GUIDES;
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative overflow-x-clip">
       <JsonLd
         data={[
           { "@context": "https://schema.org", "@type": "WebSite", name: SITE_NAME, url: localeUrl("/", getLocale()), inLanguage: intlOf(getLocale()) },
@@ -148,59 +148,30 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
           </div>
         </section>
 
-        {/* Une journée avec Flozea */}
-        <DayTimeline />
+        {/* Tout au même endroit */}
+        <AllInOne />
 
-        {/* Fonctionnalités : cartes inclinées vers les pages dédiées */}
-        <section id="fonctionnalites" className="relative overflow-hidden bg-gradient-to-b from-transparent via-brand-50/70 to-transparent">
-          <Ambience tone="rose" emojis={["📅","📝","🍽️","💶"]} />
-          <div className="relative mx-auto max-w-6xl px-6 py-24">
-          <FadeIn className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{tr("Trois univers, une seule logique")}</h2>
-            <p className="mt-4 text-stone-600">{tr("Agenda, repas, finances : chaque fonctionnalité a sa page.")}</p>
-          </FadeIn>
-          <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {CATEGORIES.flatMap(featuresOf).map((f, i) => (
-              <FadeIn key={f.slug} delay={i * 70}>
-                <Link href={`/fonctionnalites/${f.slug}`} className={cx("group block rounded-[1.75rem] bg-gradient-to-br p-6 shadow-soft transition duration-300 hover:-translate-y-2 hover:rotate-0 hover:shadow-lift", FEAT_STYLE[i % FEAT_STYLE.length].bg, FEAT_STYLE[i % FEAT_STYLE.length].rot)}>
-                  <span className="fx-float flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-3xl shadow-soft" style={{ "--d": `${i * 0.4}s`, "--a": "5px" } as React.CSSProperties}>{tr(f.icon)}</span>
-                  <p className="mt-4 text-[11px] font-bold uppercase tracking-wider text-stone-500">{tr("Flozea")} {tr(categoryOf(f).label)}</p>
-                  <h3 className="mt-1 flex items-center gap-2 text-lg font-bold leading-tight text-stone-900">{tr(f.name)}{f.soon && <span className="rounded-full bg-indigo-100 px-1.5 py-px text-[9px] font-bold uppercase text-indigo-700">{tr("Bientôt")}</span>}</h3>
-                  <p className="mt-1 text-sm text-stone-600">{tr(FEAT_SHORT[f.slug] ?? f.short)}</p>
-                  <p className="mt-5 text-sm font-semibold text-brand-700 transition group-hover:translate-x-1">{tr("Découvrir →")}</p>
-                </Link>
-              </FadeIn>
-            ))}
-          </div>
-          <p className="mt-12 text-center"><Link href="/fonctionnalites" className="btn-secondary px-5 py-2.5">{tr("Voir toutes les fonctionnalités →")}</Link></p>
-        </div>
-        </section>
+        {/* Les trois univers : section figée qui change au défilement */}
+        <PinnedFeatures
+          eyebrow={tr("Fonctionnalités")}
+          title={tr("Tout ce dont tu as besoin,")}
+          accent={tr("une seule logique.")}
+          all={tr("Voir toutes les fonctionnalités →")}
+          groups={CATEGORIES.map((c) => ({
+            key: c.key,
+            href: c.href,
+            name: tr(c.name),
+            icon: c.icon,
+            tagline: tr(c.tagline),
+            gradient: c.gradient,
+            soft: c.soft,
+            cta: tr("Découvrir"),
+            features: featuresOf(c).map((f) => ({ slug: f.slug, name: tr(f.name), icon: f.icon, text: tr(FEAT_SHORT[f.slug] ?? f.short), soon: !!f.soon, badge: tr("Bientôt") })),
+          }))}
+        />
 
-        {/* Démo : un repas planifié, tout le reste suit */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-brand-700 via-violet-800 to-brand-950 text-white" aria-labelledby="demo">
-          <div className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-fuchsia-500/25 blur-3xl" aria-hidden />
-          <div className="pointer-events-none absolute -right-24 bottom-0 h-80 w-80 rounded-full bg-sky-400/20 blur-3xl" aria-hidden />
-          <div className="relative mx-auto max-w-6xl px-6 py-24">
-            <FadeIn className="mx-auto max-w-2xl text-center">
-              <p className="text-xs font-semibold uppercase tracking-widest text-white/60">{tr("Essaie, c'est interactif")}</p>
-              <h2 id="demo" className="mt-3 text-4xl font-extrabold tracking-tight sm:text-5xl">{tr("Change le nombre de personnes.")} <span className="text-amber-300">{tr("Tout se recalcule.")}</span></h2>
-              <p className="mx-auto mt-4 max-w-lg text-white/70">{tr("Les quantités, la liste de courses, le budget et l'agenda restent synchronisés : tu ne ressaisis rien.")}</p>
-            </FadeIn>
-            <div className="mt-12"><PlanDemo /></div>
-          </div>
-        </section>
-
-        {/* Chiffres */}
-        <section className="mx-auto max-w-6xl px-6 pb-12 pt-10">
-          <div className="grid gap-px overflow-hidden rounded-[2rem] bg-gradient-to-r from-brand-500 via-violet-600 to-brand-800 p-px sm:grid-cols-3">
-            {[[RECIPES.length, "", tr("recettes avec quantités par personne")], [FEATURES.length, "", tr("fonctionnalités reliées entre elles")], [GUIDES.length, "", tr("articles pratiques")]].map(([n, suf, l]) => (
-              <div key={String(l)} className="bg-surface px-6 py-8 text-center">
-                <p className="text-5xl font-bold tracking-tight text-brand-700"><Counter to={Number(n)} suffix={String(suf)} /></p>
-                <p className="mt-2 text-sm text-stone-500">{l}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* Frise du quotidien */}
+        <WeekTimeline />
 
         {/* Recettes */}
         <section className="relative overflow-hidden bg-gradient-to-b from-amber-50/80 to-transparent">
