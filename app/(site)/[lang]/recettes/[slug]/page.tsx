@@ -12,6 +12,7 @@ import { recipeFaq } from "@/lib/marketing/recipe-faq";
 import { RecipeCard } from "@/components/marketing/recipe-card";
 import { JsonLd, breadcrumbJsonLd } from "@/components/marketing/json-ld";
 import { SITE_NAME, absolute, pageMeta } from "@/lib/marketing/site";
+import { BackButton } from "@/components/marketing/back-button";
 import { Ambience } from "@/components/marketing/sections";
 
 export function generateStaticParams() {
@@ -67,7 +68,7 @@ export default function RecipeDetailPage({ params }: { params: { lang: string; s
       <SiteHeader current="recettes" />
       <div className="absolute inset-x-0 top-0 h-[34rem]"><Ambience tone="amber" /></div>
       <main className="relative mx-auto max-w-4xl px-6 py-12">
-        <Link href="/recettes" className="text-sm font-medium text-stone-500 hover:text-stone-800">{tr("← Toutes les recettes")}</Link>
+        <BackButton fallback="/recettes" label={tr("← Toutes les recettes")} />
 
         <FadeIn>
           <div className="relative mt-4">

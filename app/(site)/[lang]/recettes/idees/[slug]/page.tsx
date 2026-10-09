@@ -1,4 +1,4 @@
-import { getT, setRequestLocale } from "@/lib/i18n/server";
+import { getLocale, getT, setRequestLocale } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "@/components/marketing/link";
@@ -6,10 +6,11 @@ import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { FadeIn } from "@/components/marketing/fade-in";
 import { JsonLd, breadcrumbJsonLd } from "@/components/marketing/json-ld";
 import { Ambience, CtaBanner } from "@/components/marketing/sections";
+import { BackButton } from "@/components/marketing/back-button";
+import { lowerFor } from "@/lib/i18n";
 import { RecipeCard } from "@/components/marketing/recipe-card";
 import { IDEAS, getIdea, ideaRecipes } from "@/lib/marketing/ideas";
 import { absolute, localeUrl, pageMeta } from "@/lib/marketing/site";
-import { getLocale } from "@/lib/i18n/server";
 
 export function generateStaticParams() {
   return IDEAS.map((i) => ({ slug: i.slug }));
@@ -20,7 +21,13 @@ export function generateMetadata({ params }: { params: { lang: string; slug: str
   const tr = getT();
   const idea = getIdea(params.slug);
   if (!idea) return {};
-  return pageMeta({ title: tr(idea.h1), description: tr(idea.intro), path: `/recettes/idees/${idea.slug}` });
+  const label = lowerFor(getLocale(), tr(idea.label));
+  const n = ideaRecipes(idea).length;
+  return pageMeta({
+    title: tr("Idée recette {label} : {n} recettes faciles et rapides", { label, n }),
+    description: tr("{n} idées de recettes {label} faciles et rapides : ingrédients, étapes et liste de courses automatique. Plats simples à cuisiner ce soir.", { label, n }),
+    path: `/recettes/idees/${idea.slug}`,
+  });
 }
 
 export default function IdeaPage({ params }: { params: { lang: string; slug: string } }) {
@@ -52,6 +59,7 @@ export default function IdeaPage({ params }: { params: { lang: string; slug: str
         <Ambience tone="amber" emojis={[idea.icon, "🍅", "🌿"]} />
         <div className="relative mx-auto max-w-4xl px-6 pb-12 pt-16 text-center">
           <FadeIn>
+            <div className="mb-4 flex justify-center"><BackButton fallback="/recettes" /></div>
             <nav aria-label={tr("Fil d'Ariane")} className="mb-4 text-xs text-stone-500">
               <Link href="/recettes" className="hover:text-stone-800">{tr("Recettes")}</Link> · <Link href="/recettes/idees" className="hover:text-stone-800">{tr("Idées de recettes")}</Link>
             </nav>

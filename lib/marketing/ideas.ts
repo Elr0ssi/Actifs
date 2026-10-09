@@ -111,7 +111,7 @@ export const IDEAS: Idea[] = [
     slug: "idees-rapides",
     icon: "⚡",
     label: "Rapides",
-    h1: "Idées de repas rapides : recettes prêtes en 20 minutes ou moins",
+    h1: "Idées de plats rapides : repas prêts en 20 minutes ou moins",
     intro: "Pas le temps de cuisiner ? Voici des idées de repas rapides, prêtes en vingt minutes ou moins, avec peu d'ingrédients et sans technique compliquée.",
     tips: "Prévois les ingrédients la veille avec ta liste de courses, utilise une seule poêle ou casserole et choisis des légumes qui cuisent vite (courgettes, tomates, épinards).",
     faq: [
