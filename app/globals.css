@@ -278,3 +278,16 @@
 
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Logo animé : légère déformation organique pendant le déplacement des bulles. */
+@keyframes logo-squish {
+  0% { transform: scale(1, 1); }
+  35% { transform: scale(1.12, 0.92); }
+  70% { transform: scale(0.97, 1.04); }
+  100% { transform: scale(1, 1); }
+}
+.logo-squish { animation: logo-squish 560ms cubic-bezier(0.34, 1.18, 0.5, 1) both; transform-box: fill-box; transform-origin: 50% 50%; }
+@media (prefers-reduced-motion: reduce) {
+  .logo-move { transition-duration: 1ms !important; }
+  .logo-squish { animation: none; }
+}
