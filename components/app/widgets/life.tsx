@@ -198,7 +198,7 @@ export function CalAgenda({ data, size, opts, setOpts }: WidgetProps) {
                 {selFin.map((o, i) => (
                   <li key={i} className="flex justify-between gap-2 px-2 text-[12px]">
                     <span className="truncate text-stone-700">{tr(o.op.name)}</span>
-                    <span className={cx("tabular shrink-0 font-semibold", o.signed > 0 ? "text-emerald-600" : "text-rose-600")}>{o.signed > 0 ? "+" : "-"}{formatEUR(o.op.amount)}</span>
+                    <span className={cx("tabular shrink-0 font-semibold", o.signed > 0 ? "text-emerald-600" : "text-rose-600")}>{o.signed > 0 ? "+" : "-"}{formatEUR(o.amount)}</span>
                   </li>
                 ))}
               </ul>

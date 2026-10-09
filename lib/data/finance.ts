@@ -26,7 +26,7 @@ export const loadFinanceData = cache(async () => {
   const walletOps: FinOp[] = (txns ?? []).map((t) => ({
     id: `txn:${t.id}`,
     table: "charge" as const,
-    kind: (t.kind === "income" ? "income" : "variable") as FinOp["kind"],
+    kind: (t.kind === "income" ? "income" : "daily") as FinOp["kind"],
     name: t.merchant || t.label,
     amount: Number(t.amount),
     category: t.category || "Autre",

@@ -3,9 +3,10 @@ import { intlLocale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { loadFinanceData } from "@/lib/data/finance";
-import { getMonthlyBudget } from "@/lib/finance-engine";
+import { getEnvelopes, getMonthlyBudget, monthBounds } from "@/lib/finance-engine";
 import { formatEUR, todayISO, cx, MONTHS_FR } from "@/lib/utils";
 import { BudgetBreakdown } from "@/components/app/finance/finance-dashboard";
+import { EnvelopesCard } from "@/components/app/finance/envelopes";
 import { Icon } from "@/components/app/icons";
 
 export function generateMetadata(): Metadata {
@@ -25,6 +26,7 @@ export default async function BudgetsPage({ searchParams }: { searchParams: { ye
   const year = Number(searchParams.year) || now.getUTCFullYear();
   const month = searchParams.month !== undefined ? Number(searchParams.month) : now.getUTCMonth();
   const budget = getMonthlyBudget(ops, anchor, year, month);
+  const envelopes = getEnvelopes(ops, year, month);
 
   const prev = month === 0 ? { y: year - 1, m: 11 } : { y: year, m: month - 1 };
   const next = month === 11 ? { y: year + 1, m: 0 } : { y: year, m: month + 1 };
@@ -32,7 +34,7 @@ export default async function BudgetsPage({ searchParams }: { searchParams: { ye
   const history = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(Date.UTC(year, month - 5 + i, 1));
     const b = getMonthlyBudget(ops, anchor, d.getUTCFullYear(), d.getUTCMonth());
-    return { label: MONTHS_FR[d.getUTCMonth()].slice(0, 3), margin: b.income - b.fixed - b.variable - b.savings, current: i === 5 };
+    return { label: MONTHS_FR[d.getUTCMonth()].slice(0, 3), margin: b.income - b.fixed - b.variable - b.daily - b.savings, current: i === 5 };
   });
   const maxAbs = Math.max(1, ...history.map((h) => Math.abs(h.margin)));
   const actionCls = "flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-[12px] font-semibold text-stone-700 transition hover:border-brand-200 hover:bg-brand-50/50";
@@ -52,8 +54,9 @@ export default async function BudgetsPage({ searchParams }: { searchParams: { ye
       </div>
 
       <div className="grid items-start gap-4 lg:grid-cols-2">
+        <EnvelopesCard rows={envelopes} monthStart={monthBounds(year, month).start} />
         <BudgetBreakdown budget={budget} size={190} />
-        <section className="card p-4">
+        <section className="card p-4 lg:col-span-2">
           <p className="text-[13px] font-semibold text-stone-900">{tr("Marge des 6 derniers mois")}</p>
           <p className="text-[11px] text-stone-400">{tr("Revenus moins toutes les sorties prévues, mois par mois.")}</p>
           <div className="mt-4 flex h-52 items-stretch gap-3">

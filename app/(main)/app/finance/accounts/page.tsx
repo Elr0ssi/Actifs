@@ -6,6 +6,9 @@ import { formatEUR, todayISO } from "@/lib/utils";
 import { updateBalanceAnchor, updateGoal } from "@/app/(main)/app/finance/actions";
 import { BalanceHistory } from "@/components/app/finance/balance-history";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { getAppContext } from "@/lib/data/context";
+import { bankProviderConfigured, isBankBeta } from "@/lib/bank";
+import { BankConnectCard } from "@/components/app/finance/bank-connect";
 
 export function generateMetadata(): Metadata {
   return { title: getT()("Finance — Comptes") };
@@ -22,6 +25,8 @@ export default async function AccountsPage() {
   const data = await loadFinanceData();
   if (!data) return null;
   const today = todayISO();
+  const ctx = await getAppContext();
+  const unlocked = isBankBeta(ctx?.user.email);
 
   return (
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -69,6 +74,7 @@ export default async function AccountsPage() {
           </div>
         );
       })}
+      <BankConnectCard unlocked={unlocked} providerReady={bankProviderConfigured()} />
     </div>
   );
 }

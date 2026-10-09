@@ -6,10 +6,12 @@ import { cx } from "@/lib/utils";
 export function FadeIn({
   children,
   delay = 0,
+  variant = "up",
   className,
 }: {
   children: React.ReactNode;
   delay?: number;
+  variant?: "up" | "pop";
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -35,7 +37,7 @@ export function FadeIn({
     <div
       ref={ref}
       style={{ animationDelay: visible ? `${delay}ms` : undefined }}
-      className={cx(visible ? "animate-fadeUp" : "opacity-0", className)}
+      className={cx(visible ? (variant === "pop" ? "animate-popIn" : "animate-fadeUp") : "opacity-0", className)}
     >
       {children}
     </div>

@@ -54,10 +54,10 @@ export function TransactionList({ txns }: { txns: Txn[] }) {
               <ul className="divide-y divide-line/70">
                 {items.map((t) => (
                   <li key={t.id} className="flex items-center gap-3 py-2">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-[13px] font-bold text-brand-700">{t.merchant.slice(0, 1).toUpperCase()}</span>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-50 text-[13px] font-bold text-teal-700">{t.merchant.slice(0, 1).toUpperCase()}</span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13px] font-medium text-stone-800">{t.merchant}</p>
-                      <p className="truncate text-[11px] text-stone-400">{[t.time, t.card].filter(Boolean).join(" · ") || "Carte"}</p>
+                      <p className="truncate text-[13px] font-medium text-stone-800">{t.merchant}{!t.income && <span className="ml-2 rounded-full bg-teal-50 px-1.5 py-px text-[9px] font-semibold uppercase tracking-wide text-teal-700">{tr("Quotidien")}</span>}</p>
+                      <p className="truncate text-[11px] text-stone-400">{[t.time, t.card].filter(Boolean).join(" · ") || tr("Carte")}</p>
                     </div>
                     <select
                       value={cats[t.id] ?? t.category}
@@ -67,7 +67,7 @@ export function TransactionList({ txns }: { txns: Txn[] }) {
                     >
                       {[...new Set([cats[t.id] ?? t.category, ...options])].map((c) => <option key={c} value={c}>{tr(c)}</option>)}
                     </select>
-                    <span className={cx("tabular w-20 shrink-0 text-right text-[13px] font-semibold", t.income ? "text-emerald-600" : "text-rose-600")}>{t.income ? "+" : "-"}{formatEUR(t.amount)}</span>
+                    <span className={cx("tabular w-20 shrink-0 text-right text-[13px] font-semibold", t.income ? "text-emerald-600" : "text-teal-600")}>{t.income ? "+" : "-"}{formatEUR(t.amount)}</span>
                     <button onClick={() => { setGone((g) => [...g, t.id]); start(() => deleteTransaction(t.id)); }} title={tr("Supprimer")} className="text-xs text-stone-300 hover:text-rose-600">✕</button>
                   </li>
                 ))}

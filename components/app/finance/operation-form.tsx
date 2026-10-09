@@ -22,7 +22,7 @@ const FREQS: { v: OpFrequency; l: string; unit: string }[] = [
 const WEEKDAYS = ["L", "M", "M", "J", "V", "S", "D"];
 const WEEKDAY_VALUES = [1, 2, 3, 4, 5, 6, 0];
 
-export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: FinOp; defaultDate?: string; defaultKind?: OpKind; onDone?: () => void }) {
+export function OperationForm({ op, defaultDate, defaultKind, defaultCategory, defaultName, onDone }: { op?: FinOp; defaultDate?: string; defaultKind?: OpKind; defaultCategory?: string; defaultName?: string; onDone?: () => void }) {
   const tr = useT();
   const [kind, setKind] = useState<OpKind>(op?.kind ?? defaultKind ?? "fixed");
   const [freq, setFreq] = useState<OpFrequency>(op?.frequency ?? "monthly");
@@ -55,7 +55,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
         ))}
       </div>
 
-      <input name="name" defaultValue={op?.name} placeholder={tr("Nom (ex. Loyer, Netflix, Salaire…)")} className="input" required />
+      <input name="name" defaultValue={op?.name ?? defaultName} placeholder={tr("Nom (ex. Loyer, Netflix, Salaire…)")} className="input" required />
       <div className="grid grid-cols-2 gap-2">
         <label className="text-xs text-stone-500">
           {tr("Montant")}
@@ -63,7 +63,7 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
         </label>
         <label className="text-xs text-stone-500">
           {tr("Catégorie")}
-          <select key={kind} name="category" defaultValue={categories.includes(op?.category ?? "") ? op?.category : categories[0]} className="input mt-1">
+          <select key={kind} name="category" defaultValue={categories.includes(op?.category ?? defaultCategory ?? "") ? (op?.category ?? defaultCategory) : categories[0]} className="input mt-1">
             {categories.map((c) => <option key={c} value={c}>{tr(c)}</option>)}
           </select>
         </label>
@@ -139,11 +139,17 @@ export function OperationForm({ op, defaultDate, defaultKind, onDone }: { op?: F
 export function NewOperationButton({
   defaultDate,
   defaultKind,
+  defaultCategory,
+  defaultName,
+  title = "Nouvelle opération",
   label = "+ Nouvelle opération",
   className,
 }: {
   defaultDate?: string;
   defaultKind?: OpKind;
+  defaultCategory?: string;
+  defaultName?: string;
+  title?: string;
   label?: string;
   className?: string;
 }) {
@@ -156,10 +162,10 @@ export function NewOperationButton({
         <div className="fixed inset-0 z-50 flex animate-fade items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setOpen(false)}>
           <div className="max-h-[90vh] w-full max-w-lg animate-modal overflow-y-auto rounded-3xl border border-line bg-surface p-6 shadow-lift" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-stone-900">{tr("Nouvelle opération")}</h3>
+              <h3 className="text-lg font-bold text-stone-900">{tr(title)}</h3>
               <button onClick={() => setOpen(false)} className="text-stone-400 hover:text-stone-700">✕</button>
             </div>
-            <OperationForm defaultDate={defaultDate} defaultKind={defaultKind} onDone={() => setOpen(false)} />
+            <OperationForm defaultDate={defaultDate} defaultKind={defaultKind} defaultCategory={defaultCategory} defaultName={defaultName} onDone={() => setOpen(false)} />
           </div>
         </div>
       )}

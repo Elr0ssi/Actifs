@@ -10,6 +10,7 @@ import {
   getBalanceAtDate,
   getDailyBalances,
   getDateSituation,
+  getEnvelopes,
   getMonthlyBudget,
   KIND_LABEL,
   KIND_STYLE,
@@ -261,7 +262,7 @@ function DayDetail({ date, ops, anchor, flow }: { date: string; ops: NonNullable
               <button onClick={() => remove(o)} title={o.op.frequency === "once" ? tr("Supprimer") : tr("Ignorer cette occurrence")} className="hidden text-stone-300 hover:text-rose-600 group-hover:block">
                 <Icon name="close" className="h-3 w-3" />
               </button>
-              <span className={cx("tabular shrink-0 font-semibold", o.signed > 0 ? "text-emerald-600" : "text-rose-600")}>{o.signed > 0 ? "+" : "-"}{formatEUR(o.op.amount)}</span>
+              <span className={cx("tabular shrink-0 font-semibold", o.signed > 0 ? "text-emerald-600" : "text-rose-600")}>{o.signed > 0 ? "+" : "-"}{formatEUR(o.amount)}</span>
             </li>
           ))}
         </ul>
@@ -283,6 +284,7 @@ export function FinBreakdown({ data }: WidgetProps) {
     { label: tr("Charges fixes"), value: budget.fixed },
     ...budget.variableByCategory.slice(0, 4),
     ...(budget.variableByCategory.length > 4 ? [{ label: tr("Autres dépenses"), value: budget.variableByCategory.slice(4).reduce((s, i) => s + i.value, 0) }] : []),
+    { label: tr("Consommation quotidienne"), value: budget.daily },
     { label: tr("Épargne"), value: budget.savings },
   ].filter((i) => i.value > 0);
   return (
@@ -298,36 +300,23 @@ export function FinBudgets({ data }: WidgetProps) {
   const tr = useT();
   const f = data.finance;
   const { y, m } = ym(data.today);
-  const rows = useMemo(() => {
-    if (!f) return [];
-    const { start, end } = monthBounds(y, m);
-    const occ = expand(f.ops.filter((o) => o.kind === "variable"), start, end);
-    const byCat = new Map<string, { planned: number; spent: number }>();
-    for (const o of occ) {
-      const k = o.op.category || "Autre";
-      const e = byCat.get(k) ?? { planned: 0, spent: 0 };
-      e.planned += o.op.amount;
-      if (o.date <= (data.realToday ?? data.today)) e.spent += o.op.amount;
-      byCat.set(k, e);
-    }
-    return [...byCat.entries()].map(([label, v]) => ({ label, ...v })).sort((a, b) => b.planned - a.planned);
-  }, [f, y, m, data.today, data.realToday]);
+  const rows = useMemo(() => (f ? getEnvelopes(f.ops, y, m) : []), [f, y, m]);
   return (
-    <WidgetShell icon="chart" title={tr("Budgets")} subtitle={tr("Dépenses variables du mois")} href="/app/finance/budgets">
+    <WidgetShell icon="chart" title={tr("Budgets")} subtitle={tr("Prévu et réel du mois")} href="/app/finance/budgets">
       {!f || rows.length === 0 ? (
-        <Empty>{tr("Aucune dépense variable prévue ce mois-ci.")}</Empty>
+        <Empty>{tr("Rien de prévu ni de payé par carte ce mois-ci.")}</Empty>
       ) : (
         <ul className="space-y-2.5">
           {rows.slice(0, 5).map((r) => {
-            const pct = r.planned > 0 ? Math.min(100, (r.spent / r.planned) * 100) : 0;
+            const pct = r.planned > 0 ? Math.min(100, (r.real / r.planned) * 100) : r.real > 0 ? 100 : 0;
             return (
-              <li key={r.label}>
+              <li key={r.category}>
                 <div className="flex items-baseline justify-between gap-2 text-[12px]">
-                  <span className="truncate text-stone-700">{tr(r.label)}</span>
-                  <span className="tabular shrink-0 text-[11px] text-stone-500"><b className="text-stone-800">{eur0(r.spent)}</b> / {eur0(r.planned)}</span>
+                  <span className="truncate text-stone-700">{tr(r.category)}</span>
+                  <span className="tabular shrink-0 text-[11px] text-stone-500"><b className="text-stone-800">{eur0(r.real)}</b>{r.planned > 0 && <> / {eur0(r.planned)}</>}</span>
                 </div>
                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-stone-100">
-                  <div className={cx("fill-grow h-full rounded-full", pct >= 100 ? "bg-rose-400" : "bg-brand-400")} style={{ width: `${pct}%` }} />
+                  <div className={cx("fill-grow h-full rounded-full", r.planned === 0 ? "bg-stone-300" : pct >= 100 ? "bg-rose-400" : "bg-teal-500")} style={{ width: `${pct}%` }} />
                 </div>
               </li>
             );
@@ -362,7 +351,7 @@ function UpcomingList({ data, size, income }: WidgetProps & { income: boolean })
                 <span className="block truncate font-medium text-stone-800">{o.op.name}{o.op.txn?.time && <span className="font-normal text-stone-400"> · {o.op.txn.time}</span>}</span>
                 <span className="block text-[10px] text-stone-400">{fmtShort(o.date)}</span>
               </span>
-              <span className={cx("tabular shrink-0 font-semibold", income ? "text-emerald-600" : "text-rose-600")}>{income ? "+" : "-"}{formatEUR(o.op.amount)}</span>
+              <span className={cx("tabular shrink-0 font-semibold", income ? "text-emerald-600" : "text-rose-600")}>{income ? "+" : "-"}{formatEUR(o.amount)}</span>
             </li>
           ))}
         </ul>

@@ -41,7 +41,7 @@ function tooltip(o: Occurrence, tr: (k: string, v?: Record<string, string | numb
   const next = occurrencesOf(o.op, addDays(o.date, 1), addDays(o.date, 400))[0];
   return [
     o.op.name,
-    `${o.signed > 0 ? "+" : "-"}${formatEUR(o.op.amount)}`,
+    `${o.signed > 0 ? "+" : "-"}${formatEUR(o.amount)}`,
     tr(KIND_LABEL[o.op.kind]),
     describeRecurrence(o.op, tr),
     next ? tr("Prochaine occurrence : {date}", { date: fmtShort(next) }) : null,
@@ -191,14 +191,14 @@ export function FinanceDashboard({
                     </span>
                     {occ.slice(0, max).map((o, i) => (
                       <span key={i} title={tooltip(o, tr)} className={cx("w-full truncate text-[10px] font-semibold leading-tight", o.signed > 0 ? "text-emerald-600" : "text-rose-600", outside && "opacity-50")}>
-                        {o.signed > 0 ? "+" : "-"}{formatEUR(o.op.amount)}
+                        {o.signed > 0 ? "+" : "-"}{formatEUR(o.amount)}
                         <span className="block truncate font-normal text-stone-400">{o.op.name}</span>
                       </span>
                     ))}
                     {occ.length > max && <span className="text-[10px] text-stone-400">+{occ.length - max}</span>}
                     {(skippedByDate.get(d) ?? []).map((o, i) => (
                       <span key={`s${i}`} title={tr("{name} — occurrence ignorée", { name: o.op.name })} className="w-full truncate text-[10px] text-stone-300 line-through">
-                        {formatEUR(o.op.amount)}
+                        {formatEUR(o.amount)}
                       </span>
                     ))}
                   </button>
@@ -208,8 +208,8 @@ export function FinanceDashboard({
           </>
         )}
         <div className="mt-2 flex flex-wrap gap-3 text-[10px] text-stone-400">
-          {(["income", "fixed", "variable", "savings"] as const).map((k) => (
-            <span key={k} className="flex items-center gap-1"><span className={cx("h-1.5 w-1.5 rounded-full", KIND_STYLE[k].dot)} />{KIND_LABEL[k]}</span>
+          {(["income", "fixed", "variable", "daily", "savings"] as const).map((k) => (
+            <span key={k} className="flex items-center gap-1"><span className={cx("h-1.5 w-1.5 rounded-full", KIND_STYLE[k].dot)} />{tr(KIND_LABEL[k])}</span>
           ))}
           <span className="ml-auto hidden sm:inline">{tr("Astuce : fais glisser le calendrier pour changer de mois.")}</span>
         </div>
@@ -256,7 +256,7 @@ function OccList({ items, onSkip, onDelete }: { items: Occurrence[]; onSkip?: (o
               ✕
             </button>
           )}
-          <span className={cx("shrink-0 font-semibold", KIND_STYLE[o.op.kind].text)}>{o.signed > 0 ? "+" : "-"}{formatEUR(o.op.amount)}</span>
+          <span className={cx("shrink-0 font-semibold", KIND_STYLE[o.op.kind].text)}>{o.signed > 0 ? "+" : "-"}{formatEUR(o.amount)}</span>
         </li>
       ))}
     </ul>
@@ -333,8 +333,8 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
   );
 }
 
-type BreakdownMode = "global" | "fixed" | "variable" | "savings";
-const BREAKDOWN_LABEL: Record<BreakdownMode, string> = { global: "Global", fixed: "Charges fixes", variable: "Dépenses variables", savings: "Épargne" };
+type BreakdownMode = "global" | "fixed" | "variable" | "daily" | "savings";
+const BREAKDOWN_LABEL: Record<BreakdownMode, string> = { global: "Global", fixed: "Charges fixes", variable: "Dépenses variables", daily: "Quotidien", savings: "Épargne" };
 
 /** Garde les plus grosses catégories et regroupe le reste : la palette catégorielle n'a que 6 teintes distinctes. */
 function fold(items: { label: string; value: number }[], tr: (k: string) => string, max = 6) {
@@ -347,15 +347,16 @@ export function BudgetBreakdown({ budget, size = 150 }: { budget: ReturnType<typ
   const tr = useT();
   const [mode, setMode] = useState<BreakdownMode>("global");
   const [picked, setPicked] = useState<string | null>(null);
-  const spend = budget.fixed + budget.variable + budget.savings;
+  const spend = budget.fixed + budget.variable + budget.daily + budget.savings;
   const items =
     mode === "global"
       ? [
           { label: tr("Charges fixes"), value: budget.fixed },
           { label: tr("Dépenses variables"), value: budget.variable },
+          { label: tr("Consommation quotidienne"), value: budget.daily },
           { label: tr("Épargne"), value: budget.savings },
         ].filter((i) => i.value > 0)
-      : fold(mode === "fixed" ? budget.fixedByCategory : mode === "variable" ? budget.variableByCategory : budget.savingsByCategory, tr);
+      : fold(mode === "fixed" ? budget.fixedByCategory : mode === "variable" ? budget.variableByCategory : mode === "daily" ? budget.dailyByCategory : budget.savingsByCategory, tr);
   const total = items.reduce((s, i) => s + i.value, 0);
   const pickedItem = items.find((i) => i.label === picked);
   const seg = (v: number) => `${spend > 0 ? (v / spend) * 100 : 0}%`;
@@ -376,6 +377,7 @@ export function BudgetBreakdown({ budget, size = 150 }: { budget: ReturnType<typ
       <div className="mt-2 flex h-2 gap-[2px] overflow-hidden rounded-full bg-stone-100">
         <div className="bg-rose-400" style={{ width: seg(budget.fixed) }} title={tr("Charges fixes")} />
         <div className="bg-amber-400" style={{ width: seg(budget.variable) }} title={tr("Dépenses variables")} />
+        <div className="bg-teal-400" style={{ width: seg(budget.daily) }} title={tr("Consommation quotidienne")} />
         <div className="bg-violet-400" style={{ width: seg(budget.savings) }} title={tr("Épargne")} />
       </div>
       <div className="mt-4">

@@ -15,7 +15,7 @@ export function AllInOne() {
     { icon: "💶", name: tr("Budget"), replaces: tr("remplace Excel et Splitwise"), tone: "bg-violet-50 text-violet-700" },
   ];
   return (
-    <section className="mx-auto flex max-w-5xl flex-col justify-center px-6 py-24 lg:min-h-[calc(100svh-69px)] lg:py-16" aria-labelledby="tout-en-un">
+    <section className="mx-auto flex max-w-5xl flex-col justify-center px-6 py-24 lg:mb-32 lg:min-h-[calc(100svh-69px)] lg:py-16" aria-labelledby="tout-en-un">
       <FadeIn className="mx-auto max-w-2xl text-center">
         <p className="text-xs font-semibold uppercase tracking-widest text-brand-600">{tr("Une seule appli")}</p>
         <h2 id="tout-en-un" className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
@@ -86,13 +86,18 @@ export function WeekTimeline() {
           {/* trait : vertical (mobile) / horizontal (bureau) */}
           <span className="absolute bottom-4 left-5 top-4 w-0.5 bg-gradient-to-b from-brand-300 via-amber-300 to-rose-300 lg:bottom-auto lg:left-[8%] lg:right-[8%] lg:top-5 lg:h-0.5 lg:w-auto lg:bg-gradient-to-r" aria-hidden />
           {steps.map((s, i) => (
-            <li key={s.title} className="relative pb-8 pl-14 last:pb-0 lg:pb-0 lg:pl-0 lg:pt-14">
-              <span className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-full text-white shadow-lift ring-4 ring-surface lg:left-1/2 lg:-translate-x-1/2">
-                <span className={cx("absolute inset-0 rounded-full bg-gradient-to-br", s.tone)} aria-hidden />
-                <span className="relative"><StepIcon name={s.icon} /></span>
+            <li key={s.title} className="group relative pb-8 pl-14 last:pb-0 lg:pb-0 lg:pl-0 lg:pt-14">
+              <span className="absolute left-0 top-0 lg:left-1/2 lg:-translate-x-1/2">
+                <FadeIn delay={i * 120} variant="pop">
+                  <span className="relative flex h-10 w-10 items-center justify-center rounded-full text-white shadow-lift ring-4 ring-surface transition duration-300 group-hover:-translate-y-0.5 group-hover:scale-110 group-hover:rotate-6">
+                    <span className={cx("absolute inset-0 rounded-full bg-gradient-to-br", s.tone)} aria-hidden />
+                    <span className={cx("absolute -inset-1.5 -z-10 rounded-full bg-gradient-to-br opacity-0 blur-md transition duration-300 group-hover:opacity-60", s.tone)} aria-hidden />
+                    <span className="relative"><StepIcon name={s.icon} /></span>
+                  </span>
+                </FadeIn>
               </span>
-              <FadeIn delay={i * 80} className="lg:h-full">
-                <div className="rounded-2xl border border-line bg-surface px-4 py-3.5 shadow-soft lg:h-full lg:text-center">
+              <FadeIn delay={i * 120 + 100} className="lg:h-full">
+                <div className="rounded-2xl border border-line bg-surface px-4 py-3.5 shadow-soft transition duration-300 group-hover:-translate-y-1.5 group-hover:border-brand-200 group-hover:shadow-lift lg:h-full lg:text-center">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400">{tr("Étape")} {i + 1}</p>
                   <h3 className="mt-0.5 text-[15px] font-bold leading-snug text-stone-900">{s.title}</h3>
                   <p className="mt-1 text-[13px] leading-relaxed text-stone-500">{s.text}</p>

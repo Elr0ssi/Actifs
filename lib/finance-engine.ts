@@ -2,7 +2,8 @@
 // All dates are "YYYY-MM-DD" strings handled in UTC to avoid timezone drift.
 import { DAYS_SHORT_SUN as WEEKDAYS_FR } from "@/lib/i18n";
 
-export type OpKind = "income" | "fixed" | "variable" | "savings";
+/** « daily » : consommation quotidienne, c'est-à-dire les paiements réels par carte (Apple Pay) ; « variable » : ce qu'on estime dépenser. */
+export type OpKind = "income" | "fixed" | "variable" | "daily" | "savings";
 export type OpFrequency = "once" | "daily" | "weekly" | "monthly" | "yearly";
 export type OpTable = "charge" | "income";
 export type WeekendRule = "none" | "next" | "prev";
@@ -36,6 +37,8 @@ export interface Occurrence {
   date: string;
   op: FinOp;
   signed: number;
+  /** Montant réellement compté : celui de l'opération, sauf pour une estimation déjà consommée par des paiements réels. */
+  amount: number;
 }
 
 export interface BalanceAnchor {
@@ -164,15 +167,55 @@ export function getSkippedOccurrences(ops: FinOp[], from: string, to: string): O
   for (const op of ops) {
     if (!op.skipped.length) continue;
     for (const date of occurrencesOf({ ...op, skipped: [] }, from, to)) {
-      if (op.skipped.includes(date)) out.push({ date, op, signed: signOf(op) * op.amount });
+      if (op.skipped.includes(date)) out.push({ date, op, signed: signOf(op) * op.amount, amount: op.amount });
     }
   }
   return out.sort((a, b) => a.date.localeCompare(b.date));
 }
 
+/**
+ * Une estimation (dépense variable) n'est pas une dépense en plus des paiements réels : c'est une enveloppe.
+ * Dans un mois et une catégorie donnés, les paiements par carte « consomment » l'estimation (les premières dates d'abord) ;
+ * seul le reste de l'estimation est encore compté, et ce qui dépasse l'enveloppe s'ajoute tel quel.
+ * Clé : `${id}|${date}` → montant restant à compter de cette occurrence.
+ */
+function envelopeAdjustments(ops: FinOp[], from: string, to: string) {
+  const adjust = new Map<string, number>();
+  const daily = ops.filter((o) => o.kind === "daily");
+  const planned = ops.filter((o) => o.kind === "variable" && o.active);
+  if (!daily.length || !planned.length) return adjust;
+  const first = new Date(toMs(from));
+  const last = new Date(toMs(to));
+  const months = (last.getUTCFullYear() - first.getUTCFullYear()) * 12 + last.getUTCMonth() - first.getUTCMonth();
+  for (let i = 0; i <= months; i++) {
+    const { start, end } = monthBounds(first.getUTCFullYear(), first.getUTCMonth() + i);
+    const real = new Map<string, number>();
+    for (const op of daily) for (const d of occurrencesOf(op, start, end)) real.set(op.category || "Autre", (real.get(op.category || "Autre") ?? 0) + op.amount);
+    if (!real.size) continue;
+    const occ: { op: FinOp; date: string }[] = [];
+    for (const op of planned) for (const date of occurrencesOf(op, start, end)) occ.push({ op, date });
+    occ.sort((a, b) => a.date.localeCompare(b.date));
+    for (const o of occ) {
+      const cat = o.op.category || "Autre";
+      const left = real.get(cat) ?? 0;
+      if (left <= 0) continue;
+      const take = Math.min(left, o.op.amount);
+      real.set(cat, left - take);
+      adjust.set(`${o.op.id}|${o.date}`, o.op.amount - take);
+    }
+  }
+  return adjust;
+}
+
 export function expand(ops: FinOp[], from: string, to: string): Occurrence[] {
   const out: Occurrence[] = [];
-  for (const op of ops) for (const date of occurrencesOf(op, from, to)) out.push({ date, op, signed: signOf(op) * op.amount });
+  const adjust = envelopeAdjustments(ops, from, to);
+  for (const op of ops) {
+    for (const date of occurrencesOf(op, from, to)) {
+      const amount = adjust.get(`${op.id}|${date}`) ?? op.amount;
+      out.push({ date, op, signed: signOf(op) * amount, amount });
+    }
+  }
   return out.sort((a, b) => a.date.localeCompare(b.date) || b.signed - a.signed);
 }
 
@@ -246,7 +289,7 @@ export function getDateSituation(ops: FinOp[], anchor: BalanceAnchor, date: stri
   const byAccount = new Map<string, number>();
   for (const o of untilEnd.filter((o) => o.signed < 0)) {
     const key = o.op.account || "Compte principal";
-    byAccount.set(key, (byAccount.get(key) ?? 0) + o.op.amount);
+    byAccount.set(key, (byAccount.get(key) ?? 0) + o.amount);
   }
 
   return {
@@ -282,12 +325,16 @@ export interface MonthlyBudget {
   income: number;
   incomeCount: number;
   fixed: number;
+  /** Estimations pas encore consommées par des paiements réels. */
   variable: number;
+  /** Consommation quotidienne : paiements réels par carte. */
+  daily: number;
   savings: number;
   startBalance: number;
   endBalance: number;
   resteAVivre: number;
   variableByCategory: { label: string; value: number }[];
+  dailyByCategory: { label: string; value: number }[];
   fixedByCategory: { label: string; value: number }[];
   savingsByCategory: { label: string; value: number }[];
   occurrences: Occurrence[];
@@ -301,16 +348,17 @@ export function getMonthlyBudget(
 ): MonthlyBudget {
   const { start, end } = monthBounds(year, month);
   const occ = expand(ops, start, end);
-  const total = (k: OpKind) => occ.filter((o) => o.op.kind === k).reduce((s, o) => s + o.op.amount, 0);
+  const total = (k: OpKind) => occ.filter((o) => o.op.kind === k).reduce((s, o) => s + o.amount, 0);
   const income = total("income");
   const fixed = total("fixed");
   const variable = total("variable");
+  const daily = total("daily");
   const savings = total("savings");
   const startBalance = getBalanceAtDate(ops, anchor, addDays(start, -1));
 
   const byCategory = (kind: OpKind) => {
     const map = new Map<string, number>();
-    for (const o of occ.filter((o) => o.op.kind === kind)) map.set(o.op.category || "Autre", (map.get(o.op.category || "Autre") ?? 0) + o.op.amount);
+    for (const o of occ.filter((o) => o.op.kind === kind)) map.set(o.op.category || "Autre", (map.get(o.op.category || "Autre") ?? 0) + o.amount);
     return [...map.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value);
   };
 
@@ -319,12 +367,14 @@ export function getMonthlyBudget(
     incomeCount: occ.filter((o) => o.op.kind === "income").length,
     fixed,
     variable,
+    daily,
     savings,
     startBalance,
     endBalance: getBalanceAtDate(ops, anchor, end),
-    resteAVivre: startBalance + income - fixed - variable - savings,
+    resteAVivre: startBalance + income - fixed - variable - daily - savings,
     occurrences: occ,
     variableByCategory: byCategory("variable"),
+    dailyByCategory: byCategory("daily"),
     fixedByCategory: byCategory("fixed"),
     savingsByCategory: byCategory("savings"),
   };
@@ -425,12 +475,42 @@ export const CATEGORIES: Record<OpKind, string[]> = {
   variable: ["Alimentation / Courses", "Restaurants / Livraison", "Sorties & loisirs", "Habillement", "Transport", "Santé", "Maison", "Cadeaux", "Autre"],
   income: ["Salaire", "Prime", "Freelance", "Aides / Allocations", "Remboursement", "Dividendes / Intérêts", "Autre"],
   savings: ["Épargne", "Livret A", "PEA", "CTO", "Assurance-vie", "Crypto", "Autre"],
+  daily: ["Alimentation / Courses", "Restaurants / Livraison", "Sorties & loisirs", "Habillement", "Transport", "Santé", "Maison", "Cadeaux", "Autre"],
 };
 
-export const KIND_LABEL: Record<OpKind, string> = { income: "Revenu", fixed: "Charge fixe", variable: "Dépense variable", savings: "Épargne / invest." };
+export const KIND_LABEL: Record<OpKind, string> = { income: "Revenu", fixed: "Charge fixe", variable: "Dépense variable", daily: "Consommation quotidienne", savings: "Épargne / invest." };
 export const KIND_STYLE: Record<OpKind, { chip: string; text: string; dot: string }> = {
   income: { chip: "bg-emerald-50 text-emerald-700", text: "text-emerald-600", dot: "bg-emerald-500" },
   fixed: { chip: "bg-rose-50 text-rose-700", text: "text-rose-600", dot: "bg-rose-500" },
   variable: { chip: "bg-amber-50 text-amber-700", text: "text-amber-600", dot: "bg-amber-500" },
+  daily: { chip: "bg-teal-50 text-teal-700", text: "text-teal-600", dot: "bg-teal-500" },
   savings: { chip: "bg-violet-50 text-violet-700", text: "text-violet-600", dot: "bg-violet-500" },
 };
+
+export interface Envelope {
+  category: string;
+  /** Budget estimé du mois (somme des dépenses variables de la catégorie). */
+  planned: number;
+  /** Consommation quotidienne réelle du mois dans la catégorie. */
+  real: number;
+  /** Ce qu'il reste dans l'enveloppe (négatif si dépassée). */
+  left: number;
+}
+
+/** Prévu contre réel, catégorie par catégorie, pour un mois. Les catégories sans estimation mais avec des paiements réels sont incluses. */
+export function getEnvelopes(ops: FinOp[], year: number, month: number): Envelope[] {
+  const { start, end } = monthBounds(year, month);
+  const map = new Map<string, Envelope>();
+  const row = (category: string) => map.get(category) ?? { category, planned: 0, real: 0, left: 0 };
+  for (const op of ops) {
+    if (op.kind !== "variable" && op.kind !== "daily") continue;
+    const cat = op.category || "Autre";
+    const n = occurrencesOf(op, start, end).length;
+    if (!n) continue;
+    const e = row(cat);
+    if (op.kind === "variable") e.planned += n * op.amount;
+    else e.real += n * op.amount;
+    map.set(cat, e);
+  }
+  return [...map.values()].map((e) => ({ ...e, left: e.planned - e.real })).sort((a, b) => Math.max(b.planned, b.real) - Math.max(a.planned, a.real));
+}
