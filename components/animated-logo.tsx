@@ -13,19 +13,21 @@ import { cx } from "@/lib/utils";
 export type LogoSection = "budget" | "recettes" | "planning";
 
 const C = { x: 200, y: 190 }; // centre du moulinet
-const R = 124; // rayon d'orbite des bulles
-const SMALL = 0.9;
-const BIG = 1.08;
-const EASE = "cubic-bezier(0.34, 1.18, 0.5, 1)";
-const MS = 560;
+const R = 104; // rayon d'orbite des bulles : elles se chevauchent, c'est la découpe qui les garde sans contact
+const SMALL = 0.97;
+const BIG = 1.05;
+const GAP = 30; // épaisseur (x2) du vide qui sépare deux bulles
+const EASE = "cubic-bezier(0.34, 1.22, 0.5, 1)"; // ressort doux : un léger dépassement, jamais linéaire
+const ICON = 1.2; // taille des icônes : toujours la même
 
 /**
- * Position de repos de chaque bulle (angle d'écran, 90° = bas). Chaque bulle est une goutte arrondie dont la pointe vise le centre du logo.
+ * Position de repos de chaque bulle (angle d'écran, 90° = bas). Chaque bulle est une goutte arrondie dont la pointe vise le centre.
+ * `cutBy` : la bulle voisine qui s'emboîte dans celle-ci (elle la « creuse » en laissant un vide régulier) ; le sens est fixe pour que les formes restent continues.
  */
-const BUBBLES: { id: LogoSection; at: number; from: string; to: string }[] = [
-  { id: "planning", at: 90, from: "#C5A7F4", to: "#8A62EA" },
-  { id: "budget", at: 210, from: "#5A36F0", to: "#9086F7" },
-  { id: "recettes", at: 330, from: "#E88F90", to: "#F3A887" },
+const BUBBLES: { id: LogoSection; at: number; from: string; to: string; cutBy: LogoSection }[] = [
+  { id: "planning", at: 90, from: "#C5A7F4", to: "#8A62EA", cutBy: "recettes" },
+  { id: "budget", at: 210, from: "#5A36F0", to: "#9086F7", cutBy: "planning" },
+  { id: "recettes", at: 330, from: "#E88F90", to: "#F3A887", cutBy: "budget" },
 ];
 /** Direction de la pointe : vers le centre. */
 const tipOf = (at: number) => at + 180;
@@ -62,8 +64,8 @@ export function sectionOfPath(pathname: string): LogoSection | null {
 let lastSection: LogoSection | null = null;
 let lastTurn = 0;
 
-// Goutte de rayon 94 (+6 de contour arrondi), pointe vers +x.
-const tipPath = "M114 0 C102 -8 90 -30 77.5 -53.2 A94 94 0 1 0 77.5 53.2 C90 30 102 8 114 0 Z";
+// Goutte de rayon 94 (+6 de contour arrondi), pointe courte vers +x.
+const tipPath = "M108 0 C98 -8 88 -28 75 -56.6 A94 94 0 1 0 75 56.6 C88 28 98 8 108 0 Z";
 
 /** Icône blanche dessinée dans un repère centré, ~90 unités de large. */
 function Icon({ id, tint }: { id: LogoSection; tint: string }) {
@@ -119,34 +121,51 @@ export function AnimatedLogo({ section, className }: { section?: LogoSection; cl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target]);
 
-  const move = { transition: `transform ${MS}ms ${EASE}` } as const;
-  const pos = (id: LogoSection) => {
+  /** Chaque bulle a son propre rythme : la nouvelle bulle active part la première, les autres suivent. Les formes se déforment donc au passage. */
+  const timing = (id: LogoSection) => {
+    const lead = id === state.section;
+    const i = BUBBLES.findIndex((b) => b.id === id);
+    return `transform ${lead ? 600 : 660 + i * 40}ms ${EASE} ${lead ? 0 : 50 + i * 30}ms`;
+  };
+  const orbit = (id: LogoSection, children: React.ReactNode) => (
+    <g className="logo-move" style={{ transition: timing(id), transformOrigin: `${C.x}px ${C.y}px`, transform: `rotate(${state.turn}deg)` }}>{children}</g>
+  );
+  const at = (id: LogoSection) => {
     const b = BUBBLES.find((x) => x.id === id)!;
     const rad = (b.at * Math.PI) / 180;
-    return { b, x: C.x + R * Math.cos(rad), y: C.y + R * Math.sin(rad), active: id === state.section };
+    return { b, x: C.x + R * Math.cos(rad), y: C.y + R * Math.sin(rad) };
   };
-  /** La forme d'une bulle (pointe vers +x, puis tournée vers sa direction de repos), avec la petite déformation de mouvement. */
-  const shape = (id: LogoSection, children: React.ReactNode) => {
-    const { b } = pos(id);
-    return (
-      <g transform={`rotate(${tipOf(b.at)})`}>
-        {/* la grosse bulle est un peu raccourcie dans le sens de sa pointe, pour que les trois pointes ne se touchent pas au centre */}
-        <g className="logo-move" style={{ ...move, transform: `scale(${id === state.section ? 0.93 : 1}, 1)` }}>
-          <g className={beat > 0 ? "logo-squish" : undefined} key={beat} style={{ animationDelay: id === state.section ? "0ms" : "70ms" }}>{children}</g>
+  /** Corps de la bulle : positionné sur son orbite, avec son échelle et la légère déformation de mouvement. */
+  const body = (id: LogoSection, children: React.ReactNode) => {
+    const { b, x, y } = at(id);
+    const active = id === state.section;
+    return orbit(
+      id,
+      <g transform={`translate(${x} ${y})`}>
+        <g className="logo-move" style={{ transition: timing(id), transform: `scale(${active ? BIG : SMALL})` }}>
+          <g transform={`rotate(${tipOf(b.at)})`}>
+            <g className={beat > 0 ? "logo-squish" : undefined} key={beat} style={{ animationDelay: active ? "0ms" : "80ms" }}>{children}</g>
+          </g>
         </g>
       </g>
     );
   };
-  const placed = (id: LogoSection, children: React.ReactNode) => {
-    const { x, y, active } = pos(id);
-    return (
+  /** Icône : suit l'orbite mais reste droite et garde toujours la même taille, quelle que soit la bulle. */
+  const icon = (id: LogoSection) => {
+    const { b, x, y } = at(id);
+    const tip = (tipOf(b.at) * Math.PI) / 180;
+    return orbit(
+      id,
       <g transform={`translate(${x} ${y})`}>
-        <g className="logo-move" style={{ ...move, transform: `scale(${active ? BIG : SMALL})` }}>{children}</g>
+        <g className="logo-move" style={{ transition: timing(id), transform: `rotate(${-state.turn}deg)` }}>
+          <g transform={`translate(${-8 * Math.cos(tip)} ${-8 * Math.sin(tip)}) scale(${ICON})`}><Icon id={id} tint={TINT[id]} /></g>
+        </g>
       </g>
     );
   };
+
   return (
-    <svg viewBox="0 24 400 400" className={cx("logo-svg h-10 w-10 shrink-0 overflow-visible", className)} role="img" aria-label="Flozea" focusable="false">
+    <svg viewBox="5 34 390 390" className={cx("logo-svg h-10 w-10 shrink-0 overflow-visible", className)} role="img" aria-label="Flozea" focusable="false">
       <defs>
         {BUBBLES.map((b) => (
           <linearGradient key={b.id} id={`${uid}-${b.id}`} x1="0" y1="1" x2="1" y2="0">
@@ -154,26 +173,24 @@ export function AnimatedLogo({ section, className }: { section?: LogoSection; cl
             <stop offset="1" stopColor={b.to} />
           </linearGradient>
         ))}
+        {/* Une bulle est creusée par sa voisine, qui s'y emboîte avec un vide régulier : elles se fondent l'une dans l'autre sans se toucher */}
+        {BUBBLES.map((b) => (
+          <mask key={b.id} id={`${uid}-m-${b.id}`} maskUnits="userSpaceOnUse" x="-200" y="-200" width="800" height="900">
+            <rect x="-200" y="-200" width="800" height="900" fill="#fff" />
+            {body(b.cutBy, <path d={tipPath} fill="#000" stroke="#000" strokeWidth={GAP} strokeLinejoin="round" />)}
+          </mask>
+        ))}
       </defs>
-      <g className="logo-move" style={{ ...move, transformOrigin: `${C.x}px ${C.y}px`, transform: `rotate(${state.turn}deg)` }}>
-        {BUBBLES.map((b) => {
-          const tip = tipOf(b.at);
-          const iconShift = { x: -9 * Math.cos((tip * Math.PI) / 180), y: -9 * Math.sin((tip * Math.PI) / 180) };
-          const fill = `url(#${uid}-${b.id})`;
-          return (
-            <g key={b.id}>
-              {placed(b.id, shape(b.id, <path d={tipPath} fill={fill} stroke={fill} strokeWidth="12" strokeLinejoin="round" />))}
-              {placed(
-                b.id,
-                /* L'icône reste droite : elle tourne en sens inverse de l'ensemble */
-                <g className="logo-move" style={{ ...move, transform: `rotate(${-state.turn}deg)` }}>
-                  <g transform={`translate(${iconShift.x} ${iconShift.y}) scale(0.95)`}><Icon id={b.id} tint={TINT[b.id]} /></g>
-                </g>
-              )}
-            </g>
-          );
-        })}
-      </g>
+      {BUBBLES.map((b) => {
+        const fill = `url(#${uid}-${b.id})`;
+        return (
+          <g key={b.id} mask={`url(#${uid}-m-${b.id})`}>
+            {body(b.id, <path d={tipPath} fill={fill} stroke={fill} strokeWidth="12" strokeLinejoin="round" />)}
+          </g>
+        );
+      })}
+      {/* Les icônes passent au-dessus de toutes les bulles : une bulle qui glisse ne les recouvre jamais */}
+      {BUBBLES.map((b) => <g key={b.id}>{icon(b.id)}</g>)}
     </svg>
   );
 }
