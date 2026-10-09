@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { RECIPES } from "@/lib/marketing/recipes";
 import { GUIDES } from "@/lib/marketing/guides";
+import { IDEAS } from "@/lib/marketing/ideas";
 import { CATEGORIES, FEATURES } from "@/lib/marketing/features";
 import { LOCALES } from "@/lib/i18n";
 import { SITE_URL, localeUrl } from "@/lib/marketing/site";
@@ -24,6 +25,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...FEATURES.flatMap((f) => page(`/fonctionnalites/${f.slug}`, 0.85)),
     ...GUIDES.flatMap((g) => page(`/guides/${g.slug}`, 0.8)),
     ...page("/recettes", 0.8, "weekly"),
+    ...page("/recettes/idees", 0.8, "weekly"),
+    ...IDEAS.flatMap((i) => page(`/recettes/idees/${i.slug}`, 0.7)),
     ...RECIPES.flatMap((r) => page(`/recettes/${r.slug}`, 0.6)),
     ...page("/tarifs", 0.6),
     ...page("/confidentialite", 0.3),

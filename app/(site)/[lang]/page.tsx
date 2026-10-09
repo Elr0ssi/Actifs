@@ -16,6 +16,7 @@ import { JsonLd, faqJsonLd } from "@/components/marketing/json-ld";
 import { RECIPES } from "@/lib/marketing/recipes";
 import { RecipeCard } from "@/components/marketing/recipe-card";
 import { GUIDES } from "@/lib/marketing/guides";
+import { IDEAS } from "@/lib/marketing/ideas";
 import { SITE_NAME, localeUrl, pageMeta } from "@/lib/marketing/site";
 
 export function generateMetadata({ params }: { params: { lang: string } }): Metadata {
@@ -192,6 +193,14 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
           </div>
           <FadeIn delay={280} className="mt-8 text-center">
             <Link href="/recettes" className="btn-secondary px-5 py-2.5">{tr("Voir toutes les recettes →")}</Link>
+          </FadeIn>
+          <FadeIn delay={340} className="mx-auto mt-10 max-w-3xl text-center">
+            <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">{tr("Idées de recettes")}</p>
+            <div className="mt-3 flex flex-wrap justify-center gap-2">
+              {IDEAS.slice(0, 8).map((i) => (
+                <Link key={i.slug} href={`/recettes/idees/${i.slug}`} className="rounded-full border border-line bg-surface/80 px-3.5 py-1.5 text-sm font-medium text-stone-700 transition hover:-translate-y-0.5 hover:border-brand-300 hover:text-brand-700">{i.icon} {tr(i.label)}</Link>
+              ))}
+            </div>
           </FadeIn>
         </div>
         </section>

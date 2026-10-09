@@ -92,6 +92,7 @@ const FOOTER_COLUMNS: { title: string; links: [string, string][] }[] = [
     links: [
       ["/fonctionnalites", "Toutes les fonctionnalités"],
       ["/recettes", "Recettes"],
+      ["/recettes/idees", "Idées de recettes"],
       ["/tarifs", "Tarifs"],
       ["/login", "Connexion"],
       ["/signup", "Inscription"],

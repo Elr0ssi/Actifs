@@ -7,6 +7,8 @@ import { notFound } from "next/navigation";
 import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { FadeIn } from "@/components/marketing/fade-in";
 import { RECIPES, getRecipe } from "@/lib/marketing/recipes";
+import { ideasOf, ideaRecipes } from "@/lib/marketing/ideas";
+import { recipeFaq } from "@/lib/marketing/recipe-faq";
 import { RecipeCard } from "@/components/marketing/recipe-card";
 import { JsonLd, breadcrumbJsonLd } from "@/components/marketing/json-ld";
 import { SITE_NAME, absolute, pageMeta } from "@/lib/marketing/site";
@@ -22,7 +24,7 @@ export function generateMetadata({ params }: { params: { lang: string; slug: str
   const recipe = getRecipe(params.slug);
   if (!recipe) return {};
   const title = tr("{name} : recette facile en {time} ({servings} pers.)", { name: tr(recipe.name), time: tr(recipe.time), servings: recipe.servings });
-  const description = `${tr(recipe.desc)} ${tr("Ingrédients, étapes et liste de courses automatique.")}`;
+  const description = tr("{name} : {list}… Ingrédients, étapes détaillées et liste de courses automatique pour {servings} personnes.", { name: tr(recipe.name), list: recipe.ingredients.slice(0, 5).map((i) => tr(i)).join(", "), servings: recipe.servings });
   return pageMeta({ title, description, path: `/recettes/${recipe.slug}`, type: "article", images: recipe.image ? [recipe.image] : undefined });
 }
 
@@ -33,6 +35,9 @@ export default function RecipeDetailPage({ params }: { params: { lang: string; s
   if (!recipe) notFound();
 
   const others = RECIPES.filter((r) => r.slug !== recipe.slug && r.category === recipe.category).slice(0, 3);
+  const ideas = ideasOf(recipe);
+  const alike = [...new Map(ideas.flatMap((i) => ideaRecipes(i)).filter((r) => r.slug !== recipe.slug && !others.some((o) => o.slug === r.slug)).map((r) => [r.slug, r])).values()].slice(0, 6);
+  const faq = recipeFaq(recipe, tr);
 
   return (
     <div className="relative overflow-hidden">
@@ -55,6 +60,7 @@ export default function RecipeDetailPage({ params }: { params: { lang: string; s
             ...(recipe.image ? { image: [absolute(recipe.image)] } : {}),
             author: { "@type": "Organization", name: SITE_NAME },
           },
+          { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
           breadcrumbJsonLd([{ name: "Accueil", url: absolute("/") }, { name: "Recettes", url: absolute("/recettes") }, { name: recipe.name, url: absolute(`/recettes/${recipe.slug}`) }]),
         ]}
       />
@@ -144,6 +150,18 @@ export default function RecipeDetailPage({ params }: { params: { lang: string; s
           </div>
         </FadeIn>
 
+        <section className="mt-12" aria-labelledby="faq-recette">
+          <h2 id="faq-recette" className="text-xl font-bold text-stone-900">{tr("Questions fréquentes sur {name}", { name: tr(recipe.name) })}</h2>
+          <div className="mt-4 divide-y divide-line border-y border-line">
+            {faq.map((f) => (
+              <details key={f.q} className="group py-3.5">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] font-medium text-stone-900">{f.q}<span className="text-xl text-brand-500 transition group-open:rotate-45">+</span></summary>
+                <p className="mt-2 text-sm leading-relaxed text-stone-600">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
         <FadeIn delay={140}>
           <div className="mt-12 rounded-3xl border border-brand-200 bg-brand-50 p-8 text-center">
             <h2 className="text-xl font-bold text-stone-900">{tr("Envie de cuisiner ça cette semaine ?")}</h2>
@@ -154,6 +172,30 @@ export default function RecipeDetailPage({ params }: { params: { lang: string; s
             <p className="mt-3 text-xs text-stone-500">{tr("Gratuit, sans carte bancaire.")}</p>
           </div>
         </FadeIn>
+
+        {ideas.length > 0 && (
+          <div className="mt-14">
+            <h2 className="mb-3 font-semibold text-stone-900">{tr("Cette recette dans nos idées")}</h2>
+            <div className="flex flex-wrap gap-2">
+              {ideas.map((i) => (
+                <Link key={i.slug} href={`/recettes/idees/${i.slug}`} className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-brand-300 hover:text-brand-700">
+                  {i.icon} {tr(i.label)}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {alike.length > 0 && (
+          <div className="mt-12">
+            <h2 className="mb-4 font-semibold text-stone-900">{tr("D'autres idées dans le même esprit")}</h2>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {alike.map((r) => (
+                <RecipeCard key={r.slug} recipe={r} size="small" />
+              ))}
+            </div>
+          </div>
+        )}
 
         {others.length > 0 && (
           <div className="mt-14">

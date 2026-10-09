@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { SiteHeader, SiteFooter } from "@/components/marketing/site-header";
 import { FadeIn } from "@/components/marketing/fade-in";
 import { pageMeta } from "@/lib/marketing/site";
+import Link from "@/components/marketing/link";
+import { IDEAS } from "@/lib/marketing/ideas";
 import { RecipesBrowser } from "@/components/marketing/recipes-browser";
 import { Ambience, CtaBanner } from "@/components/marketing/sections";
 
@@ -42,6 +44,16 @@ export default function RecipesPage({ params }: { params: { lang: string } }) {
           <FadeIn>
             <RecipesBrowser />
           </FadeIn>
+        </section>
+
+        <section className="mx-auto max-w-5xl px-6 pb-24" aria-labelledby="idees">
+          <h2 id="idees" className="text-center text-2xl font-bold tracking-tight text-stone-900">{tr("Idées de recettes")}</h2>
+          <p className="mx-auto mt-2 max-w-xl text-center text-sm text-stone-600">{tr("Pas d'idée pour ce soir ? Choisis une envie, on te propose des recettes simples avec leurs ingrédients, leurs étapes et la liste de courses qui va avec.")}</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
+            {IDEAS.map((i) => (
+              <Link key={i.slug} href={`/recettes/idees/${i.slug}`} className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-brand-300 hover:text-brand-700">{i.icon} {tr(i.label)}</Link>
+            ))}
+          </div>
         </section>
 
         <section className="mx-auto max-w-5xl px-6 pb-28">
