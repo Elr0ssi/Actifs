@@ -13,9 +13,10 @@ import { cx } from "@/lib/utils";
 export type LogoSection = "budget" | "recettes" | "planning";
 
 const C = { x: 200, y: 190 }; // centre du moulinet
-const R = 84; // rayon d'orbite des bulles
-const SMALL = 56; // rayon des deux bulles du haut
-const BIG = 66; // rayon de la bulle active, en bas
+const R = 86; // rayon d'orbite des bulles
+const SMALL = 65; // rayon des deux bulles du haut
+const BIG = 75; // rayon de la bulle active, en bas
+const ICON = 0.9; // taille des icônes : toujours la même
 const EASE = "cubic-bezier(0.34, 1.3, 0.5, 1)"; // ressort doux : un léger rebond, jamais linéaire
 
 /** Position de repos de chaque bulle (angle d'écran, 90° = bas). */
@@ -48,6 +49,39 @@ export function sectionOfPath(pathname: string): LogoSection | null {
   if (path === "/repas" || path.startsWith("/recettes") || /^\/fonctionnalites\/(liste-de-courses|recettes-et-menu-de-la-semaine)/.test(path) || path.startsWith("/outils/liste-de-courses")) return "recettes";
   if (path === "/organisation" || /^\/fonctionnalites\/(agenda|taches-et-routines|notes)/.test(path) || path.startsWith("/outils/suivi-habitudes")) return "planning";
   return null;
+}
+
+/** Détails creusés dans l'icône (couleur de la bulle, à cet endroit). */
+const TINT: Record<LogoSection, string> = { planning: "#9B78EE", budget: "#7664F5", recettes: "#EE9C8B" };
+
+/** Icône blanche dessinée dans un repère centré, ~90 unités de large. */
+function Icon({ id }: { id: LogoSection }) {
+  if (id === "budget")
+    return (
+      <g fill="#fff" stroke={TINT.budget} strokeWidth="5" strokeLinejoin="round">
+        {[-30, -4, 22].map((y) => (
+          <path key={y} d={`M-36 ${y} v12 a36 15 0 0 0 72 0 v-12 a36 15 0 0 0 -72 0z`} />
+        ))}
+      </g>
+    );
+  if (id === "recettes")
+    return (
+      <g fill="#fff">
+        {[-44, -32, -20].map((x) => <rect key={x} x={x} y="-50" width="9" height="34" rx="4.5" />)}
+        <rect x="-44" y="-30" width="33" height="26" rx="12" />
+        <rect x="-36" y="-8" width="17" height="58" rx="8.5" />
+        <ellipse cx="27" cy="-22" rx="17" ry="26" />
+        <rect x="18.5" y="-2" width="17" height="52" rx="8.5" />
+      </g>
+    );
+  return (
+    <g>
+      <rect x="-38" y="-34" width="76" height="78" rx="14" fill="none" stroke="#fff" strokeWidth="10" />
+      <rect x="-22" y="-52" width="10" height="24" rx="5" fill="#fff" />
+      <rect x="12" y="-52" width="10" height="24" rx="5" fill="#fff" />
+      {[[-14, -6], [14, -6], [-14, 20], [14, 20]].map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r="8" fill="#fff" />)}
+    </g>
+  );
 }
 
 // Les en-têtes du site sont recréés à chaque page : on garde ici l'état précédent pour que la transition continue d'une page à l'autre.
@@ -84,7 +118,7 @@ export function AnimatedLogo({ section, className }: { section?: LogoSection; cl
   };
 
   return (
-    <svg viewBox="60 82 280 280" className={cx("logo-svg h-9 w-9 shrink-0 overflow-visible", className)} role="img" aria-label="Flozea" focusable="false">
+    <svg viewBox="54 70 292 292" className={cx("logo-svg h-11 w-11 -my-0.5 shrink-0 overflow-visible", className)} role="img" aria-label="Flozea" focusable="false">
       <defs>
         {BUBBLES.map((b) => (
           <linearGradient key={b.id} id={`${uid}-${b.id}`} x1="0" y1="1" x2="1" y2="0">
@@ -105,6 +139,21 @@ export function AnimatedLogo({ section, className }: { section?: LogoSection; cl
                 <g className="logo-move" style={{ transition: timing(b.id), transform: `scale(${active ? BIG / SMALL : 1})` }}>
                   <circle r={SMALL} fill={`url(#${uid}-${b.id})`} />
                 </g>
+              </g>
+            </g>
+          </g>
+        );
+      })}
+      {/* Les icônes passent au-dessus des ronds, restent droites et gardent toujours la même taille */}
+      {BUBBLES.map((b) => {
+        const rad = (b.at * Math.PI) / 180;
+        const x = C.x + R * Math.cos(rad);
+        const y = C.y + R * Math.sin(rad);
+        return (
+          <g key={b.id} className="logo-move" style={{ transition: timing(b.id), transformOrigin: `${C.x}px ${C.y}px`, transform: `rotate(${state.turn}deg)` }}>
+            <g transform={`translate(${x} ${y})`}>
+              <g className="logo-move" style={{ transition: timing(b.id), transform: `rotate(${-state.turn}deg)` }}>
+                <g transform={`scale(${ICON})`}><Icon id={b.id} /></g>
               </g>
             </g>
           </g>

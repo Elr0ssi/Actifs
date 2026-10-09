@@ -32,7 +32,7 @@ export function SiteHeader({ current }: { current?: Current }) {
   return (
     <header className="sticky top-0 z-40 border-b border-stone-200/70 bg-surface/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
-        <Link href="/"><LogoWordmark className="text-lg" /></Link>
+        <Link href="/"><LogoWordmark className="text-2xl" /></Link>
         <nav aria-label={tr("Navigation principale")} className="hidden items-center gap-5 text-sm font-medium text-stone-600 md:flex">
           <Link href="/fonctionnalites" className={item(current === "fonctionnalites")}>{tr("Fonctionnalités")}</Link>
           {/* Un onglet par catégorie, avec ses pages en sous-menu */}
@@ -107,7 +107,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-6xl px-6">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
           <div>
-            <LogoWordmark className="text-lg" />
+            <LogoWordmark className="text-2xl" />
             <p className="mt-3 max-w-xs text-sm text-stone-500">{tr("Tâches, agenda, courses, recettes, budget et notes : un seul endroit pour organiser ta vie, seul ou à deux.")}</p>
           </div>
           {FOOTER_COLUMNS.map((col) => (

@@ -22,7 +22,7 @@ export function AuthShell({
       <div className="pointer-events-none absolute inset-0 bg-grid [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_30%,transparent_100%)]" aria-hidden />
       <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-6">
         <header className="flex items-center justify-between">
-          <Link href="/" aria-label="Flozea"><LogoWordmark className="text-lg" /></Link>
+          <Link href="/" aria-label="Flozea"><LogoWordmark className="text-2xl" /></Link>
           <LanguageMenu />
         </header>
 

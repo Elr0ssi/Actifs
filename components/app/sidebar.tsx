@@ -43,7 +43,7 @@ export function Sidebar({ displayName, inviteCode }: { displayName: string; invi
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-line/60 bg-surface/70 px-4 backdrop-blur-xl lg:hidden">
-        <LogoWordmark className="text-[15px]" />
+        <LogoWordmark className="text-xl" />
         <div className="flex items-center gap-2">
           <button type="button" onClick={openPalette} aria-label={tr("Rechercher")} className="flex h-9 w-9 items-center justify-center rounded-xl text-stone-500 hover:bg-stone-100">
             <Icon name="search" className="h-[18px] w-[18px]" />
@@ -87,7 +87,7 @@ export function Sidebar({ displayName, inviteCode }: { displayName: string; invi
         )}
       >
         <div className="flex items-center justify-between px-5 pb-3 pt-5">
-          <LogoWordmark className="text-lg" />
+          <LogoWordmark className="text-2xl" />
           <button type="button" onClick={() => setOpen(false)} aria-label={tr("Fermer le menu")} className="rounded-lg p-1 text-stone-400 hover:bg-stone-100 lg:hidden">
             <Icon name="close" />
           </button>

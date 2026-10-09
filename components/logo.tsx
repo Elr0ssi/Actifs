@@ -6,12 +6,12 @@ import { AnimatedLogo, type LogoSection } from "@/components/animated-logo";
  * Un seul composant animé : voir `animated-logo.tsx`.
  */
 export function LogoMark({ className, section }: { className?: string; section?: LogoSection }) {
-  return <AnimatedLogo section={section} className={cx("h-9 w-9", className)} />;
+  return <AnimatedLogo section={section} className={cx("h-11 w-11", className)} />;
 }
 
 export function LogoWordmark({ className, section }: { className?: string; section?: LogoSection }) {
   return (
-    <span className={cx("flex items-center gap-2 font-bold tracking-tight text-stone-900", className)}>
+    <span className={cx("flex items-center gap-2.5 font-bold tracking-tight text-stone-900", className)}>
       <LogoMark section={section} />
       Flozea
     </span>
