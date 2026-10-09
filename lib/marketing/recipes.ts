@@ -1,6 +1,8 @@
 // Recettes de démonstration pour le site public. Générées à partir de la base fournie
 // (94 fiches, quantités par personne, ustensiles, étapes détaillées).
 
+import { RECIPE_IMAGES } from "@/lib/marketing/recipe-images.generated";
+
 export interface MarketingRecipe {
   slug: string;
   name: string;
@@ -1928,6 +1930,9 @@ export const RECIPES: MarketingRecipe[] = [
     utensils: ["couteau", "planche à découper", "poêle", "casserole"],
   },
 ];
+
+// Photos déposées dans public/recettes/ (voir scripts/recipe-images.mjs) : elles remplacent l'emoji.
+for (const r of RECIPES) r.image = RECIPE_IMAGES[r.slug] ?? r.image;
 
 export function getRecipe(slug: string) {
   return RECIPES.find((r) => r.slug === slug) ?? null;

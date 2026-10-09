@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { CookieNotice } from "@/components/ui/cookie-notice";
 import { ClickRipple } from "@/components/ui/click-ripple";
 import { I18nProvider } from "@/components/i18n/provider";
+import { SiteBack } from "@/components/marketing/site-back";
 import { LOCALES, OG_LOCALES, isLocale } from "@/lib/i18n";
 import { getT, setRequestLocale, siteDictFor } from "@/lib/i18n/server";
 import { languageAlternates, SITE_URL } from "@/lib/marketing/site";
@@ -45,6 +46,7 @@ export default function SiteLayout({ children, params }: { children: React.React
       <body>
         <I18nProvider locale={params.lang} dict={siteDictFor(params.lang)}>
           {children}
+          <SiteBack />
           <CookieNotice />
         </I18nProvider>
         <ClickRipple />

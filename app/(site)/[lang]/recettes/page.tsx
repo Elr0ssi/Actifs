@@ -28,15 +28,11 @@ export default function RecipesPage({ params }: { params: { lang: string } }) {
       <main>
         <section className="relative">
           <Ambience tone="amber" emojis={["🍅", "🥕", "🧅", "🧀", "🌿"]} />
-          <div className="relative mx-auto max-w-4xl px-6 pb-16 pt-20 text-center">
+          <div className="relative mx-auto max-w-4xl px-6 pb-6 pt-14 text-center">
             <FadeIn>
-              <span className="rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 text-xs font-semibold text-amber-800">{tr("🍽️ Flozea Recettes · plus de 90 recettes")}</span>
-              <h1 className="mt-5 text-4xl font-bold tracking-tight text-stone-900 sm:text-6xl">
+              <h1 className="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">
                 {tr("Des recettes")} <span className="bg-gradient-to-r from-amber-500 to-rose-600 bg-clip-text text-transparent">{tr("simples")}</span>{tr(", prêtes à cuisiner")}
               </h1>
-              <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-stone-600">
-                {tr("Ouvre une recette pour voir ingrédients et étapes. Dans Flozea, elle devient une liste de courses aux bonnes quantités, avec les prix de ton enseigne.")}
-              </p>
             </FadeIn>
           </div>
         </section>
@@ -46,7 +42,6 @@ export default function RecipesPage({ params }: { params: { lang: string } }) {
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <h2 id="idees" className="text-2xl font-bold tracking-tight text-stone-900">{tr("Idées de recettes")}</h2>
-                <p className="mt-1 max-w-xl text-sm text-stone-600">{tr("Pas d'idée pour ce soir ? Choisis une envie, on te propose des recettes simples avec leurs ingrédients, leurs étapes et la liste de courses qui va avec.")}</p>
               </div>
               <Link href="/recettes/idees" className="text-sm font-semibold text-brand-700 hover:underline">{tr("Toutes les idées →")}</Link>
             </div>

@@ -13,18 +13,22 @@ import { cx } from "@/lib/utils";
 export type LogoSection = "budget" | "recettes" | "planning";
 
 const C = { x: 200, y: 190 }; // centre du moulinet
-const R = 122; // rayon d'orbite des bulles
-const SMALL = 0.94;
-const BIG = 1.12;
+const R = 112; // rayon d'orbite des bulles
+const SMALL = 0.9;
+const BIG = 1.1;
 const EASE = "cubic-bezier(0.34, 1.18, 0.5, 1)";
 const MS = 560;
 
-/** Position de repos de chaque bulle (angle d'écran, 90° = bas) et direction de sa pointe : chaque pointe vise la bulle suivante. */
-const BUBBLES: { id: LogoSection; at: number; tip: number; from: string; to: string }[] = [
-  { id: "planning", at: 90, tip: -120, from: "#C9ABF4", to: "#8A63EB" },
-  { id: "budget", at: 210, tip: 0, from: "#5A34F0", to: "#9288F8" },
-  { id: "recettes", at: 330, tip: 120, from: "#E58F90", to: "#F4AA89" },
+/**
+ * Position de repos de chaque bulle (angle d'écran, 90° = bas) et direction de sa pointe : chaque pointe vise la bulle suivante.
+ * `cuts` : la bulle dont la pointe vient mordre celle-ci (elle laisse un petit vide blanc autour de la pointe).
+ */
+const BUBBLES: { id: LogoSection; at: number; from: string; to: string; cuts: LogoSection }[] = [
+  { id: "planning", at: 90, from: "#C5A7F4", to: "#8A62EA", cuts: "recettes" },
+  { id: "budget", at: 210, from: "#5A36F0", to: "#9086F7", cuts: "planning" },
+  { id: "recettes", at: 330, from: "#E88F90", to: "#F3A887", cuts: "budget" },
 ];
+const tipOf = (at: number) => at + 110;
 
 /** Couleur des détails creusés dans les icônes (celle de la bulle, à cet endroit). */
 const TINT: Record<LogoSection, string> = { planning: "#9B78EE", budget: "#7664F5", recettes: "#EE9C8B" };
@@ -58,7 +62,7 @@ export function sectionOfPath(pathname: string): LogoSection | null {
 let lastSection: LogoSection | null = null;
 let lastTurn = 0;
 
-const tipPath = "M126 0 C104 -14 92 -40 80 -60 A100 100 0 1 0 80 60 C92 40 104 14 126 0 Z";
+const tipPath = "M150 0 C122 -14 90 -48 66.7 -74.5 A100 100 0 1 0 66.7 74.5 C90 48 122 14 150 0 Z";
 
 /** Icône blanche dessinée dans un repère centré, ~90 unités de large. */
 function Icon({ id, tint }: { id: LogoSection; tint: string }) {
@@ -72,17 +76,22 @@ function Icon({ id, tint }: { id: LogoSection; tint: string }) {
     );
   if (id === "recettes")
     return (
-      <g>
-        <rect x="-44" y="-30" width="88" height="60" rx="14" fill="#fff" />
-        <rect x="-44" y="-12" width="88" height="8" fill={tint} />
-        <rect x="14" y="10" width="22" height="10" rx="5" fill={tint} />
+      <g fill="#fff">
+        {/* fourchette */}
+        {[-44, -32, -20].map((x) => <rect key={x} x={x} y="-50" width="9" height="34" rx="4.5" />)}
+        <rect x="-44" y="-30" width="33" height="26" rx="12" />
+        <rect x="-36" y="-8" width="17" height="58" rx="8.5" />
+        {/* cuillère */}
+        <ellipse cx="27" cy="-22" rx="17" ry="26" />
+        <rect x="18.5" y="-2" width="17" height="52" rx="8.5" />
       </g>
     );
   return (
-    <g fill="#fff">
-      <rect x="-42" y="6" width="20" height="40" rx="10" />
-      <rect x="-10" y="-20" width="20" height="66" rx="10" />
-      <rect x="22" y="-48" width="20" height="94" rx="10" />
+    <g>
+      <rect x="-38" y="-34" width="76" height="78" rx="14" fill="none" stroke="#fff" strokeWidth="10" />
+      <rect x="-22" y="-52" width="10" height="24" rx="5" fill="#fff" />
+      <rect x="12" y="-52" width="10" height="24" rx="5" fill="#fff" />
+      {[[-14, -6], [14, -6], [-14, 20], [14, 20]].map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r="8" fill="#fff" />)}
     </g>
   );
 }
@@ -110,8 +119,30 @@ export function AnimatedLogo({ section, className }: { section?: LogoSection; cl
   }, [target]);
 
   const move = { transition: `transform ${MS}ms ${EASE}` } as const;
+  const pos = (id: LogoSection) => {
+    const b = BUBBLES.find((x) => x.id === id)!;
+    const rad = (b.at * Math.PI) / 180;
+    return { b, x: C.x + R * Math.cos(rad), y: C.y + R * Math.sin(rad), active: id === state.section };
+  };
+  /** La forme d'une bulle (pointe vers +x, puis tournée vers sa direction de repos), avec la petite déformation de mouvement. */
+  const shape = (id: LogoSection, children: React.ReactNode) => {
+    const { b } = pos(id);
+    return (
+      <g transform={`rotate(${tipOf(b.at)})`}>
+        <g className={beat > 0 ? "logo-squish" : undefined} key={beat} style={{ animationDelay: id === state.section ? "0ms" : "70ms" }}>{children}</g>
+      </g>
+    );
+  };
+  const placed = (id: LogoSection, children: React.ReactNode) => {
+    const { x, y, active } = pos(id);
+    return (
+      <g transform={`translate(${x} ${y})`}>
+        <g className="logo-move" style={{ ...move, transform: `scale(${active ? BIG : SMALL})` }}>{children}</g>
+      </g>
+    );
+  };
   return (
-    <svg viewBox="0 28 400 400" className={cx("logo-svg h-10 w-10 shrink-0 overflow-visible", className)} role="img" aria-label="Flozea" focusable="false">
+    <svg viewBox="0 24 400 400" className={cx("logo-svg h-10 w-10 shrink-0 overflow-visible", className)} role="img" aria-label="Flozea" focusable="false">
       <defs>
         {BUBBLES.map((b) => (
           <linearGradient key={b.id} id={`${uid}-${b.id}`} x1="0" y1="1" x2="1" y2="0">
@@ -119,28 +150,29 @@ export function AnimatedLogo({ section, className }: { section?: LogoSection; cl
             <stop offset="1" stopColor={b.to} />
           </linearGradient>
         ))}
+        {/* Chaque bulle est découpée par la pointe de sa voisine : un petit vide autour d'elle, sans fond blanc (marche aussi en mode sombre) */}
+        {BUBBLES.map((b) => (
+          <mask key={b.id} id={`${uid}-m-${b.id}`} maskUnits="userSpaceOnUse" x="-200" y="-200" width="800" height="900">
+            <rect x="-200" y="-200" width="800" height="900" fill="#fff" />
+            {placed(b.cuts, shape(b.cuts, <path d={tipPath} fill="#000" stroke="#000" strokeWidth="16" strokeLinejoin="round" />))}
+          </mask>
+        ))}
       </defs>
       <g className="logo-move" style={{ ...move, transformOrigin: `${C.x}px ${C.y}px`, transform: `rotate(${state.turn}deg)` }}>
         {BUBBLES.map((b) => {
-          const active = b.id === state.section;
-          const rad = (b.at * Math.PI) / 180;
-          const x = C.x + R * Math.cos(rad);
-          const y = C.y + R * Math.sin(rad);
-          const iconShift = { x: -9 * Math.cos((b.tip * Math.PI) / 180), y: -9 * Math.sin((b.tip * Math.PI) / 180) };
+          const tip = tipOf(b.at);
+          const iconShift = { x: -9 * Math.cos((tip * Math.PI) / 180), y: -9 * Math.sin((tip * Math.PI) / 180) };
+          const fill = `url(#${uid}-${b.id})`;
           return (
-            <g key={b.id} transform={`translate(${x} ${y})`}>
-              <g className="logo-move" style={{ ...move, transform: `scale(${active ? BIG : SMALL})` }}>
-                <g transform={`rotate(${b.tip})`}>
-                  <g className={beat > 0 ? "logo-squish" : undefined} key={beat} style={{ animationDelay: active ? "0ms" : "70ms" }}>
-                    <path d={tipPath} fill="rgb(var(--surface))" stroke="rgb(var(--surface))" strokeWidth="14" strokeLinejoin="round" />
-                    <path d={tipPath} fill={`url(#${uid}-${b.id})`} stroke={`url(#${uid}-${b.id})`} strokeWidth="6" strokeLinejoin="round" />
-                  </g>
-                </g>
-                {/* L'icône reste droite : elle tourne en sens inverse de l'ensemble */}
+            <g key={b.id} mask={`url(#${uid}-m-${b.id})`}>
+              {placed(b.id, shape(b.id, <path d={tipPath} fill={fill} stroke={fill} strokeWidth="6" strokeLinejoin="round" />))}
+              {placed(
+                b.id,
+                /* L'icône reste droite : elle tourne en sens inverse de l'ensemble */
                 <g className="logo-move" style={{ ...move, transform: `rotate(${-state.turn}deg)` }}>
-                  <g transform={`translate(${iconShift.x} ${iconShift.y}) scale(1.04)`}><Icon id={b.id} tint={TINT[b.id]} /></g>
+                  <g transform={`translate(${iconShift.x} ${iconShift.y}) scale(0.95)`}><Icon id={b.id} tint={TINT[b.id]} /></g>
                 </g>
-              </g>
+              )}
             </g>
           );
         })}

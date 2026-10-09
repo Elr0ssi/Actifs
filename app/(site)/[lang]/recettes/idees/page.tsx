@@ -6,6 +6,7 @@ import { FadeIn } from "@/components/marketing/fade-in";
 import { JsonLd, breadcrumbJsonLd } from "@/components/marketing/json-ld";
 import { Ambience, CtaBanner } from "@/components/marketing/sections";
 import { IDEAS, ideaRecipes } from "@/lib/marketing/ideas";
+import { BackButton } from "@/components/marketing/back-button";
 import { absolute, pageMeta } from "@/lib/marketing/site";
 
 export function generateMetadata({ params }: { params: { lang: string } }): Metadata {
@@ -29,6 +30,7 @@ export default function IdeasPage({ params }: { params: { lang: string } }) {
         <Ambience tone="amber" emojis={["🥑", "🍗", "🍝", "🥪", "🍫"]} />
         <div className="relative mx-auto max-w-4xl px-6 pb-12 pt-16 text-center">
           <FadeIn>
+            <div className="mb-4 flex justify-center"><BackButton fallback="/recettes" /></div>
             <h1 className="text-4xl font-bold tracking-tight text-stone-900 sm:text-6xl">{tr("Idées de recettes")}</h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-stone-600">{tr("Pas d'idée pour ce soir ? Choisis une envie, on te propose des recettes simples avec leurs ingrédients, leurs étapes et la liste de courses qui va avec.")}</p>
           </FadeIn>
