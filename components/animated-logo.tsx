@@ -13,22 +13,22 @@ import { cx } from "@/lib/utils";
 export type LogoSection = "budget" | "recettes" | "planning";
 
 const C = { x: 200, y: 190 }; // centre du moulinet
-const R = 112; // rayon d'orbite des bulles
+const R = 124; // rayon d'orbite des bulles
 const SMALL = 0.9;
-const BIG = 1.1;
+const BIG = 1.08;
 const EASE = "cubic-bezier(0.34, 1.18, 0.5, 1)";
 const MS = 560;
 
 /**
- * Position de repos de chaque bulle (angle d'écran, 90° = bas) et direction de sa pointe : chaque pointe vise la bulle suivante.
- * `cuts` : la bulle dont la pointe vient mordre celle-ci (elle laisse un petit vide blanc autour de la pointe).
+ * Position de repos de chaque bulle (angle d'écran, 90° = bas). Chaque bulle est une goutte arrondie dont la pointe vise le centre du logo.
  */
-const BUBBLES: { id: LogoSection; at: number; from: string; to: string; cuts: LogoSection }[] = [
-  { id: "planning", at: 90, from: "#C5A7F4", to: "#8A62EA", cuts: "recettes" },
-  { id: "budget", at: 210, from: "#5A36F0", to: "#9086F7", cuts: "planning" },
-  { id: "recettes", at: 330, from: "#E88F90", to: "#F3A887", cuts: "budget" },
+const BUBBLES: { id: LogoSection; at: number; from: string; to: string }[] = [
+  { id: "planning", at: 90, from: "#C5A7F4", to: "#8A62EA" },
+  { id: "budget", at: 210, from: "#5A36F0", to: "#9086F7" },
+  { id: "recettes", at: 330, from: "#E88F90", to: "#F3A887" },
 ];
-const tipOf = (at: number) => at + 110;
+/** Direction de la pointe : vers le centre. */
+const tipOf = (at: number) => at + 180;
 
 /** Couleur des détails creusés dans les icônes (celle de la bulle, à cet endroit). */
 const TINT: Record<LogoSection, string> = { planning: "#9B78EE", budget: "#7664F5", recettes: "#EE9C8B" };
@@ -62,7 +62,8 @@ export function sectionOfPath(pathname: string): LogoSection | null {
 let lastSection: LogoSection | null = null;
 let lastTurn = 0;
 
-const tipPath = "M150 0 C122 -14 90 -48 66.7 -74.5 A100 100 0 1 0 66.7 74.5 C90 48 122 14 150 0 Z";
+// Goutte de rayon 94 (+6 de contour arrondi), pointe vers +x.
+const tipPath = "M114 0 C102 -8 90 -30 77.5 -53.2 A94 94 0 1 0 77.5 53.2 C90 30 102 8 114 0 Z";
 
 /** Icône blanche dessinée dans un repère centré, ~90 unités de large. */
 function Icon({ id, tint }: { id: LogoSection; tint: string }) {
@@ -129,7 +130,10 @@ export function AnimatedLogo({ section, className }: { section?: LogoSection; cl
     const { b } = pos(id);
     return (
       <g transform={`rotate(${tipOf(b.at)})`}>
-        <g className={beat > 0 ? "logo-squish" : undefined} key={beat} style={{ animationDelay: id === state.section ? "0ms" : "70ms" }}>{children}</g>
+        {/* la grosse bulle est un peu raccourcie dans le sens de sa pointe, pour que les trois pointes ne se touchent pas au centre */}
+        <g className="logo-move" style={{ ...move, transform: `scale(${id === state.section ? 0.93 : 1}, 1)` }}>
+          <g className={beat > 0 ? "logo-squish" : undefined} key={beat} style={{ animationDelay: id === state.section ? "0ms" : "70ms" }}>{children}</g>
+        </g>
       </g>
     );
   };
@@ -150,13 +154,6 @@ export function AnimatedLogo({ section, className }: { section?: LogoSection; cl
             <stop offset="1" stopColor={b.to} />
           </linearGradient>
         ))}
-        {/* Chaque bulle est découpée par la pointe de sa voisine : un petit vide autour d'elle, sans fond blanc (marche aussi en mode sombre) */}
-        {BUBBLES.map((b) => (
-          <mask key={b.id} id={`${uid}-m-${b.id}`} maskUnits="userSpaceOnUse" x="-200" y="-200" width="800" height="900">
-            <rect x="-200" y="-200" width="800" height="900" fill="#fff" />
-            {placed(b.cuts, shape(b.cuts, <path d={tipPath} fill="#000" stroke="#000" strokeWidth="16" strokeLinejoin="round" />))}
-          </mask>
-        ))}
       </defs>
       <g className="logo-move" style={{ ...move, transformOrigin: `${C.x}px ${C.y}px`, transform: `rotate(${state.turn}deg)` }}>
         {BUBBLES.map((b) => {
@@ -164,8 +161,8 @@ export function AnimatedLogo({ section, className }: { section?: LogoSection; cl
           const iconShift = { x: -9 * Math.cos((tip * Math.PI) / 180), y: -9 * Math.sin((tip * Math.PI) / 180) };
           const fill = `url(#${uid}-${b.id})`;
           return (
-            <g key={b.id} mask={`url(#${uid}-m-${b.id})`}>
-              {placed(b.id, shape(b.id, <path d={tipPath} fill={fill} stroke={fill} strokeWidth="6" strokeLinejoin="round" />))}
+            <g key={b.id}>
+              {placed(b.id, shape(b.id, <path d={tipPath} fill={fill} stroke={fill} strokeWidth="12" strokeLinejoin="round" />))}
               {placed(
                 b.id,
                 /* L'icône reste droite : elle tourne en sens inverse de l'ensemble */
