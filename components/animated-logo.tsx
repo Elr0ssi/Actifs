@@ -6,34 +6,24 @@ import { splitLocalePath } from "@/lib/i18n";
 import { cx } from "@/lib/utils";
 
 /**
- * Logo Flozea : trois bulles (Budget, Recettes, Planning) disposées en moulinet.
- * Un seul composant : la section active devient la grosse bulle du bas, les deux autres passent en haut à gauche et à droite.
- * Le changement est une vraie rotation du moulinet (±120°), avec une légère déformation de chaque bulle pendant le mouvement.
+ * Logo Flozea : trois ronds (Budget, Recettes, Planning).
+ * Un seul composant : la section active devient le plus gros rond, en bas ; les deux autres passent en haut à gauche et à droite.
+ * Les ronds changent de place par un petit mouvement orbital, avec un « blop » élastique et un léger décalage entre eux.
  */
 export type LogoSection = "budget" | "recettes" | "planning";
 
 const C = { x: 200, y: 190 }; // centre du moulinet
-const R = 104; // rayon d'orbite des bulles : elles se chevauchent, c'est la découpe qui les garde sans contact
-const SMALL = 0.97;
-const BIG = 1.05;
-const GAP = 30; // épaisseur (x2) du vide qui sépare deux bulles
-const EASE = "cubic-bezier(0.34, 1.22, 0.5, 1)"; // ressort doux : un léger dépassement, jamais linéaire
-const ICON = 1.2; // taille des icônes : toujours la même
+const R = 84; // rayon d'orbite des bulles
+const SMALL = 56; // rayon des deux bulles du haut
+const BIG = 66; // rayon de la bulle active, en bas
+const EASE = "cubic-bezier(0.34, 1.3, 0.5, 1)"; // ressort doux : un léger rebond, jamais linéaire
 
-/**
- * Position de repos de chaque bulle (angle d'écran, 90° = bas). Chaque bulle est une goutte arrondie dont la pointe vise le centre.
- * `cutBy` : la bulle voisine qui s'emboîte dans celle-ci (elle la « creuse » en laissant un vide régulier) ; le sens est fixe pour que les formes restent continues.
- */
-const BUBBLES: { id: LogoSection; at: number; from: string; to: string; cutBy: LogoSection }[] = [
-  { id: "planning", at: 90, from: "#C5A7F4", to: "#8A62EA", cutBy: "recettes" },
-  { id: "budget", at: 210, from: "#5A36F0", to: "#9086F7", cutBy: "planning" },
-  { id: "recettes", at: 330, from: "#E88F90", to: "#F3A887", cutBy: "budget" },
+/** Position de repos de chaque bulle (angle d'écran, 90° = bas). */
+const BUBBLES: { id: LogoSection; at: number; from: string; to: string }[] = [
+  { id: "planning", at: 90, from: "#C5A7F4", to: "#8A62EA" },
+  { id: "budget", at: 210, from: "#5A36F0", to: "#9086F7" },
+  { id: "recettes", at: 330, from: "#E88F90", to: "#F3A887" },
 ];
-/** Direction de la pointe : vers le centre. */
-const tipOf = (at: number) => at + 180;
-
-/** Couleur des détails creusés dans les icônes (celle de la bulle, à cet endroit). */
-const TINT: Record<LogoSection, string> = { planning: "#9B78EE", budget: "#7664F5", recettes: "#EE9C8B" };
 
 /** Angle de rotation d'ensemble (degrés) qui amène chaque bulle en bas, modulo 360. */
 const TURN: Record<LogoSection, number> = { planning: 0, recettes: 120, budget: 240 };
@@ -64,41 +54,6 @@ export function sectionOfPath(pathname: string): LogoSection | null {
 let lastSection: LogoSection | null = null;
 let lastTurn = 0;
 
-// Goutte de rayon 94 (+6 de contour arrondi), pointe courte vers +x.
-const tipPath = "M108 0 C98 -8 88 -28 75 -56.6 A94 94 0 1 0 75 56.6 C88 28 98 8 108 0 Z";
-
-/** Icône blanche dessinée dans un repère centré, ~90 unités de large. */
-function Icon({ id, tint }: { id: LogoSection; tint: string }) {
-  if (id === "budget")
-    return (
-      <g fill="#fff" stroke={tint} strokeWidth="5" strokeLinejoin="round">
-        {[-30, -4, 22].map((y) => (
-          <path key={y} d={`M-36 ${y} v12 a36 15 0 0 0 72 0 v-12 a36 15 0 0 0 -72 0z`} />
-        ))}
-      </g>
-    );
-  if (id === "recettes")
-    return (
-      <g fill="#fff">
-        {/* fourchette */}
-        {[-44, -32, -20].map((x) => <rect key={x} x={x} y="-50" width="9" height="34" rx="4.5" />)}
-        <rect x="-44" y="-30" width="33" height="26" rx="12" />
-        <rect x="-36" y="-8" width="17" height="58" rx="8.5" />
-        {/* cuillère */}
-        <ellipse cx="27" cy="-22" rx="17" ry="26" />
-        <rect x="18.5" y="-2" width="17" height="52" rx="8.5" />
-      </g>
-    );
-  return (
-    <g>
-      <rect x="-38" y="-34" width="76" height="78" rx="14" fill="none" stroke="#fff" strokeWidth="10" />
-      <rect x="-22" y="-52" width="10" height="24" rx="5" fill="#fff" />
-      <rect x="12" y="-52" width="10" height="24" rx="5" fill="#fff" />
-      {[[-14, -6], [14, -6], [-14, 20], [14, 20]].map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r="8" fill="#fff" />)}
-    </g>
-  );
-}
-
 export function AnimatedLogo({ section, className }: { section?: LogoSection; className?: string }) {
   const pathname = usePathname() || "/";
   const detected = sectionOfPath(pathname);
@@ -121,51 +76,15 @@ export function AnimatedLogo({ section, className }: { section?: LogoSection; cl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target]);
 
-  /** Chaque bulle a son propre rythme : la nouvelle bulle active part la première, les autres suivent. Les formes se déforment donc au passage. */
+  /** Chaque rond a son propre rythme : le nouveau rond actif part le premier, les autres suivent. */
   const timing = (id: LogoSection) => {
     const lead = id === state.section;
     const i = BUBBLES.findIndex((b) => b.id === id);
-    return `transform ${lead ? 600 : 660 + i * 40}ms ${EASE} ${lead ? 0 : 50 + i * 30}ms`;
-  };
-  const orbit = (id: LogoSection, children: React.ReactNode) => (
-    <g className="logo-move" style={{ transition: timing(id), transformOrigin: `${C.x}px ${C.y}px`, transform: `rotate(${state.turn}deg)` }}>{children}</g>
-  );
-  const at = (id: LogoSection) => {
-    const b = BUBBLES.find((x) => x.id === id)!;
-    const rad = (b.at * Math.PI) / 180;
-    return { b, x: C.x + R * Math.cos(rad), y: C.y + R * Math.sin(rad) };
-  };
-  /** Corps de la bulle : positionné sur son orbite, avec son échelle et la légère déformation de mouvement. */
-  const body = (id: LogoSection, children: React.ReactNode) => {
-    const { b, x, y } = at(id);
-    const active = id === state.section;
-    return orbit(
-      id,
-      <g transform={`translate(${x} ${y})`}>
-        <g className="logo-move" style={{ transition: timing(id), transform: `scale(${active ? BIG : SMALL})` }}>
-          <g transform={`rotate(${tipOf(b.at)})`}>
-            <g className={beat > 0 ? "logo-squish" : undefined} key={beat} style={{ animationDelay: active ? "0ms" : "80ms" }}>{children}</g>
-          </g>
-        </g>
-      </g>
-    );
-  };
-  /** Icône : suit l'orbite mais reste droite et garde toujours la même taille, quelle que soit la bulle. */
-  const icon = (id: LogoSection) => {
-    const { b, x, y } = at(id);
-    const tip = (tipOf(b.at) * Math.PI) / 180;
-    return orbit(
-      id,
-      <g transform={`translate(${x} ${y})`}>
-        <g className="logo-move" style={{ transition: timing(id), transform: `rotate(${-state.turn}deg)` }}>
-          <g transform={`translate(${-8 * Math.cos(tip)} ${-8 * Math.sin(tip)}) scale(${ICON})`}><Icon id={id} tint={TINT[id]} /></g>
-        </g>
-      </g>
-    );
+    return `transform ${lead ? 560 : 620 + i * 40}ms ${EASE} ${lead ? 0 : 40 + i * 30}ms`;
   };
 
   return (
-    <svg viewBox="5 34 390 390" className={cx("logo-svg h-10 w-10 shrink-0 overflow-visible", className)} role="img" aria-label="Flozea" focusable="false">
+    <svg viewBox="60 82 280 280" className={cx("logo-svg h-9 w-9 shrink-0 overflow-visible", className)} role="img" aria-label="Flozea" focusable="false">
       <defs>
         {BUBBLES.map((b) => (
           <linearGradient key={b.id} id={`${uid}-${b.id}`} x1="0" y1="1" x2="1" y2="0">
@@ -173,24 +92,24 @@ export function AnimatedLogo({ section, className }: { section?: LogoSection; cl
             <stop offset="1" stopColor={b.to} />
           </linearGradient>
         ))}
-        {/* Une bulle est creusée par sa voisine, qui s'y emboîte avec un vide régulier : elles se fondent l'une dans l'autre sans se toucher */}
-        {BUBBLES.map((b) => (
-          <mask key={b.id} id={`${uid}-m-${b.id}`} maskUnits="userSpaceOnUse" x="-200" y="-200" width="800" height="900">
-            <rect x="-200" y="-200" width="800" height="900" fill="#fff" />
-            {body(b.cutBy, <path d={tipPath} fill="#000" stroke="#000" strokeWidth={GAP} strokeLinejoin="round" />)}
-          </mask>
-        ))}
       </defs>
       {BUBBLES.map((b) => {
-        const fill = `url(#${uid}-${b.id})`;
+        const rad = (b.at * Math.PI) / 180;
+        const x = C.x + R * Math.cos(rad);
+        const y = C.y + R * Math.sin(rad);
+        const active = b.id === state.section;
         return (
-          <g key={b.id} mask={`url(#${uid}-m-${b.id})`}>
-            {body(b.id, <path d={tipPath} fill={fill} stroke={fill} strokeWidth="12" strokeLinejoin="round" />)}
+          <g key={b.id} className="logo-move" style={{ transition: timing(b.id), transformOrigin: `${C.x}px ${C.y}px`, transform: `rotate(${state.turn}deg)` }}>
+            <g transform={`translate(${x} ${y})`}>
+              <g className={beat > 0 ? "logo-blop" : undefined} key={beat} style={{ animationDelay: active ? "0ms" : `${60 + BUBBLES.findIndex((o) => o.id === b.id) * 30}ms` }}>
+                <g className="logo-move" style={{ transition: timing(b.id), transform: `scale(${active ? BIG / SMALL : 1})` }}>
+                  <circle r={SMALL} fill={`url(#${uid}-${b.id})`} />
+                </g>
+              </g>
+            </g>
           </g>
         );
       })}
-      {/* Les icônes passent au-dessus de toutes les bulles : une bulle qui glisse ne les recouvre jamais */}
-      {BUBBLES.map((b) => <g key={b.id}>{icon(b.id)}</g>)}
     </svg>
   );
 }

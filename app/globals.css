@@ -279,7 +279,14 @@
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
-/* Logo animé : légère déformation organique pendant le déplacement des bulles. */
+/* Logo animé : petit « blop » élastique quand les ronds changent de place. */
+@keyframes logo-blop {
+  0% { transform: scale(1, 1); }
+  30% { transform: scale(1.14, 0.88); }
+  60% { transform: scale(0.94, 1.08); }
+  100% { transform: scale(1, 1); }
+}
+.logo-blop { animation: logo-blop 620ms cubic-bezier(0.34, 1.3, 0.5, 1) both; transform-box: fill-box; transform-origin: 50% 50%; }
 @keyframes logo-squish {
   0% { transform: scale(1, 1); }
   35% { transform: scale(1.12, 0.92); }
@@ -289,5 +296,5 @@
 .logo-squish { animation: logo-squish 560ms cubic-bezier(0.34, 1.18, 0.5, 1) both; transform-box: fill-box; transform-origin: 50% 50%; }
 @media (prefers-reduced-motion: reduce) {
   .logo-move { transition-duration: 1ms !important; }
-  .logo-squish { animation: none; }
+  .logo-squish, .logo-blop { animation: none; }
 }

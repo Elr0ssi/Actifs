@@ -6,7 +6,7 @@ import { AnimatedLogo, type LogoSection } from "@/components/animated-logo";
  * Un seul composant animé : voir `animated-logo.tsx`.
  */
 export function LogoMark({ className, section }: { className?: string; section?: LogoSection }) {
-  return <AnimatedLogo section={section} className={cx("h-10 w-10", className)} />;
+  return <AnimatedLogo section={section} className={cx("h-9 w-9", className)} />;
 }
 
 export function LogoWordmark({ className, section }: { className?: string; section?: LogoSection }) {

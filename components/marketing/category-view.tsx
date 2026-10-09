@@ -23,9 +23,9 @@ export function CategoryView({ category }: { category: CategoryKey }) {
       <JsonLd data={breadcrumbJsonLd([{ name: "Accueil", url: absolute("/") }, { name: "Fonctionnalités", url: absolute("/fonctionnalites") }, { name: c.name, url }])} />
       <SiteHeader current={c.key} />
       <main>
-        <section className="relative">
+        <section className="relative flex min-h-[calc(100svh-69px)] items-center">
           <Ambience tone={c.tone} emojis={c.emojis} />
-          <div className="relative mx-auto max-w-4xl px-6 pb-20 pt-20 text-center">
+          <div className="relative mx-auto max-w-4xl px-6 pb-16 pt-8 text-center">
             <h1 className="text-6xl font-extrabold tracking-tight text-stone-900 sm:text-8xl">
               {tr("Flozea")} <span className={cx("bg-gradient-to-r bg-clip-text text-transparent", c.gradient)}>{tr(c.label)}</span>
             </h1>
