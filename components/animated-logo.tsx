@@ -94,17 +94,18 @@ export function AnimatedLogo({ section, className }: { section?: LogoSection; cl
   const target: LogoSection = section ?? detected ?? lastSection ?? "planning";
   const uid = useId().replace(/:/g, "");
 
-  const [state, setState] = useState<{ section: LogoSection; turn: number }>(() => ({ section: lastSection ?? target, turn: lastSection ? lastTurn : TURN[lastSection ?? target] }));
+  // Avec `section` imposée (logo de démonstration), on ne partage pas l'état du logo de l'en-tête.
+  const own = section !== undefined;
+  const [state, setState] = useState<{ section: LogoSection; turn: number }>(() => (own || !lastSection ? { section: target, turn: TURN[target] } : { section: lastSection, turn: lastTurn }));
   const [beat, setBeat] = useState(0);
 
   useEffect(() => {
     const turn = nextTurn(state.turn, target);
-    if (target === state.section && turn === state.turn) { lastSection = target; lastTurn = turn; return; }
+    if (target === state.section && turn === state.turn) { if (!own) { lastSection = target; lastTurn = turn; } return; }
     const raf = requestAnimationFrame(() => {
       setState({ section: target, turn });
       setBeat((b) => b + 1);
-      lastSection = target;
-      lastTurn = turn;
+      if (!own) { lastSection = target; lastTurn = turn; }
     });
     return () => cancelAnimationFrame(raf);
     // eslint-disable-next-line react-hooks/exhaustive-deps

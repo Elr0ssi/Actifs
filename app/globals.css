@@ -298,3 +298,14 @@
   .logo-move { transition-duration: 1ms !important; }
   .logo-squish, .logo-blop { animation: none; }
 }
+
+/* Sections « waouh » de l'accueil */
+@keyframes converge-flow { to { stroke-dashoffset: -40; } }
+.converge-flow { animation: converge-flow 1.6s linear infinite; }
+@keyframes converge-ring { 0% { transform: translate(-50%, -50%) scale(0.7); opacity: 0.65; } 100% { transform: translate(-50%, -50%) scale(1.9); opacity: 0; } }
+.converge-ring { animation: converge-ring 3.3s cubic-bezier(0.2, 0.6, 0.3, 1) infinite; }
+@keyframes converge-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.converge-float { animation: converge-float 5s ease-in-out infinite; }
+@keyframes timeline-ping { 0% { transform: scale(0.85); opacity: 0.6; } 100% { transform: scale(1.8); opacity: 0; } }
+.timeline-ping { animation: timeline-ping 2.2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@media (prefers-reduced-motion: reduce) { .converge-flow, .converge-ring, .converge-float, .timeline-ping { animation: none; } }

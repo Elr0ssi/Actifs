@@ -32,7 +32,7 @@ export function SiteHeader({ current }: { current?: Current }) {
   return (
     <header className="sticky top-0 z-40 border-b border-stone-200/70 bg-surface/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
-        <Link href="/"><LogoWordmark className="text-2xl" /></Link>
+        <Link href="/" className="shrink-0"><LogoWordmark className="text-xl sm:text-2xl" /></Link>
         <nav aria-label={tr("Navigation principale")} className="hidden items-center gap-5 text-sm font-medium text-stone-600 md:flex">
           <Link href="/fonctionnalites" className={item(current === "fonctionnalites")}>{tr("Fonctionnalités")}</Link>
           {/* Un onglet par catégorie, avec ses pages en sous-menu */}

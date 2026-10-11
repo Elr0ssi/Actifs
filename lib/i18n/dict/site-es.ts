@@ -780,6 +780,8 @@ export const siteEs: Record<string, string> = {
   "Idée recette {label} : {n} recettes faciles et rapides": "Idea de receta {label}: {n} recetas fáciles y rápidas",
   "{n} idées de recettes {label} faciles et rapides : ingrédients, étapes et liste de courses automatique. Plats simples à cuisiner ce soir.": "{n} ideas de recetas de {label} fáciles y rápidas: ingredientes, pasos y lista de la compra automática. Platos sencillos para cocinar esta noche.",
   "Idées de plats rapides : repas prêts en 20 minutes ou moins": "Ideas de platos rápidos: comidas listas en 20 minutos o menos",
+  "Courses de la semaine": "Compra de la semana",
+  "Idées cadeaux": "Ideas de regalos",
   "Dahl de lentilles corail": "Dahl de lentejas rojas",
   "Curry de pois chiches": "Curry de garbanzos",
   "Salade de concombre au yaourt": "Ensalada de pepino y yogur",
