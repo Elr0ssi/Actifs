@@ -36,3 +36,10 @@ Projet Supabase 100% dédié à Actifs (aucune table partagée avec tes autres p
 - **Routines** : quotidiennes/hebdomadaires, cochables, visibles dans le calendrier et le dashboard
 - **Calendrier** : routines, tâches, échéances financières ; calcul du cumul de charges/revenus entre deux dates
 - **Finance** : charges récurrentes, revenus programmés, investissements, tableau de flux en direct sur 60 jours. La connexion bancaire directe nécessite un partenaire Open Banking agréé (Powens, Bridge…) — non branchée pour l'instant, la base est prête à l'accueillir.
+
+
+## Application iPhone (Expo)
+
+Une application iOS native (`mobile/`) utilise le même projet Supabase que le site : voir `docs/ios-architecture.md`,
+`docs/ios-testflight.md` et `mobile/README.md`. Le site Next.js de ce dépôt n'est pas modifié par elle
+(`mobile/` est exclu de son `tsconfig.json` et d'ESLint).
