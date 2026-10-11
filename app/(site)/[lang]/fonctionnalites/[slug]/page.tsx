@@ -78,7 +78,7 @@ export default function FeaturePage({ params }: { params: { lang: string; slug: 
           <Ambience tone={t.tone} emojis={t.emojis} />
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 pb-20 pt-14 lg:grid-cols-[1fr_1.05fr]">
           <div>
-            <Link href={cat.href} className="inline-flex items-center gap-1.5 text-sm font-medium text-stone-500 hover:text-stone-900"><span aria-hidden>←</span> {tr(cat.name)}</Link>
+            <div><Link href={cat.href} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-stone-500 hover:text-stone-900"><span aria-hidden>←</span> {tr(cat.name)}</Link></div>
             <span className={cx("mt-6 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold", f.soft)}><span className="text-base">{tr(f.icon)}</span>{tr(f.name)}{f.soon && <span className="rounded-full bg-white px-1.5 py-px text-[9px] font-bold uppercase text-indigo-700">{tr("Bientôt disponible")}</span>}</span>
             <h1 className="mt-4 text-4xl font-bold leading-[1.08] tracking-tight text-stone-900 sm:text-5xl">{tr(f.h1)}</h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-stone-600">{tr(f.intro)}</p>

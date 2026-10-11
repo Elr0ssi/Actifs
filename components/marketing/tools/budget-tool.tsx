@@ -48,7 +48,7 @@ function Group({ title, hint, rows, onChange, tone }: { title: string; hint: str
       <ul className="space-y-1.5">
         {rows.map((r) => (
           <li key={r.id} className="flex items-center gap-2">
-            <input value={r.label} onChange={(e) => update(r.id, { label: e.target.value })} aria-label={tr("Intitulé")} className="input min-w-0 flex-1 py-1.5 text-sm" />
+            <input value={r.label} onChange={(e) => update(r.id, { label: e.target.value })} aria-label={tr("Intitulé")} className="input min-w-0 flex-1 py-2.5 text-sm" />
             <div className="relative w-28 shrink-0">
               <input
                 type="number"
@@ -57,15 +57,15 @@ function Group({ title, hint, rows, onChange, tone }: { title: string; hint: str
                 value={r.amount || ""}
                 onChange={(e) => update(r.id, { amount: Math.max(0, Number(e.target.value) || 0) })}
                 aria-label={`Montant : ${r.label}`}
-                className="input w-full py-1.5 pr-6 text-right text-sm"
+                className="input w-full py-2.5 pr-6 text-right text-sm"
               />
               <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-stone-500">€</span>
             </div>
-            <button type="button" onClick={() => onChange(rows.filter((x) => x.id !== r.id))} className="px-1 text-stone-300 hover:text-rose-600" aria-label={`Supprimer ${r.label}`}>✕</button>
+            <button type="button" onClick={() => onChange(rows.filter((x) => x.id !== r.id))} className="flex h-11 w-11 items-center justify-center text-stone-400 hover:text-rose-600" aria-label={`Supprimer ${r.label}`}>✕</button>
           </li>
         ))}
       </ul>
-      <button type="button" onClick={() => onChange([...rows, row("", 0)])} className="mt-2 text-xs font-medium text-brand-600 hover:underline">{tr("+ Ajouter une ligne")}</button>
+      <button type="button" onClick={() => onChange([...rows, row("", 0)])} className="mt-1 min-h-11 text-sm font-medium text-brand-600 hover:underline">{tr("+ Ajouter une ligne")}</button>
     </section>
   );
 }

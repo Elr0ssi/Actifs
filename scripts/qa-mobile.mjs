@@ -169,6 +169,33 @@ console.log("\n# 3. Menu au clavier (desktop 1280)");
 }
 
 }
+console.log("\n# 3b. Accueil grand écran : section figée et frise (desktop 1280)");
+{
+  const { ctx, page } = await newPage(browser, { width: 1280, height: 800 }, { isMobile: false, hasTouch: false, deviceScaleFactor: 1 });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
+  const tabs = page.locator("#fonctionnalites [role=tablist] button");
+  await tabs.first().waitFor({ state: "attached", timeout: 5000 }).catch(() => {});
+  ok((await tabs.count()) === 3, "section figée : 3 onglets Agenda / Repas / Finances");
+  const top = await page.evaluate(() => document.querySelector("#fonctionnalites").getBoundingClientRect().top + scrollY);
+  const states = [];
+  for (const f of [0.1, 0.45, 0.8]) {
+    const h = await page.evaluate(() => document.querySelector("#fonctionnalites > div.hidden").offsetHeight - innerHeight);
+    await page.evaluate(([t, h, f]) => window.scrollTo(0, t + h * f), [top, h, f]);
+    await page.waitForTimeout(500);
+    states.push(await tabs.evaluateAll((bs) => bs.findIndex((b) => b.getAttribute("aria-selected") === "true")));
+  }
+  ok(states[0] === 0 && states[2] === 2, "le défilement change l'onglet actif", states.join("→"));
+  await page.evaluate(() => document.querySelector("[aria-labelledby=quotidien]").scrollIntoView());
+  await page.waitForTimeout(800);
+  ok((await page.locator("[aria-labelledby=quotidien] svg path[stroke-dasharray=\"2 12\"]").count()) > 0, "frise : le chemin sinueux est présent");
+  await ctx.close();
+  const m = await newPage(browser, DEVICES[1]);
+  await m.page.goto(BASE + "/", { waitUntil: "networkidle" });
+  ok((await m.page.locator("[aria-labelledby=quotidien] svg path[stroke-dasharray=\"2 12\"]").count()) === 0, "mobile : la version bureau de la frise n'est pas construite");
+  ok((await m.page.locator("#fonctionnalites [role=tablist]").count()) === 0, "mobile : la section figée n'est pas construite");
+  await m.ctx.close();
+}
+
 console.log("\n# 4. Chargement initial de l'accueil (iPhone 14, CPU ×4, réseau 4G rapide)");
 {
   const { ctx, page } = await newPage(browser, DEVICES[1]);

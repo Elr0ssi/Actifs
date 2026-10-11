@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useDesktop } from "@/components/marketing/use-desktop";
 import { AnimatedLogo, type LogoSection } from "@/components/animated-logo";
 import { cx } from "@/lib/utils";
 
@@ -24,21 +25,27 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
   const [on, setOn] = useState(false);
   const [cur, setCur] = useState<LogoSection>("planning");
 
-  // La scène se déclenche quand elle entre dans l'écran.
+  const [inView, setInView] = useState(false);
+
+  // La scène se déclenche quand elle entre dans l'écran, puis on suit si elle est encore visible (pour mettre l'animation en pause quand on la quitte).
   useEffect(() => {
     const el = panel.current;
     if (!el) return;
-    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setOn(true); io.disconnect(); } }, { threshold: 0.25 });
+    const io = new IntersectionObserver(([e]) => {
+      setInView(e.isIntersecting);
+      if (e.isIntersecting && e.intersectionRatio >= 0.25) setOn(true);
+    }, { threshold: [0, 0.25] });
     io.observe(el);
     return () => io.disconnect();
   }, []);
 
   // Le logo du centre passe d'une section à l'autre ; les pastilles de la section active s'allument.
+  // Rien ne tourne quand la scène est hors de l'écran ou que l'onglet est masqué (avant : minuteur et re-rendus permanents).
   useEffect(() => {
-    if (!on) return;
-    const t = setInterval(() => setCur((c) => ORDER[(ORDER.indexOf(c) + 1) % ORDER.length]), 2800);
+    if (!on || !inView) return;
+    const t = setInterval(() => { if (!document.hidden) setCur((c) => ORDER[(ORDER.indexOf(c) + 1) % ORDER.length]); }, 2800);
     return () => clearInterval(t);
-  }, [on]);
+  }, [on, inView]);
 
   const spot = (e: React.MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -313,23 +320,26 @@ export function TimelinePath({ steps, labels }: { steps: TimelineStep[]; labels:
   const comet = useRef<SVGGElement>(null);
   const bar = useRef<HTMLDivElement>(null);
   const [count, setCount] = useState(0);
+  const desktop = useDesktop();
 
   useEffect(() => {
+    const root = wrap.current;
+    if (!root) return;
     let raf = 0;
     let cur = 0;
     let target = 0;
+    let visible = false;
+    let len = 0;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const measure = () => {
-      const el = wrap.current;
-      if (!el) return;
-      const r = el.getBoundingClientRect();
+      const r = root.getBoundingClientRect();
       const vh = window.innerHeight;
       target = Math.min(1, Math.max(0, (vh * 0.8 - r.top) / (r.height + vh * 0.1)));
     };
     const apply = () => {
       const p = path.current, g = prog.current, c = comet.current;
       if (p && g && c) {
-        const len = p.getTotalLength();
+        if (!len) len = p.getTotalLength();
         g.style.strokeDashoffset = String(1 - cur);
         const pt = p.getPointAtLength(cur * len);
         c.style.transform = `translate(${pt.x}px, ${pt.y}px)`;
@@ -340,22 +350,36 @@ export function TimelinePath({ steps, labels }: { steps: TimelineStep[]; labels:
       const n = thr.filter((np) => cur >= np - 0.015).length;
       setCount((old) => (old === n ? old : n));
     };
-    const loop = () => {
+    // Une image à la fois, et seulement tant que la frise bouge : à l'arrêt, plus aucun calcul (avant : boucle permanente dès l'ouverture de la page).
+    const step = () => {
+      raf = 0;
       measure();
       cur += (target - cur) * (reduce ? 1 : 0.09);
       if (Math.abs(target - cur) < 0.0004) cur = target;
       apply();
-      raf = requestAnimationFrame(loop);
+      if (cur !== target) raf = requestAnimationFrame(step);
     };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, []);
+    const kick = () => { if (!raf) raf = requestAnimationFrame(step); };
+    const onMove = () => { if (visible) kick(); };
+    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) kick(); }, { rootMargin: "150px 0px" });
+    io.observe(root);
+    window.addEventListener("scroll", onMove, { passive: true });
+    window.addEventListener("resize", onMove);
+    kick();
+    return () => {
+      io.disconnect();
+      window.removeEventListener("scroll", onMove);
+      window.removeEventListener("resize", onMove);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [desktop]);
 
   const posOf = (n: number) => ({ left: `${(W[n][0] / 1200) * 100}%`, top: `${(W[n][1] / 1150) * 100}%` });
   return (
     <div ref={wrap}>
       {/* Grand écran : le chemin sinueux */}
       <div className="relative mx-auto hidden aspect-[1200/1150] w-full max-w-6xl lg:block">
+        {desktop && (<>
         <svg viewBox="0 0 1200 1150" className="absolute inset-0 h-full w-full overflow-visible" aria-hidden fill="none">
           <defs>
             <linearGradient id="trail" x1="0" y1="0" x2="1" y2="1">
@@ -378,6 +402,7 @@ export function TimelinePath({ steps, labels }: { steps: TimelineStep[]; labels:
             <div className="absolute w-[17rem] -translate-x-1/2" style={{ left: posOf(n).left, top: `calc(${posOf(n).top} + 2.6rem)` }}><Card s={steps[i]} on={count > i} l={labels} i={i} /></div>
           </div>
         ))}
+      </>)}
       </div>
 
       {/* Petits écrans : une ligne verticale qui se remplit */}

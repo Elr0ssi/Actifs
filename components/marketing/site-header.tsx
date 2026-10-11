@@ -75,7 +75,7 @@ export function SiteHeader({ current }: { current?: Current }) {
           <Link href="/login" className="hidden text-sm font-semibold text-stone-700 hover:text-stone-900 md:block">
             {tr("Connexion")}
           </Link>
-          <Link href="/signup" prefetch className="btn-primary hidden whitespace-nowrap min-[390px]:inline-flex">{tr("Créer mon espace")}</Link>
+          <Link href="/signup" className="btn-primary hidden whitespace-nowrap min-[390px]:inline-flex">{tr("Créer mon espace")}</Link>
           <MobileMenu data={menu} />
         </div>
       </div>
@@ -116,7 +116,7 @@ export function SiteFooter() {
               <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">{tr(col.title)}</p>
               <ul className="mt-3 space-y-2 text-sm text-stone-600">
                 {col.links.map(([href, label]) => (
-                  <li key={href}><Link href={href} className="hover:text-stone-900">{tr(label)}</Link></li>
+                  <li key={href}><Link href={href} className="inline-flex min-h-9 items-center hover:text-stone-900">{tr(label)}</Link></li>
                 ))}
               </ul>
             </nav>
@@ -124,9 +124,9 @@ export function SiteFooter() {
         </div>
         <div className="mt-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-4 border-t border-stone-200 pt-6 text-sm text-stone-500">
           <nav aria-label={tr("Informations légales")} className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <Link href="/mentions-legales" className="hover:text-stone-900">{tr("Mentions légales")}</Link>
-            <Link href="/confidentialite" className="hover:text-stone-900">{tr("Confidentialité")}</Link>
-            <Link href="/cgu" className="hover:text-stone-900">{tr("CGU")}</Link>
+            <Link href="/mentions-legales" prefetch={false} className="inline-flex min-h-11 items-center hover:text-stone-900">{tr("Mentions légales")}</Link>
+            <Link href="/confidentialite" prefetch={false} className="inline-flex min-h-11 items-center hover:text-stone-900">{tr("Confidentialité")}</Link>
+            <Link href="/cgu" prefetch={false} className="inline-flex min-h-11 items-center hover:text-stone-900">{tr("CGU")}</Link>
             <span className="hidden text-stone-300 sm:inline" aria-hidden>·</span>
             <span>© {new Date().getFullYear()} {tr("Flozea. Organise ta vie, simplement.")}</span>
           </nav>

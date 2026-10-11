@@ -108,10 +108,10 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
               </div>
               <div>
                 <div className="mt-7 flex flex-wrap items-center gap-3">
-                  <Link href="/signup" prefetch className="btn-primary px-6 py-3 text-base">{tr("Créer mon espace")}</Link>
-                  <Link href="/fonctionnalites" prefetch className="px-2 py-3 text-base font-semibold text-stone-700 underline-offset-4 hover:text-brand-700 hover:underline">{tr("Découvrir les fonctionnalités →")}</Link>
+                  <Link href="/signup" className="btn-primary px-6 py-3 text-base">{tr("Créer mon espace")}</Link>
+                  <Link href="/fonctionnalites" className="px-2 py-3 text-base font-semibold text-stone-700 underline-offset-4 hover:text-brand-700 hover:underline">{tr("Découvrir les fonctionnalités →")}</Link>
                 </div>
-                <p className="mt-3 text-xs text-stone-500">{tr("Gratuit, sans carte bancaire.")} <Link href="/tarifs" className="underline underline-offset-2 hover:text-brand-600">{tr("Voir les tarifs")}</Link></p>
+                <p className="mt-3 text-xs text-stone-600">{tr("Gratuit, sans carte bancaire.")} <Link href="/tarifs" className="underline underline-offset-2 hover:text-brand-600">{tr("Voir les tarifs")}</Link></p>
               </div>
             </div>
 
@@ -196,7 +196,7 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
             <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">{tr("Idées de recettes")}</p>
             <div className="mt-3 flex flex-wrap justify-center gap-2">
               {IDEAS.slice(0, 8).map((i) => (
-                <Link key={i.slug} href={`/recettes/idees/${i.slug}`} className="rounded-full border border-line bg-surface/80 px-3.5 py-1.5 text-sm font-medium text-stone-700 transition hover:-translate-y-0.5 hover:border-brand-300 hover:text-brand-700">{i.icon} {tr(i.label)}</Link>
+                <Link key={i.slug} href={`/recettes/idees/${i.slug}`} className="inline-flex min-h-11 items-center rounded-full border border-line bg-surface/80 px-4 py-2 text-sm font-medium text-stone-700 transition hover:-translate-y-0.5 hover:border-brand-300 hover:text-brand-700">{i.icon} {tr(i.label)}</Link>
               ))}
             </div>
           </FadeIn>
@@ -223,8 +223,8 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
             </FadeIn>
             <ol className="divide-y divide-line">
               {otherGuides.slice(0, 5).map((g, i) => (
-                <FadeIn key={g.slug} delay={i * 60}>
-                  <li>
+                <li key={g.slug}>
+                  <FadeIn delay={i * 60}>
                     <Link href={`/guides/${g.slug}`} className="group flex items-center gap-4 py-4">
                       <span className="w-8 text-2xl font-bold text-brand-200 transition group-hover:text-brand-500">{String(i + 2).padStart(2, "0")}</span>
                       <span className="flex-1">
@@ -233,8 +233,8 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
                       </span>
                       <span className="text-stone-300 transition group-hover:translate-x-1 group-hover:text-brand-500">→</span>
                     </Link>
+                  </FadeIn>
                   </li>
-                </FadeIn>
               ))}
             </ol>
           </div>

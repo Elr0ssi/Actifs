@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "@/components/marketing/link";
 import { cx } from "@/lib/utils";
+import { useDesktop } from "@/components/marketing/use-desktop";
 
 export interface PinnedFeature { slug: string; name: string; icon: string; text: string; soon: boolean; badge: string; soft: string; gradient: string }
 export interface PinnedGroup { key: string; href: string; name: string; icon: string; tagline: string; gradient: string; see: string; cta: string; mock: React.ReactNode; features: PinnedFeature[] }
@@ -16,12 +17,15 @@ export function PinnedFeatures({ groups, eyebrow, title, accent, all }: { groups
   const runway = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const [phase, setPhase] = useState(0);
+  const desktop = useDesktop();
   const n = groups.length;
 
   useEffect(() => {
     let raf = 0;
+    const desktop = window.matchMedia("(min-width: 1024px)");
     const update = () => {
       raf = 0;
+      if (!desktop.matches) return; // la section figée n'existe qu'à partir de 1024 px
       const el = runway.current;
       const st = stage.current;
       if (!el || !st) return;
@@ -63,10 +67,11 @@ export function PinnedFeatures({ groups, eyebrow, title, accent, all }: { groups
         </div>
       </div>
 
-      {/* Grand écran : section figée */}
+      {/* Grand écran : section figée. Son contenu n'est construit qu'à partir de 1024 px (la hauteur est réservée dès le serveur : pas de saut de page). */}
       <div ref={runway} className="hidden lg:block" style={{ height: `calc(100svh + ${n * 70}svh)` }}>
         <div ref={stage} className="sticky top-[69px] flex h-[calc(100svh-69px)] min-h-[34rem] flex-col justify-center">
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-brand-50/50 to-transparent" aria-hidden />
+          {desktop && (
           <div className="relative mx-auto w-full max-w-6xl px-6">
             <div className="flex items-end justify-between gap-6">
               <div>{heading}</div>
@@ -97,6 +102,7 @@ export function PinnedFeatures({ groups, eyebrow, title, accent, all }: { groups
               <Link href="/fonctionnalites" className="font-semibold text-stone-600 hover:text-brand-700">{all}</Link>
             </p>
           </div>
+          )}
         </div>
       </div>
     </section>

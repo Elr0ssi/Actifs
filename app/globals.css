@@ -280,6 +280,13 @@
 /* Les sections loin sous l'écran ne sont ni mises en page ni peintes tant qu'on n'en approche pas. */
 .cv-auto { content-visibility: auto; contain-intrinsic-size: auto 900px; }
 
+/* Questions fréquentes : toute la ligne (y compris le padding de <details>) répond au toucher, pas seulement le texte. */
+details.group > summary { position: relative; }
+details.group > summary::before { content: ""; position: absolute; inset: -1rem 0; }
+
+/* iPhone en paysage (viewport-fit=cover) : le contenu ne passe pas sous l'encoche. Sans effet en portrait. */
+body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+
 /* Petits écrans : pas d'animation permanente de décor (batterie, fluidité du défilement). */
 @media (max-width: 1023px) {
   .fx-drift, .fx-gradient, .fx-sheen::after, .fx-orbit, .fx-orbit-rev { animation: none; }
