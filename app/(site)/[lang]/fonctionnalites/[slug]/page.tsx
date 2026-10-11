@@ -102,8 +102,8 @@ export default function FeaturePage({ params }: { params: { lang: string; slug: 
         {/* Points forts : bento immersif */}
         <section className="px-4 py-12 sm:px-6" aria-labelledby="forts">
           <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] bg-stone-950 px-5 py-16 text-white sm:px-10">
-            <div className={cx("fx-drift absolute -left-20 -top-24 h-96 w-96 rounded-full bg-gradient-to-br opacity-50 blur-3xl", f.gradient)} aria-hidden />
-            <div className={cx("fx-drift absolute -bottom-32 -right-16 h-96 w-96 rounded-full bg-gradient-to-br opacity-35 blur-3xl", f.gradient)} style={{ "--d": "-8s" } as React.CSSProperties} aria-hidden />
+            <div className={cx("fx-drift absolute -left-20 -top-24 h-[34rem] w-[34rem] rounded-full bg-gradient-to-br opacity-50 glow-mask", f.gradient)} aria-hidden />
+            <div className={cx("fx-drift absolute -bottom-32 -right-16 h-[34rem] w-[34rem] rounded-full bg-gradient-to-br opacity-35 glow-mask", f.gradient)} style={{ "--d": "-8s" } as React.CSSProperties} aria-hidden />
             <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:radial-gradient(rgb(255_255_255/0.12)_1px,transparent_1px)] [background-size:26px_26px]" aria-hidden />
             <div className="relative text-center">
               <span className="rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold text-white/80">{tr(f.icon)} {tr(f.name)}</span>

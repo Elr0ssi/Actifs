@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
-import { GeistSans } from "geist/font/sans";
+import { GeistSans } from "@/app/fonts";
 import { Analytics } from "@vercel/analytics/next";
 import { CookieNotice } from "@/components/ui/cookie-notice";
 import { ClickRipple } from "@/components/ui/click-ripple";

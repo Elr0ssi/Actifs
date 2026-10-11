@@ -56,9 +56,9 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
     >
       {/* fond : aurore, grille et halo qui suit le curseur */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-violet-600/40 blur-[110px]" />
-        <div className="absolute -bottom-32 -right-16 h-[26rem] w-[26rem] rounded-full bg-orange-500/25 blur-[120px]" />
-        <div className="absolute left-1/3 top-1/2 h-72 w-72 rounded-full bg-sky-500/20 blur-[110px]" />
+        <div className="absolute -left-24 -top-24 h-[34rem] w-[34rem] rounded-full bg-violet-600/45 glow-mask" />
+        <div className="absolute -bottom-32 -right-16 h-[36rem] w-[36rem] rounded-full bg-orange-500/30 glow-mask" />
+        <div className="absolute left-1/3 top-1/2 h-[26rem] w-[26rem] rounded-full bg-sky-500/25 glow-mask" />
         <div className="absolute inset-0 opacity-[0.18] [background-image:radial-gradient(rgba(255,255,255,.7)_1px,transparent_1px)] [background-size:26px_26px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_55%,#000_20%,transparent_100%)]" />
         <div className="absolute inset-0 [background:radial-gradient(520px_circle_at_var(--mx)_var(--my),rgba(167,139,250,0.22),transparent_60%)]" />
       </div>
@@ -98,7 +98,7 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
           {[0, 1, 2].map((k) => (
             <span key={k} className="converge-ring absolute left-1/2 top-1/2 h-44 w-44 rounded-full border" style={{ borderColor: `rgba(${rgb},0.55)`, animationDelay: `${k * 1.1}s`, transition: "border-color 600ms" }} aria-hidden />
           ))}
-          <span className="absolute left-1/2 top-1/2 h-52 w-52 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl transition-colors duration-700" style={{ background: `rgba(${rgb},0.35)` }} aria-hidden />
+          <span className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full glow-mask transition-colors duration-700" style={{ background: `rgba(${rgb},0.35)` }} aria-hidden />
           <AnimatedLogo section={cur} className="relative h-44 w-44 drop-shadow-[0_10px_40px_rgba(0,0,0,0.45)]" />
         </div>
 
@@ -141,7 +141,7 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
       {/* Petits écrans : le logo puis les pastilles */}
       <div className="relative mt-10 lg:hidden">
         <div className="relative mx-auto flex h-40 w-40 items-center justify-center">
-          <span className="absolute inset-0 rounded-full blur-3xl transition-colors duration-700" style={{ background: `rgba(${rgb},0.4)` }} aria-hidden />
+          <span className="absolute -inset-8 rounded-full glow-mask transition-colors duration-700" style={{ background: `rgba(${rgb},0.4)` }} aria-hidden />
           <AnimatedLogo section={cur} className="relative h-36 w-36" />
         </div>
         <div className="mt-8 grid grid-cols-2 gap-3">

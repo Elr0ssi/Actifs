@@ -53,9 +53,9 @@ export function WeekTimeline() {
   return (
     <section className="relative overflow-hidden" aria-labelledby="quotidien">
       <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <div className="absolute left-[-8rem] top-24 h-96 w-96 rounded-full bg-violet-300/30 blur-[110px]" />
-        <div className="absolute right-[-6rem] top-1/2 h-96 w-96 rounded-full bg-sky-300/30 blur-[110px]" />
-        <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-amber-200/30 blur-[110px]" />
+        <div className="absolute left-[-8rem] top-24 h-[34rem] w-[34rem] rounded-full bg-violet-300/35 glow-mask" />
+        <div className="absolute right-[-6rem] top-1/2 h-[34rem] w-[34rem] rounded-full bg-sky-300/35 glow-mask" />
+        <div className="absolute bottom-0 left-1/3 h-[28rem] w-[28rem] rounded-full bg-amber-200/35 glow-mask" />
       </div>
       <div className="relative mx-auto max-w-6xl px-6 py-24 lg:py-28">
         <FadeIn className="mx-auto max-w-2xl text-center">

@@ -93,8 +93,8 @@ export function Ambience({ tone, emojis = [], dots = true }: { tone: AmbienceTon
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,#000_14%,#000_78%,transparent)]" aria-hidden>
       {dots && <div className="absolute inset-0 opacity-70 [background-image:radial-gradient(rgb(120_113_108/0.18)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_70%_70%_at_50%_50%,#000_30%,transparent_100%)]" />}
-      <div className={cx("fx-drift absolute -left-24 top-[10%] h-72 w-72 rounded-full blur-3xl", a)} />
-      <div className={cx("fx-drift absolute -right-24 bottom-[5%] h-80 w-80 rounded-full blur-3xl", b)} style={{ "--d": "-6s", "--t": "22s" } as React.CSSProperties} />
+      <div className={cx("fx-drift absolute -left-24 top-[10%] h-[26rem] w-[26rem] rounded-full glow-mask", a)} />
+      <div className={cx("fx-drift absolute -right-24 bottom-[5%] h-[28rem] w-[28rem] rounded-full glow-mask", b)} style={{ "--d": "-6s", "--t": "22s" } as React.CSSProperties} />
       {emojis.map((e, i) => (
         <Float key={e + i} delay={i * 0.9} duration={6 + (i % 3) * 1.5} amp={14} rot={i % 2 ? -8 : 8} className={cx("absolute hidden text-3xl opacity-60 md:block", EMOJI_POS[i % EMOJI_POS.length])}>
           <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/60 shadow-soft backdrop-blur">{tr(e)}</span>

@@ -77,9 +77,9 @@ export function Marquee({ items, reverse, speed = 40, className }: { items: Reac
 export function Aurora({ className }: { className?: string }) {
   return (
     <div className={cx("pointer-events-none absolute inset-0 -z-10 overflow-hidden", className)} aria-hidden>
-      <div className="fx-drift absolute -left-24 -top-24 h-[420px] w-[420px] rounded-full bg-brand-300/40 blur-[90px]" style={{ "--t": "22s" } as React.CSSProperties} />
-      <div className="fx-drift absolute -right-20 top-10 h-[360px] w-[360px] rounded-full bg-sky-300/30 blur-[90px]" style={{ "--t": "26s", "--d": "-6s" } as React.CSSProperties} />
-      <div className="fx-drift absolute bottom-0 left-1/3 h-[300px] w-[300px] rounded-full bg-emerald-300/25 blur-[90px]" style={{ "--t": "30s", "--d": "-12s" } as React.CSSProperties} />
+      <div className="fx-drift absolute -left-24 -top-24 h-[560px] w-[560px] rounded-full bg-brand-300/45 glow-mask" style={{ "--t": "22s" } as React.CSSProperties} />
+      <div className="fx-drift absolute -right-20 top-10 h-[480px] w-[480px] rounded-full bg-sky-300/35 glow-mask" style={{ "--t": "26s", "--d": "-6s" } as React.CSSProperties} />
+      <div className="fx-drift absolute bottom-0 left-1/3 h-[400px] w-[400px] rounded-full bg-emerald-300/30 glow-mask" style={{ "--t": "30s", "--d": "-12s" } as React.CSSProperties} />
     </div>
   );
 }

@@ -4,11 +4,13 @@ import { LogoWordmark } from "@/components/logo";
 import { CATEGORIES, featuresOf, type CategoryKey, type Feature } from "@/lib/marketing/features";
 import { cx } from "@/lib/utils";
 import { LanguageLinks, LanguageMenu } from "@/components/marketing/language-switch";
+import { MobileMenu, type MenuData } from "@/components/marketing/mobile-menu";
 
 type Current = "recettes" | "calculateurs" | "tarifs" | "outils" | "guides" | "fonctionnalites" | CategoryKey;
 
+// Le survol n'ouvre les sous-menus que sur les appareils à souris ; au doigt (tablette) on utilise le focus, sans panneau « collé ».
 const panel =
-  "invisible absolute top-full z-50 pt-3 opacity-0 transition duration-150 group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100";
+  "invisible absolute top-full z-50 pt-3 opacity-0 transition duration-150 group-focus-within:visible group-focus-within:opacity-100 [@media(hover:hover)]:group-hover:visible [@media(hover:hover)]:group-hover:opacity-100";
 const center = "left-1/2 -translate-x-1/2";
 
 function FeatureLink({ f }: { f: Feature }) {
@@ -29,9 +31,27 @@ function FeatureLink({ f }: { f: Feature }) {
 export function SiteHeader({ current }: { current?: Current }) {
   const tr = getT();
   const item = (active: boolean) => cx("inline-flex items-center gap-1 py-2", active ? "text-stone-900" : "hover:text-stone-900");
+  const menu: MenuData = {
+    labels: {
+      open: tr("Ouvrir le menu"), close: tr("Fermer le menu"), menu: tr("Menu"), back: tr("Menu"), main: tr("Navigation principale"),
+      features: tr("Fonctionnalités"), featuresHint: tr("Agenda, repas et finances"), allFeatures: tr("Toutes les fonctionnalités"),
+      resources: tr("Recettes et guides"), resourcesHint: tr("Recettes, idées, guides et outils"),
+      pricing: tr("Tarifs"), login: tr("Connexion"), loginHint: tr("Accéder à mon espace"), signup: tr("Créer mon espace"), language: tr("Langue"),
+    },
+    groups: CATEGORIES.map((c) => ({
+      key: c.key, href: c.href, name: tr(c.name), icon: tr(c.icon),
+      items: featuresOf(c).map((f) => ({ href: `/fonctionnalites/${f.slug}`, name: tr(f.name), icon: tr(f.icon), soon: f.soon ? tr("Bientôt") : undefined })),
+    })),
+    resources: [
+      { href: "/recettes", name: tr("Recettes"), icon: "🍲" },
+      { href: "/recettes/idees", name: tr("Idées de recettes"), icon: "💡" },
+      { href: "/guides", name: tr("Guides"), icon: "📖" },
+      { href: "/outils", name: tr("Outils gratuits"), icon: "🧮" },
+    ],
+  };
   return (
-    <header className="sticky top-0 z-40 border-b border-stone-200/70 bg-surface/70 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
+    <header className="sticky top-0 z-40 border-b border-stone-200/70 bg-surface/95 md:bg-surface/70 md:backdrop-blur-xl">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 sm:py-3.5">
         <Link href="/" className="shrink-0"><LogoWordmark className="text-xl sm:text-2xl" /></Link>
         <nav aria-label={tr("Navigation principale")} className="hidden items-center gap-5 text-sm font-medium text-stone-600 md:flex">
           <Link href="/fonctionnalites" className={item(current === "fonctionnalites")}>{tr("Fonctionnalités")}</Link>
@@ -50,33 +70,13 @@ export function SiteHeader({ current }: { current?: Current }) {
           <Link href="/recettes" className={item(current === "recettes")}>{tr("Recettes")}</Link>
           <Link href="/tarifs" className={item(current === "tarifs")}>{tr("Tarifs")}</Link>
         </nav>
-        <div className="flex items-center gap-3">
-          <LanguageMenu />
-          <Link href="/login" className="hidden text-sm font-semibold text-stone-700 hover:text-stone-900 sm:block">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="hidden md:block"><LanguageMenu /></div>
+          <Link href="/login" className="hidden text-sm font-semibold text-stone-700 hover:text-stone-900 md:block">
             {tr("Connexion")}
           </Link>
-          <Link href="/signup" className="btn-primary hidden whitespace-nowrap min-[430px]:inline-flex">{tr("Créer mon espace")}</Link>
-          {/* Menu mobile */}
-          <details className="group relative md:hidden">
-            <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-xl border border-line bg-surface text-lg text-stone-700" aria-label={tr("Menu")}>
-              <span className="group-open:hidden">☰</span><span className="hidden group-open:inline">✕</span>
-            </summary>
-            <div className="absolute right-0 top-full mt-3 max-h-[75vh] w-72 overflow-y-auto rounded-3xl border border-line bg-surface p-3 shadow-lift">
-              {CATEGORIES.map((c) => (
-                <div key={c.key} className="mb-1">
-                  <Link href={c.href} className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-bold uppercase tracking-wide text-stone-500">{tr(c.icon)} {tr(c.name)}</Link>
-                  {featuresOf(c).map((f) => <FeatureLink key={f.slug} f={f} />)}
-                </div>
-              ))}
-              <div className="mt-2 grid grid-cols-2 gap-1 border-t border-line pt-2 text-sm font-semibold text-stone-700">
-                <Link href="/fonctionnalites" className="rounded-xl px-2.5 py-2 hover:bg-stone-50">{tr("Toutes les fonctions")}</Link>
-                <Link href="/recettes" className="rounded-xl px-2.5 py-2 hover:bg-stone-50">{tr("Recettes")}</Link>
-                <Link href="/tarifs" className="rounded-xl px-2.5 py-2 hover:bg-stone-50">{tr("Tarifs")}</Link>
-                <Link href="/login" className="rounded-xl px-2.5 py-2 hover:bg-stone-50">{tr("Connexion")}</Link>
-              </div>
-              <Link href="/signup" className="btn-primary mt-2 w-full justify-center">{tr("Créer mon espace")}</Link>
-            </div>
-          </details>
+          <Link href="/signup" prefetch className="btn-primary hidden whitespace-nowrap min-[390px]:inline-flex">{tr("Créer mon espace")}</Link>
+          <MobileMenu data={menu} />
         </div>
       </div>
     </header>

@@ -969,4 +969,11 @@ export const siteEs: Record<string, string> = {
   "Enregistré": "Guardado",
   "automatiquement": "automáticamente",
   "Calculer mon reste à vivre": "Calcular lo que me queda para vivir",
+  "Ouvrir le menu": "Abrir el menú",
+  "Fermer le menu": "Cerrar el menú",
+  "Agenda, repas et finances": "Agenda, comidas y finanzas",
+  "Recettes et guides": "Recetas y guías",
+  "Recettes, idées, guides et outils": "Recetas, ideas, guías y herramientas",
+  "Accéder à mon espace": "Ir a mi espacio",
+  "Idées de recettes": "Ideas de recetas",
 };

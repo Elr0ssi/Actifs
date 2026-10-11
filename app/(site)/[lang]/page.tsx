@@ -95,29 +95,28 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
         <section className="mx-auto flex min-h-[calc(100svh-69px)] max-w-6xl items-center px-6 py-12 lg:py-8">
           <div className="grid w-full items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
             <div>
-              <FadeIn delay={80}>
+              <div>
                 <h1>
                   <span className="block bg-gradient-to-r from-brand-500 via-violet-600 to-fuchsia-600 bg-clip-text text-7xl font-extrabold tracking-tight text-transparent sm:text-8xl lg:text-[6.5rem] lg:leading-none">{tr("Flozea")}</span>
                   <span className="mt-4 block text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl lg:leading-tight">{tr("Agenda, courses, budget et notes :")} <span className="text-brand-600">{tr("une seule appli")}</span></span>
                 </h1>
-              </FadeIn>
-              <FadeIn delay={160}>
+              </div>
+              <div>
                 <p className="mt-5 max-w-lg text-lg leading-relaxed text-stone-600">
                   {tr("Ton emploi du temps, tes repas, tes courses et ton budget au même endroit, seul ou à deux.")}
                 </p>
-              </FadeIn>
-              <FadeIn delay={240}>
+              </div>
+              <div>
                 <div className="mt-7 flex flex-wrap items-center gap-3">
-                  <Link href="/signup" className="btn-primary px-6 py-3 text-base">{tr("Créer mon espace")}</Link>
-                  <Link href="/fonctionnalites" className="px-2 py-3 text-base font-semibold text-stone-700 underline-offset-4 hover:text-brand-700 hover:underline">{tr("Découvrir les fonctionnalités →")}</Link>
+                  <Link href="/signup" prefetch className="btn-primary px-6 py-3 text-base">{tr("Créer mon espace")}</Link>
+                  <Link href="/fonctionnalites" prefetch className="px-2 py-3 text-base font-semibold text-stone-700 underline-offset-4 hover:text-brand-700 hover:underline">{tr("Découvrir les fonctionnalités →")}</Link>
                 </div>
                 <p className="mt-3 text-xs text-stone-500">{tr("Gratuit, sans carte bancaire.")} <Link href="/tarifs" className="underline underline-offset-2 hover:text-brand-600">{tr("Voir les tarifs")}</Link></p>
-              </FadeIn>
+              </div>
             </div>
 
             {/* Aperçu du produit */}
-            <FadeIn delay={200}>
-              <div className="relative mx-auto w-full max-w-md" aria-hidden>
+            <div className="hero-rise relative mx-auto w-full max-w-md" aria-hidden>
                 <div className="card p-4 shadow-lift">
                   <div className="flex items-center justify-between text-xs font-semibold text-stone-800"><span>{tr("Agenda · semaine")}</span><span className="rounded-full bg-brand-50 px-2 py-0.5 text-brand-700">{tr("Aujourd'hui")}</span></div>
                   <div className="mt-3 grid grid-cols-5 gap-1.5 text-[10px] text-stone-500">
@@ -143,7 +142,6 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
                   <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-stone-100"><div className="h-full w-2/3 rounded-full bg-gradient-to-r from-brand-400 to-brand-600" /></div>
                 </div>
               </div>
-            </FadeIn>
           </div>
         </section>
 
@@ -177,7 +175,7 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
         <WeekTimeline />
 
         {/* Recettes */}
-        <section className="relative flex items-center overflow-hidden bg-gradient-to-b from-amber-50/80 to-transparent lg:min-h-[calc(100svh-69px)]">
+        <section className="cv-auto relative flex items-center overflow-hidden bg-gradient-to-b from-amber-50/80 to-transparent lg:min-h-[calc(100svh-69px)]">
           <Ambience tone="amber" emojis={["🍅","🥕","🧅","🧀","🌿"]} />
           <div className="relative mx-auto w-full max-w-6xl px-6 py-24 lg:py-28">
           <FadeIn className="mx-auto max-w-2xl text-center">
@@ -206,7 +204,7 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
         </section>
 
         {/* Guides : un guide à la une + liste numérotée */}
-        <section className="relative flex items-center overflow-hidden bg-indigo-50/50 lg:min-h-[calc(100svh-69px)]" aria-labelledby="guides">
+        <section className="cv-auto relative flex items-center overflow-hidden bg-indigo-50/50 lg:min-h-[calc(100svh-69px)]" aria-labelledby="guides">
           <Ambience tone="sky" emojis={["📖","💡","🎯"]} />
           <div className="relative mx-auto w-full max-w-6xl px-6 py-24 lg:py-28">
           <FadeIn className="mx-auto max-w-2xl text-center">
@@ -244,7 +242,7 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
         </section>
 
         {/* FAQ */}
-        <section className="mx-auto max-w-3xl px-6 py-24 lg:py-28" aria-labelledby="faq">
+        <section className="cv-auto mx-auto max-w-3xl px-6 py-24 lg:py-28" aria-labelledby="faq">
           <h2 id="faq" className="text-center text-3xl font-bold tracking-tight">{tr("Questions fréquentes")}</h2>
           <div className="mt-8 divide-y divide-line border-y border-line">
             {FAQ.map((f) => (
