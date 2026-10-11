@@ -12,7 +12,11 @@ export interface NotificationSettings {
   quietEnd: string; // HH:MM
 }
 
+export type Accent = "violet" | "ocean" | "emerald" | "rose" | "sunset" | "terracotta";
+export const ACCENT_NAMES: Accent[] = ["violet", "ocean", "emerald", "rose", "sunset", "terracotta"];
+
 export interface AppSettings {
+  accent: Accent;
   notifications: NotificationSettings;
   /** Masque les montants dans les widgets finances (rien n'est écrit dans le conteneur partagé). */
   hideWidgetAmounts: boolean;
@@ -32,6 +36,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     quietEnd: "07:00",
   },
   hideWidgetAmounts: false,
+  accent: "violet",
 };
 
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -45,6 +50,7 @@ export function mergeSettings(raw: unknown): AppSettings {
   const bool = (v: unknown, def: boolean) => (typeof v === "boolean" ? v : def);
   return {
     hideWidgetAmounts: bool(r.hideWidgetAmounts, false),
+    accent: ACCENT_NAMES.includes(r.accent as Accent) ? (r.accent as Accent) : "violet",
     notifications: {
       enabled: bool(n.enabled, d.enabled),
       tasks: bool(n.tasks, d.tasks),
