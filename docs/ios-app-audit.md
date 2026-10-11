@@ -160,3 +160,12 @@ Pourquoi : déplacer le site vers `web/` casserait la configuration de déploiem
 | B5 | Hébergement : Vercel (README) ou Hostinger ? | À clarifier, sans impact sur le mobile |
 | B6 | WidgetKit : code Swift **compilable uniquement sur Mac / EAS** — non vérifiable dans ce conteneur Linux | Compilation et test réels via EAS puis iPhone |
 | B7 | Bug `todayISO()` (UTC) côté site | Signalé, non corrigé |
+
+---
+
+## Annexe — suite donnée à cet audit
+- Architecture retenue et fonctionnement : `docs/ios-architecture.md`
+- Distribution (Apple Developer, EAS, TestFlight) : `docs/ios-testflight.md`
+- Migrations Supabase proposées (non appliquées) : `docs/ios-proposed-migrations.sql`
+- Point additionnel pour une publication App Store (pas pour TestFlight) : suppression de compte dans l'app et
+  « Se connecter avec Apple » (voir `docs/ios-testflight.md` §6).
