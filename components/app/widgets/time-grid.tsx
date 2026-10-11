@@ -200,10 +200,12 @@ export function TimeGrid({
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-line">
-      <div ref={scroller} className="relative max-h-[640px] overflow-y-auto">
+      <div ref={scroller} className="relative max-h-[640px] overflow-auto overscroll-x-contain">
+       {/* Sur téléphone, la semaine garde des colonnes lisibles : on la fait défiler de côté au lieu de l'écraser */}
+       <div style={{ minWidth: n > 1 ? 44 + n * 92 : undefined }}>
         {/* En-tête : jours + éléments sans heure (routines, tâches sans horaire) */}
         <div className="sticky top-0 z-20 flex border-b border-line bg-surface/95 backdrop-blur">
-          <div className="w-11 shrink-0" />
+          <div className="sticky left-0 z-30 w-11 shrink-0 bg-surface" />
           <div className="grid min-w-0 flex-1" style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}>
             {days.map((d) => {
               const items = allDay(d);
@@ -226,7 +228,7 @@ export function TimeGrid({
 
         {/* Grille horaire */}
         <div className="relative flex" style={{ height: (toH - fromH) * HOUR_PX }}>
-          <div className="relative w-11 shrink-0">
+          <div className="sticky left-0 z-20 w-11 shrink-0 bg-surface">
             {hours.map((h) => (
               <span key={h} className="absolute right-1.5 -translate-y-1/2 text-[10px] tabular-nums text-stone-400" style={{ top: (h - fromH) * HOUR_PX, display: h === fromH ? "none" : undefined }}>{timeLabel(h)}</span>
             ))}
@@ -345,6 +347,7 @@ export function TimeGrid({
             })}
           </div>
         </div>
+       </div>
       </div>
     </div>
   );

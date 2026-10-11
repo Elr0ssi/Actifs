@@ -97,11 +97,13 @@
   }
 
   .segmented {
-    @apply inline-flex rounded-xl bg-stone-100 p-0.5 text-xs font-medium;
+    @apply inline-flex max-w-full overflow-x-auto rounded-xl bg-stone-100 p-0.5 text-xs font-medium;
+    scrollbar-width: none;
   }
+  .segmented::-webkit-scrollbar { display: none; }
   .segmented > button,
   .segmented > a {
-    @apply rounded-[10px] px-2.5 py-1 text-stone-500 transition duration-200 hover:text-stone-800;
+    @apply shrink-0 whitespace-nowrap rounded-[10px] px-2.5 py-1 text-stone-500 transition duration-200 hover:text-stone-800;
   }
   .segmented > [data-active="true"] {
     @apply bg-surface text-stone-900 shadow-soft hover:text-stone-900;
@@ -309,3 +311,22 @@
 @keyframes timeline-ping { 0% { transform: scale(0.85); opacity: 0.6; } 100% { transform: scale(1.8); opacity: 0; } }
 .timeline-ping { animation: timeline-ping 2.2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
 @media (prefers-reduced-motion: reduce) { .converge-flow, .converge-ring, .converge-float, .timeline-ping { animation: none; } }
+@keyframes converge-land { 0% { transform: scale(1); opacity: 0.9; } 100% { transform: scale(1.35, 1.6); opacity: 0; } }
+.converge-land { animation: converge-land 900ms ease-out both; }
+@media (prefers-reduced-motion: reduce) { .converge-land { animation: none; opacity: 0; } }
+
+/* Téléphone : une grille sans colonnes explicites ne doit pas s'élargir à son contenu le plus large (tableaux, rangées de boutons…).
+   `:where` garde une spécificité nulle : les `lg:grid-cols-*` continuent de s'appliquer. */
+:where(.grid:not([class*=" grid-cols-"]):not([class^="grid-cols-"]):not([class*="grid-flow-"])) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Téléphone : confort tactile. */
+@media (max-width: 767px) {
+  /* iOS zoome la page quand on touche un champ dont le texte fait moins de 16 px. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea { font-size: 16px !important; }
+}
+a, button, summary, [role="button"], input, select, textarea, label { touch-action: manipulation; }
+html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }

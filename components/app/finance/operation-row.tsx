@@ -19,21 +19,24 @@ export function OperationRow({ op, today }: { op: FinOp; today: string }) {
 
   return (
     <li className={cx("rounded-xl border border-line p-2.5", pending && "opacity-60", !op.active && "bg-stone-50")}>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <span className={cx("h-2.5 w-2.5 shrink-0 rounded-full", KIND_STYLE[op.kind].dot)} />
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-[1_1_9rem]">
           <p className="truncate text-[13px] font-medium text-stone-800">{op.name} <span className="text-xs font-normal text-stone-400">· {tr(op.category)}</span></p>
           <p className="truncate text-xs text-stone-400">{describeRecurrence(op, tr)} · {tr("dès le {date}", { date: op.start })}{op.end ? ` ${tr("jusqu'au {date}", { date: op.end })}` : ""}</p>
         </div>
-        <span className={cx("tabular shrink-0 text-[13px] font-semibold", KIND_STYLE[op.kind].text)}>{formatEUR(op.amount)}</span>
-        <ToggleSwitch initialChecked={op.active} onToggle={toggleOperationActive.bind(null, op.table, op.id)} />
-        <button onClick={() => setEditing((e) => !e)} className="text-xs font-medium text-brand-600">{editing ? tr("Fermer") : tr("Modifier")}</button>
-        <button
-          onClick={() => confirm(tr("Supprimer « {name} » et toute sa récurrence ?", { name: op.name })) && start(() => deleteOperation(op.table, op.id))}
-          className="text-xs text-stone-300 hover:text-rose-600"
-        >
-          ✕
-        </button>
+        <div className="ml-auto flex shrink-0 items-center gap-3 pl-5 sm:pl-0">
+          <span className={cx("tabular shrink-0 text-[13px] font-semibold", KIND_STYLE[op.kind].text)}>{formatEUR(op.amount)}</span>
+          <ToggleSwitch initialChecked={op.active} onToggle={toggleOperationActive.bind(null, op.table, op.id)} />
+          <button onClick={() => setEditing((e) => !e)} className="py-1 text-xs font-medium text-brand-600">{editing ? tr("Fermer") : tr("Modifier")}</button>
+          <button
+            onClick={() => confirm(tr("Supprimer « {name} » et toute sa récurrence ?", { name: op.name })) && start(() => deleteOperation(op.table, op.id))}
+            className="px-1 py-1 text-xs text-stone-300 hover:text-rose-600"
+            aria-label={tr("Supprimer")}
+          >
+            ✕
+          </button>
+        </div>
       </div>
 
       {op.frequency !== "once" && (next.length > 0 || op.skipped.length > 0 || moves.length > 0) && (

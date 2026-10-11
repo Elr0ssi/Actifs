@@ -162,6 +162,11 @@ export function TasksCalendar({ data, size, opts, setOpts }: WidgetProps) {
   const [selected, setSelected] = useState(data.today);
   const [anchor, setAnchor] = useState(data.today);
   const [view, setView] = useState<CalView>(opts.view === "day" || opts.view === "week" || opts.view === "month" ? opts.view : "week");
+  // Sur téléphone, sans choix enregistré, on commence par la vue « Jour » : une semaine entière y serait illisible.
+  useEffect(() => {
+    if (!opts.view && window.matchMedia("(max-width: 639px)").matches) setView("day");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [projectFilter, setProjectFilter] = useState("");
   const [formKey, setFormKey] = useState(0);
   const [adding, setAdding] = useState(false);

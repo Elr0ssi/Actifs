@@ -181,7 +181,7 @@ export function FinanceDashboard({
                     onClick={() => onDaySelect(d)}
                     className={cx(
                       "flex min-w-0 flex-col gap-0.5 border-b border-r border-line/70 p-1 text-left transition hover:bg-brand-50/40",
-                      view === "week" ? "min-h-[200px]" : "min-h-[72px]",
+                      view === "week" ? "min-h-[120px] sm:min-h-[200px]" : "min-h-[52px] sm:min-h-[72px]",
                       outside && "bg-stone-50/70 text-stone-300",
                       d === selected && "bg-brand-50/70 ring-1 ring-inset ring-brand-300"
                     )}
@@ -189,13 +189,19 @@ export function FinanceDashboard({
                     <span className={cx("flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold", d === today ? "bg-brand-600 text-white" : outside ? "text-stone-300" : "text-stone-600")}>
                       {dayNum(d)}
                     </span>
+                    {/* Téléphone : cases trop étroites pour des montants, on garde des pastilles de couleur (le détail est dans le panneau du jour) */}
+                    {occ.length > 0 && (
+                      <span className="flex flex-wrap gap-0.5 sm:hidden">
+                        {occ.slice(0, 6).map((o, i) => <span key={i} className={cx("h-1.5 w-1.5 rounded-full", KIND_STYLE[o.op.kind].dot, outside && "opacity-40")} />)}
+                      </span>
+                    )}
                     {occ.slice(0, max).map((o, i) => (
-                      <span key={i} title={tooltip(o, tr)} className={cx("w-full truncate text-[10px] font-semibold leading-tight", o.signed > 0 ? "text-emerald-600" : "text-rose-600", outside && "opacity-50")}>
+                      <span key={i} title={tooltip(o, tr)} className={cx("hidden w-full truncate text-[10px] font-semibold leading-tight sm:block", o.signed > 0 ? "text-emerald-600" : "text-rose-600", outside && "opacity-50")}>
                         {o.signed > 0 ? "+" : "-"}{formatEUR(o.amount)}
                         <span className="block truncate font-normal text-stone-400">{o.op.name}</span>
                       </span>
                     ))}
-                    {occ.length > max && <span className="text-[10px] text-stone-400">+{occ.length - max}</span>}
+                    {occ.length > max && <span className="hidden text-[10px] text-stone-400 sm:block">+{occ.length - max}</span>}
                     {(skippedByDate.get(d) ?? []).map((o, i) => (
                       <span key={`s${i}`} title={tr("{name} — occurrence ignorée", { name: o.op.name })} className="w-full truncate text-[10px] text-stone-300 line-through">
                         {formatEUR(o.amount)}

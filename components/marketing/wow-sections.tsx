@@ -15,8 +15,8 @@ const ORDER: LogoSection[] = ["planning", "recettes", "budget"];
 
 /** Position (en % de la scène) de chaque pastille : trois à gauche, trois à droite. */
 const SLOTS = [
-  { x: 17, y: 16 }, { x: 11, y: 50 }, { x: 17, y: 84 },
-  { x: 83, y: 16 }, { x: 89, y: 50 }, { x: 83, y: 84 },
+  { x: 17, y: 14 }, { x: 11, y: 50 }, { x: 17, y: 86 },
+  { x: 83, y: 14 }, { x: 89, y: 50 }, { x: 83, y: 86 },
 ];
 
 export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; children: React.ReactNode }) {
@@ -51,7 +51,7 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
     <div
       ref={panel}
       onMouseMove={spot}
-      className="relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] bg-[#0a0720] px-6 py-16 text-white shadow-[0_40px_120px_-30px_rgba(76,29,149,0.7)] lg:px-12 lg:py-20"
+      className="relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] bg-[#0a0720] px-6 py-12 text-white shadow-[0_40px_120px_-30px_rgba(76,29,149,0.7)] sm:py-14 lg:px-12 lg:py-14"
       style={{ "--mx": "50%", "--my": "40%" } as React.CSSProperties}
     >
       {/* fond : aurore, grille et halo qui suit le curseur */}
@@ -66,8 +66,8 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
       <div className="relative">{children}</div>
 
       {/* Grand écran : la scène */}
-      <div className="relative mx-auto mt-14 hidden aspect-[1000/430] w-full max-w-[62rem] lg:block">
-        <svg viewBox="0 0 1000 430" className="absolute inset-0 h-full w-full" aria-hidden fill="none">
+      <div className="relative mx-auto mt-8 hidden aspect-[1000/340] w-full max-w-[62rem] lg:block">
+        <svg viewBox="0 0 1000 340" className="absolute inset-0 h-full w-full" aria-hidden fill="none">
           <defs>
             <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0" stopColor="#fff" stopOpacity="0.05" />
@@ -77,13 +77,16 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
           {SLOTS.map((s, i) => {
             const left = s.x < 50;
             const x0 = (s.x / 100) * 1000 + (left ? 136 : -136);
-            const y0 = (s.y / 100) * 430;
+            const y0 = (s.y / 100) * 340;
             const x1 = left ? 440 : 560;
             const lit = chips[i]?.group === cur;
-            const d = `M${x0} ${y0} C ${left ? x0 + 120 : x0 - 120} ${y0}, ${left ? x1 - 90 : x1 + 90} 215, ${x1} 215`;
+            const d = `M${x0} ${y0} C ${left ? x0 + 120 : x0 - 120} ${y0}, ${left ? x1 - 90 : x1 + 90} 170, ${x1} 170`;
             return (
               <g key={i} style={{ opacity: on ? 1 : 0, transition: `opacity 700ms ${900 + i * 90}ms` }}>
                 <path d={d} stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" />
+                <circle r={lit ? 4 : 2.5} fill={lit ? `rgb(${rgb})` : "#fff"} style={{ filter: `drop-shadow(0 0 5px ${lit ? `rgb(${rgb})` : "#fff"})` }}>
+                  <animateMotion dur={`${2.2 + (i % 3) * 0.5}s`} begin={`${i * 0.35}s`} repeatCount="indefinite" path={d} />
+                </circle>
                 <path d={d} stroke={lit ? `rgb(${rgb})` : "url(#beam)"} strokeWidth={lit ? 2.5 : 1.5} strokeLinecap="round" strokeDasharray="6 14" className="converge-flow" style={{ transition: "stroke 500ms, stroke-width 500ms", filter: lit ? `drop-shadow(0 0 6px rgb(${rgb}))` : undefined, animationDirection: left ? "normal" : "reverse" }} />
               </g>
             );
@@ -91,12 +94,12 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
         </svg>
 
         {/* le logo, au centre, qui respire */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" style={{ opacity: on ? 1 : 0, transform: `translate(-50%,-50%) scale(${on ? 1 : 0.4})`, transition: "opacity 700ms 300ms, transform 900ms 300ms cubic-bezier(0.34,1.4,0.5,1)" }}>
+        <div className="absolute left-1/2 top-1/2" style={{ opacity: on ? 1 : 0, transform: `translate(-50%,-50%) scale(${on ? 1 : 0.4})`, transition: "opacity 700ms 300ms, transform 900ms 300ms cubic-bezier(0.34,1.4,0.5,1)" }}>
           {[0, 1, 2].map((k) => (
-            <span key={k} className="converge-ring absolute left-1/2 top-1/2 h-56 w-56 rounded-full border" style={{ borderColor: `rgba(${rgb},0.55)`, animationDelay: `${k * 1.1}s`, transition: "border-color 600ms" }} aria-hidden />
+            <span key={k} className="converge-ring absolute left-1/2 top-1/2 h-44 w-44 rounded-full border" style={{ borderColor: `rgba(${rgb},0.55)`, animationDelay: `${k * 1.1}s`, transition: "border-color 600ms" }} aria-hidden />
           ))}
-          <span className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl transition-colors duration-700" style={{ background: `rgba(${rgb},0.35)` }} aria-hidden />
-          <AnimatedLogo section={cur} className="relative h-56 w-56 drop-shadow-[0_10px_40px_rgba(0,0,0,0.45)]" />
+          <span className="absolute left-1/2 top-1/2 h-52 w-52 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl transition-colors duration-700" style={{ background: `rgba(${rgb},0.35)` }} aria-hidden />
+          <AnimatedLogo section={cur} className="relative h-44 w-44 drop-shadow-[0_10px_40px_rgba(0,0,0,0.45)]" />
         </div>
 
         {chips.map((c, i) => {
@@ -117,6 +120,7 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
                 transition: `opacity 600ms ${i * 110}ms, transform 1000ms ${i * 110}ms cubic-bezier(0.34,1.35,0.5,1), filter 700ms ${i * 110}ms`,
               }}
             >
+              {on && <span className="converge-land pointer-events-none absolute inset-0 rounded-2xl border" style={{ borderColor: `rgba(${GROUP_COLOR[c.group]},0.9)`, animationDelay: `${i * 110 + 800}ms` }} aria-hidden />}
               <div className="converge-float" style={{ animationDelay: `${i * 0.7}s` }}>
                 <div
                   className="flex items-center gap-3 rounded-2xl border bg-white/[0.07] px-4 py-3 backdrop-blur-md transition duration-500"
@@ -163,10 +167,10 @@ export interface TimelineLabels {
   days: string[]; meals: string[]; items: string[]; shopBudget: string; remaining: string; noteTitle: string;
 }
 
-/** Points par lesquels passe le chemin (repère 1200 × 900). Les 6 étapes sont les points marqués. */
+/** Points par lesquels passent le chemin (repère 1200 × 1150) : les trois premières étapes descendent en escalier vers la droite, puis le chemin fait demi-tour et les trois suivantes descendent vers la gauche. */
 const W: [number, number][] = [
-  [30, 170], [170, 120], [380, 70], [585, 120], [790, 170], [980, 120], [1100, 180], [1160, 280], [1120, 430], [1010, 520],
-  [980, 600], [785, 650], [585, 600], [385, 550], [170, 600], [30, 650],
+  [30, 60], [150, 90], [350, 120], [560, 200], [770, 250], [970, 310], [1100, 370], [1150, 470], [1110, 560], [1040, 610],
+  [970, 650], [770, 700], [560, 760], [350, 810], [150, 870], [30, 910],
 ];
 const NODES = [1, 3, 5, 10, 12, 14];
 
@@ -347,12 +351,12 @@ export function TimelinePath({ steps, labels }: { steps: TimelineStep[]; labels:
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  const posOf = (n: number) => ({ left: `${(W[n][0] / 1200) * 100}%`, top: `${(W[n][1] / 900) * 100}%` });
+  const posOf = (n: number) => ({ left: `${(W[n][0] / 1200) * 100}%`, top: `${(W[n][1] / 1150) * 100}%` });
   return (
     <div ref={wrap}>
       {/* Grand écran : le chemin sinueux */}
-      <div className="relative mx-auto hidden aspect-[1200/900] w-full max-w-6xl lg:block">
-        <svg viewBox="0 0 1200 900" className="absolute inset-0 h-full w-full overflow-visible" aria-hidden fill="none">
+      <div className="relative mx-auto hidden aspect-[1200/1150] w-full max-w-6xl lg:block">
+        <svg viewBox="0 0 1200 1150" className="absolute inset-0 h-full w-full overflow-visible" aria-hidden fill="none">
           <defs>
             <linearGradient id="trail" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0" stopColor="#7c3aed" />

@@ -55,7 +55,7 @@ export function SiteHeader({ current }: { current?: Current }) {
           <Link href="/login" className="hidden text-sm font-semibold text-stone-700 hover:text-stone-900 sm:block">
             {tr("Connexion")}
           </Link>
-          <Link href="/signup" className="btn-primary">{tr("Créer mon espace")}</Link>
+          <Link href="/signup" className="btn-primary hidden whitespace-nowrap min-[430px]:inline-flex">{tr("Créer mon espace")}</Link>
           {/* Menu mobile */}
           <details className="group relative md:hidden">
             <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-xl border border-line bg-surface text-lg text-stone-700" aria-label={tr("Menu")}>
@@ -74,6 +74,7 @@ export function SiteHeader({ current }: { current?: Current }) {
                 <Link href="/tarifs" className="rounded-xl px-2.5 py-2 hover:bg-stone-50">{tr("Tarifs")}</Link>
                 <Link href="/login" className="rounded-xl px-2.5 py-2 hover:bg-stone-50">{tr("Connexion")}</Link>
               </div>
+              <Link href="/signup" className="btn-primary mt-2 w-full justify-center">{tr("Créer mon espace")}</Link>
             </div>
           </details>
         </div>

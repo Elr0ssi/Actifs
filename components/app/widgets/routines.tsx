@@ -164,13 +164,13 @@ export function RoutinesCurve({ data, size, opts, setOpts }: WidgetProps) {
             </p>
           </div>
 
-          <div className={cx("relative mt-3 flex-1 pl-9", tall)}>
+          <div className={cx("relative mt-3 flex flex-1 pl-9", tall)}>
             {[100, 50, 0].map((v) => (
               <span key={v} className="tabular absolute left-0 -translate-y-1/2 text-[10px] text-stone-400" style={{ top: `${100 - v}%` }}>{v} %</span>
             ))}
             <div
               ref={plot}
-              className="relative mx-2 h-full touch-none"
+              className="relative mx-2 min-w-0 flex-1 touch-none"
               onPointerMove={onMove}
               onPointerDown={onMove}
               onPointerLeave={() => setHover(null)}

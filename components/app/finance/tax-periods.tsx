@@ -41,7 +41,7 @@ export function TaxPeriods({ year, profile }: { year: number; profile: TaxProfil
           {periods.length === 0 && !adding && <p className="text-sm text-stone-400">{tr("Aucune période. Ajoute tes périodes de revenus {year}.", { year })}</p>}
           <div className="space-y-2">
             {periods.map((p, i) => (
-              <div key={i} className="grid grid-cols-[1fr_1fr_100px_auto] items-center gap-2 rounded-xl border border-stone-100 p-2">
+              <div key={i} className="grid grid-cols-[1fr_auto] items-center gap-2 rounded-xl border border-stone-100 p-2 sm:grid-cols-[1fr_1fr_100px_auto]">
                 <input value={p.label} onChange={(e) => updatePeriod(i, { label: e.target.value })} placeholder={tr("Ex. Janv. – août")} className="input px-2 py-1 text-sm" />
                 <select value={p.activity} onChange={(e) => updatePeriod(i, { activity: e.target.value })} className="input px-2 py-1 text-sm">
                   {ACTIVITIES.map((a) => <option key={a} value={a}>{tr(a)}</option>)}
@@ -54,7 +54,7 @@ export function TaxPeriods({ year, profile }: { year: number; profile: TaxProfil
                   placeholder={tr("à compléter")}
                   className="input px-2 py-1 text-right text-sm"
                 />
-                <button type="button" onClick={() => removePeriod(i)} className="text-xs text-stone-300 hover:text-rose-600">✕</button>
+                <button type="button" onClick={() => removePeriod(i)} className="px-1 text-xs text-stone-300 hover:text-rose-600 max-sm:col-start-2 max-sm:row-start-1" aria-label={tr("Supprimer")}>✕</button>
               </div>
             ))}
           </div>

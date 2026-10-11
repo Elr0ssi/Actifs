@@ -36,7 +36,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <span className="-right-[8%] top-[18%] h-[480px] w-[480px] animate-orbB bg-sky-400" />
       </div>
       <Sidebar displayName={displayName} inviteCode={ctx.household?.invite_code} mode={mode} />
-      <main className="relative z-10 min-w-0 flex-1 pb-28 pt-14 lg:pb-0 lg:pt-0">
+      <main className="relative min-w-0 flex-1 pb-28 pt-14 lg:pb-0 lg:pt-0">
         <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
           <PageTransition>{children}</PageTransition>
         </div>
