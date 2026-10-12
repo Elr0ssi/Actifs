@@ -26,6 +26,7 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
   const [cur, setCur] = useState<LogoSection>("planning");
 
   const [inView, setInView] = useState(false);
+  const desktop = useDesktop();
 
   // La scène se déclenche quand elle entre dans l'écran, puis on suit si elle est encore visible (pour mettre l'animation en pause quand on la quitte).
   useEffect(() => {
@@ -59,11 +60,11 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
     <div
       ref={panel}
       onMouseMove={spot}
-      className="relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] bg-[#0a0720] px-6 py-12 text-white shadow-[0_40px_120px_-30px_rgba(76,29,149,0.7)] sm:py-14 lg:px-12 lg:py-14"
+      className="relative mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-[linear-gradient(165deg,#241257_0%,#0a0720_60%)] px-5 py-10 text-white sm:py-12 lg:rounded-[2.5rem] lg:bg-[#0a0720] lg:px-12 lg:py-14 lg:shadow-[0_40px_120px_-30px_rgba(76,29,149,0.7)]"
       style={{ "--mx": "50%", "--my": "40%" } as React.CSSProperties}
     >
-      {/* fond : aurore, grille et halo qui suit le curseur */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
+      {/* fond (grand écran seulement) : aurore, grille et halo qui suit le curseur. Sur téléphone : simple dégradé, pas de calques superposés. */}
+      <div className="pointer-events-none absolute inset-0 hidden lg:block" aria-hidden>
         <div className="absolute -left-24 -top-24 h-[34rem] w-[34rem] rounded-full glow from-violet-600/50 to-transparent" />
         <div className="absolute -bottom-32 -right-16 h-[36rem] w-[36rem] rounded-full glow from-orange-500/35 to-transparent" />
         <div className="absolute left-1/3 top-1/2 h-[26rem] w-[26rem] rounded-full glow from-sky-500/30 to-transparent" />
@@ -75,6 +76,7 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
 
       {/* Grand écran : la scène */}
       <div className="relative mx-auto mt-8 hidden aspect-[1000/340] w-full max-w-[62rem] lg:block">
+        {desktop && (<>
         <svg viewBox="0 0 1000 340" className="absolute inset-0 h-full w-full" aria-hidden fill="none">
           <defs>
             <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0">
@@ -144,15 +146,16 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
             </div>
           );
         })}
+      </>)}
       </div>
 
       {/* Petits écrans : le logo puis les pastilles */}
       <div className="relative mt-10 lg:hidden">
-        <div className="relative mx-auto flex h-40 w-40 items-center justify-center">
+        <div className="relative mx-auto flex h-32 w-32 items-center justify-center">
           <span className="absolute -inset-8 rounded-full transition-colors duration-700" style={{ backgroundImage: `radial-gradient(closest-side, rgba(${rgb},0.45), rgba(${rgb},0))` }} aria-hidden />
-          <AnimatedLogo section={cur} className="relative h-36 w-36" />
+          <AnimatedLogo section={cur} className="relative h-28 w-28" />
         </div>
-        <div className="mt-8 grid grid-cols-2 gap-3">
+        <div className="mt-6 grid grid-cols-2 gap-2.5">
           {chips.map((c, i) => (
             <div key={c.name} className="conv-item rounded-2xl border border-white/15 bg-white/[0.07] p-3.5 transition duration-500 lg:backdrop-blur-md" style={{ opacity: on ? 1 : 0, transform: on ? "none" : "translateY(24px) scale(.95)", transition: `opacity 600ms ${i * 90}ms, transform 800ms ${i * 90}ms cubic-bezier(0.34,1.3,0.5,1)`, borderColor: c.group === cur ? `rgba(${GROUP_COLOR[c.group]},0.8)` : undefined }}>
               <span className="text-2xl">{c.icon}</span>

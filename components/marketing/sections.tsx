@@ -91,7 +91,7 @@ export function Ambience({ tone, emojis = [], dots = true }: { tone: AmbienceTon
   const tr = getT();
   const [a, b] = BLOB[tone];
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,#000_14%,#000_78%,transparent)]" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 hidden overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,#000_14%,#000_78%,transparent)] lg:block" aria-hidden>
       {dots && <div className="absolute inset-0 opacity-70 [background-image:radial-gradient(rgb(120_113_108/0.18)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_70%_70%_at_50%_50%,#000_30%,transparent_100%)]" />}
       <div className={cx("fx-drift absolute -left-24 top-[10%] h-[26rem] w-[26rem] rounded-full glow", a)} />
       <div className={cx("fx-drift absolute -right-24 bottom-[5%] h-[28rem] w-[28rem] rounded-full glow", b)} style={{ "--d": "-6s", "--t": "22s" } as React.CSSProperties} />

@@ -14,7 +14,7 @@ export function AllInOne() {
     { icon: "💶", name: tr("Budget"), replaces: tr("remplace Excel et Splitwise"), group: "budget" },
   ];
   return (
-    <section className="px-6 py-24 lg:mb-32 lg:py-28" aria-labelledby="tout-en-un">
+    <section className="px-4 py-14 sm:px-6 sm:py-20 lg:mb-32 lg:py-28" aria-labelledby="tout-en-un">
       <FadeIn>
         <ConvergeStage chips={chips}>
           <div className="mx-auto max-w-2xl text-center">
