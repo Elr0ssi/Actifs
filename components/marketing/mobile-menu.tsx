@@ -91,7 +91,7 @@ export function MobileMenu({ data }: { data: MenuData }) {
       role="dialog"
       aria-modal="true"
       aria-label={L.main}
-      className="fixed inset-0 z-[70] flex flex-col bg-surface animate-fade md:hidden"
+      className="fixed inset-0 z-[70] flex flex-col bg-surface md:hidden"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <div className="flex items-center justify-between px-4 py-2.5">
@@ -107,7 +107,7 @@ export function MobileMenu({ data }: { data: MenuData }) {
         </button>
       </div>
 
-      <div key={view} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-4 animate-slideIn">
+      <div key={view} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-4 menu-in">
         {view === "root" && (
           <nav aria-label={L.main} className="flex flex-col gap-1">
             <button type="button" ref={first} onClick={() => setView("features")} className={row} aria-haspopup="true">

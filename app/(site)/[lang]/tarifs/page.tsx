@@ -85,7 +85,7 @@ export default function TarifsPage({ params }: { params: { lang: string } }) {
 
           <FadeIn delay={120}>
             <div className="relative h-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-stone-900 via-indigo-950 to-violet-900 p-8 text-white">
-              <div className="fx-drift pointer-events-none absolute -right-16 -top-16 h-96 w-96 rounded-full bg-violet-500/45 glow-mask" aria-hidden />
+              <div className="fx-drift pointer-events-none absolute -right-16 -top-16 h-96 w-96 rounded-full glow from-violet-500/50 to-transparent" aria-hidden />
               <div className="relative flex items-center justify-between">
                 <p className="text-sm font-bold uppercase tracking-widest text-violet-200">{tr("Connexion bancaire")}</p>
                 <span className="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase text-white">{tr("Bientôt")}</span>

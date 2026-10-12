@@ -43,6 +43,7 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
   // Rien ne tourne quand la scène est hors de l'écran ou que l'onglet est masqué (avant : minuteur et re-rendus permanents).
   useEffect(() => {
     if (!on || !inView) return;
+    if (!window.matchMedia("(min-width: 1024px)").matches) return; // téléphone : logo fixe (chaque rotation re-rendait toute la scène)
     const t = setInterval(() => { if (!document.hidden) setCur((c) => ORDER[(ORDER.indexOf(c) + 1) % ORDER.length]); }, 2800);
     return () => clearInterval(t);
   }, [on, inView]);
@@ -63,9 +64,9 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
     >
       {/* fond : aurore, grille et halo qui suit le curseur */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <div className="absolute -left-24 -top-24 h-[34rem] w-[34rem] rounded-full bg-violet-600/45 glow-mask" />
-        <div className="absolute -bottom-32 -right-16 h-[36rem] w-[36rem] rounded-full bg-orange-500/30 glow-mask" />
-        <div className="absolute left-1/3 top-1/2 h-[26rem] w-[26rem] rounded-full bg-sky-500/25 glow-mask" />
+        <div className="absolute -left-24 -top-24 h-[34rem] w-[34rem] rounded-full glow from-violet-600/50 to-transparent" />
+        <div className="absolute -bottom-32 -right-16 h-[36rem] w-[36rem] rounded-full glow from-orange-500/35 to-transparent" />
+        <div className="absolute left-1/3 top-1/2 h-[26rem] w-[26rem] rounded-full glow from-sky-500/30 to-transparent" />
         <div className="absolute inset-0 opacity-[0.18] [background-image:radial-gradient(rgba(255,255,255,.7)_1px,transparent_1px)] [background-size:26px_26px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_55%,#000_20%,transparent_100%)]" />
         <div className="absolute inset-0 [background:radial-gradient(520px_circle_at_var(--mx)_var(--my),rgba(167,139,250,0.22),transparent_60%)]" />
       </div>
@@ -105,7 +106,7 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
           {[0, 1, 2].map((k) => (
             <span key={k} className="converge-ring absolute left-1/2 top-1/2 h-44 w-44 rounded-full border" style={{ borderColor: `rgba(${rgb},0.55)`, animationDelay: `${k * 1.1}s`, transition: "border-color 600ms" }} aria-hidden />
           ))}
-          <span className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full glow-mask transition-colors duration-700" style={{ background: `rgba(${rgb},0.35)` }} aria-hidden />
+          <span className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full transition-colors duration-700" style={{ backgroundImage: `radial-gradient(closest-side, rgba(${rgb},0.4), rgba(${rgb},0))` }} aria-hidden />
           <AnimatedLogo section={cur} className="relative h-44 w-44 drop-shadow-[0_10px_40px_rgba(0,0,0,0.45)]" />
         </div>
 
@@ -130,7 +131,7 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
               {on && <span className="converge-land pointer-events-none absolute inset-0 rounded-2xl border" style={{ borderColor: `rgba(${GROUP_COLOR[c.group]},0.9)`, animationDelay: `${i * 110 + 800}ms` }} aria-hidden />}
               <div className="converge-float" style={{ animationDelay: `${i * 0.7}s` }}>
                 <div
-                  className="flex items-center gap-3 rounded-2xl border bg-white/[0.07] px-4 py-3 backdrop-blur-md transition duration-500"
+                  className="flex items-center gap-3 rounded-2xl border bg-white/[0.07] px-4 py-3 lg:backdrop-blur-md transition duration-500"
                   style={{ borderColor: lit ? `rgba(${GROUP_COLOR[c.group]},0.8)` : "rgba(255,255,255,0.14)", boxShadow: lit ? `0 0 0 1px rgba(${GROUP_COLOR[c.group]},0.35), 0 12px 50px -8px rgba(${GROUP_COLOR[c.group]},0.7)` : "0 8px 30px -12px rgba(0,0,0,0.6)", transform: lit ? "scale(1.06)" : "scale(1)" }}
                 >
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-2xl">{c.icon}</span>
@@ -148,12 +149,12 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
       {/* Petits écrans : le logo puis les pastilles */}
       <div className="relative mt-10 lg:hidden">
         <div className="relative mx-auto flex h-40 w-40 items-center justify-center">
-          <span className="absolute -inset-8 rounded-full glow-mask transition-colors duration-700" style={{ background: `rgba(${rgb},0.4)` }} aria-hidden />
+          <span className="absolute -inset-8 rounded-full transition-colors duration-700" style={{ backgroundImage: `radial-gradient(closest-side, rgba(${rgb},0.45), rgba(${rgb},0))` }} aria-hidden />
           <AnimatedLogo section={cur} className="relative h-36 w-36" />
         </div>
         <div className="mt-8 grid grid-cols-2 gap-3">
           {chips.map((c, i) => (
-            <div key={c.name} className="rounded-2xl border border-white/15 bg-white/[0.07] p-3.5 backdrop-blur-md transition duration-500" style={{ opacity: on ? 1 : 0, transform: on ? "none" : "translateY(24px) scale(.95)", transition: `opacity 600ms ${i * 90}ms, transform 800ms ${i * 90}ms cubic-bezier(0.34,1.3,0.5,1)`, borderColor: c.group === cur ? `rgba(${GROUP_COLOR[c.group]},0.8)` : undefined }}>
+            <div key={c.name} className="conv-item rounded-2xl border border-white/15 bg-white/[0.07] p-3.5 transition duration-500 lg:backdrop-blur-md" style={{ opacity: on ? 1 : 0, transform: on ? "none" : "translateY(24px) scale(.95)", transition: `opacity 600ms ${i * 90}ms, transform 800ms ${i * 90}ms cubic-bezier(0.34,1.3,0.5,1)`, borderColor: c.group === cur ? `rgba(${GROUP_COLOR[c.group]},0.8)` : undefined }}>
               <span className="text-2xl">{c.icon}</span>
               <span className="mt-2 block text-sm font-bold">{c.name}</span>
               <span className="block text-[11px] leading-snug text-white/55">{c.replaces}</span>
@@ -304,7 +305,7 @@ function NodeDot({ s, on, size = 56 }: { s: TimelineStep; on: boolean; size?: nu
 
 function Card({ s, on, l, i }: { s: TimelineStep; on: boolean; l: TimelineLabels; i: number }) {
   return (
-    <div className={cx("rounded-3xl border bg-surface p-4 shadow-soft transition-all duration-700 will-change-transform", on ? "border-line opacity-100 shadow-lift" : "translate-y-5 scale-95 border-transparent opacity-30 blur-[1.5px]")} style={on ? { boxShadow: `0 24px 60px -24px ${s.glow}` } : undefined}>
+    <div className={cx("rounded-3xl border bg-surface p-4 shadow-soft transition-all duration-700 lg:will-change-transform", on ? "border-line opacity-100 shadow-lift" : "translate-y-5 scale-95 border-transparent opacity-30 blur-[1.5px]")} style={on ? { boxShadow: `0 24px 60px -24px ${s.glow}` } : undefined}>
       <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{s.step} {i + 1}</p>
       <h3 className="mt-0.5 text-[15px] font-bold leading-snug text-stone-900">{s.title}</h3>
       <p className="mt-1 text-[12.5px] leading-relaxed text-stone-500">{s.text}</p>
@@ -324,7 +325,7 @@ export function TimelinePath({ steps, labels }: { steps: TimelineStep[]; labels:
 
   useEffect(() => {
     const root = wrap.current;
-    if (!root) return;
+    if (!root || !desktop) return; // téléphone / tablette : étapes toutes affichées, aucune mesure au défilement
     let raf = 0;
     let cur = 0;
     let target = 0;
@@ -408,12 +409,12 @@ export function TimelinePath({ steps, labels }: { steps: TimelineStep[]; labels:
       {/* Petits écrans : une ligne verticale qui se remplit */}
       <div className="relative mx-auto max-w-md pl-14 lg:hidden">
         <span className="absolute bottom-6 left-[1.65rem] top-6 w-1 rounded-full bg-stone-200" aria-hidden />
-        <div ref={bar} className="absolute bottom-6 left-[1.65rem] top-6 w-1 origin-top rounded-full bg-gradient-to-b from-violet-500 via-amber-400 to-fuchsia-500" style={{ transform: "scaleY(0)" }} aria-hidden />
+        <div ref={bar} className="absolute bottom-6 left-[1.65rem] top-6 w-1 origin-top rounded-full bg-gradient-to-b from-violet-500 via-amber-400 to-fuchsia-500" style={{ transform: "scaleY(1)" }} aria-hidden />
         <ol className="space-y-6">
           {steps.map((s, i) => (
             <li key={s.key} className="relative">
-              <span className="absolute -left-14 top-3"><NodeDot s={s} on={count > i} size={48} /></span>
-              <Card s={s} on={count > i} l={labels} i={i} />
+              <span className="absolute -left-14 top-3"><NodeDot s={s} on={!desktop || count > i} size={48} /></span>
+              <Card s={s} on={!desktop || count > i} l={labels} i={i} />
             </li>
           ))}
         </ol>

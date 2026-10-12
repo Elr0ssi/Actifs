@@ -50,7 +50,7 @@ export function Bubble({ icon, title, sub, tone = "violet", className }: { icon:
     sky: "from-sky-500/20 to-sky-500/5 text-sky-700",
   } as const;
   return (
-    <div className={cx("flex items-center gap-2.5 rounded-2xl border border-white/60 bg-surface/80 py-2 pl-2 pr-4 shadow-lift backdrop-blur-xl", className)}>
+    <div className={cx("flex items-center gap-2.5 rounded-2xl border border-white/60 bg-surface/80 py-2 pl-2 pr-4 shadow-lift md:backdrop-blur-xl", className)}>
       <span className={cx("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-lg", tones[tone])}>{tr(icon)}</span>
       <span className="leading-tight">
         <span className="block text-[12px] font-semibold text-stone-900">{tr(title)}</span>
@@ -77,9 +77,9 @@ export function Marquee({ items, reverse, speed = 40, className }: { items: Reac
 export function Aurora({ className }: { className?: string }) {
   return (
     <div className={cx("pointer-events-none absolute inset-0 -z-10 overflow-hidden", className)} aria-hidden>
-      <div className="fx-drift absolute -left-24 -top-24 h-[560px] w-[560px] rounded-full bg-brand-300/45 glow-mask" style={{ "--t": "22s" } as React.CSSProperties} />
-      <div className="fx-drift absolute -right-20 top-10 h-[480px] w-[480px] rounded-full bg-sky-300/35 glow-mask" style={{ "--t": "26s", "--d": "-6s" } as React.CSSProperties} />
-      <div className="fx-drift absolute bottom-0 left-1/3 h-[400px] w-[400px] rounded-full bg-emerald-300/30 glow-mask" style={{ "--t": "30s", "--d": "-12s" } as React.CSSProperties} />
+      <div className="fx-drift absolute -left-24 -top-24 h-[560px] w-[560px] rounded-full glow from-brand-300/50 to-transparent" style={{ "--t": "22s" } as React.CSSProperties} />
+      <div className="fx-drift absolute -right-20 top-10 h-[480px] w-[480px] rounded-full glow from-sky-300/40 to-transparent" style={{ "--t": "26s", "--d": "-6s" } as React.CSSProperties} />
+      <div className="fx-drift absolute bottom-0 left-1/3 h-[400px] w-[400px] rounded-full glow from-emerald-300/35 to-transparent" style={{ "--t": "30s", "--d": "-12s" } as React.CSSProperties} />
     </div>
   );
 }

@@ -38,7 +38,7 @@ export function AuthShell({
           </div>
 
           <div className="mx-auto w-full max-w-sm lg:max-w-none">
-            <div className="rounded-[2rem] border border-white/70 bg-surface/90 p-8 shadow-lift backdrop-blur-xl">
+            <div className="rounded-[2rem] border border-white/70 bg-surface/90 p-8 shadow-lift md:backdrop-blur-xl">
               <h1 className="text-2xl font-bold tracking-tight text-stone-900">{tr(title)}</h1>
               <p className="mt-1 text-sm text-stone-500">{tr(subtitle)}</p>
               <div className="mt-6">{children}</div>

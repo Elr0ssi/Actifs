@@ -175,7 +175,7 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
         <WeekTimeline />
 
         {/* Recettes */}
-        <section className="cv-auto relative flex items-center overflow-hidden bg-gradient-to-b from-amber-50/80 to-transparent lg:min-h-[calc(100svh-69px)]">
+        <section className="relative flex items-center overflow-hidden bg-gradient-to-b from-amber-50/80 to-transparent lg:min-h-[calc(100svh-69px)]">
           <Ambience tone="amber" emojis={["🍅","🥕","🧅","🧀","🌿"]} />
           <div className="relative mx-auto w-full max-w-6xl px-6 py-24 lg:py-28">
           <FadeIn className="mx-auto max-w-2xl text-center">
@@ -204,7 +204,7 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
         </section>
 
         {/* Guides : un guide à la une + liste numérotée */}
-        <section className="cv-auto relative flex items-center overflow-hidden bg-indigo-50/50 lg:min-h-[calc(100svh-69px)]" aria-labelledby="guides">
+        <section className="relative flex items-center overflow-hidden bg-indigo-50/50 lg:min-h-[calc(100svh-69px)]" aria-labelledby="guides">
           <Ambience tone="sky" emojis={["📖","💡","🎯"]} />
           <div className="relative mx-auto w-full max-w-6xl px-6 py-24 lg:py-28">
           <FadeIn className="mx-auto max-w-2xl text-center">
@@ -242,7 +242,7 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
         </section>
 
         {/* FAQ */}
-        <section className="cv-auto mx-auto max-w-3xl px-6 py-24 lg:py-28" aria-labelledby="faq">
+        <section className="mx-auto max-w-3xl px-6 py-24 lg:py-28" aria-labelledby="faq">
           <h2 id="faq" className="text-center text-3xl font-bold tracking-tight">{tr("Questions fréquentes")}</h2>
           <div className="mt-8 divide-y divide-line border-y border-line">
             {FAQ.map((f) => (

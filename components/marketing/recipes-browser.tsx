@@ -31,7 +31,7 @@ export function RecipesBrowser() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={tr("Recette ou ingrédient (ex. poivron)…")}
-          className="min-w-0 flex-1 rounded-full border border-line bg-surface/90 px-5 py-3 text-sm shadow-soft outline-none backdrop-blur transition focus:border-brand-400 focus:shadow-lift"
+          className="min-w-0 flex-1 rounded-full border border-line bg-surface/90 px-5 py-3 text-sm shadow-soft outline-none md:backdrop-blur transition focus:border-brand-400 focus:shadow-lift"
         />
         <button
           onClick={() => setOpen((v) => !v)}

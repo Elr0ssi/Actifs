@@ -263,22 +263,21 @@
   [data-in="true"] .fx-check path { animation: fx-check 0.5s ease-out var(--d, 0.4s) forwards; }
 }
 
-/* ---------- Performance : halos, apparitions, rendu différé ---------- */
-/* Halo doux SANS filtre blur() (très coûteux sur iPhone) : un cercle de couleur dont les bords s'estompent par masque. */
-.glow-mask {
-  -webkit-mask-image: radial-gradient(closest-side, #000 15%, transparent 100%);
-  mask-image: radial-gradient(closest-side, #000 15%, transparent 100%);
-}
-/* Bloc sous l'écran, en attente d'être révélé par FadeIn (ajouté par JavaScript, jamais dans le HTML du serveur). */
+/* ---------- Performance : halos, apparitions ---------- */
+/* Halo doux : simple dégradé radial peint dans le fond (ni filtre blur(), ni masque, ni calque GPU : très léger en mémoire sur iPhone, où
+   un seul gros calque flou ou masqué peut peser des dizaines de Mo à 3x). La couleur vient de from-* / to-transparent. */
+.glow { background-image: radial-gradient(closest-side, var(--tw-gradient-stops)); }
+/* Bloc sous l'écran, en attente d'être révélé par FadeIn (ajouté par JavaScript, jamais dans le HTML du serveur, jamais sur téléphone). */
 .fx-pre { opacity: 0; }
 /* Entrée de l'aperçu du hero : déplacement seulement, jamais d'opacité (le contenu reste visible dès le premier affichage). */
 @keyframes hero-rise {
   from { transform: translate3d(0, 14px, 0); }
   to { transform: none; }
 }
+/* Changement de vue du menu mobile : déplacement seulement (jamais d'opacité : si l'animation ne démarre pas, le menu reste visible). */
+@keyframes menu-in { from { transform: translate3d(16px, 0, 0); } to { transform: none; } }
+.menu-in { animation: menu-in 0.18s ease-out both; }
 .hero-rise { animation: hero-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
-/* Les sections loin sous l'écran ne sont ni mises en page ni peintes tant qu'on n'en approche pas. */
-.cv-auto { content-visibility: auto; contain-intrinsic-size: auto 900px; }
 
 /* Questions fréquentes : toute la ligne (y compris le padding de <details>) répond au toucher, pas seulement le texte. */
 details.group > summary { position: relative; }
@@ -287,12 +286,21 @@ details.group > summary::before { content: ""; position: absolute; inset: -1rem 
 /* iPhone en paysage (viewport-fit=cover) : le contenu ne passe pas sous l'encoche. Sans effet en portrait. */
 body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
 
-/* Petits écrans : pas d'animation permanente de décor (batterie, fluidité du défilement). */
+/* Téléphone / tablette : le contenu est TOUJOURS affiché, sans attendre le défilement ni JavaScript.
+   Sur Safari iOS, les révélations « quand l'élément entre à l'écran » arrivaient très tard (page chargée, mémoire saturée) et laissaient des
+   zones vides ; les animations permanentes de décor coûtent de la batterie et de la mémoire. Les effets d'apparition restent sur grand écran. */
 @media (max-width: 1023px) {
-  .fx-drift, .fx-gradient, .fx-sheen::after, .fx-orbit, .fx-orbit-rev { animation: none; }
+  .fx-in, .fx-slide { opacity: 1; animation: none !important; }
+  .fx-bar { transform: none; animation: none !important; }
+  .fx-check path { stroke-dashoffset: 0; animation: none !important; }
+  .conv-item { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
+  .fx-float, .fx-drift, .fx-gradient, .fx-orbit, .fx-orbit-rev, .fx-travel, .fx-ring, .fx-dash, .fx-sheen::after,
+  .converge-flow, .converge-ring, .converge-float, .timeline-ping { animation: none !important; }
 }
+
 @media (prefers-reduced-motion: reduce) {
   .fx-pre { opacity: 1; }
+  .menu-in { animation: none; }
   .hero-rise { animation: none; }
 }
 

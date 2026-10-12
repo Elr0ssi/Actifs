@@ -36,6 +36,21 @@ async function newPage(browser, d, extra = {}) {
   return { ctx, page, errors };
 }
 
+/** Éléments avec du texte dont l'opacité effective est < 0,5 sans aucun défilement (contenu « en attente d'une animation »). */
+async function hiddenContent(page) {
+  return page.evaluate(() => {
+    const out = [];
+    for (const el of document.querySelectorAll("main *, footer *")) {
+      if (!el.childNodes.length || ![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) continue;
+      let o = 1;
+      for (let p = el; p && p !== document.documentElement; p = p.parentElement) { const cs = getComputedStyle(p); o *= Number(cs.opacity); if (cs.display === "none" || cs.visibility === "hidden") { o = 1; break; } }
+      if (o < 0.5) out.push(`${el.tagName.toLowerCase()}:${el.textContent.trim().slice(0, 24)}`);
+      if (out.length > 3) break;
+    }
+    return out;
+  });
+}
+
 async function overflow(page) {
   return page.evaluate(() => {
     const w = window.innerWidth;
@@ -72,6 +87,8 @@ for (const d of DEVICES) {
     const expected404 = path === "/page-qui-n-existe-pas";
     const o = await overflow(page);
     const h1 = await page.locator("h1").count();
+    const hid = await hiddenContent(page);
+    if (hid.length) errors.push(`contenu masqué au chargement: ${hid.join(" | ")}`);
     const text = `${status}${o.bad.length || o.scrollWidth > o.innerWidth + 1 ? ` débordement ${o.scrollWidth}>${o.innerWidth} ${o.bad.join(" | ")}` : ""}${errors.length ? ` erreurs: ${errors.slice(0, 2).join(" ; ")}` : ""}`;
     const before = failures;
     ok((expected404 ? status === 404 : status === 200) && o.scrollWidth <= o.innerWidth + 1 && errors.filter((e) => !(expected404 && /http 404/.test(e))).length === 0 && (expected404 || h1 === 1), `${path}`, status === 200 && !errors.length && h1 === 1 ? "" : `${text} h1=${h1}`);
@@ -145,6 +162,26 @@ console.log("\n# 2. Menu mobile (iPhone 14)");
   await page.setViewportSize({ width: 900, height: 700 });
   await page.waitForTimeout(300);
   ok((await page.locator("#mobile-menu").count()) === 0, "le menu se ferme si l'écran devient large");
+  await ctx.close();
+}
+
+console.log("\n# 2b. Menu utilisable rapidement sur un téléphone lent (iPhone 14, CPU ×6, réseau 4G)");
+{
+  const { ctx, page } = await newPage(browser, DEVICES[1]);
+  const cdp = await ctx.newCDPSession(page);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 6 });
+  await cdp.send("Network.enable");
+  await cdp.send("Network.emulateNetworkConditions", { offline: false, latency: 100, downloadThroughput: (4 * 1024 * 1024) / 8, uploadThroughput: (2 * 1024 * 1024) / 8 });
+  const t0 = Date.now();
+  await page.goto(BASE + "/", { waitUntil: "commit" });
+  let opened = -1;
+  while (Date.now() - t0 < 20000) {
+    const b = page.getByRole("button", { name: /Ouvrir le menu/ });
+    if (await b.count()) { await b.first().tap({ timeout: 1000 }).catch(() => {}); if (await page.locator("#mobile-menu").count()) { opened = Date.now() - t0; break; } }
+    await page.waitForTimeout(150);
+  }
+  console.log(`  le menu s'ouvre ${opened < 0 ? "jamais (20 s)" : `après ${opened} ms`}`);
+  ok(opened > 0 && opened < 6000, "le menu répond en moins de 6 s même avec CPU ×6");
   await ctx.close();
 }
 

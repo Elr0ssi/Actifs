@@ -58,6 +58,8 @@ export function FadeIn({
     const node = ref.current;
     if (!node) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Téléphone / tablette : tout reste affiché (voir globals.css) ; les apparitions au défilement sont réservées au grand écran.
+    if (!window.matchMedia("(min-width: 1024px)").matches) return;
     // Déjà à l'écran (ou au-dessus) : on ne touche à rien, le contenu reste affiché.
     if (node.getBoundingClientRect().top < window.innerHeight * 0.95) return;
     node.classList.add("fx-pre");

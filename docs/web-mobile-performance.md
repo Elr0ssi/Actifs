@@ -29,6 +29,15 @@ Ne touche ni `mobile/`, ni Supabase, ni les variables d'environnement, ni le dé
 - **Accessibilité / cibles tactiles / SEO** : cibles ≥ 44 px (menu, pied de page, drapeaux, FAQ — toute la ligne répond —, pastilles, bouton OK), contraste du texte sous le bouton principal, liste valide, lien « Politique de confidentialité », padding d'encoche en paysage, cookie notice au-dessus de la barre d'accueil iPhone.
 - **SEO inchangé** : titres, descriptions, canonical, hreflang, JSON-LD et hiérarchie H1/H2/H3 identiques (comparés avant/après sur 7 pages) ; seuls 16 liens en double (copie mobile du menu) ont disparu du HTML.
 
+## Deuxième passe : retour d'essai sur Safari iPhone
+
+Constat de l'utilisateur sur iPhone (Safari) : page très lourde (mémoire), menu qui ne s'affiche pas, éléments animés qui n'apparaissent que très tard, une fois très bas dans la page. Safari/WebKit n'est pas disponible dans l'environnement de test (Chromium seulement) : le problème n'a pas pu être reproduit, les correctifs visent les causes les plus probables sur iOS.
+
+- **Contenu toujours affiché sur téléphone et tablette (< 1024 px)** : plus aucune apparition « quand l'élément entre à l'écran » (`FadeIn`, `InView`, puces et cartes de la frise, scène « tout au même endroit »). Ces révélations dépendent de JavaScript + d'`IntersectionObserver`, que Safari iOS retarde fortement quand la page est lourde. Elles restent sur grand écran. Contrôle automatique : 0 élément masqué au chargement à 390 px (202 sur bureau, par design).
+- **Mémoire** : les halos (`blur()` puis masques) sont remplacés par de simples dégradés radiaux peints dans le fond (aucun calque GPU : à 3x, un seul grand calque flou ou masqué pèse des dizaines de Mo) ; `backdrop-filter` retiré sous 768/1024 px ; `will-change` retiré sur téléphone ; toutes les animations permanentes de décor coupées sous 1024 px ; la rotation du logo (qui re-rendait toute la scène toutes les 2,8 s) et la mesure de la frise au défilement ne tournent que sur grand écran.
+- **`content-visibility: auto` retiré** (support récent et capricieux de Safari iOS : zones vides pendant le défilement).
+- **Menu** : plus aucune animation d'opacité (seulement un déplacement) : si l'animation ne démarre pas, le menu reste visible. Limite connue : il dépend de l'hydratation React ; l'ancien `<details>` marchait sans JavaScript. Test avec CPU ×6 : le menu répond après ~1,6 s.
+
 ## Nouveau menu mobile
 
 `components/marketing/mobile-menu.tsx` (écrans < 768 px ; sur bureau la barre horizontale reste, avec ses sous-menus).
