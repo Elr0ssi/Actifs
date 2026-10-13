@@ -17,7 +17,6 @@ export function isSharedTable(v: unknown): v is SharedTable {
 
 export const SHARE_SECTIONS: { id: ShareSection; label: string; hint: string; canEdit: boolean }[] = [
   { id: "tasks", label: "Tâches, projets et routines", hint: "Tout, ou un projet précis depuis la page du projet", canEdit: true },
-  { id: "finance", label: "Finance", hint: "Budget, opérations, comptes, impôts (lecture seule)", canEdit: false },
   { id: "notes", label: "Notes et vocabulaire", hint: "Tes pages de notes", canEdit: true },
 ];
 

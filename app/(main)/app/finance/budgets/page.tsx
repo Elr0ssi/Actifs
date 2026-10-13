@@ -3,13 +3,15 @@ import { intlLocale } from "@/lib/i18n";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { loadFinanceData } from "@/lib/data/finance";
-import { getBudgetLines, getDateSituation, getEnvelopes, getMonthlyBudget, getSavingsAt, monthBounds, type BudgetLine } from "@/lib/finance-engine";
+import { chargeRowToOp, expand, getBudgetLines, getDateSituation, getEnvelopes, getMonthlyBudget, getSavingsAt, monthBounds, type BudgetLine, type Occurrence } from "@/lib/finance-engine";
+import { loadPeople } from "@/lib/data/people";
+import { SharedBudget } from "@/components/app/finance/shared-budget";
 import { formatEUR, todayISO, cx, MONTHS_FR } from "@/lib/utils";
 import { BudgetBreakdown } from "@/components/app/finance/finance-dashboard";
 import { EnvelopesCard } from "@/components/app/finance/envelopes";
 import { BudgetPlanner } from "@/components/app/finance/budget-planner";
 import { ValidateButton } from "@/components/app/finance/validate-button";
-import { OperationsBoard } from "@/components/app/finance/operations-board";
+import { RealBreakdown } from "@/components/app/finance/real-breakdown";
 import { Icon } from "@/components/app/icons";
 
 export function generateMetadata(): Metadata {
@@ -19,7 +21,7 @@ export function generateMetadata(): Metadata {
 const eur0 = (n: number) => new Intl.NumberFormat(intlLocale(), { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n || 0);
 const fmtDay = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString(intlLocale(), { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
 
-export default async function BudgetsPage({ searchParams }: { searchParams: { year?: string; month?: string; tri?: string } }) {
+export default async function BudgetsPage({ searchParams }: { searchParams: { year?: string; month?: string } }) {
   const tr = getT();
   const data = await loadFinanceData();
   if (!data) return null;
@@ -32,7 +34,9 @@ export default async function BudgetsPage({ searchParams }: { searchParams: { ye
   const isCurrent = year === now.getUTCFullYear() && month === now.getUTCMonth();
   const { start, end } = monthBounds(year, month);
   const refDate = isCurrent ? today : end;
-  const budget = getMonthlyBudget(ops, anchor, year, month);
+  // PRÉVU : ce qu'on projette (revenus, charges fixes, budgets, épargne). RÉEL : ce qui a vraiment été prélevé (cartes, dépenses validées).
+  const plannedBudget = getMonthlyBudget(ops.filter((o) => !o.txn), anchor, year, month);
+  const realBudget = getMonthlyBudget(ops.filter((o) => !!o.txn), anchor, year, month);
   // Prévu et réel comparés sur la même période : jusqu'à aujourd'hui pour le mois en cours.
   const envelopes = getEnvelopes(ops, year, month, isCurrent ? today : undefined);
   const situation = getDateSituation(ops, anchor, refDate);
@@ -41,6 +45,15 @@ export default async function BudgetsPage({ searchParams }: { searchParams: { ye
   const due = lines.filter((l) => l.status === "due");
   const upcoming = lines.filter((l) => l.status === "upcoming");
   const validated = lines.filter((l) => l.status === "validated");
+
+  // Budget partagé : les lignes que les membres du foyer ont mises en commun (les tiennes comprises). Rien de tout ça n'entre dans les calculs perso ci-dessus.
+  const people = await loadPeople();
+  const multi = (people?.count ?? 1) > 1;
+  let sharedOccurrences: Occurrence[] = [];
+  if (multi) {
+    const { data: sharedRows } = await data.supabase.from("recurring_charges").select("*").eq("shared", true).eq("active", true);
+    sharedOccurrences = expand((sharedRows ?? []).map(chargeRowToOp), start, end).sort((a, b) => a.date.localeCompare(b.date));
+  }
 
   const prev = month === 0 ? { y: year - 1, m: 11 } : { y: year, m: month - 1 };
   const next = month === 11 ? { y: year + 1, m: 0 } : { y: year, m: month + 1 };
@@ -107,6 +120,12 @@ export default async function BudgetsPage({ searchParams }: { searchParams: { ye
         </div>
       </div>
 
+      {/* Où va mon argent : ce qui était prévu, à côté de ce qui est vraiment parti */}
+      <div className="grid items-start gap-4 lg:grid-cols-2">
+        <BudgetBreakdown budget={plannedBudget} size={190} />
+        <RealBreakdown items={realBudget.dailyByCategory} plannedVariable={plannedBudget.variable} />
+      </div>
+
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <EnvelopesCard rows={envelopes} monthStart={start} />
 
@@ -143,44 +162,37 @@ export default async function BudgetsPage({ searchParams }: { searchParams: { ye
         </section>
       </div>
 
-      <details className="card group p-4">
-        <summary className="flex cursor-pointer list-none items-center justify-between text-[13px] font-semibold text-stone-900">
-          {tr("Répartition du mois et marge des 6 derniers mois")}<span className="text-lg text-brand-500 transition group-open:rotate-45">+</span>
-        </summary>
-        <div className="mt-4 grid items-start gap-4 lg:grid-cols-2">
-          <BudgetBreakdown budget={budget} size={190} />
-          <div>
-            <p className="text-[13px] font-semibold text-stone-900">{tr("Marge des 6 derniers mois")}</p>
-            <p className="text-[11px] text-stone-400">{tr("Revenus moins toutes les sorties prévues, mois par mois.")}</p>
-            <div className="mt-4 flex h-44 items-stretch gap-3">
-              {history.map((h, i) => (
-                <div key={i} className="flex flex-1 flex-col items-center gap-1" title={formatEUR(h.margin)}>
-                  <div className="flex w-full flex-1 flex-col">
-                    <div className="flex flex-1 items-end">
-                      {h.margin > 0 && <div className={cx("w-full rounded-t-[4px]", h.current ? "bg-brand-600" : "bg-brand-300")} style={{ height: `${(h.margin / maxAbs) * 100}%` }} />}
-                    </div>
-                    <div className="h-px bg-stone-300" />
-                    <div className="flex flex-1 items-start">
-                      {h.margin < 0 && <div className="w-full rounded-b-[4px] bg-rose-300" style={{ height: `${(-h.margin / maxAbs) * 100}%` }} />}
-                    </div>
-                  </div>
-                  <span className={cx("tabular text-[10px] font-semibold", h.margin >= 0 ? "text-stone-700" : "text-rose-600")}>{eur0(h.margin)}</span>
-                  <span className={cx("text-[10px]", h.current ? "font-semibold text-brand-700" : "text-stone-400")}>{h.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </details>
+      {multi && <SharedBudget occurrences={sharedOccurrences} owners={people?.names ?? {}} meId={people?.meId ?? ""} monthStart={start} monthLabel={`${MONTHS_FR[month]} ${year}`} />}
 
-      <details className="card group p-4">
-        <summary className="flex cursor-pointer list-none items-center justify-between text-[13px] font-semibold text-stone-900">
-          {tr("Toutes mes opérations (revenus, charges fixes, budgets, épargne)")}<span className="text-lg text-brand-500 transition group-open:rotate-45">+</span>
-        </summary>
-        <div className="mt-4">
-          <OperationsBoard ops={ops.filter((o) => !o.txn)} today={today} byDate={searchParams.tri === "date"} basePath={`/app/finance/budgets?year=${year}&month=${month}`} />
+      <section className="card p-4">
+        <p className="text-[13px] font-semibold text-stone-900">{tr("Marge des 6 derniers mois")}</p>
+        <p className="text-[11px] text-stone-400">{tr("Revenus moins toutes les sorties prévues, mois par mois.")}</p>
+        <div className="mt-4 flex h-40 items-stretch gap-3">
+          {history.map((h, i) => (
+            <div key={i} className="flex flex-1 flex-col items-center gap-1" title={formatEUR(h.margin)}>
+              <div className="flex w-full flex-1 flex-col">
+                <div className="flex flex-1 items-end">
+                  {h.margin > 0 && <div className={cx("w-full rounded-t-[4px]", h.current ? "bg-brand-600" : "bg-brand-300")} style={{ height: `${(h.margin / maxAbs) * 100}%` }} />}
+                </div>
+                <div className="h-px bg-stone-300" />
+                <div className="flex flex-1 items-start">
+                  {h.margin < 0 && <div className="w-full rounded-b-[4px] bg-rose-300" style={{ height: `${(-h.margin / maxAbs) * 100}%` }} />}
+                </div>
+              </div>
+              <span className={cx("tabular text-[10px] font-semibold", h.margin >= 0 ? "text-stone-700" : "text-rose-600")}>{eur0(h.margin)}</span>
+              <span className={cx("text-[10px]", h.current ? "font-semibold text-brand-700" : "text-stone-400")}>{h.label}</span>
+            </div>
+          ))}
         </div>
-      </details>
+      </section>
+
+      <Link href="/app/finance/operations" className="card flex items-center justify-between gap-3 p-4 transition hover:border-brand-200 hover:bg-brand-50/40">
+        <span>
+          <span className="block text-[13px] font-semibold text-stone-900">{tr("Gérer toutes mes opérations")}</span>
+          <span className="block text-[11px] text-stone-500">{tr("Le prévu (budgets, charges, revenus) d'un côté, le réellement prélevé (cartes) de l'autre.")}</span>
+        </span>
+        <span aria-hidden className="text-lg text-brand-500">→</span>
+      </Link>
     </div>
   );
 }

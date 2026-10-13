@@ -145,6 +145,7 @@ export function FinanceDashboard({
 
   return (
     <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="min-w-0 space-y-4">
       <section className="card min-w-0 p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-1">
@@ -229,6 +230,9 @@ export function FinanceDashboard({
         </div>
       </section>
 
+      {view !== "year" && <BalanceSpark ops={ops} anchor={effectiveAnchor} date={selected} />}
+      </div>
+
       <div className="lg:sticky lg:top-6">
         <DayPanel ops={ops} anchor={effectiveAnchor} date={selected} today={today} savingsLast={savingsLast} />
       </div>
@@ -300,18 +304,21 @@ function BalanceSpark({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnch
   const idx = Math.max(0, pts.findIndex((p) => p.date === date));
   const cur = pts[idx];
   return (
-    <div>
-      <div className="mb-1 flex items-baseline justify-between">
-        <p className="text-[12px] font-semibold text-stone-800">{tr("Évolution du solde")}</p>
-        {cur && <p className="tabular text-[11px] text-stone-500">{fmtShort(cur.date)} · <b className={cur.balance >= 0 ? "text-stone-700" : "text-rose-600"}>{formatEUR(cur.balance)}</b></p>}
+    <section className="card p-4">
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-[13px] font-semibold text-stone-900">{tr("Évolution du solde")}</h2>
+        {cur && <p className="tabular text-[12px] text-stone-500">{fmtShort(cur.date)} · <b className={cur.balance >= 0 ? "text-stone-700" : "text-rose-600"}>{formatEUR(cur.balance)}</b></p>}
       </div>
-      <svg viewBox="0 0 200 48" className="h-14 w-full overflow-visible" role="img" aria-label={tr("Évolution du solde")}>
-        {lo < 0 && <line x1="0" x2="200" y1={y(0)} y2={y(0)} stroke="rgb(var(--stone-300))" strokeWidth="1" strokeDasharray="3 3" />}
-        <path d={path} fill="none" stroke="rgb(var(--brand-500))" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-        {cur && <circle cx={x(idx)} cy={y(cur.balance)} r="3.5" fill="rgb(var(--brand-600))" stroke="rgb(var(--surface))" strokeWidth="2" />}
-      </svg>
+      {/* Étiré sur toute la largeur ; le point est posé en HTML pour rester rond. */}
+      <div className="relative h-28 w-full">
+        <svg viewBox="0 0 200 48" preserveAspectRatio="none" className="absolute inset-0 h-full w-full" role="img" aria-label={tr("Évolution du solde")}>
+          {lo < 0 && <line x1="0" x2="200" y1={y(0)} y2={y(0)} stroke="rgb(var(--stone-300))" strokeWidth="1" strokeDasharray="3 3" vectorEffect="non-scaling-stroke" />}
+          <path d={path} fill="none" stroke="rgb(var(--brand-500))" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+        </svg>
+        {cur && <span aria-hidden className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface bg-brand-600 shadow" style={{ left: `${(x(idx) / 200) * 100}%`, top: `${(y(cur.balance) / 48) * 100}%` }} />}
+      </div>
       <div className="flex justify-between text-[10px] text-stone-400"><span>{fmtShort(start)}</span><span>{fmtShort(end)}</span></div>
-    </div>
+    </section>
   );
 }
 
@@ -411,26 +418,18 @@ function DayPanel({ ops, anchor, date, today, savingsLast }: { ops: FinOp[]; anc
         )}
       </div>
 
+      {/* Seulement les totaux : le détail jour par jour se lit dans le calendrier. */}
       <div>
-        <p className="mb-2 text-[12px] font-semibold text-stone-800">{tr("Opérations à venir")} <span className="font-normal text-stone-400">{tr("(jusqu'au {date})", { date: fmtShort(s.monthEnd) })}</span></p>
-        {s.upcoming.length === 0 ? <p className="text-sm text-stone-400">{tr("Rien de prévu.")}</p> : <OccList items={s.upcoming} onSkip={skip} onDelete={del} />}
-        {(s.upcomingIn > 0 || s.upcomingOut > 0) && (
-          <div className="mt-2 space-y-1 rounded-lg bg-stone-50 px-3 py-2 text-xs">
+        <p className="mb-2 text-[12px] font-semibold text-stone-800">{tr("À venir")} <span className="font-normal text-stone-400">{tr("(jusqu'au {date})", { date: fmtShort(s.monthEnd) })}</span></p>
+        {s.upcomingIn === 0 && s.upcomingOut === 0 ? (
+          <p className="text-sm text-stone-400">{tr("Rien de prévu.")}</p>
+        ) : (
+          <div className="space-y-1 rounded-lg bg-stone-50 px-3 py-2 text-xs">
             <div className="flex justify-between"><span className="text-stone-500">{tr("Entrées à venir")}</span><span className="font-semibold text-emerald-600">+{formatEUR(s.upcomingIn)}</span></div>
             <div className="flex justify-between"><span className="text-stone-500">{tr("Sorties à venir")}</span><span className="font-semibold text-rose-600">-{formatEUR(s.upcomingOut)}</span></div>
-            {s.outflowByAccount.length > 0 && (
-              <div className="border-t border-stone-200 pt-1">
-                <p className="mb-0.5 text-stone-400">{tr("À provisionner par compte")}</p>
-                {s.outflowByAccount.map((a) => (
-                  <div key={a.account} className="flex justify-between"><span className="text-stone-600">{a.account}</span><span className="font-semibold text-stone-800">{formatEUR(a.amount)}</span></div>
-                ))}
-              </div>
-            )}
           </div>
         )}
       </div>
-
-      <BalanceSpark ops={ops} anchor={anchor} date={date} />
 
       {skipped.length > 0 && (
         <div>

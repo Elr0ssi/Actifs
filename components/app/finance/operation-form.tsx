@@ -5,6 +5,8 @@ import { useState } from "react";
 import { createOperation, updateOperation } from "@/app/(main)/app/finance/actions";
 import { CATEGORIES, type FinOp, type OpKind, type OpFrequency } from "@/lib/finance-engine";
 import { cx } from "@/lib/utils";
+import { SpaceChoice } from "@/components/app/space-badge";
+import { useHousehold } from "@/components/app/household-context";
 
 const KINDS: { v: OpKind; l: string }[] = [
   { v: "fixed", l: "Charge fixe" },
@@ -22,8 +24,9 @@ const FREQS: { v: OpFrequency; l: string; unit: string }[] = [
 const WEEKDAYS = ["L", "M", "M", "J", "V", "S", "D"];
 const WEEKDAY_VALUES = [1, 2, 3, 4, 5, 6, 0];
 
-export function OperationForm({ op, defaultDate, defaultKind, defaultCategory, defaultName, onDone }: { op?: FinOp; defaultDate?: string; defaultKind?: OpKind; defaultCategory?: string; defaultName?: string; onDone?: () => void }) {
+export function OperationForm({ op, defaultDate, defaultKind, defaultCategory, defaultName, defaultShared, onDone }: { op?: FinOp; defaultDate?: string; defaultKind?: OpKind; defaultCategory?: string; defaultName?: string; defaultShared?: boolean; onDone?: () => void }) {
   const tr = useT();
+  const { multi } = useHousehold();
   const [kind, setKind] = useState<OpKind>(op?.kind ?? defaultKind ?? "fixed");
   const [freq, setFreq] = useState<OpFrequency>(op?.frequency ?? "monthly");
   const [pending, setPending] = useState(false);
@@ -131,6 +134,12 @@ export function OperationForm({ op, defaultDate, defaultKind, defaultCategory, d
       </div>
 
       <input name="note" defaultValue={op?.note ?? ""} placeholder={tr("Note (optionnel)")} className="input" />
+      {multi && kind !== "income" && (
+        <div className="flex flex-wrap items-center gap-2">
+          <SpaceChoice defaultShared={op ? !!op.shared : !!defaultShared} />
+          <p className="text-[11px] text-stone-500">{tr("Partagé : tout le foyer voit cette ligne dans le budget partagé. Elle ne compte que dans ton budget perso.")}</p>
+        </div>
+      )}
       <button disabled={pending} className="btn-primary w-full">{pending ? tr("Enregistrement…") : tr("Enregistrer")}</button>
     </form>
   );
@@ -141,6 +150,7 @@ export function NewOperationButton({
   defaultKind,
   defaultCategory,
   defaultName,
+  defaultShared,
   title = "Nouvelle opération",
   label = "+ Nouvelle opération",
   className,
@@ -149,6 +159,8 @@ export function NewOperationButton({
   defaultKind?: OpKind;
   defaultCategory?: string;
   defaultName?: string;
+  /** Pré-sélectionne « Partagé » (budget commun). */
+  defaultShared?: boolean;
   title?: string;
   label?: string;
   className?: string;
@@ -165,7 +177,7 @@ export function NewOperationButton({
               <h3 className="text-lg font-bold text-stone-900">{tr(title)}</h3>
               <button onClick={() => setOpen(false)} className="text-stone-400 hover:text-stone-700">✕</button>
             </div>
-            <OperationForm defaultDate={defaultDate} defaultKind={defaultKind} defaultCategory={defaultCategory} defaultName={defaultName} onDone={() => setOpen(false)} />
+            <OperationForm defaultDate={defaultDate} defaultKind={defaultKind} defaultCategory={defaultCategory} defaultName={defaultName} defaultShared={defaultShared} onDone={() => setOpen(false)} />
           </div>
         </div>
       )}
