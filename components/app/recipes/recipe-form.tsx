@@ -7,6 +7,7 @@ import { createRecipe, updateRecipe } from "@/app/(main)/app/lists/recipes/actio
 import type { Recipe, RecipeItem } from "@/lib/types";
 import { IngredientPicker } from "@/components/app/recipes/ingredient-picker";
 import type { CatalogIngredient, QtyUnit } from "@/lib/shopping";
+import { SpaceChoice } from "@/components/app/space-badge";
 
 export const RECIPE_CATEGORIES = ["Rapide", "Healthy", "Gourmand", "Végétarien", "Petit-déjeuner", "Dessert", "Batch cooking", "Apéro", "Favoris"];
 
@@ -27,12 +28,15 @@ export function RecipeForm({
   categories,
   catalog,
   onDone,
+  canShare = false,
 }: {
   recipe?: Recipe & { recipe_items: RecipeItem[] };
   householdId: string;
   categories: string[];
   catalog: CatalogIngredient[];
   onDone?: () => void;
+  /** Il y a d'autres personnes dans le foyer : on propose « Perso / Partagé » à la création. */
+  canShare?: boolean;
 }) {
   const tr = useT();
   const [preview, setPreview] = useState<string | null>(recipe?.image_url ?? null);
@@ -169,6 +173,12 @@ export function RecipeForm({
           <button type="button" className="mt-1 text-xs text-brand-600 hover:underline" onClick={(e) => { const t = e.currentTarget.previousElementSibling as HTMLTextAreaElement; if (!t.value.trim()) t.value = "- "; t.focus(); t.setSelectionRange(t.value.length, t.value.length); }}>{tr("+ Commencer une liste à puces")}</button>
         </div>
         {error && <p className="text-sm text-rose-600">{error}</p>}
+        {!recipe && canShare && (
+          <div className="flex flex-wrap items-center gap-2">
+            <SpaceChoice />
+            <p className="text-[11px] text-stone-500">{tr("Partagée : tout le foyer la voit, toi seul(e) peux la modifier.")}</p>
+          </div>
+        )}
         <div className="flex gap-2">
           <button disabled={pending} className="btn-primary">{pending ? tr("Enregistrement…") : recipe ? tr("Enregistrer") : tr("Créer la recette")}</button>
           {onDone && recipe && <button type="button" onClick={onDone} className="btn-secondary">{tr("Annuler")}</button>}

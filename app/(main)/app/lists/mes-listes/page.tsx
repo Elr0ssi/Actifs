@@ -3,10 +3,12 @@ import { intlLocale } from "@/lib/i18n";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
+import { loadPeople } from "@/lib/data/people";
 import type { ListRow } from "@/lib/types";
-import { formatEUR } from "@/lib/utils";
+import { formatEUR, cx } from "@/lib/utils";
 import { STORES } from "@/lib/shopping";
 import { createList } from "@/app/(main)/app/lists/actions";
+import { SpaceBadge, SpaceChoice } from "@/components/app/space-badge";
 
 export function generateMetadata(): Metadata {
   return { title: getT()("Courses") };
@@ -14,12 +16,16 @@ export function generateMetadata(): Metadata {
 
 const TYPE_LABEL: Record<string, string> = { generic: "Générale", shopping: "Courses", recipe: "Recette" };
 
-export default async function ListsPage() {
+export default async function ListsPage({ searchParams }: { searchParams: { espace?: string } }) {
   const tr = getT();
   const ctx = await getAppContext();
   if (!ctx) return null;
   const { supabase, profile } = ctx;
   const householdId = profile?.household_id ?? "";
+  const people = await loadPeople();
+  const meId = people?.meId ?? ctx.user.id;
+  const names = people?.names ?? {};
+  const space = searchParams.espace === "perso" || searchParams.espace === "partage" ? searchParams.espace : "tout";
 
   const { data: lists } = await supabase
     .from("lists")
@@ -27,8 +33,8 @@ export default async function ListsPage() {
     .eq("household_id", householdId)
     .order("created_at", { ascending: false });
 
-  type ListWithItems = ListRow & { list_items: { checked: boolean; price: number | null; count: number }[] };
-  const typedLists = (lists ?? []) as unknown as ListWithItems[];
+  type ListWithItems = ListRow & { owner_id: string; shared: boolean; list_items: { checked: boolean; price: number | null; count: number }[] };
+  const typedLists = ((lists ?? []) as unknown as ListWithItems[]).filter((l) => (space === "perso" ? l.owner_id === meId && !l.shared : space === "partage" ? l.shared : true));
   const active = typedLists.filter((l) => !l.archived);
   const archived = typedLists.filter((l) => l.archived).sort((x, y) => (y.week_start ?? y.created_at).localeCompare(x.week_start ?? x.created_at));
   const monday = (() => {
@@ -37,17 +43,25 @@ export default async function ListsPage() {
     return d.toISOString().slice(0, 10);
   })();
 
+  const filters = [
+    { key: "tout", label: tr("Tout"), href: "/app/lists/mes-listes" },
+    { key: "perso", label: `🔒 ${tr("Perso")}`, href: "/app/lists/mes-listes?espace=perso" },
+    { key: "partage", label: `👥 ${tr("Partagé")}`, href: "/app/lists/mes-listes?espace=partage" },
+  ];
+
   const card = (l: ListWithItems) => {
     const total = l.list_items.length;
     const done = l.list_items.filter((i) => i.checked).length;
     const amount = l.list_items.reduce((s, i) => s + (i.price !== null ? Number(i.price) * (i.count || 1) : 0), 0);
+    const mine = l.owner_id === meId;
     return (
-      <Link key={l.id} href={`/app/lists/${l.id}`} className="card block p-5 transition hover:-translate-y-0.5 hover:shadow-md">
+      <Link key={l.id} href={`/app/lists/${l.id}`} className={cx("card block p-5 transition hover:-translate-y-0.5 hover:shadow-md", !mine && "border-violet-200 bg-violet-50/30")}>
         <div className="flex items-start justify-between gap-2">
           <p className="font-semibold text-stone-900">{l.name}</p>
           <span className="shrink-0 rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-stone-500">{tr(TYPE_LABEL[l.type])}</span>
         </div>
-        <p className="mt-0.5 text-xs text-stone-400">
+        <div className="mt-1.5"><SpaceBadge shared={l.shared} mine={mine} ownerName={names[l.owner_id]} /></div>
+        <p className="mt-1.5 text-xs text-stone-400">
           {[l.week_start && tr("Sem. du {date}", { date: new Date(`${l.week_start}T00:00:00Z`).toLocaleDateString(intlLocale(), { day: "numeric", month: "short", timeZone: "UTC" }) }), l.store].filter(Boolean).join(" · ")}
         </p>
         <div className="mt-3 h-1.5 w-full rounded-full bg-stone-100">
@@ -75,8 +89,22 @@ export default async function ListsPage() {
             {STORES.map((st) => <option key={st} value={st}>{st}</option>)}
           </select>
           <button className="btn-primary">{tr("Créer et choisir les recettes")}</button>
+          {(people?.count ?? 1) > 1 && (
+            <div className="flex flex-wrap items-center gap-2 sm:col-span-full">
+              <SpaceChoice defaultShared={space === "partage"} />
+              <p className="text-[11px] text-stone-500">{tr("Perso : toi seul(e). Partagé : tout le foyer peut ajouter et cocher des articles, toi seul(e) peux la supprimer.")}</p>
+            </div>
+          )}
         </form>
       </div>
+
+      {(people?.count ?? 1) > 1 && (
+        <nav aria-label={tr("Espace")} className="segmented w-fit">
+          {filters.map((f) => (
+            <Link key={f.key} href={f.href} data-active={space === f.key} replace>{f.label}</Link>
+          ))}
+        </nav>
+      )}
 
       <section>
         <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">{tr("En cours")}</h3>

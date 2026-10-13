@@ -16,14 +16,22 @@ export function RecipesTabs({
   householdId,
   categories,
   catalog,
+  meId,
+  names,
+  multi,
 }: {
   recipes: MyRecipe[];
   householdId: string;
   categories: string[];
   catalog: CatalogIngredient[];
+  meId: string;
+  names: Record<string, string>;
+  /** Plusieurs personnes dans le foyer : on affiche Perso / Partagé. */
+  multi: boolean;
 }) {
   const tr = useT();
   const [tab, setTab] = useState<"mine" | "inspiration">("mine");
+  const [space, setSpace] = useState<"tout" | "perso" | "partage">("tout");
   const [creating, setCreating] = useState(false);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string | null>(null);
@@ -39,8 +47,9 @@ export function RecipesTabs({
   );
   const shown = useMemo(() => {
     const query = fold(q.trim());
+    const inSpace = (r: MyRecipe) => (space === "perso" ? r.owner_id === meId && !r.shared : space === "partage" ? !!r.shared : true);
     const list = mine.filter(
-      (r) => (!cat || r.category === cat) && (!query || fold(`${r.name} ${r.recipe_items.map((i) => i.label).join(" ")}`).includes(query))
+      (r) => inSpace(r) && (!cat || r.category === cat) && (!query || fold(`${r.name} ${r.recipe_items.map((i) => i.label).join(" ")}`).includes(query))
     );
     const byName = (a: MyRecipe, b: MyRecipe) => a.name.localeCompare(b.name, "fr");
     if (sort === "az") list.sort(byName);
@@ -48,7 +57,7 @@ export function RecipesTabs({
     else if (sort === "items") list.sort((a, b) => a.recipe_items.length - b.recipe_items.length || byName(a, b));
     else list.sort((a, b) => b.created_at.localeCompare(a.created_at));
     return list;
-  }, [mine, q, cat, sort]);
+  }, [mine, q, cat, sort, space, meId]);
   const usedCats = [...new Set(mine.map((r) => r.category).filter(Boolean) as string[])];
 
   return (
@@ -79,6 +88,13 @@ export function RecipesTabs({
             </select>
             <button onClick={() => setCreating(!creating)} className="btn-primary">{creating ? tr("Fermer") : tr("+ Nouvelle recette")}</button>
           </div>
+          {multi && (
+            <div role="group" aria-label={tr("Espace")} className="segmented w-fit">
+              {([["tout", tr("Tout")], ["perso", `🔒 ${tr("Perso")}`], ["partage", `👥 ${tr("Partagé")}`]] as const).map(([k, label]) => (
+                <button key={k} type="button" data-active={space === k} onClick={() => setSpace(k)}>{label}</button>
+              ))}
+            </div>
+          )}
           {usedCats.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {[null, ...usedCats].map((c) => (
@@ -92,7 +108,7 @@ export function RecipesTabs({
           {creating && (
             <div className="card animate-rise p-5">
               <h2 className="mb-4 text-sm font-semibold text-stone-700">{tr("Nouvelle recette")}</h2>
-              <RecipeForm householdId={householdId} categories={categories} catalog={catalog} onDone={() => setCreating(false)} />
+              <RecipeForm householdId={householdId} categories={categories} catalog={catalog} onDone={() => setCreating(false)} canShare={multi} />
             </div>
           )}
 
@@ -111,7 +127,7 @@ export function RecipesTabs({
                 </h2>
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {sec.list.map((r) => (
-                    <RecipeCard key={r.id} recipe={r} householdId={householdId} categories={categories} catalog={catalog} />
+                    <RecipeCard key={r.id} recipe={r} householdId={householdId} categories={categories} catalog={catalog} mine={r.owner_id === meId} ownerName={r.owner_id ? names[r.owner_id] : undefined} multi={multi} />
                   ))}
                 </div>
               </section>

@@ -50,7 +50,7 @@ export async function createRecipe(formData: FormData) {
   if (!recipe.name) return;
   const { supabase, householdId, userId } = await ctx();
   if (!householdId) return;
-  const { data } = await supabase.from("recipes").insert({ ...recipe, household_id: householdId, created_by: userId }).select("id").single();
+  const { data } = await supabase.from("recipes").insert({ ...recipe, household_id: householdId, created_by: userId, shared: formData.get("shared") === "1" }).select("id").single();
   if (data?.id) await saveItems(supabase, householdId, data.id, picked);
   revalidatePath("/app/lists", "layout");
 }

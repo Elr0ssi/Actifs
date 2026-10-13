@@ -9,13 +9,14 @@ import type { Recipe, RecipeItem } from "@/lib/types";
 import { cx } from "@/lib/utils";
 import { Inline } from "@/components/app/notes/inline";
 import type { CatalogIngredient } from "@/lib/shopping";
+import { SpaceBadge, ShareToggle } from "@/components/app/space-badge";
 
 /** Une ligne par étape ; les puces saisies à la main (-, •, *) sont retirées pour un rendu propre. */
 export function stepsOf(notes: string | null) {
   return (notes ?? "").split("\n").map((l) => l.replace(/^\s*(?:[-•*]|\d+[.)])\s+/, "").trim()).filter(Boolean);
 }
 
-export function RecipeCard({ recipe, householdId, categories, catalog }: { recipe: Recipe & { recipe_items: RecipeItem[] }; householdId: string; categories: string[]; catalog: CatalogIngredient[] }) {
+export function RecipeCard({ recipe, householdId, categories, catalog, mine = true, ownerName, multi = false }: { recipe: Recipe & { recipe_items: RecipeItem[] }; householdId: string; categories: string[]; catalog: CatalogIngredient[]; mine?: boolean; ownerName?: string; multi?: boolean }) {
   const tr = useT();
   const [editing, setEditing] = useState(false);
   const [open, setOpen] = useState(false);
@@ -30,7 +31,7 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
   }
 
   return (
-    <div className={cx("card flex flex-col overflow-hidden", pending && "opacity-60")}>
+    <div className={cx("card flex flex-col overflow-hidden", pending && "opacity-60", !mine && "border-violet-200")}>
       <div className="relative aspect-video cursor-pointer bg-stone-100" onClick={() => setOpen(true)}>
         {recipe.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -38,16 +39,19 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
         ) : (
           <div className="flex h-full items-center justify-center text-4xl">🍽️</div>
         )}
-        <button
-          onClick={(e) => { e.stopPropagation(); start(() => toggleRecipeFavorite(recipe.id, !recipe.is_favorite)); }}
-          title={recipe.is_favorite ? tr("Retirer des favoris") : tr("Ajouter aux favoris")}
-          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-surface/90 text-lg shadow"
-        >
-          {recipe.is_favorite ? "★" : "☆"}
-        </button>
+        {mine && (
+          <button
+            onClick={(e) => { e.stopPropagation(); start(() => toggleRecipeFavorite(recipe.id, !recipe.is_favorite)); }}
+            title={recipe.is_favorite ? tr("Retirer des favoris") : tr("Ajouter aux favoris")}
+            className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-surface/90 text-lg shadow"
+          >
+            {recipe.is_favorite ? "★" : "☆"}
+          </button>
+        )}
         {recipe.category && (
           <span className="absolute bottom-2 left-2 rounded-full bg-surface/90 px-2.5 py-0.5 text-xs font-medium text-stone-700 shadow">{tr(recipe.category)}</span>
         )}
+        {multi && <SpaceBadge className="absolute left-2 top-2 shadow" shared={!!recipe.shared} mine={mine} ownerName={ownerName} />}
       </div>
       <div className="flex flex-1 flex-col p-5">
         <h3 className="cursor-pointer text-lg font-bold leading-tight text-stone-900 hover:text-brand-700" onClick={() => setOpen(true)}>{tr(recipe.name)}</h3>
@@ -57,13 +61,17 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
         </ul>
         <div className="mt-4 flex items-center gap-2">
           <button onClick={() => setOpen(true)} className="btn-primary py-2 text-xs">{tr("Consulter")}</button>
-          <button onClick={() => setEditing(true)} className="btn-secondary py-2 text-xs">{tr("Modifier")}</button>
-          <button
-            onClick={() => confirm(tr("Supprimer « {name} » ?", { name: recipe.name })) && start(() => deleteRecipe(recipe.id))}
-            className="ml-auto text-xs text-stone-300 hover:text-rose-600"
-          >
-            {tr("Supprimer")}</button>
+          {mine && <button onClick={() => setEditing(true)} className="btn-secondary py-2 text-xs">{tr("Modifier")}</button>}
+          {mine && multi && <ShareToggle table="recipes" id={recipe.id} shared={!!recipe.shared} />}
+          {mine && (
+            <button
+              onClick={() => confirm(tr("Supprimer « {name} » ?", { name: recipe.name })) && start(() => deleteRecipe(recipe.id))}
+              className="ml-auto text-xs text-stone-300 hover:text-rose-600"
+            >
+              {tr("Supprimer")}</button>
+          )}
         </div>
+        {!mine && <p className="mt-3 text-[11px] text-violet-700">{tr("Recette de {name} : tu peux la consulter et l'utiliser, pas la modifier.", { name: ownerName ?? "—" })}</p>}
       </div>
       {open && createPortal(
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-6" onClick={() => setOpen(false)}>
@@ -101,11 +109,15 @@ export function RecipeCard({ recipe, householdId, categories, catalog }: { recip
                   ))}
                 </ol>
               )}
-              <div className="mt-6 flex items-center gap-2 border-t border-line pt-4">
-                <button onClick={() => { setOpen(false); setEditing(true); }} className="btn-primary">{tr("Modifier")}</button>
-                <button onClick={() => start(() => toggleRecipeFavorite(recipe.id, !recipe.is_favorite))} className="btn-secondary">{recipe.is_favorite ? tr("★ Favori") : tr("☆ Favori")}</button>
-                <button onClick={() => confirm(tr("Supprimer « {name} » ?", { name: recipe.name })) && start(() => deleteRecipe(recipe.id))} className="ml-auto text-xs text-stone-400 hover:text-rose-600">{tr("Supprimer")}</button>
-              </div>
+              {mine ? (
+                <div className="mt-6 flex items-center gap-2 border-t border-line pt-4">
+                  <button onClick={() => { setOpen(false); setEditing(true); }} className="btn-primary">{tr("Modifier")}</button>
+                  <button onClick={() => start(() => toggleRecipeFavorite(recipe.id, !recipe.is_favorite))} className="btn-secondary">{recipe.is_favorite ? tr("★ Favori") : tr("☆ Favori")}</button>
+                  <button onClick={() => confirm(tr("Supprimer « {name} » ?", { name: recipe.name })) && start(() => deleteRecipe(recipe.id))} className="ml-auto text-xs text-stone-400 hover:text-rose-600">{tr("Supprimer")}</button>
+                </div>
+              ) : (
+                <p className="mt-6 border-t border-line pt-4 text-xs text-violet-700">{tr("Recette de {name} : tu peux la consulter et l'utiliser, pas la modifier.", { name: ownerName ?? "—" })}</p>
+              )}
             </div>
           </div>
         </div>,

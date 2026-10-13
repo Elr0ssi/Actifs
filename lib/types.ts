@@ -83,6 +83,9 @@ export interface Recipe {
   is_favorite: boolean;
   source_slug?: string | null;
   servings?: number;
+  /** À qui est la recette, et si elle est partagée avec tout le foyer (sinon : perso). */
+  owner_id?: string;
+  shared?: boolean;
   created_by: string | null;
   created_at: string;
 }

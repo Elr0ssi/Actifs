@@ -17,25 +17,27 @@ const refresh = () => {
 };
 
 /** Ajoute des repas à un jour du menu (sans toucher aux listes de courses). Un même repas n'est pas ajouté deux fois le même jour. */
-export async function addMenuItems(day: string, meals: { name: string; icon: string | null; servings?: number }[], slot?: "midi" | "soir") {
+export async function addMenuItems(day: string, meals: { name: string; icon: string | null; servings?: number }[], slot?: "midi" | "soir", shared = false) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return;
   const { supabase, householdId, userId } = await ctx();
-  if (!householdId || meals.length === 0) return;
+  if (!householdId || !userId || meals.length === 0) return;
   const monday = new Date(Date.parse(`${day}T00:00:00Z`) - ((new Date(`${day}T00:00:00Z`).getUTCDay() + 6) % 7) * 86_400_000).toISOString().slice(0, 10);
-  const { data: existing } = await supabase.from("menu_items").select("name, slot").eq("household_id", householdId).eq("day", day);
+  // Le doublon ne compte que dans MES repas : le même plat prévu par quelqu'un d'autre ne bloque pas le mien.
+  const { data: existing } = await supabase.from("menu_items").select("name, slot").eq("owner_id", userId).eq("day", day);
   const have = new Set((existing ?? []).filter((e) => (e.slot ?? null) === (slot ?? null)).map((e) => e.name.toLowerCase()));
   const rows = meals
     .filter((m) => m.name.trim() && !have.has(m.name.trim().toLowerCase()))
     .slice(0, 50)
-    .map((m) => ({ household_id: householdId, week_start: monday, day, name: m.name.trim().slice(0, 120), icon: m.icon?.slice(0, 8) ?? null, servings: m.servings ? Math.min(100, Math.max(1, Math.round(m.servings))) : null, slot: slot === "midi" || slot === "soir" ? slot : null, created_by: userId }));
+    .map((m) => ({ household_id: householdId, week_start: monday, day, name: m.name.trim().slice(0, 120), icon: m.icon?.slice(0, 8) ?? null, servings: m.servings ? Math.min(100, Math.max(1, Math.round(m.servings))) : null, slot: slot === "midi" || slot === "soir" ? slot : null, shared, created_by: userId }));
   if (rows.length) await supabase.from("menu_items").insert(rows);
   refresh();
 }
 
+/** Retire un repas — uniquement le tien : on ne supprime jamais le repas d'un autre membre du foyer. */
 export async function removeMenuItem(id: string) {
-  const { supabase, householdId } = await ctx();
-  if (!householdId) return;
-  await supabase.from("menu_items").delete().eq("id", id).eq("household_id", householdId);
+  const { supabase, householdId, userId } = await ctx();
+  if (!householdId || !userId) return;
+  await supabase.from("menu_items").delete().eq("id", id).eq("household_id", householdId).eq("owner_id", userId);
   refresh();
 }
 

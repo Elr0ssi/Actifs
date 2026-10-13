@@ -41,6 +41,7 @@ export async function createList(formData: FormData) {
       category: shopping ? "Courses" : "Général",
       week_start: shopping ? String(formData.get("week_start") || "") || null : null,
       store: shopping ? String(formData.get("store") || "") || null : null,
+      shared: formData.get("shared") === "1",
       created_by: userId,
     })
     .select("id")
