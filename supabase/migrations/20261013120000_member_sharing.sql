@@ -5,13 +5,19 @@
 -- (courses, tâches, finance, notes), ce qu'il partage — en lecture seule ("view") ou avec modification
 -- ("edit", jamais pour la finance). Un projet peut aussi être partagé seul.
 --
--- Sans suppression de données : colonnes ajoutées + remplies, anciennes colonnes conservées.
--- Rejoindre un foyer ne supprime plus les données de la personne : elles sont déplacées avec elle.
+-- ÉTAT : APPLIQUÉ le 2026-10-13 sur le projet Supabase de Flozea, en plusieurs migrations
+-- (member_sharing_1 … member_sharing_4), après sauvegarde dans le schéma `backup_20261013`.
+-- Ce fichier regroupe ce qui a été appliqué, dans l'ordre. Rien n'est supprimé : colonnes ajoutées et
+-- remplies, anciennes colonnes / contraintes conservées, anciennes politiques RÉÉCRITES sur place
+-- (ALTER POLICY) au lieu d'être supprimées.
 --
--- ÉTAT : écrit et relu, PAS ENCORE APPLIQUÉ à la base. À tester dans une transaction annulée
--- (BEGIN … ROLLBACK) avant application.
+-- Pas encore fait (à faire avec le déploiement du code correspondant) :
+--   * changer les anciens jetons du foyer (households.ical_token / wallet_token), devenus inutiles :
+--       update public.households set ical_token = gen_random_uuid(), wallet_token = gen_random_uuid() where id is not null;
+--   * remplacer les contraintes d'unicité par foyer (balance_entries, forecast_snapshots, tax_profiles)
+--     par les index par personne ci-dessous (qui existent déjà en parallèle).
 
--- ───────────────────────── 1. Propriétaire de chaque ligne ─────────────────────────
+-- ───────────── 1. Propriétaire de chaque ligne (member_sharing_1) ─────────────
 create or replace function public.household_owner(h uuid) returns uuid
 language sql stable security definer set search_path = public as $$
   select id from public.profiles where household_id = h order by created_at, id limit 1;
@@ -63,15 +69,7 @@ begin
   end loop;
 end $$;
 
--- Unicité : désormais par personne (deux membres peuvent saisir un solde le même jour, etc.).
-alter table public.balance_entries    drop constraint if exists balance_entries_household_id_entry_date_account_key;
-alter table public.forecast_snapshots drop constraint if exists forecast_snapshots_household_id_month_key;
-alter table public.tax_profiles       drop constraint if exists tax_profiles_household_id_year_key;
-create unique index if not exists balance_entries_owner_date_account_key on public.balance_entries (owner_id, entry_date, account);
-create unique index if not exists forecast_snapshots_owner_month_key     on public.forecast_snapshots (owner_id, month);
-create unique index if not exists tax_profiles_owner_year_key            on public.tax_profiles (owner_id, year);
-
--- ───────────────────────── 2. Tables de partage ─────────────────────────
+-- ───────────── 2. Tables de partage, jetons et réglages personnels (member_sharing_2) ─────────────
 alter table public.profiles add column if not exists share_defaults jsonb not null default '{"courses":"edit"}'::jsonb;
 
 create table if not exists public.member_shares (
@@ -120,8 +118,8 @@ create table if not exists public.finance_settings (
 );
 alter table public.finance_settings enable row level security;
 
--- Reprise des jetons et réglages existants : ils vont au premier membre du foyer (celui qui a créé les données),
--- ce qui garde les liens iCal / Wallet déjà configurés valides.
+-- Reprise des jetons et réglages existants : ils vont au premier membre du foyer (celui qui a créé les
+-- données), ce qui garde valides les liens iCal / Wallet déjà configurés.
 insert into public.user_tokens (user_id, ical_token, wallet_token)
 select p.id,
        case when p.id = public.household_owner(p.household_id) then h.ical_token   else gen_random_uuid() end,
@@ -138,10 +136,7 @@ select p.id,
 from public.profiles p left join public.households h on h.id = p.household_id
 on conflict (owner_id) do nothing;
 
--- Les anciens jetons du foyer ne servent plus : on les change pour qu'aucun autre membre ne puisse les réutiliser.
-update public.households set ical_token = gen_random_uuid(), wallet_token = gen_random_uuid();
-
--- ───────────────────────── 3. Fonctions d'accès ─────────────────────────
+-- ───────────── 3. Fonctions d'accès et de partage (member_sharing_3a*) ─────────────
 create or replace function public.can_see(p_owner uuid, p_section text) returns boolean
 language sql stable security definer set search_path = public as $$
   select p_owner = auth.uid() or exists (
@@ -175,128 +170,6 @@ language sql stable security definer set search_path = public as $$
       and (not p_need_edit or pm.can_edit));
 $$;
 
--- ───────────────────────── 4. Politiques RLS ─────────────────────────
--- Tables simples : section → tables.
-do $$
-declare
-  spec jsonb := '{
-    "courses": ["lists","recipes","menu_items","item_locations"],
-    "tasks":   ["routines"],
-    "notes":   ["notes","vocab_words"],
-    "finance": ["balance_entries","bank_connections","finance_categories","forecast_snapshots","incomes","investments","recurring_charges","tax_profiles","transactions","variable_budgets"]
-  }';
-  sec text; t text;
-begin
-  for sec in select jsonb_object_keys(spec) loop
-    for t in select jsonb_array_elements_text(spec -> sec) loop
-      execute format('drop policy if exists %I on public.%I', 'hh all ' || t, t);
-      execute format('drop policy if exists %I on public.%I', 'hh select ' || t, t);
-      execute format('drop policy if exists %I on public.%I', 'hh write ' || t, t);
-      execute format('create policy %I on public.%I for select using (household_id = public.current_household_id() and public.can_see(owner_id, %L))', 'share select ' || t, t, sec);
-      execute format('create policy %I on public.%I for insert with check (household_id = public.current_household_id() and public.can_edit(owner_id, %L))', 'share insert ' || t, t, sec);
-      execute format('create policy %I on public.%I for update using (household_id = public.current_household_id() and public.can_edit(owner_id, %L)) with check (household_id = public.current_household_id() and public.can_edit(owner_id, %L))', 'share update ' || t, t, sec, sec);
-      execute format('create policy %I on public.%I for delete using (household_id = public.current_household_id() and public.can_edit(owner_id, %L))', 'share delete ' || t, t, sec);
-    end loop;
-  end loop;
-end $$;
-
--- Projets et tâches : section « tâches » OU partage du projet seul.
-drop policy if exists "hh select projects" on public.projects;
-drop policy if exists "hh write projects" on public.projects;
-create policy "share select projects" on public.projects for select
-  using (household_id = public.current_household_id() and (public.can_see(owner_id, 'tasks') or public.project_access(id, false)));
-create policy "share insert projects" on public.projects for insert
-  with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'tasks'));
-create policy "share update projects" on public.projects for update
-  using (household_id = public.current_household_id() and (public.can_edit(owner_id, 'tasks') or public.project_access(id, true)))
-  with check (household_id = public.current_household_id() and (public.can_edit(owner_id, 'tasks') or public.project_access(id, true)));
-create policy "share delete projects" on public.projects for delete
-  using (household_id = public.current_household_id() and owner_id = auth.uid());
-
-drop policy if exists "hh all tasks" on public.tasks;
-create policy "share select tasks" on public.tasks for select
-  using (household_id = public.current_household_id() and (public.can_see(owner_id, 'tasks') or (project_id is not null and public.project_access(project_id, false))));
-create policy "share insert tasks" on public.tasks for insert
-  with check (household_id = public.current_household_id() and (public.can_edit(owner_id, 'tasks') or (project_id is not null and public.project_access(project_id, true))));
-create policy "share update tasks" on public.tasks for update
-  using (household_id = public.current_household_id() and (public.can_edit(owner_id, 'tasks') or (project_id is not null and public.project_access(project_id, true))))
-  with check (household_id = public.current_household_id() and (public.can_edit(owner_id, 'tasks') or (project_id is not null and public.project_access(project_id, true))));
-create policy "share delete tasks" on public.tasks for delete
-  using (household_id = public.current_household_id() and (public.can_edit(owner_id, 'tasks') or (project_id is not null and public.project_access(project_id, true))));
-
--- Une tâche créée par un invité dans un projet partagé reste au propriétaire du projet (il la voit, elle ne disparaît pas).
-create or replace function public.tasks_inherit_project_owner() returns trigger
-language plpgsql security definer set search_path = public as $$
-declare po uuid; ph uuid;
-begin
-  if new.project_id is not null then
-    select owner_id, household_id into po, ph from public.projects where id = new.project_id;
-    if po is not null and po <> new.owner_id
-       and (public.can_edit(po, 'tasks') or public.project_access(new.project_id, true)) then
-      new.owner_id := po;
-      new.household_id := ph;
-    end if;
-  end if;
-  return new;
-end $$;
-drop trigger if exists tasks_inherit_project_owner on public.tasks;
-create trigger tasks_inherit_project_owner before insert on public.tasks
-  for each row execute function public.tasks_inherit_project_owner();
-
--- Tables enfants : elles suivent leur parent (la visibilité du parent s'applique déjà).
-drop policy if exists "hh all list_items" on public.list_items;
-create policy "share select list_items" on public.list_items for select
-  using (exists (select 1 from public.lists l where l.id = list_items.list_id));
-create policy "share insert list_items" on public.list_items for insert
-  with check (exists (select 1 from public.lists l where l.id = list_items.list_id and public.can_edit(l.owner_id, 'courses')));
-create policy "share update list_items" on public.list_items for update
-  using (exists (select 1 from public.lists l where l.id = list_items.list_id and public.can_edit(l.owner_id, 'courses')))
-  with check (exists (select 1 from public.lists l where l.id = list_items.list_id and public.can_edit(l.owner_id, 'courses')));
-create policy "share delete list_items" on public.list_items for delete
-  using (exists (select 1 from public.lists l where l.id = list_items.list_id and public.can_edit(l.owner_id, 'courses')));
-
-drop policy if exists "hh all list_recipes" on public.list_recipes;
-create policy "share select list_recipes" on public.list_recipes for select
-  using (exists (select 1 from public.lists l where l.id = list_recipes.list_id));
-create policy "share insert list_recipes" on public.list_recipes for insert
-  with check (exists (select 1 from public.lists l where l.id = list_recipes.list_id and public.can_edit(l.owner_id, 'courses')));
-create policy "share update list_recipes" on public.list_recipes for update
-  using (exists (select 1 from public.lists l where l.id = list_recipes.list_id and public.can_edit(l.owner_id, 'courses')))
-  with check (exists (select 1 from public.lists l where l.id = list_recipes.list_id and public.can_edit(l.owner_id, 'courses')));
-create policy "share delete list_recipes" on public.list_recipes for delete
-  using (exists (select 1 from public.lists l where l.id = list_recipes.list_id and public.can_edit(l.owner_id, 'courses')));
-
-drop policy if exists "hh all recipe_items" on public.recipe_items;
-create policy "share select recipe_items" on public.recipe_items for select
-  using (exists (select 1 from public.recipes r where r.id = recipe_items.recipe_id));
-create policy "share insert recipe_items" on public.recipe_items for insert
-  with check (exists (select 1 from public.recipes r where r.id = recipe_items.recipe_id and public.can_edit(r.owner_id, 'courses')));
-create policy "share update recipe_items" on public.recipe_items for update
-  using (exists (select 1 from public.recipes r where r.id = recipe_items.recipe_id and public.can_edit(r.owner_id, 'courses')))
-  with check (exists (select 1 from public.recipes r where r.id = recipe_items.recipe_id and public.can_edit(r.owner_id, 'courses')));
-create policy "share delete recipe_items" on public.recipe_items for delete
-  using (exists (select 1 from public.recipes r where r.id = recipe_items.recipe_id and public.can_edit(r.owner_id, 'courses')));
-
-drop policy if exists "hh all routine_logs" on public.routine_logs;
-create policy "share select routine_logs" on public.routine_logs for select
-  using (exists (select 1 from public.routines r where r.id = routine_logs.routine_id));
-create policy "share insert routine_logs" on public.routine_logs for insert
-  with check (exists (select 1 from public.routines r where r.id = routine_logs.routine_id and public.can_edit(r.owner_id, 'tasks')));
-create policy "share update routine_logs" on public.routine_logs for update
-  using (exists (select 1 from public.routines r where r.id = routine_logs.routine_id and public.can_edit(r.owner_id, 'tasks')))
-  with check (exists (select 1 from public.routines r where r.id = routine_logs.routine_id and public.can_edit(r.owner_id, 'tasks')));
-create policy "share delete routine_logs" on public.routine_logs for delete
-  using (exists (select 1 from public.routines r where r.id = routine_logs.routine_id and public.can_edit(r.owner_id, 'tasks')));
-
--- Nouvelles tables (les écritures passent uniquement par les fonctions de la section 5).
-create policy "shares visible to both" on public.member_shares for select using (owner_id = auth.uid() or member_id = auth.uid());
-create policy "project members visible to both" on public.project_members for select using (owner_id = auth.uid() or member_id = auth.uid());
-create policy "own tokens" on public.user_tokens for all using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy "finance settings select" on public.finance_settings for select using (public.can_see(owner_id, 'finance'));
-create policy "finance settings insert" on public.finance_settings for insert with check (owner_id = auth.uid());
-create policy "finance settings update" on public.finance_settings for update using (owner_id = auth.uid()) with check (owner_id = auth.uid());
-
--- ───────────────────────── 5. Fonctions utilisées par l'appli ─────────────────────────
 -- Donne / retire / change l'accès d'un membre à une section. level : none | view | edit.
 create or replace function public.set_member_share(p_member uuid, p_section text, p_level text) returns void
 language plpgsql security definer set search_path = public as $$
@@ -355,47 +228,25 @@ begin
   end loop;
 end $$;
 
--- Rejoindre un foyer : les données de la personne la SUIVENT (elles restent privées par défaut) au lieu d'être supprimées.
-create or replace function public.join_household(code text) returns uuid
+-- Une tâche créée par un invité dans un projet partagé reste au propriétaire du projet.
+create or replace function public.tasks_inherit_project_owner() returns trigger
 language plpgsql security definer set search_path = public as $$
-declare me uuid := auth.uid(); target uuid; old uuid; others int; t text; m uuid;
+declare po uuid; ph uuid;
 begin
-  if me is null then raise exception 'Non connecté'; end if;
-  select id into target from public.households where invite_code = code;
-  if target is null then raise exception 'Code invalide'; end if;
-  select household_id into old from public.profiles where id = me;
-  if old is not distinct from target then return target; end if;
-
-  if old is not null then
-    select count(*) into others from public.profiles where household_id = old and id <> me;
-    foreach t in array public._owner_tables() loop
-      execute format('update public.%I set household_id = $1 where household_id = $2 and owner_id = $3', t) using target, old, me;
-    end loop;
-    if others = 0 then
-      -- Dernier membre : on emmène aussi le catalogue d'ingrédients perso (sauf doublons de nom) avant de supprimer l'ancien foyer vide.
-      update public.ingredients i set household_id = target
-       where household_id = old and not exists (select 1 from public.ingredients j where j.household_id = target and lower(j.name) = lower(i.name));
-      update public.ingredient_prices ip set household_id = target
-       where household_id = old and exists (select 1 from public.ingredients j where j.id = ip.ingredient_id and j.household_id = target)
-         and not exists (select 1 from public.ingredient_prices q where q.ingredient_id = ip.ingredient_id and q.store = ip.store and q.household_id = target);
+  if new.project_id is not null then
+    select owner_id, household_id into po, ph from public.projects where id = new.project_id;
+    if po is not null and po <> new.owner_id
+       and (public.can_edit(po, 'tasks') or public.project_access(new.project_id, true)) then
+      new.owner_id := po;
+      new.household_id := ph;
     end if;
-    delete from public.member_shares where owner_id = me or member_id = me;
-    delete from public.project_members where owner_id = me or member_id = me;
   end if;
-
-  update public.profiles set household_id = target where id = me;
-
-  if old is not null and others = 0 then
-    delete from public.households where id = old;
-  end if;
-
-  for m in select id from public.profiles where household_id = target and id <> me loop
-    perform public._apply_default_shares(m, me);
-    perform public._apply_default_shares(me, m);
-  end loop;
-  return target;
+  return new;
 end $$;
+create trigger tasks_inherit_project_owner before insert on public.tasks
+  for each row execute function public.tasks_inherit_project_owner();
 
+-- Création de compte : un foyer personnel, plus ses jetons et ses réglages financiers.
 create or replace function public.handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare
@@ -413,6 +264,42 @@ begin
   insert into public.user_tokens (user_id) values (new.id) on conflict do nothing;
   insert into public.finance_settings (owner_id) values (new.id) on conflict do nothing;
   return new;
+end $$;
+
+-- Rejoindre un foyer : les données de la personne la SUIVENT (privées par défaut) au lieu d'être supprimées.
+-- L'ancien foyer, devenu vide, est laissé en place. Les anciens partages deviennent inactifs d'eux-mêmes
+-- (can_see exige le même foyer).
+create or replace function public.join_household(code text) returns uuid
+language plpgsql security definer set search_path = public as $$
+declare me uuid := auth.uid(); target uuid; old uuid; others int; t text; m uuid;
+begin
+  if me is null then raise exception 'Non connecté'; end if;
+  select id into target from public.households where invite_code = code;
+  if target is null then raise exception 'Code invalide'; end if;
+  select household_id into old from public.profiles where id = me;
+  if old is not distinct from target then return target; end if;
+
+  if old is not null then
+    select count(*) into others from public.profiles where household_id = old and id <> me;
+    foreach t in array public._owner_tables() loop
+      execute format('update public.%I set household_id = $1 where household_id = $2 and owner_id = $3', t) using target, old, me;
+    end loop;
+    if others = 0 then
+      update public.ingredients i set household_id = target
+       where household_id = old and not exists (select 1 from public.ingredients j where j.household_id = target and lower(j.name) = lower(i.name));
+      update public.ingredient_prices ip set household_id = target
+       where household_id = old and exists (select 1 from public.ingredients j where j.id = ip.ingredient_id and j.household_id = target)
+         and not exists (select 1 from public.ingredient_prices q where q.ingredient_id = ip.ingredient_id and q.store = ip.store and q.household_id = target);
+    end if;
+  end if;
+
+  update public.profiles set household_id = target where id = me;
+
+  for m in select id from public.profiles where household_id = target and id <> me loop
+    perform public._apply_default_shares(m, me);
+    perform public._apply_default_shares(me, m);
+  end loop;
+  return target;
 end $$;
 
 -- Flux iCal : les tâches de la personne et celles qu'on lui partage (et non plus celles de tout le foyer).
@@ -464,7 +351,6 @@ begin
   return jsonb_build_object('ok', true, 'duplicate', false, 'id', new_id);
 end $$;
 
--- Les fonctions d'administration ne sont pas appelables sans être connecté.
 revoke execute on function public.set_member_share(uuid, text, text) from public, anon;
 revoke execute on function public.set_project_member(uuid, uuid, text) from public, anon;
 revoke execute on function public._apply_default_shares(uuid, uuid) from public, anon, authenticated;
@@ -473,14 +359,99 @@ grant execute on function public.set_member_share(uuid, text, text) to authentic
 grant execute on function public.set_project_member(uuid, uuid, text) to authenticated;
 grant execute on function public.join_household(text) to authenticated;
 
--- ───────────────────────── 6. Foyers existants ─────────────────────────
--- Les membres actuels d'un même foyer se partagent leurs courses (comme avant), le reste devient privé.
-do $$
-declare a record; b record;
-begin
-  for a in select id, household_id from public.profiles where household_id is not null loop
-    for b in select id from public.profiles where household_id = a.household_id and id <> a.id loop
-      perform public._apply_default_shares(a.id, b.id);
-    end loop;
-  end loop;
-end $$;
+-- Les membres actuels d'un même foyer gardent leurs courses en commun (comme avant) ; le reste devient privé.
+select public._apply_default_shares('e28765d7-1128-4441-a8ee-be08032ee585', 'c2198eb4-9ce0-4168-ad23-db7ec0c0a632');
+select public._apply_default_shares('c2198eb4-9ce0-4168-ad23-db7ec0c0a632', 'e28765d7-1128-4441-a8ee-be08032ee585');
+
+-- ───────────── 4. Règles d'accès par ligne (member_sharing_3b*) ─────────────
+-- Pour chaque table : une règle de LECTURE (can_see) ajoutée, et l'ancienne règle « tout » du foyer
+-- réécrite sur place pour ne plus autoriser l'écriture qu'avec can_edit.
+
+-- Courses : listes, recettes, menu, emplacements (+ enfants qui suivent leur parent).
+create policy "share select lists" on public.lists for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'courses'));
+create policy "share select recipes" on public.recipes for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'courses'));
+create policy "share select menu_items" on public.menu_items for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'courses'));
+create policy "share select item_locations" on public.item_locations for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'courses'));
+alter policy "hh all lists" on public.lists using (household_id = public.current_household_id() and public.can_edit(owner_id, 'courses')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'courses'));
+alter policy "hh all recipes" on public.recipes using (household_id = public.current_household_id() and public.can_edit(owner_id, 'courses')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'courses'));
+alter policy "hh all menu_items" on public.menu_items using (household_id = public.current_household_id() and public.can_edit(owner_id, 'courses')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'courses'));
+alter policy "hh all item_locations" on public.item_locations using (household_id = public.current_household_id() and public.can_edit(owner_id, 'courses')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'courses'));
+create policy "share select list_items" on public.list_items for select using (exists (select 1 from public.lists l where l.id = list_items.list_id));
+create policy "share select list_recipes" on public.list_recipes for select using (exists (select 1 from public.lists l where l.id = list_recipes.list_id));
+create policy "share select recipe_items" on public.recipe_items for select using (exists (select 1 from public.recipes r where r.id = recipe_items.recipe_id));
+alter policy "hh all list_items" on public.list_items using (exists (select 1 from public.lists l where l.id = list_items.list_id and public.can_edit(l.owner_id, 'courses'))) with check (exists (select 1 from public.lists l where l.id = list_items.list_id and public.can_edit(l.owner_id, 'courses')));
+alter policy "hh all list_recipes" on public.list_recipes using (exists (select 1 from public.lists l where l.id = list_recipes.list_id and public.can_edit(l.owner_id, 'courses'))) with check (exists (select 1 from public.lists l where l.id = list_recipes.list_id and public.can_edit(l.owner_id, 'courses')));
+alter policy "hh all recipe_items" on public.recipe_items using (exists (select 1 from public.recipes r where r.id = recipe_items.recipe_id and public.can_edit(r.owner_id, 'courses'))) with check (exists (select 1 from public.recipes r where r.id = recipe_items.recipe_id and public.can_edit(r.owner_id, 'courses')));
+
+-- Notes et vocabulaire.
+create policy "share select notes" on public.notes for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'notes'));
+create policy "share select vocab_words" on public.vocab_words for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'notes'));
+alter policy "hh all notes" on public.notes using (household_id = public.current_household_id() and public.can_edit(owner_id, 'notes')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'notes'));
+alter policy "hh all vocab_words" on public.vocab_words using (household_id = public.current_household_id() and public.can_edit(owner_id, 'notes')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'notes'));
+
+-- Routines et leurs coches.
+create policy "share select routines" on public.routines for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'tasks'));
+alter policy "hh all routines" on public.routines using (household_id = public.current_household_id() and public.can_edit(owner_id, 'tasks')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'tasks'));
+create policy "share select routine_logs" on public.routine_logs for select using (exists (select 1 from public.routines r where r.id = routine_logs.routine_id));
+alter policy "hh all routine_logs" on public.routine_logs using (exists (select 1 from public.routines r where r.id = routine_logs.routine_id and public.can_edit(r.owner_id, 'tasks'))) with check (exists (select 1 from public.routines r where r.id = routine_logs.routine_id and public.can_edit(r.owner_id, 'tasks')));
+
+-- Projets : section « tâches » OU partage du projet seul.
+alter policy "hh select projects" on public.projects using (household_id = public.current_household_id() and (public.can_see(owner_id, 'tasks') or public.project_access(id, false)));
+alter policy "hh write projects" on public.projects using (household_id = public.current_household_id() and public.can_edit(owner_id, 'tasks')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'tasks'));
+create policy "share update projects" on public.projects for update
+  using (household_id = public.current_household_id() and public.project_access(id, true))
+  with check (household_id = public.current_household_id() and public.project_access(id, true));
+
+-- Tâches : section « tâches » OU partage du projet qui les contient.
+create policy "share select tasks" on public.tasks for select
+  using (household_id = public.current_household_id() and (public.can_see(owner_id, 'tasks') or (project_id is not null and public.project_access(project_id, false))));
+create policy "share insert tasks" on public.tasks for insert
+  with check (household_id = public.current_household_id() and project_id is not null and public.project_access(project_id, true));
+create policy "share update tasks" on public.tasks for update
+  using (household_id = public.current_household_id() and project_id is not null and public.project_access(project_id, true))
+  with check (household_id = public.current_household_id() and project_id is not null and public.project_access(project_id, true));
+create policy "share delete tasks" on public.tasks for delete
+  using (household_id = public.current_household_id() and project_id is not null and public.project_access(project_id, true));
+alter policy "hh all tasks" on public.tasks using (household_id = public.current_household_id() and public.can_edit(owner_id, 'tasks')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'tasks'));
+
+-- Finance (lecture partageable, jamais l'écriture).
+create policy "share select balance_entries" on public.balance_entries for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'finance'));
+create policy "share select bank_connections" on public.bank_connections for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'finance'));
+create policy "share select finance_categories" on public.finance_categories for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'finance'));
+create policy "share select forecast_snapshots" on public.forecast_snapshots for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'finance'));
+create policy "share select incomes" on public.incomes for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'finance'));
+create policy "share select investments" on public.investments for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'finance'));
+create policy "share select recurring_charges" on public.recurring_charges for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'finance'));
+create policy "share select tax_profiles" on public.tax_profiles for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'finance'));
+create policy "share select transactions" on public.transactions for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'finance'));
+create policy "share select variable_budgets" on public.variable_budgets for select using (household_id = public.current_household_id() and public.can_see(owner_id, 'finance'));
+alter policy "hh all balance_entries" on public.balance_entries using (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance'));
+alter policy "hh all bank_connections" on public.bank_connections using (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance'));
+alter policy "hh all finance_categories" on public.finance_categories using (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance'));
+alter policy "hh all forecast_snapshots" on public.forecast_snapshots using (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance'));
+alter policy "hh all incomes" on public.incomes using (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance'));
+alter policy "hh all investments" on public.investments using (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance'));
+alter policy "hh all recurring_charges" on public.recurring_charges using (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance'));
+alter policy "hh all tax_profiles" on public.tax_profiles using (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance'));
+alter policy "hh all transactions" on public.transactions using (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance'));
+alter policy "hh all variable_budgets" on public.variable_budgets using (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance')) with check (household_id = public.current_household_id() and public.can_edit(owner_id, 'finance'));
+
+-- Nouvelles tables : les écritures passent uniquement par set_member_share / set_project_member.
+create policy "shares visible to both" on public.member_shares for select using (owner_id = auth.uid() or member_id = auth.uid());
+create policy "project members visible to both" on public.project_members for select using (owner_id = auth.uid() or member_id = auth.uid());
+create policy "own tokens" on public.user_tokens for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "finance settings select" on public.finance_settings for select using (public.can_see(owner_id, 'finance'));
+create policy "finance settings insert" on public.finance_settings for insert with check (owner_id = auth.uid());
+create policy "finance settings update" on public.finance_settings for update using (owner_id = auth.uid()) with check (owner_id = auth.uid());
+
+-- ───────────── 5. Durcissement et index (member_sharing_4) ─────────────
+revoke execute on function public.household_owner(uuid) from public, anon, authenticated;
+revoke execute on function public.tasks_inherit_project_owner() from public, anon, authenticated;
+revoke execute on function public.can_see(uuid, text) from public, anon;
+revoke execute on function public.can_edit(uuid, text) from public, anon;
+revoke execute on function public.project_access(uuid, boolean) from public, anon;
+alter function public._owner_tables() set search_path = public;
+
+create unique index if not exists balance_entries_owner_date_account_key on public.balance_entries (owner_id, entry_date, account);
+create unique index if not exists forecast_snapshots_owner_month_key on public.forecast_snapshots (owner_id, month);
+create unique index if not exists tax_profiles_owner_year_key on public.tax_profiles (owner_id, year);

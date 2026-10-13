@@ -75,7 +75,7 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
   const weekStart = addDays(today, -((new Date(`${today}T00:00:00Z`).getUTCDay() + 6) % 7));
 
   const [finance, { data: tasks }, { data: routines }, logs, { data: lists }, { data: words, count: wordsTotal }, { data: projects }, { data: projectTasks }, { data: notes }, { data: menu }, { data: myRecipes }] = await Promise.all([
-    loadFinanceData(),
+    loadFinanceData(true), // le tableau de bord reste le tien, même si tu consultes la finance d'un proche ailleurs
     supabase
       .from("tasks")
       .select("*")

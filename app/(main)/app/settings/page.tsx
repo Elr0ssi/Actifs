@@ -10,7 +10,9 @@ import { CalendarFeedCard } from "@/components/app/calendar-feed-card";
 import { AppearancePicker } from "@/components/app/appearance-picker";
 import { CopyField } from "@/components/app/copy-field";
 import { Icon, type IconName } from "@/components/app/icons";
+import { SharingPanel, type SharingMember } from "@/components/app/settings/sharing-panel";
 import { ACCENT_COOKIE, THEME_COOKIE, parseAccent, parseMode } from "@/lib/theme";
+import { SHARE_SECTION_IDS, levelFromRow, parseShareDefaults, type ShareLevel, type ShareRow, type ShareSection } from "@/lib/sharing";
 
 export function generateMetadata(): Metadata {
   return { title: getT()("Paramètres") };
@@ -28,11 +30,31 @@ export default async function SettingsPage() {
     .eq("household_id", profile?.household_id ?? "")
     .returns<Profile[]>();
 
+  // Partage entre membres : ce que je donne à chacun, et ce que chacun me donne (la base ne renvoie que mes lignes).
+  const [{ data: shareRows }, { data: tokens }, { data: mine }] = await Promise.all([
+    supabase.from("member_shares").select("owner_id, member_id, section, can_edit").returns<ShareRow[]>(),
+    supabase.from("user_tokens").select("ical_token").eq("user_id", user.id).maybeSingle(),
+    supabase.from("profiles").select("share_defaults").eq("id", user.id).maybeSingle(),
+  ]);
+  const emptyLevels = (): Record<ShareSection, ShareLevel> => ({ courses: "none", tasks: "none", finance: "none", notes: "none" });
+  const sharingMembers: SharingMember[] = (members ?? [])
+    .filter((m) => m.id !== user.id)
+    .map((m) => {
+      const given = emptyLevels();
+      const received = emptyLevels();
+      for (const s of SHARE_SECTION_IDS) {
+        given[s] = levelFromRow((shareRows ?? []).find((r) => r.owner_id === user.id && r.member_id === m.id && r.section === s));
+        received[s] = levelFromRow((shareRows ?? []).find((r) => r.owner_id === m.id && r.member_id === user.id && r.section === s));
+      }
+      return { id: m.id, name: m.display_name || "—", given, received };
+    });
+
   const name = profile?.display_name || user.email?.split("@")[0] || "";
   const initial = (name || "?").slice(0, 1).toUpperCase();
   const nav = [
     { id: "profil", icon: "home" as const, label: tr("Profil") },
     { id: "foyer", icon: "list" as const, label: tr("Foyer") },
+    { id: "partage", icon: "target" as const, label: tr("Partage") },
     { id: "langue", icon: "swap" as const, label: tr("Langue") },
     { id: "apparence", icon: "sparkle" as const, label: tr("Apparence") },
     { id: "calendrier", icon: "calendar" as const, label: tr("Calendrier") },
@@ -79,7 +101,7 @@ export default async function SettingsPage() {
             </div>
           </section>
 
-          <Section id="foyer" icon="list" title={tr("Mon foyer")} desc={tr("L'espace que tu partages : listes, menu, agenda et budget communs.")}>
+          <Section id="foyer" icon="list" title={tr("Mon foyer")} desc={tr("Les personnes qui partagent ton espace. Chacun garde ses propres données : tu choisis ce que tu partages.")}>
             <form action={updateHouseholdName} className="flex flex-wrap gap-2">
               <input name="household_name" defaultValue={household?.name ?? ""} className="input min-w-0 flex-1" />
               <SubmitButton className="btn-secondary">{tr("Renommer")}</SubmitButton>
@@ -98,7 +120,7 @@ export default async function SettingsPage() {
 
             <div className="mt-6 rounded-2xl bg-stone-50 p-4">
               <p className="text-sm font-semibold text-stone-800">{tr("Inviter ton/ta partenaire")}</p>
-              <p className="mb-3 mt-1 text-xs text-stone-500">{tr("Partage-lui ce code pour qu'il/elle rejoigne ton espace :")}</p>
+              <p className="mb-3 mt-1 text-xs text-stone-500">{tr("Partage-lui ce code pour qu'il/elle rejoigne ton espace. Ses tâches, finances et notes restent à lui/elle, et tu choisis plus bas ce qu'il/elle voit des tiennes :")}</p>
               <CopyField value={household?.invite_code ?? ""} label={tr("Copier le code")} />
             </div>
 
@@ -106,6 +128,10 @@ export default async function SettingsPage() {
               <input name="invite_code" placeholder={tr("Rejoindre un autre foyer avec un code")} className="input min-w-0 flex-1" />
               <SubmitButton className="btn-secondary">{tr("Rejoindre")}</SubmitButton>
             </form>
+          </Section>
+
+          <Section id="partage" icon="target" title={tr("Qui voit quoi")} desc={tr("Par défaut, tes données sont à toi seul(e). Tu choisis, membre par membre, ce que tu partages : les courses, les tâches, la finance (en lecture seule) ou les notes.")}>
+            <SharingPanel members={sharingMembers} defaults={parseShareDefaults(mine?.share_defaults)} />
           </Section>
 
           <Section id="langue" icon="swap" title={tr("Langue")} desc={tr("Langue de l'interface. Elle s'applique tout de suite.")}>
@@ -117,7 +143,7 @@ export default async function SettingsPage() {
           </Section>
 
           <Section id="calendrier" icon="calendar" title={tr("Synchroniser mon calendrier")} desc={tr("Retrouve tes tâches (avec heure) et tes routines dans Google Agenda ou le Calendrier de ton iPhone.")}>
-            <CalendarFeedCard token={(household as { ical_token?: string } | null)?.ical_token ?? ""} />
+            <CalendarFeedCard token={(tokens?.ical_token as string | undefined) ?? ""} />
           </Section>
 
           <Section id="securite" icon="target" title={tr("Mot de passe")} desc={tr("Si ton navigateur signale ton mot de passe comme compromis, choisis-en un nouveau, unique (8 caractères min.).")}>

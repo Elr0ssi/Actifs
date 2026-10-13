@@ -69,10 +69,12 @@ export async function updateBalance(formData: FormData) {
   const { data: profile } = await supabase.from("profiles").select("household_id").eq("id", user?.id).single();
   if (!profile?.household_id) return;
 
-  await supabase.from("households").update({ current_balance: balance, balance_ref_date: todayISO() }).eq("id", profile.household_id);
+  if (!user) return;
+  // Le solde saisi depuis le tableau de bord est celui de TON compte courant.
+  await supabase.from("finance_settings").upsert({ owner_id: user.id, current_balance: balance, balance_ref_date: todayISO(), updated_at: new Date().toISOString() }, { onConflict: "owner_id" });
   await supabase
     .from("balance_entries")
-    .upsert({ household_id: profile.household_id, entry_date: todayISO(), balance }, { onConflict: "household_id,entry_date" });
+    .upsert({ household_id: profile.household_id, owner_id: user.id, entry_date: todayISO(), account: "Courant", balance }, { onConflict: "owner_id,entry_date,account" });
   revalidatePath("/app");
   revalidatePath("/app/finance");
 }
