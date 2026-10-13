@@ -56,7 +56,7 @@ function parseOperation(formData: FormData) {
   if (kind === "income") {
     return { table: "income" as const, row: { ...common, expected_date: start, recurring: frequency !== "once" } };
   }
-  return { table: "charge" as const, row: { ...common, next_date: start, kind } };
+  return { table: "charge" as const, row: { ...common, next_date: start, kind, shared: formData.get("shared") === "1" } };
 }
 
 export async function createOperation(formData: FormData) {
@@ -318,7 +318,7 @@ export async function planBudget(formData: FormData) {
   const { end } = monthBounds(d.getUTCFullYear(), d.getUTCMonth());
   let first = start;
   let count = 1;
-  const row: Record<string, unknown> = { name: name || `${category} (budget)`, category, kind: "variable", end_date: end, weekdays: [], month_days: [], interval_count: 1, weekend_rule: "none", account: null, note: null };
+  const row: Record<string, unknown> = { name: name || `${category} (budget)`, category, kind: "variable", shared: formData.get("shared") === "1", end_date: end, weekdays: [], month_days: [], interval_count: 1, weekend_rule: "none", account: null, note: null };
   if (mode === "weekly") {
     const wd = weekday >= 0 && weekday <= 6 ? weekday : 5;
     while (new Date(`${first}T00:00:00Z`).getUTCDay() !== wd) first = addDays(first, 1);

@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { describeRecurrence, KIND_STYLE, occurrenceEntries, addDays, type FinOp } from "@/lib/finance-engine";
 import { formatEUR, cx } from "@/lib/utils";
 import { ToggleSwitch } from "@/components/app/toggle-switch";
+import { SpaceBadge } from "@/components/app/space-badge";
 import { OperationForm } from "@/components/app/finance/operation-form";
 import { deleteOperation, moveOccurrence, restoreOccurrence, skipOccurrence, toggleOperationActive } from "@/app/(main)/app/finance/actions";
 
@@ -22,7 +23,7 @@ export function OperationRow({ op, today }: { op: FinOp; today: string }) {
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <span className={cx("h-2.5 w-2.5 shrink-0 rounded-full", KIND_STYLE[op.kind].dot)} />
         <div className="min-w-0 flex-[1_1_9rem]">
-          <p className="truncate text-[13px] font-medium text-stone-800">{op.name} <span className="text-xs font-normal text-stone-400">· {tr(op.category)}</span></p>
+          <p className="truncate text-[13px] font-medium text-stone-800">{op.name} <span className="text-xs font-normal text-stone-400">· {tr(op.category)}</span>{op.shared && <SpaceBadge className="ml-2 align-middle" shared mine />}</p>
           <p className="truncate text-xs text-stone-400">{describeRecurrence(op, tr)} · {tr("dès le {date}", { date: op.start })}{op.end ? ` ${tr("jusqu'au {date}", { date: op.end })}` : ""}</p>
         </div>
         <div className="ml-auto flex shrink-0 items-center gap-3 pl-5 sm:pl-0">

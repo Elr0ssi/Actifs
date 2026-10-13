@@ -29,6 +29,10 @@ export interface FinOp {
   active: boolean;
   note: string | null;
   account: string | null;
+  /** Ligne « partagée » avec le foyer (budget commun). Ne change aucun calcul : chacun garde son budget perso. */
+  shared?: boolean;
+  /** À qui est la ligne (utile pour les lignes partagées par d'autres). */
+  ownerId?: string;
   /** Renseigné pour un paiement réel reçu du Wallet (et non une opération planifiée). */
   txn?: { id: string; time: string | null; card: string | null; /** Paiement saisi pour VALIDER une occurrence prévue : il la remplace (jamais de double comptage). */ validates?: { opId: string; date: string } };
 }
@@ -441,6 +445,8 @@ export function chargeRowToOp(r: Record<string, any>): FinOp {
     active: r.active ?? true,
     note: r.note ?? null,
     account: r.account ?? null,
+    shared: !!r.shared,
+    ownerId: r.owner_id ?? undefined,
   };
 }
 

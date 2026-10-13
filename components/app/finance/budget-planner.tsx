@@ -5,6 +5,8 @@ import { useT } from "@/components/i18n/provider";
 import { planBudget } from "@/app/(main)/app/finance/actions";
 import { CATEGORIES, addDays, diffDays, monthBounds } from "@/lib/finance-engine";
 import { formatEUR } from "@/lib/utils";
+import { SpaceChoice } from "@/components/app/space-badge";
+import { useHousehold } from "@/components/app/household-context";
 
 const DAYS = [
   { v: 1, l: "Lundi" }, { v: 2, l: "Mardi" }, { v: 3, l: "Mercredi" }, { v: 4, l: "Jeudi" }, { v: 5, l: "Vendredi" }, { v: 6, l: "Samedi" }, { v: 0, l: "Dimanche" },
@@ -17,6 +19,7 @@ type Mode = "weekly" | "daily" | "once";
  */
 export function BudgetPlanner({ defaultStart, defaultMonthLabel }: { defaultStart: string; defaultMonthLabel: string }) {
   const tr = useT();
+  const { multi } = useHousehold();
   const [category, setCategory] = useState(CATEGORIES.variable[0]);
   const [total, setTotal] = useState("");
   const [mode, setMode] = useState<Mode>("weekly");
@@ -89,6 +92,13 @@ export function BudgetPlanner({ defaultStart, defaultMonthLabel }: { defaultStar
           <input name="start" type="date" value={start} onChange={(e) => setStart(e.target.value)} className="input mt-1" required />
         </label>
       </div>
+
+      {multi && (
+        <div className="flex flex-wrap items-center gap-2">
+          <SpaceChoice />
+          <p className="text-[11px] text-stone-500">{tr("Partagé : ce budget apparaît dans le budget partagé du foyer (dépenses communes).")}</p>
+        </div>
+      )}
 
       <p className="rounded-xl bg-brand-50 px-3 py-2 text-[12px] text-brand-800" aria-live="polite">
         {preview

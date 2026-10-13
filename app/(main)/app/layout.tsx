@@ -11,6 +11,8 @@ import { PageTransition } from "@/components/app/page-transition";
 import { ThemeSync } from "@/components/app/theme-sync";
 import { CommandPalette } from "@/components/app/command-palette";
 import { QuickAdd } from "@/components/app/quick-add";
+import { HouseholdProvider } from "@/components/app/household-context";
+import { loadPeople } from "@/lib/data/people";
 
 // Interface applicative plus dense que le site vitrine : toute l'échelle rem descend d'un cran sur grand écran.
 const DENSITY = "@media (min-width:1024px){html{font-size:14.5px}}";
@@ -24,9 +26,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const accent = parseAccent(jar.get(ACCENT_COOKIE)?.value);
   const locale = getLocale();
   const displayName = ctx.profile?.display_name || ctx.user.email || "Toi";
+  const people = await loadPeople();
 
   return (
     <I18nProvider locale={locale} dict={dictFor(locale)}>
+    <HouseholdProvider multi={(people?.count ?? 1) > 1}>
     <HtmlLang locale={locale} />
     <div className={cx("relative isolate flex min-h-screen bg-canvas text-stone-900", mode === "dark" && "dark", mode === "auto" && "theme-auto")} data-accent={accent}>
       <style>{DENSITY}</style>
@@ -44,6 +48,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <CommandPalette mode={mode} />
       <QuickAdd />
     </div>
+    </HouseholdProvider>
     </I18nProvider>
   );
 }
