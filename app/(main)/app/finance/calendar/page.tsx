@@ -11,8 +11,8 @@ export function generateMetadata(): Metadata {
 export default async function FinanceCalendarPage() {
   const data = await loadFinanceData();
   if (!data) return null;
-  const { ops, anchor } = data;
+  const { ops, anchor, accounts } = data;
   const today = todayISO();
 
-  return <FinanceDashboard ops={ops} anchor={anchor} today={today} />;
+  return <FinanceDashboard ops={ops} anchor={anchor} today={today} savingsLast={accounts["Épargne"].last} />;
 }

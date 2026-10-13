@@ -60,8 +60,9 @@ export default async function SettingsPage() {
         </nav>
 
         <div className="min-w-0 space-y-6">
-          <section id="profil" className="card relative scroll-mt-6 overflow-hidden p-0">
-            <div className="h-20 bg-gradient-to-r from-brand-500 via-violet-500 to-fuchsia-500 opacity-90" aria-hidden />
+          <section id="profil" className="card relative scroll-mt-6 p-0">
+            {/* La bande porte elle-même les coins arrondis : sur Safari, `overflow-hidden` + enfant à opacité ne découpe pas correctement et la couleur débordait. */}
+            <div className="h-20 rounded-t-[19px] bg-gradient-to-r from-brand-500/90 via-violet-500/90 to-fuchsia-500/90" aria-hidden />
             <div className="px-6 pb-6">
               <div className="-mt-9 flex flex-wrap items-end gap-4">
                 <span className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-3xl border-4 border-surface bg-gradient-to-br from-brand-500 to-violet-700 text-3xl font-bold text-white shadow-lift">{initial}</span>

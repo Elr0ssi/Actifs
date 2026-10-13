@@ -1,22 +1,6 @@
-import { getT } from "@/lib/i18n/server";
-import type { Metadata } from "next";
-import { loadWidgetData, loadWidgetLayout } from "@/lib/data/widgets";
-import { WidgetBoard } from "@/components/app/widgets/board";
+import { redirect } from "next/navigation";
 
-export function generateMetadata(): Metadata {
-  return { title: getT()("Finance — Vue d'ensemble") };
-}
-
-export default async function FinanceOverviewPage() {
-  const tr = getT();
-  const [data, layout] = await Promise.all([loadWidgetData(), loadWidgetLayout("finance")]);
-  if (!data) return null;
-  return (
-    <WidgetBoard
-      page="finance"
-      initial={layout}
-      data={data}
-      toolbar={<p className="text-xs text-stone-500">{tr("Ta vue d'ensemble est faite de widgets : personnalise-la comme tu veux.")}</p>}
-    />
-  );
+/** Finance s'ouvre sur le calendrier (reste à vivre, budget et réel). L'ancienne « vue d'ensemble » en widgets a été retirée pour simplifier. */
+export default function FinanceIndexPage() {
+  redirect("/app/finance/calendar");
 }

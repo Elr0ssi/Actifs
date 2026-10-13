@@ -30,7 +30,7 @@ export interface FinOp {
   note: string | null;
   account: string | null;
   /** Renseigné pour un paiement réel reçu du Wallet (et non une opération planifiée). */
-  txn?: { id: string; time: string | null; card: string | null };
+  txn?: { id: string; time: string | null; card: string | null; /** Paiement saisi pour VALIDER une occurrence prévue : il la remplace (jamais de double comptage). */ validates?: { opId: string; date: string } };
 }
 
 export interface Occurrence {
@@ -173,15 +173,30 @@ export function getSkippedOccurrences(ops: FinOp[], from: string, to: string): O
   return out.sort((a, b) => a.date.localeCompare(b.date));
 }
 
+/** `source` d'un paiement créé en validant une occurrence prévue : `valide:<id de l'opération>:<date de l'occurrence>`. */
+export const VALIDATION_PREFIX = "valide:";
+export const validationSource = (opId: string, date: string) => `${VALIDATION_PREFIX}${opId}:${date}`;
+export function parseValidation(source: string | null | undefined): { opId: string; date: string } | null {
+  if (!source || !source.startsWith(VALIDATION_PREFIX)) return null;
+  const rest = source.slice(VALIDATION_PREFIX.length);
+  const i = rest.lastIndexOf(":");
+  const date = rest.slice(i + 1);
+  return i > 0 && /^\d{4}-\d{2}-\d{2}$/.test(date) ? { opId: rest.slice(0, i), date } : null;
+}
+
 /**
  * Une estimation (dépense variable) n'est pas une dépense en plus des paiements réels : c'est une enveloppe.
- * Dans un mois et une catégorie donnés, les paiements par carte « consomment » l'estimation (les premières dates d'abord) ;
- * seul le reste de l'estimation est encore compté, et ce qui dépasse l'enveloppe s'ajoute tel quel.
+ *  - Une occurrence VALIDÉE à la main est remplacée par le paiement saisi (son montant prévu ne compte plus).
+ *  - Dans un mois et une catégorie donnés, les autres paiements par carte « consomment » l'estimation (les premières dates d'abord) ;
+ *    seul le reste de l'estimation est encore compté, et ce qui dépasse l'enveloppe s'ajoute tel quel.
  * Clé : `${id}|${date}` → montant restant à compter de cette occurrence.
  */
-function envelopeAdjustments(ops: FinOp[], from: string, to: string) {
+export function envelopeAdjustments(ops: FinOp[], from: string, to: string) {
   const adjust = new Map<string, number>();
-  const daily = ops.filter((o) => o.kind === "daily");
+  const dailyAll = ops.filter((o) => o.kind === "daily");
+  for (const t of dailyAll) if (t.txn?.validates) adjust.set(`${t.txn.validates.opId}|${t.txn.validates.date}`, 0);
+  // Un paiement qui valide une occurrence précise ne sert pas aussi à consommer les autres.
+  const daily = dailyAll.filter((o) => !o.txn?.validates);
   const planned = ops.filter((o) => o.kind === "variable" && o.active);
   if (!daily.length || !planned.length) return adjust;
   const first = new Date(toMs(from));
@@ -196,6 +211,7 @@ function envelopeAdjustments(ops: FinOp[], from: string, to: string) {
     for (const op of planned) for (const date of occurrencesOf(op, start, end)) occ.push({ op, date });
     occ.sort((a, b) => a.date.localeCompare(b.date));
     for (const o of occ) {
+      if (adjust.has(`${o.op.id}|${o.date}`)) continue; // déjà validée
       const cat = o.op.category || "Autre";
       const left = real.get(cat) ?? 0;
       if (left <= 0) continue;
@@ -207,12 +223,18 @@ function envelopeAdjustments(ops: FinOp[], from: string, to: string) {
   return adjust;
 }
 
+/** Dépense payée depuis un compte d'épargne : elle ne touche pas le compte courant (mais l'épargne). */
+export const isSavingsAccountExpense = (op: FinOp) => op.kind !== "income" && op.kind !== "savings" && !!op.account && /(é|e)pargne|livret|ldds|\bpel\b/i.test(op.account);
+const courantOps = (ops: FinOp[]) => (ops.some(isSavingsAccountExpense) ? ops.filter((o) => !isSavingsAccountExpense(o)) : ops);
+
 export function expand(ops: FinOp[], from: string, to: string): Occurrence[] {
   const out: Occurrence[] = [];
   const adjust = envelopeAdjustments(ops, from, to);
   for (const op of ops) {
     for (const date of occurrencesOf(op, from, to)) {
       const amount = adjust.get(`${op.id}|${date}`) ?? op.amount;
+      // Une ligne entièrement remplacée (validée) ou couverte par des paiements n'a plus rien à compter : on ne l'affiche pas.
+      if (amount <= 0 && op.amount > 0) continue;
       out.push({ date, op, signed: signOf(op) * amount, amount });
     }
   }
@@ -220,7 +242,8 @@ export function expand(ops: FinOp[], from: string, to: string): Occurrence[] {
 }
 
 /** Continuous treasury: end-of-day balance at `date`, starting from the user's real anchor balance. */
-export function getBalanceAtDate(ops: FinOp[], anchor: BalanceAnchor, date: string) {
+export function getBalanceAtDate(allOps: FinOp[], anchor: BalanceAnchor, date: string) {
+  const ops = courantOps(allOps);
   const points = anchor.history?.length ? [...anchor.history].sort((a, b) => a.date.localeCompare(b.date)) : [{ date: anchor.date, balance: anchor.balance }];
   let base: { date: string; balance: number } | null = null;
   for (const p of points) if (p.date <= date) base = p;
@@ -230,7 +253,8 @@ export function getBalanceAtDate(ops: FinOp[], anchor: BalanceAnchor, date: stri
   return first.balance - sum(expand(ops, addDays(date, 1), first.date));
 }
 
-export function getDailyBalances(ops: FinOp[], anchor: BalanceAnchor, from: string, to: string) {
+export function getDailyBalances(allOps: FinOp[], anchor: BalanceAnchor, from: string, to: string) {
+  const ops = courantOps(allOps);
   const byDate = new Map<string, number>();
   for (const o of expand(ops, from, to)) byDate.set(o.date, (byDate.get(o.date) ?? 0) + o.signed);
   const result: { date: string; balance: number }[] = [];
@@ -258,7 +282,8 @@ export function getNextIncome(ops: FinOp[], date: string) {
 }
 
 /** What can be freely spent from `date` until the next income, after every planned outflow in between. */
-export function getRemainingBudgetAtDate(ops: FinOp[], anchor: BalanceAnchor, date: string) {
+export function getRemainingBudgetAtDate(allOps: FinOp[], anchor: BalanceAnchor, date: string) {
+  const ops = courantOps(allOps);
   const next = getNextIncome(ops, date);
   const until = next ? addDays(next.date, -1) : monthBounds(new Date(toMs(date)).getUTCFullYear(), new Date(toMs(date)).getUTCMonth()).end;
   const days = Math.max(1, diffDays(date, until) + 1);
@@ -273,7 +298,8 @@ export function getRemainingBudgetAtDate(ops: FinOp[], anchor: BalanceAnchor, da
  * operations still to come until month end, and the projected end-of-month balance ("reste à vivre")
  * which anticipates every upcoming charge (rent, subscriptions…) instead of stopping at today's balance.
  */
-export function getDateSituation(ops: FinOp[], anchor: BalanceAnchor, date: string, minUpcoming = 5) {
+export function getDateSituation(allOps: FinOp[], anchor: BalanceAnchor, date: string, minUpcoming = 5) {
+  const ops = courantOps(allOps);
   const d = new Date(toMs(date));
   const { start, end } = monthBounds(d.getUTCFullYear(), d.getUTCMonth());
   const past = expand(ops, start, date);
@@ -341,11 +367,12 @@ export interface MonthlyBudget {
 }
 
 export function getMonthlyBudget(
-  ops: FinOp[],
+  allOps: FinOp[],
   anchor: BalanceAnchor,
   year: number,
   month: number
 ): MonthlyBudget {
+  const ops = courantOps(allOps);
   const { start, end } = monthBounds(year, month);
   const occ = expand(ops, start, end);
   const total = (k: OpKind) => occ.filter((o) => o.op.kind === k).reduce((s, o) => s + o.amount, 0);
@@ -498,8 +525,9 @@ export interface Envelope {
 }
 
 /** Prévu contre réel, catégorie par catégorie, pour un mois. Les catégories sans estimation mais avec des paiements réels sont incluses. */
-export function getEnvelopes(ops: FinOp[], year: number, month: number): Envelope[] {
-  const { start, end } = monthBounds(year, month);
+export function getEnvelopes(ops: FinOp[], year: number, month: number, upTo?: string): Envelope[] {
+  const { start, end: monthEnd } = monthBounds(year, month);
+  const end = upTo && upTo < monthEnd ? upTo : monthEnd; // « jusqu'à aujourd'hui » : prévu et réel comparés sur la même période
   const map = new Map<string, Envelope>();
   const row = (category: string) => map.get(category) ?? { category, planned: 0, real: 0, left: 0 };
   for (const op of ops) {
@@ -513,4 +541,72 @@ export function getEnvelopes(ops: FinOp[], year: number, month: number): Envelop
     map.set(cat, e);
   }
   return [...map.values()].map((e) => ({ ...e, left: e.planned - e.real })).sort((a, b) => Math.max(b.planned, b.real) - Math.max(a.planned, a.real));
+}
+
+/* ------------------------------------------------------------------ */
+/*  Budget : lignes prévues, validation, épargne                       */
+/* ------------------------------------------------------------------ */
+
+export type BudgetLineStatus = "validated" | "due" | "upcoming";
+export interface BudgetLine {
+  op: FinOp;
+  /** Date de l'occurrence (après report du week-end / déplacement). */
+  date: string;
+  status: BudgetLineStatus;
+  /** Montant prévu. */
+  planned: number;
+  /** Montant réellement dépensé si l'occurrence a été validée. */
+  actual: number | null;
+  /** Part de la ligne déjà couverte par des paiements par carte de la même catégorie (comptée une seule fois). */
+  covered: number;
+  /** Identifiant du paiement créé à la validation (pour pouvoir l'annuler). */
+  txnId: string | null;
+}
+
+/**
+ * Lignes de budget (dépenses variables prévues) d'une période, avec leur état :
+ *  - `validated` : confirmée (montant réel saisi), remplace le prévu ;
+ *  - `due` : la date est passée (ou c'est aujourd'hui) et elle n'est pas encore validée → à valider ou ajuster ;
+ *  - `upcoming` : à venir.
+ */
+export function getBudgetLines(ops: FinOp[], from: string, to: string, today: string): BudgetLine[] {
+  const validated = new Map<string, FinOp>();
+  for (const o of ops) if (o.txn?.validates) validated.set(`${o.txn.validates.opId}|${o.txn.validates.date}`, o);
+  const remaining = envelopeAdjustments(ops, from, to); // montant encore compté de chaque ligne (0 si validée ou couverte)
+  const out: BudgetLine[] = [];
+  for (const op of ops) {
+    if (op.kind !== "variable" || op.txn || !op.active) continue;
+    for (const date of occurrencesOf(op, from, to)) {
+      const key = `${op.id}|${date}`;
+      const v = validated.get(key);
+      const left = remaining.get(key) ?? op.amount;
+      out.push({
+        op,
+        date,
+        status: v ? "validated" : date <= today ? "due" : "upcoming",
+        planned: op.amount,
+        actual: v ? v.amount : null,
+        covered: v ? 0 : Math.max(0, op.amount - left),
+        txnId: v?.txn?.id ?? null,
+      });
+    }
+  }
+  return out.sort((a, b) => a.date.localeCompare(b.date) || a.op.name.localeCompare(b.op.name));
+}
+
+const INVESTMENT = /^(pea|cto|assurance|crypto)/i;
+
+/**
+ * Épargne estimée à une date : dernier solde d'épargne saisi, plus les versements prévus depuis (hors investissements),
+ * moins les dépenses payées depuis l'épargne. `null` si aucun solde d'épargne n'a été saisi.
+ */
+export function getSavingsAt(ops: FinOp[], last: { date: string; balance: number } | null, date: string): number | null {
+  if (!last) return null;
+  if (date <= last.date) return last.balance;
+  let v = last.balance;
+  for (const o of expand(ops, addDays(last.date, 1), date)) {
+    if (o.op.kind === "savings" && !INVESTMENT.test(o.op.category || "")) v += o.amount;
+    else if (isSavingsAccountExpense(o.op)) v -= o.amount;
+  }
+  return v;
 }

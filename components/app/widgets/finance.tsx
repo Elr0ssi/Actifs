@@ -10,6 +10,7 @@ import {
   getBalanceAtDate,
   getDailyBalances,
   getDateSituation,
+  getSavingsAt,
   getEnvelopes,
   getMonthlyBudget,
   KIND_LABEL,
@@ -117,6 +118,7 @@ export function FinReste({ data }: WidgetProps) {
   const s = useMemo(() => (f ? getDateSituation(f.ops, f.anchor, data.today) : null), [f, data.today]);
   if (!f || !s) return <WidgetShell icon="target" title={tr("Reste à vivre")}><NoFinance /></WidgetShell>;
   const planned = s.pastOut + s.upcomingOut;
+  const savings = getSavingsAt(f.ops, f.accounts["Épargne"], data.today);
   const leftPct = planned > 0 ? Math.round((s.upcomingOut / planned) * 100) : 0;
   return (
     <WidgetShell icon="target" title={tr("Reste à vivre")} href="/app/finance/calendar" hrefLabel={tr("Détail")}>
@@ -130,6 +132,11 @@ export function FinReste({ data }: WidgetProps) {
       <p className="mt-1.5 text-[11px] text-stone-400">
         {tr("{a} déjà sortis · {b} encore prévus", { a: eur0(s.pastOut), b: eur0(s.upcomingOut) })}
       </p>
+      {savings !== null && (
+        <p className="mt-2 flex items-baseline justify-between border-t border-line/70 pt-2 text-[11px] text-stone-500">
+          {tr("Reste sur l'épargne")} <b className="tabular text-sm text-stone-800">{eur0(savings)}</b>
+        </p>
+      )}
     </WidgetShell>
   );
 }

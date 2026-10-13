@@ -7,9 +7,12 @@ import {
   addDays,
   describeRecurrence,
   expand,
+  getBudgetLines,
   getDailyBalances,
+  getEnvelopes,
   getMonthlyBudget,
   getDateSituation,
+  getSavingsAt,
   getSkippedOccurrences,
   type OpKind,
   KIND_LABEL,
@@ -24,6 +27,8 @@ import {
 import { formatEUR, MONTHS_FR, cx } from "@/lib/utils";
 import { DonutChart } from "@/components/app/charts/donut-chart";
 import { NewOperationButton } from "@/components/app/finance/operation-form";
+import { ValidateButton } from "@/components/app/finance/validate-button";
+import Link from "next/link";
 import { skipOccurrence, restoreOccurrence, deleteOperation } from "@/app/(main)/app/finance/actions";
 
 type View = "month" | "week" | "year";
@@ -54,10 +59,13 @@ export function FinanceDashboard({
   ops,
   anchor,
   today,
+  savingsLast = null,
 }: {
   ops: FinOp[];
   anchor: BalanceAnchor;
   today: string;
+  /** Dernier solde d'épargne saisi (pour afficher « reste sur l'épargne »). */
+  savingsLast?: { date: string; balance: number } | null;
 }) {
   const tr = useT();
   const [view, setView] = useState<View>("month");
@@ -222,7 +230,7 @@ export function FinanceDashboard({
       </section>
 
       <div className="lg:sticky lg:top-6">
-        <DayPanel ops={ops} anchor={effectiveAnchor} date={selected} />
+        <DayPanel ops={ops} anchor={effectiveAnchor} date={selected} today={today} savingsLast={savingsLast} />
       </div>
     </div>
   );
@@ -244,42 +252,88 @@ function SkippedList({ items, onRestore }: { items: Occurrence[]; onRestore: (o:
   );
 }
 
-function OccList({ items, onSkip, onDelete }: { items: Occurrence[]; onSkip?: (o: Occurrence) => void; onDelete?: (o: Occurrence) => void }) {
+function OccList({ items, today, onSkip, onDelete }: { items: Occurrence[]; today?: string; onSkip?: (o: Occurrence) => void; onDelete?: (o: Occurrence) => void }) {
   const tr = useT();
   return (
     <ul className="space-y-1.5">
-      {items.map((o, i) => (
-        <li key={i} className="group flex items-center gap-2 text-[12px]" title={tooltip(o, tr)}>
-          <span className="w-12 shrink-0 whitespace-nowrap text-[11px] text-stone-400">{fmtShort(o.date)}</span>
-          <span className={cx("h-2 w-2 shrink-0 rounded-full", KIND_STYLE[o.op.kind].dot)} />
-          <span className="min-w-0 flex-1 truncate text-stone-700">{o.op.name}{o.op.txn && <span className="text-stone-400"> · {o.op.txn.time ?? "carte"}{o.op.txn.card ? ` · ${o.op.txn.card}` : ""}</span>}</span>
-          {(onSkip || onDelete) && (
-            <button
-              onClick={() => (o.op.frequency !== "once" ? onSkip?.(o) : onDelete?.(o))}
-              className="hidden text-[11px] text-stone-400 hover:text-rose-600 group-hover:inline"
-              title={o.op.frequency !== "once" ? tr("Ignorer cette occurrence") : tr("Supprimer")}
-            >
-              ✕
-            </button>
-          )}
-          <span className={cx("shrink-0 font-semibold", KIND_STYLE[o.op.kind].text)}>{o.signed > 0 ? "+" : "-"}{formatEUR(o.amount)}</span>
-        </li>
-      ))}
+      {items.map((o, i) => {
+        const canValidate = !!today && o.op.kind === "variable" && !o.op.txn && o.date <= today;
+        return (
+          <li key={i} className="group flex items-center gap-2 text-[12px]" title={tooltip(o, tr)}>
+            <span className="w-12 shrink-0 whitespace-nowrap text-[11px] text-stone-400">{fmtShort(o.date)}</span>
+            <span className={cx("h-2 w-2 shrink-0 rounded-full", KIND_STYLE[o.op.kind].dot)} />
+            <span className="min-w-0 flex-1 truncate text-stone-700">
+              {o.op.name}
+              {o.op.txn && <span className="text-stone-400"> · {o.op.txn.validates ? tr("validé") : `${o.op.txn.time ?? "carte"}${o.op.txn.card ? ` · ${o.op.txn.card}` : ""}`}</span>}
+            </span>
+            {canValidate && <ValidateButton opId={o.op.id} date={o.date} planned={o.op.amount} name={o.op.name} />}
+            {(onSkip || onDelete) && !canValidate && (
+              <button
+                onClick={() => (o.op.frequency !== "once" ? onSkip?.(o) : onDelete?.(o))}
+                className="hidden text-[11px] text-stone-400 hover:text-rose-600 group-hover:inline"
+                title={o.op.frequency !== "once" ? tr("Ignorer cette occurrence") : tr("Supprimer")}
+              >
+                ✕
+              </button>
+            )}
+            <span className={cx("shrink-0 font-semibold", KIND_STYLE[o.op.kind].text)}>{o.signed > 0 ? "+" : "-"}{formatEUR(o.amount)}</span>
+          </li>
+        );
+      })}
     </ul>
   );
 }
 
-function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; date: string }) {
+/** Courbe du solde du mois, avec la date choisie marquée. */
+function BalanceSpark({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; date: string }) {
+  const tr = useT();
+  const d = new Date(toMs(date));
+  const { start, end } = monthBounds(d.getUTCFullYear(), d.getUTCMonth());
+  const pts = useMemo(() => getDailyBalances(ops, anchor, start, end), [ops, anchor, start, end]);
+  const vals = pts.map((p) => p.balance);
+  const lo = Math.min(...vals, 0);
+  const hi = Math.max(...vals, 1);
+  const span = hi - lo || 1;
+  const x = (i: number) => (i / Math.max(1, pts.length - 1)) * 200;
+  const y = (v: number) => 4 + (1 - (v - lo) / span) * 40;
+  const path = pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(p.balance).toFixed(1)}`).join(" ");
+  const idx = Math.max(0, pts.findIndex((p) => p.date === date));
+  const cur = pts[idx];
+  return (
+    <div>
+      <div className="mb-1 flex items-baseline justify-between">
+        <p className="text-[12px] font-semibold text-stone-800">{tr("Évolution du solde")}</p>
+        {cur && <p className="tabular text-[11px] text-stone-500">{fmtShort(cur.date)} · <b className={cur.balance >= 0 ? "text-stone-700" : "text-rose-600"}>{formatEUR(cur.balance)}</b></p>}
+      </div>
+      <svg viewBox="0 0 200 48" className="h-14 w-full overflow-visible" role="img" aria-label={tr("Évolution du solde")}>
+        {lo < 0 && <line x1="0" x2="200" y1={y(0)} y2={y(0)} stroke="rgb(var(--stone-300))" strokeWidth="1" strokeDasharray="3 3" />}
+        <path d={path} fill="none" stroke="rgb(var(--brand-500))" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+        {cur && <circle cx={x(idx)} cy={y(cur.balance)} r="3.5" fill="rgb(var(--brand-600))" stroke="rgb(var(--surface))" strokeWidth="2" />}
+      </svg>
+      <div className="flex justify-between text-[10px] text-stone-400"><span>{fmtShort(start)}</span><span>{fmtShort(end)}</span></div>
+    </div>
+  );
+}
+
+function DayPanel({ ops, anchor, date, today, savingsLast }: { ops: FinOp[]; anchor: BalanceAnchor; date: string; today: string; savingsLast: { date: string; balance: number } | null }) {
   const tr = useT();
   const s = useMemo(() => getDateSituation(ops, anchor, date), [ops, anchor, date]);
   const [pending, start] = useTransition();
   const skip = (o: Occurrence) => start(() => skipOccurrence(o.op.table, o.op.id, o.date));
   const del = (o: Occurrence) => start(() => deleteOperation(o.op.table, o.op.id));
-  const skipped = useMemo(() => {
-    const d = new Date(toMs(date));
-    const { start: from, end: to } = monthBounds(d.getUTCFullYear(), d.getUTCMonth());
-    return getSkippedOccurrences(ops, from, to);
-  }, [ops, date]);
+  const d = new Date(toMs(date));
+  const y = d.getUTCFullYear();
+  const m = d.getUTCMonth();
+  const { start: mFrom, end: mTo } = monthBounds(y, m);
+  const skipped = useMemo(() => getSkippedOccurrences(ops, mFrom, mTo), [ops, mFrom, mTo]);
+  // Budget prévu et réel, catégorie par catégorie, jusqu'à la date choisie (même période des deux côtés).
+  const env = useMemo(() => getEnvelopes(ops, y, m, date), [ops, y, m, date]);
+  const toValidate = useMemo(() => getBudgetLines(ops, mFrom, mTo, today).filter((l) => l.status === "due" && l.date <= date).length, [ops, mFrom, mTo, today, date]);
+  const savings = useMemo(() => getSavingsAt(ops, savingsLast, date), [ops, savingsLast, date]);
+  const savingsEnd = useMemo(() => getSavingsAt(ops, savingsLast, s.monthEnd), [ops, savingsLast, s.monthEnd]);
+  const thatDay = useMemo(() => expand(ops, date, date), [ops, date]);
+  const planned = env.reduce((t, r) => t + r.planned, 0);
+  const real = env.reduce((t, r) => t + r.real, 0);
 
   return (
     <aside className={cx("card space-y-4 p-4", pending && "opacity-70")}>
@@ -295,18 +349,65 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
           {tr("Solde prévu au {date} :", { date: fmtShort(s.monthEnd) })} <b className={s.endBalance >= 0 ? "" : "text-rose-600"}>{formatEUR(s.endBalance)}</b>
         </p>
         <p className="text-[11px] text-brand-700/70">{tr("≈ {amount}/jour jusqu'à la fin du mois ({d} j)", { amount: formatEUR(s.perDay), d: s.daysRemaining })}</p>
+        <div className="mt-2 border-t border-brand-100 pt-2">
+          <p className="text-xs font-medium text-brand-800">{tr("Reste sur l'épargne")}</p>
+          {savings === null ? (
+            <p className="text-[11px] text-brand-700/70">{tr("Aucun solde d'épargne saisi.")} <Link href="/app/finance/accounts" className="font-semibold underline">{tr("Le renseigner")}</Link></p>
+          ) : (
+            <>
+              <p className="tabular text-lg font-bold text-brand-800">{formatEUR(savings)}</p>
+              {savingsEnd !== null && Math.abs(savingsEnd - savings) >= 0.5 && (
+                <p className="text-[11px] text-brand-700/70">{tr("Prévu au {date} :", { date: fmtShort(s.monthEnd) })} <b>{formatEUR(savingsEnd)}</b></p>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
-      <div>
-        <div className="mb-2 flex items-center justify-between">
-          <p className="text-[12px] font-semibold text-stone-800">{tr("Opérations passées")} <span className="font-normal text-stone-400">{tr("(ce mois)")}</span></p>
+      {thatDay.length > 0 && (
+        <div>
+          <p className="mb-2 text-[12px] font-semibold text-stone-800">{tr("Ce jour-là")}</p>
+          <OccList items={thatDay} today={today} onSkip={skip} onDelete={del} />
         </div>
-        {s.past.length === 0 ? <p className="text-sm text-stone-400">{tr("Aucune.")}</p> : <OccList items={s.past} onSkip={skip} onDelete={del} />}
-        {s.past.length > 0 && (
-          <div className="mt-2 flex justify-between rounded-lg bg-stone-50 px-3 py-1.5 text-xs">
-            <span className="text-emerald-600">+{formatEUR(s.pastIn)}</span>
-            <span className="text-rose-600">-{formatEUR(s.pastOut)}</span>
-          </div>
+      )}
+
+      <div>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <p className="text-[12px] font-semibold text-stone-800">{tr("Budget et réel")} <span className="font-normal text-stone-400">{tr("(jusqu'au {date})", { date: fmtShort(date) })}</span></p>
+          <Link href="/app/finance/budgets" className="text-[11px] font-semibold text-brand-600 hover:underline">{tr("Gérer")}</Link>
+        </div>
+        {env.length === 0 ? (
+          <p className="text-sm text-stone-400">{tr("Aucun budget ni dépense sur cette période.")}</p>
+        ) : (
+          <>
+            <ul className="space-y-2.5">
+              {env.map((r) => {
+                const max = Math.max(r.planned, r.real, 1);
+                const over = r.planned > 0 && r.real > r.planned;
+                return (
+                  <li key={r.category}>
+                    <div className="flex items-baseline justify-between gap-2 text-[12px]">
+                      <span className="min-w-0 truncate text-stone-700">{tr(r.category)}</span>
+                      <span className="tabular shrink-0 text-[11px] text-stone-500"><b className={over ? "text-rose-600" : "text-teal-700"}>{formatEUR(r.real)}</b> / {formatEUR(r.planned)}</span>
+                    </div>
+                    <div className="mt-1 space-y-1">
+                      <div className="h-1.5 overflow-hidden rounded-full bg-stone-100"><div className="h-full rounded-full bg-brand-300" style={{ width: `${(r.planned / max) * 100}%` }} /></div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-stone-100"><div className={cx("h-full rounded-full", over ? "bg-rose-400" : "bg-teal-500")} style={{ width: `${(r.real / max) * 100}%` }} /></div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="mt-2.5 flex items-center justify-between rounded-lg bg-stone-50 px-3 py-1.5 text-[11px]">
+              <span className="flex items-center gap-1 text-stone-500"><span className="h-2 w-2 rounded-full bg-brand-300" />{tr("Budget")} <b className="text-stone-700">{formatEUR(planned)}</b></span>
+              <span className="flex items-center gap-1 text-stone-500"><span className="h-2 w-2 rounded-full bg-teal-500" />{tr("Réel")} <b className={real > planned ? "text-rose-600" : "text-teal-700"}>{formatEUR(real)}</b></span>
+            </div>
+          </>
+        )}
+        {toValidate > 0 && (
+          <Link href="/app/finance/budgets" className="mt-2 flex items-center justify-between rounded-lg bg-amber-50 px-3 py-2 text-[12px] font-semibold text-amber-800 hover:bg-amber-100">
+            <span>{tr("{n} dépense(s) prévue(s) à valider", { n: toValidate })}</span><span aria-hidden>→</span>
+          </Link>
         )}
       </div>
 
@@ -328,6 +429,8 @@ function DayPanel({ ops, anchor, date }: { ops: FinOp[]; anchor: BalanceAnchor; 
           </div>
         )}
       </div>
+
+      <BalanceSpark ops={ops} anchor={anchor} date={date} />
 
       {skipped.length > 0 && (
         <div>

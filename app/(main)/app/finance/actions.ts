@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient, getSessionUser } from "@/lib/supabase/server";
-import type { OpTable } from "@/lib/finance-engine";
+import { addDays, diffDays, monthBounds, validationSource, type OpTable } from "@/lib/finance-engine";
 
 async function ctx() {
   const supabase = createClient();
@@ -261,4 +261,79 @@ export async function regenerateWalletToken() {
   if (!householdId) return;
   await supabase.from("households").update({ wallet_token: crypto.randomUUID() }).eq("id", householdId);
   revalidatePath("/app/finance/paiements");
+}
+
+/* ------------------------------------------------------------------ */
+/*  Budget : validation d'une ligne prévue, répartition d'un budget     */
+/* ------------------------------------------------------------------ */
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Valide une ligne de budget (dépense variable prévue) dont la date est arrivée : on saisit ce qui a RÉELLEMENT été dépensé
+ * (espèces, virement, autre carte…). Ça crée un paiement réel rattaché à cette occurrence ; le montant prévu n'est alors plus
+ * compté en plus (voir `parseValidation` / `envelopeAdjustments` dans le moteur). Re-valider modifie le montant.
+ * Aucune migration : un paiement porte `source = "valide:<id de la ligne>:<date>"`.
+ */
+export async function validateOccurrence(opId: string, date: string, amount: number) {
+  if (!DATE_RE.test(date) || !Number.isFinite(amount) || amount < 0) return;
+  const { supabase, householdId, userId } = await ctx();
+  if (!householdId) return;
+  const { data: op } = await supabase.from("recurring_charges").select("id, name, category, kind").eq("id", opId).eq("household_id", householdId).maybeSingle();
+  if (!op || op.kind !== "variable") return;
+  const source = validationSource(op.id, date);
+  const value = Math.round(amount * 100) / 100;
+  const { data: existing } = await supabase.from("transactions").select("id").eq("household_id", householdId).eq("source", source).maybeSingle();
+  if (existing) await supabase.from("transactions").update({ amount: value }).eq("id", existing.id).eq("household_id", householdId);
+  else await supabase.from("transactions").insert({ household_id: householdId, label: op.name, merchant: op.name, amount: value, kind: "expense", txn_date: date, category: op.category ?? "Autre", source, created_by: userId });
+  refresh();
+  revalidatePath("/app/finance/paiements");
+  revalidatePath("/app/finance/budgets");
+}
+
+/** Annule une validation : le montant prévu redevient « à valider ». */
+export async function cancelValidation(txnId: string) {
+  const { supabase, householdId } = await ctx();
+  if (!householdId) return;
+  await supabase.from("transactions").delete().eq("id", txnId).eq("household_id", householdId).like("source", "valide:%");
+  refresh();
+  revalidatePath("/app/finance/paiements");
+  revalidatePath("/app/finance/budgets");
+}
+
+/**
+ * Répartit un budget sur un mois : « 280 € d'alimentation, répartis chaque vendredi » crée UNE ligne récurrente de dépense variable
+ * (montant = total / nombre d'occurrences restantes dans le mois). Chaque occurrence se valide ensuite, ou s'ajuste, à sa date.
+ *  - mode `weekly` : chaque semaine, le jour choisi ; `daily` : tous les jours ; `once` : une seule ligne à la date de départ.
+ */
+export async function planBudget(formData: FormData) {
+  const category = String(formData.get("category") || "").trim().slice(0, 60) || "Autre";
+  const total = Math.abs(Number(String(formData.get("total") || "0").replace(",", ".")));
+  const mode = String(formData.get("mode") || "weekly");
+  const weekday = Number(formData.get("weekday") ?? 5);
+  const start = String(formData.get("start") || "");
+  const name = String(formData.get("name") || "").trim().slice(0, 80);
+  if (!total || !DATE_RE.test(start) || !["weekly", "daily", "once"].includes(mode)) return;
+  const d = new Date(`${start}T00:00:00Z`);
+  const { end } = monthBounds(d.getUTCFullYear(), d.getUTCMonth());
+  let first = start;
+  let count = 1;
+  const row: Record<string, unknown> = { name: name || `${category} (budget)`, category, kind: "variable", end_date: end, weekdays: [], month_days: [], interval_count: 1, weekend_rule: "none", account: null, note: null };
+  if (mode === "weekly") {
+    const wd = weekday >= 0 && weekday <= 6 ? weekday : 5;
+    while (new Date(`${first}T00:00:00Z`).getUTCDay() !== wd) first = addDays(first, 1);
+    if (first > end) return;
+    count = Math.floor(diffDays(first, end) / 7) + 1;
+    Object.assign(row, { frequency: "weekly", weekdays: [wd] });
+  } else if (mode === "daily") {
+    count = diffDays(start, end) + 1;
+    Object.assign(row, { frequency: "daily" });
+  } else {
+    Object.assign(row, { frequency: "once", end_date: null });
+  }
+  const { supabase, householdId, userId } = await ctx();
+  if (!householdId) return;
+  await supabase.from("recurring_charges").insert({ ...row, household_id: householdId, created_by: userId, amount: Math.round((total / count) * 100) / 100, next_date: first });
+  refresh();
+  revalidatePath("/app/finance/budgets");
 }

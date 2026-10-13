@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { getAppContext } from "@/lib/data/context";
-import { chargeRowToOp, incomeRowToOp, type BalanceAnchor, type FinOp } from "@/lib/finance-engine";
+import { chargeRowToOp, incomeRowToOp, parseValidation, type BalanceAnchor, type FinOp } from "@/lib/finance-engine";
 import { todayISO } from "@/lib/utils";
 import { addDays as addDaysISO } from "@/lib/finance-engine";
 
@@ -42,7 +42,7 @@ export const loadFinanceData = cache(async () => {
     active: true,
     note: t.card ? `Carte ${t.card}` : null,
     account: null,
-    txn: { id: t.id as string, time: t.txn_time ? String(t.txn_time).slice(0, 5) : null, card: (t.card as string | null) ?? null },
+    txn: { id: t.id as string, time: t.txn_time ? String(t.txn_time).slice(0, 5) : null, card: (t.card as string | null) ?? null, validates: parseValidation(t.source as string | null) ?? undefined },
   }));
   const ops: FinOp[] = [...(incomes ?? []).map(incomeRowToOp), ...(charges ?? []).map(chargeRowToOp), ...walletOps];
   const allEntries = (entries ?? []) as { entry_date: string; balance: number; account: AccountName }[];

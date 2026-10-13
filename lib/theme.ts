@@ -1,5 +1,7 @@
 export const THEME_COOKIE = "allin-theme";
 export const ACCENT_COOKIE = "allin-accent";
+/** Volet latéral de l'appli : "collapsed" (icônes seules) ou "open". */
+export const SIDEBAR_COOKIE = "flozea-sidebar";
 
 export const THEME_MODES = [
   { v: "light", l: "Clair" },
