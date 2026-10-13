@@ -2,15 +2,26 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient, getSessionUser } from "@/lib/supabase/server";
-import type { OpTable } from "@/lib/finance-engine";
+import { addDays, diffDays, monthBounds, validationSource, type OpTable } from "@/lib/finance-engine";
+import { getFinanceOwner } from "@/lib/data/finance-owner";
 
+/**
+ * `householdId` est absent quand on consulte la finance d'un proche (lecture seule) : toutes les actions qui
+ * s'arrêtent sans foyer ne font alors rien — la base refuserait de toute façon d'écrire chez lui.
+ */
 async function ctx() {
   const supabase = createClient();
   const {
     data: { user },
   } = await getSessionUser(supabase);
   const { data: profile } = await supabase.from("profiles").select("household_id").eq("id", user?.id).single();
-  return { supabase, householdId: profile?.household_id as string | undefined, userId: user?.id };
+  const owner = await getFinanceOwner();
+  return { supabase, householdId: (owner?.readOnly ? undefined : profile?.household_id) as string | undefined, userId: user?.id };
+}
+
+/** Garde le dernier solde du compte courant dans finance_settings (lecture rapide, repli quand aucun solde n'est saisi). */
+async function saveFinanceSettings(supabase: ReturnType<typeof createClient>, userId: string, patch: Record<string, unknown>) {
+  await supabase.from("finance_settings").upsert({ owner_id: userId, ...patch, updated_at: new Date().toISOString() }, { onConflict: "owner_id" });
 }
 
 function refresh() {
@@ -116,43 +127,31 @@ export async function updateBalanceAnchor(account: string, formData: FormData) {
   const balance = Number(raw);
   if (raw === "" || Number.isNaN(balance)) return;
   const date = String(formData.get("entry_date") || "") || new Date().toISOString().slice(0, 10);
-  const { supabase, householdId } = await ctx();
-  if (!householdId) return;
-  await supabase.from("balance_entries").upsert({ household_id: householdId, entry_date: date, account, balance }, { onConflict: "household_id,entry_date,account" });
-  if (account === "Courant") {
-    const { data: latest } = await supabase
-      .from("balance_entries")
-      .select("entry_date, balance")
-      .eq("household_id", householdId)
-      .eq("account", "Courant")
-      .order("entry_date", { ascending: false })
-      .limit(1)
-      .single();
-    if (latest) {
-      await supabase.from("households").update({ current_balance: latest.balance, balance_ref_date: latest.entry_date }).eq("id", householdId);
-    }
-  }
+  const { supabase, householdId, userId } = await ctx();
+  if (!householdId || !userId) return;
+  await supabase.from("balance_entries").upsert({ household_id: householdId, owner_id: userId, entry_date: date, account, balance }, { onConflict: "owner_id,entry_date,account" });
+  if (account === "Courant") await syncCourantCache(supabase, userId);
   refresh();
 }
 
-/** Le solde du compte courant le plus récent est aussi gardé sur le foyer (lecture rapide) : on le remet à jour après chaque changement. */
-async function syncCourantCache(supabase: ReturnType<typeof createClient>, householdId: string) {
+/** Le solde du compte courant le plus récent est aussi gardé dans tes réglages financiers (lecture rapide) : on le remet à jour après chaque changement. */
+async function syncCourantCache(supabase: ReturnType<typeof createClient>, userId: string) {
   const { data: latest } = await supabase
     .from("balance_entries")
     .select("entry_date, balance")
-    .eq("household_id", householdId)
+    .eq("owner_id", userId)
     .eq("account", "Courant")
     .order("entry_date", { ascending: false })
     .limit(1)
     .maybeSingle();
-  if (latest) await supabase.from("households").update({ current_balance: latest.balance, balance_ref_date: latest.entry_date }).eq("id", householdId);
+  if (latest) await saveFinanceSettings(supabase, userId, { current_balance: latest.balance, balance_ref_date: latest.entry_date });
 }
 
 export async function deleteBalanceEntry(account: string, date: string) {
-  const { supabase, householdId } = await ctx();
-  if (!householdId) return;
-  await supabase.from("balance_entries").delete().eq("household_id", householdId).eq("account", account).eq("entry_date", date);
-  if (account === "Courant") await syncCourantCache(supabase, householdId);
+  const { supabase, householdId, userId } = await ctx();
+  if (!householdId || !userId) return;
+  await supabase.from("balance_entries").delete().eq("owner_id", userId).eq("account", account).eq("entry_date", date);
+  if (account === "Courant") await syncCourantCache(supabase, userId);
   refresh();
   revalidatePath("/app/finance/accounts");
 }
@@ -163,11 +162,11 @@ export async function editBalanceEntry(account: string, oldDate: string, formDat
   const balance = Number(raw);
   const date = String(formData.get("entry_date") || "");
   if (raw === "" || Number.isNaN(balance) || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
-  const { supabase, householdId } = await ctx();
-  if (!householdId) return;
-  if (date !== oldDate) await supabase.from("balance_entries").delete().eq("household_id", householdId).eq("account", account).eq("entry_date", oldDate);
-  await supabase.from("balance_entries").upsert({ household_id: householdId, entry_date: date, account, balance }, { onConflict: "household_id,entry_date,account" });
-  if (account === "Courant") await syncCourantCache(supabase, householdId);
+  const { supabase, householdId, userId } = await ctx();
+  if (!householdId || !userId) return;
+  if (date !== oldDate) await supabase.from("balance_entries").delete().eq("owner_id", userId).eq("account", account).eq("entry_date", oldDate);
+  await supabase.from("balance_entries").upsert({ household_id: householdId, owner_id: userId, entry_date: date, account, balance }, { onConflict: "owner_id,entry_date,account" });
+  if (account === "Courant") await syncCourantCache(supabase, userId);
   refresh();
   revalidatePath("/app/finance/accounts");
 }
@@ -175,21 +174,21 @@ export async function editBalanceEntry(account: string, oldDate: string, formDat
 /** Efface les soldes plus anciens que `before` (on garde toujours le plus récent). */
 export async function pruneBalanceHistory(account: string, before: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(before)) return;
-  const { supabase, householdId } = await ctx();
-  if (!householdId) return;
-  const { data: latest } = await supabase.from("balance_entries").select("entry_date").eq("household_id", householdId).eq("account", account).order("entry_date", { ascending: false }).limit(1).maybeSingle();
+  const { supabase, householdId, userId } = await ctx();
+  if (!householdId || !userId) return;
+  const { data: latest } = await supabase.from("balance_entries").select("entry_date").eq("owner_id", userId).eq("account", account).order("entry_date", { ascending: false }).limit(1).maybeSingle();
   const cut = latest && latest.entry_date < before ? latest.entry_date : before;
-  await supabase.from("balance_entries").delete().eq("household_id", householdId).eq("account", account).lt("entry_date", cut);
-  if (account === "Courant") await syncCourantCache(supabase, householdId);
+  await supabase.from("balance_entries").delete().eq("owner_id", userId).eq("account", account).lt("entry_date", cut);
+  if (account === "Courant") await syncCourantCache(supabase, userId);
   refresh();
   revalidatePath("/app/finance/accounts");
 }
 
 export async function updateGoal(type: "savings" | "investment", formData: FormData) {
   const value = Math.max(0, Number(String(formData.get("goal") ?? "0").replace(",", ".")) || 0);
-  const { supabase, householdId } = await ctx();
-  if (!householdId) return;
-  await supabase.from("households").update({ [`${type}_goal`]: value }).eq("id", householdId);
+  const { supabase, householdId, userId } = await ctx();
+  if (!householdId || !userId) return;
+  await saveFinanceSettings(supabase, userId, { [`${type}_goal`]: value });
   refresh();
 }
 
@@ -210,9 +209,9 @@ export async function saveTaxProfile(year: number, formData: FormData) {
   };
   const provisionRaw = String(formData.get("provision_manual") || "").replace(",", ".");
   const provisionManual = provisionRaw === "" ? null : Number(provisionRaw);
-  const { supabase, householdId } = await ctx();
-  if (!householdId) return;
-  await supabase.from("tax_profiles").upsert({ household_id: householdId, year, inputs, provision_manual: provisionManual, updated_at: new Date().toISOString() }, { onConflict: "household_id,year" });
+  const { supabase, householdId, userId } = await ctx();
+  if (!householdId || !userId) return;
+  await supabase.from("tax_profiles").upsert({ household_id: householdId, owner_id: userId, year, inputs, provision_manual: provisionManual, updated_at: new Date().toISOString() }, { onConflict: "owner_id,year" });
   refresh();
 }
 
@@ -257,8 +256,84 @@ export async function addTestPayment() {
 }
 
 export async function regenerateWalletToken() {
+  const { supabase, householdId, userId } = await ctx();
+  if (!householdId || !userId) return;
+  // Le lien Wallet est personnel : les paiements arrivent dans TA finance.
+  await supabase.from("user_tokens").update({ wallet_token: crypto.randomUUID() }).eq("user_id", userId);
+  revalidatePath("/app/finance/paiements");
+}
+
+/* ------------------------------------------------------------------ */
+/*  Budget : validation d'une ligne prévue, répartition d'un budget     */
+/* ------------------------------------------------------------------ */
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Valide une ligne de budget (dépense variable prévue) dont la date est arrivée : on saisit ce qui a RÉELLEMENT été dépensé
+ * (espèces, virement, autre carte…). Ça crée un paiement réel rattaché à cette occurrence ; le montant prévu n'est alors plus
+ * compté en plus (voir `parseValidation` / `envelopeAdjustments` dans le moteur). Re-valider modifie le montant.
+ * Aucune migration : un paiement porte `source = "valide:<id de la ligne>:<date>"`.
+ */
+export async function validateOccurrence(opId: string, date: string, amount: number) {
+  if (!DATE_RE.test(date) || !Number.isFinite(amount) || amount < 0) return;
+  const { supabase, householdId, userId } = await ctx();
+  if (!householdId) return;
+  const { data: op } = await supabase.from("recurring_charges").select("id, name, category, kind").eq("id", opId).eq("household_id", householdId).maybeSingle();
+  if (!op || op.kind !== "variable") return;
+  const source = validationSource(op.id, date);
+  const value = Math.round(amount * 100) / 100;
+  const { data: existing } = await supabase.from("transactions").select("id").eq("owner_id", userId ?? "").eq("source", source).maybeSingle();
+  if (existing) await supabase.from("transactions").update({ amount: value }).eq("id", existing.id).eq("household_id", householdId);
+  else await supabase.from("transactions").insert({ household_id: householdId, label: op.name, merchant: op.name, amount: value, kind: "expense", txn_date: date, category: op.category ?? "Autre", source, created_by: userId });
+  refresh();
+  revalidatePath("/app/finance/paiements");
+  revalidatePath("/app/finance/budgets");
+}
+
+/** Annule une validation : le montant prévu redevient « à valider ». */
+export async function cancelValidation(txnId: string) {
   const { supabase, householdId } = await ctx();
   if (!householdId) return;
-  await supabase.from("households").update({ wallet_token: crypto.randomUUID() }).eq("id", householdId);
+  await supabase.from("transactions").delete().eq("id", txnId).eq("household_id", householdId).like("source", "valide:%");
+  refresh();
   revalidatePath("/app/finance/paiements");
+  revalidatePath("/app/finance/budgets");
+}
+
+/**
+ * Répartit un budget sur un mois : « 280 € d'alimentation, répartis chaque vendredi » crée UNE ligne récurrente de dépense variable
+ * (montant = total / nombre d'occurrences restantes dans le mois). Chaque occurrence se valide ensuite, ou s'ajuste, à sa date.
+ *  - mode `weekly` : chaque semaine, le jour choisi ; `daily` : tous les jours ; `once` : une seule ligne à la date de départ.
+ */
+export async function planBudget(formData: FormData) {
+  const category = String(formData.get("category") || "").trim().slice(0, 60) || "Autre";
+  const total = Math.abs(Number(String(formData.get("total") || "0").replace(",", ".")));
+  const mode = String(formData.get("mode") || "weekly");
+  const weekday = Number(formData.get("weekday") ?? 5);
+  const start = String(formData.get("start") || "");
+  const name = String(formData.get("name") || "").trim().slice(0, 80);
+  if (!total || !DATE_RE.test(start) || !["weekly", "daily", "once"].includes(mode)) return;
+  const d = new Date(`${start}T00:00:00Z`);
+  const { end } = monthBounds(d.getUTCFullYear(), d.getUTCMonth());
+  let first = start;
+  let count = 1;
+  const row: Record<string, unknown> = { name: name || `${category} (budget)`, category, kind: "variable", end_date: end, weekdays: [], month_days: [], interval_count: 1, weekend_rule: "none", account: null, note: null };
+  if (mode === "weekly") {
+    const wd = weekday >= 0 && weekday <= 6 ? weekday : 5;
+    while (new Date(`${first}T00:00:00Z`).getUTCDay() !== wd) first = addDays(first, 1);
+    if (first > end) return;
+    count = Math.floor(diffDays(first, end) / 7) + 1;
+    Object.assign(row, { frequency: "weekly", weekdays: [wd] });
+  } else if (mode === "daily") {
+    count = diffDays(start, end) + 1;
+    Object.assign(row, { frequency: "daily" });
+  } else {
+    Object.assign(row, { frequency: "once", end_date: null });
+  }
+  const { supabase, householdId, userId } = await ctx();
+  if (!householdId) return;
+  await supabase.from("recurring_charges").insert({ ...row, household_id: householdId, created_by: userId, amount: Math.round((total / count) * 100) / 100, next_date: first });
+  refresh();
+  revalidatePath("/app/finance/budgets");
 }

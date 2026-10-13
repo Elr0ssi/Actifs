@@ -1,6 +1,7 @@
 import { getT } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { getAppContext } from "@/lib/data/context";
+import { getFinanceOwner } from "@/lib/data/finance-owner";
 import { WalletSetup } from "@/components/app/finance/wallet-setup";
 import { TransactionList, type Txn } from "@/components/app/finance/transaction-list";
 import Link from "next/link";
@@ -14,11 +15,13 @@ export default async function PaymentsPage() {
   const tr = getT();
   const ctx = await getAppContext();
   if (!ctx) return null;
-  const { supabase, profile, household } = ctx;
+  const { supabase, user } = ctx;
+  const owner = await getFinanceOwner();
+  const ownerId = owner?.ownerId ?? user.id;
   const { data } = await supabase
     .from("transactions")
     .select("id, label, merchant, amount, kind, txn_date, txn_time, card, category")
-    .eq("household_id", profile?.household_id ?? "")
+    .eq("owner_id", ownerId)
     .eq("source", "wallet")
     .order("txn_date", { ascending: false })
     .order("txn_time", { ascending: false, nullsFirst: false })
@@ -36,7 +39,12 @@ export default async function PaymentsPage() {
   const month = todayISO().slice(0, 7);
   const monthTxns = txns.filter((t) => !t.income && t.date.slice(0, 7) === month);
   const monthTotal = monthTxns.reduce((s, t) => s + t.amount, 0);
-  const token = (household as { wallet_token?: string } | null)?.wallet_token ?? "";
+  // Le lien Wallet est personnel : on ne l'affiche que pour ta propre finance.
+  let token = "";
+  if (!owner?.readOnly) {
+    const { data: t } = await supabase.from("user_tokens").select("wallet_token").eq("user_id", user.id).maybeSingle();
+    token = (t?.wallet_token as string | undefined) ?? "";
+  }
 
   return (
     <div className="space-y-4">
@@ -54,7 +62,7 @@ export default async function PaymentsPage() {
           <Link href="/app/finance/budgets" className="btn-secondary px-3 py-1.5 text-xs">{tr("Voir prévu et réel")}</Link>
         </div>
       </div>
-      <WalletSetup token={token} defaultOpen={txns.length === 0} />
+      {!owner?.readOnly && <WalletSetup token={token} defaultOpen={txns.length === 0} />}
       <TransactionList txns={txns} />
     </div>
   );

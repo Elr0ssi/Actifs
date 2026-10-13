@@ -6,6 +6,8 @@ import { ToggleCheckbox } from "@/components/app/toggle-checkbox";
 import { toggleTaskStatus, toggleRoutineLog } from "@/app/(main)/app/actions";
 import { createProject, createTask, deleteTask } from "@/app/(main)/app/tasks/actions";
 import { todayISO, cx } from "@/lib/utils";
+import { ProjectShare, type ProjectPerson } from "@/components/app/tasks/project-share";
+import { levelFromRow } from "@/lib/sharing";
 
 export function generateMetadata(): Metadata {
   return { title: getT()("Tâches & projets") };
@@ -18,12 +20,14 @@ export default async function TasksPage() {
   const tr = getT();
   const ctx = await getAppContext();
   if (!ctx) return null;
-  const { supabase, profile } = ctx;
+  const { supabase, profile, user } = ctx;
   const householdId = profile?.household_id ?? "";
   const today = todayISO();
   const weekday = new Date(`${today}T00:00:00Z`).getUTCDay();
 
-  const [{ data: projects }, { data: tasks }, { data: routines }, { data: logs }] = await Promise.all([
+  const [{ data: people }, { data: sharedProjects }, { data: projects }, { data: tasks }, { data: routines }, { data: logs }] = await Promise.all([
+    supabase.from("profiles").select("id, display_name").eq("household_id", householdId),
+    supabase.from("project_members").select("project_id, member_id, can_edit").eq("owner_id", user.id),
     supabase.from("projects").select("*").eq("household_id", householdId).eq("archived", false).order("created_at").returns<Project[]>(),
     supabase
       .from("tasks")
@@ -35,6 +39,11 @@ export default async function TasksPage() {
     supabase.from("routines").select("*").eq("household_id", householdId).eq("active", true).returns<Routine[]>(),
     supabase.from("routine_logs").select("*").eq("log_date", today).returns<RoutineLog[]>(),
   ]);
+
+  const names: Record<string, string> = Object.fromEntries((people ?? []).map((p) => [p.id as string, (p.display_name as string | null) || "—"]));
+  const others = (people ?? []).filter((p) => p.id !== user.id);
+  const peopleFor = (projectId: string): ProjectPerson[] =>
+    others.map((o) => ({ id: o.id as string, name: names[o.id as string], level: levelFromRow((sharedProjects ?? []).find((r) => r.project_id === projectId && r.member_id === o.id)) }));
 
   const allTasks = tasks ?? [];
   const groups: { project: Project | null; tasks: Task[] }[] = [
@@ -111,7 +120,11 @@ export default async function TasksPage() {
             <div className="mb-4 flex items-center gap-2">
               <span className="text-xl">{g.project?.icon ?? "📌"}</span>
               <h2 className="font-semibold text-stone-900">{g.project?.name ?? tr("Sans projet")}</h2>
+              {g.project?.owner_id && g.project.owner_id !== user.id && (
+                <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-700">{tr("Projet de {name}", { name: names[g.project.owner_id] ?? "—" })}</span>
+              )}
               <span className="ml-auto text-xs text-stone-400">{g.tasks.filter((t) => t.status !== "done").length} {tr("en cours")}</span>
+              {g.project && g.project.owner_id === user.id && others.length > 0 && <ProjectShare projectId={g.project.id} people={peopleFor(g.project.id)} />}
             </div>
 
             <div className="space-y-1">
@@ -128,6 +141,9 @@ export default async function TasksPage() {
                         sublabel={[t.due_date, t.due_time].filter(Boolean).join(" ") || undefined}
                       />
                     </div>
+                    {t.owner_id && t.owner_id !== user.id && t.owner_id !== g.project?.owner_id && (
+                      <span className="rounded-full bg-violet-50 px-1.5 py-0.5 text-[10px] font-semibold text-violet-700">{names[t.owner_id] ?? "—"}</span>
+                    )}
                     {isOverdue && <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-600">{tr("reportée")}</span>}
                     <span className={`h-2 w-2 rounded-full ${PRIORITY_DOT[t.priority]}`} title={tr(PRIORITY_LABEL[t.priority])} />
                     <form action={deleteTask.bind(null, t.id)}>

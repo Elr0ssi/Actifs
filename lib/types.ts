@@ -8,12 +8,16 @@ export interface Project {
   color: string;
   icon: string | null;
   archived: boolean;
+  /** À qui appartient le projet (partage entre membres du foyer). */
+  owner_id?: string;
   created_at: string;
 }
 
 export interface Task {
   id: string;
   household_id: string;
+  /** À qui appartient la tâche (partage entre membres du foyer). */
+  owner_id?: string;
   project_id: string | null;
   title: string;
   description: string | null;
