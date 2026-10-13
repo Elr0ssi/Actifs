@@ -10,7 +10,7 @@ export function BackButton({ fallback, label, className }: { fallback: string; l
   const router = useRouter();
   const tr = useT();
   const text = label ?? tr("← Retour");
-  const cls = cx("inline-flex items-center rounded-full border border-line bg-surface px-3.5 py-1.5 text-sm font-medium text-stone-600 transition hover:border-brand-300 hover:text-brand-700", className);
+  const cls = cx("inline-flex min-h-11 items-center rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-stone-600 transition hover:border-brand-300 hover:text-brand-700", className);
   return (
     <Link
       href={fallback}

@@ -972,4 +972,11 @@ export const siteDe: Record<string, string> = {
   "Enregistré": "Gespeichert",
   "automatiquement": "automatisch",
   "Calculer mon reste à vivre": "Meinen Restbetrag berechnen",
+  "Ouvrir le menu": "Menü öffnen",
+  "Fermer le menu": "Menü schließen",
+  "Agenda, repas et finances": "Kalender, Essen und Finanzen",
+  "Recettes et guides": "Rezepte und Ratgeber",
+  "Recettes, idées, guides et outils": "Rezepte, Ideen, Ratgeber und Tools",
+  "Accéder à mon espace": "Zu meinem Bereich",
+  "Idées de recettes": "Rezeptideen",
 };

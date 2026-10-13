@@ -95,29 +95,28 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
         <section className="mx-auto flex min-h-[calc(100svh-69px)] max-w-6xl items-center px-6 py-12 lg:py-8">
           <div className="grid w-full items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
             <div>
-              <FadeIn delay={80}>
+              <div>
                 <h1>
                   <span className="block bg-gradient-to-r from-brand-500 via-violet-600 to-fuchsia-600 bg-clip-text text-7xl font-extrabold tracking-tight text-transparent sm:text-8xl lg:text-[6.5rem] lg:leading-none">{tr("Flozea")}</span>
                   <span className="mt-4 block text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl lg:leading-tight">{tr("Agenda, courses, budget et notes :")} <span className="text-brand-600">{tr("une seule appli")}</span></span>
                 </h1>
-              </FadeIn>
-              <FadeIn delay={160}>
+              </div>
+              <div>
                 <p className="mt-5 max-w-lg text-lg leading-relaxed text-stone-600">
                   {tr("Ton emploi du temps, tes repas, tes courses et ton budget au même endroit, seul ou à deux.")}
                 </p>
-              </FadeIn>
-              <FadeIn delay={240}>
+              </div>
+              <div>
                 <div className="mt-7 flex flex-wrap items-center gap-3">
                   <Link href="/signup" className="btn-primary px-6 py-3 text-base">{tr("Créer mon espace")}</Link>
                   <Link href="/fonctionnalites" className="px-2 py-3 text-base font-semibold text-stone-700 underline-offset-4 hover:text-brand-700 hover:underline">{tr("Découvrir les fonctionnalités →")}</Link>
                 </div>
-                <p className="mt-3 text-xs text-stone-500">{tr("Gratuit, sans carte bancaire.")} <Link href="/tarifs" className="underline underline-offset-2 hover:text-brand-600">{tr("Voir les tarifs")}</Link></p>
-              </FadeIn>
+                <p className="mt-3 text-xs text-stone-600">{tr("Gratuit, sans carte bancaire.")} <Link href="/tarifs" className="underline underline-offset-2 hover:text-brand-600">{tr("Voir les tarifs")}</Link></p>
+              </div>
             </div>
 
             {/* Aperçu du produit */}
-            <FadeIn delay={200}>
-              <div className="relative mx-auto w-full max-w-md" aria-hidden>
+            <div className="hero-rise relative mx-auto w-full max-w-md" aria-hidden>
                 <div className="card p-4 shadow-lift">
                   <div className="flex items-center justify-between text-xs font-semibold text-stone-800"><span>{tr("Agenda · semaine")}</span><span className="rounded-full bg-brand-50 px-2 py-0.5 text-brand-700">{tr("Aujourd'hui")}</span></div>
                   <div className="mt-3 grid grid-cols-5 gap-1.5 text-[10px] text-stone-500">
@@ -143,7 +142,6 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
                   <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-stone-100"><div className="h-full w-2/3 rounded-full bg-gradient-to-r from-brand-400 to-brand-600" /></div>
                 </div>
               </div>
-            </FadeIn>
           </div>
         </section>
 
@@ -198,7 +196,7 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
             <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">{tr("Idées de recettes")}</p>
             <div className="mt-3 flex flex-wrap justify-center gap-2">
               {IDEAS.slice(0, 8).map((i) => (
-                <Link key={i.slug} href={`/recettes/idees/${i.slug}`} className="rounded-full border border-line bg-surface/80 px-3.5 py-1.5 text-sm font-medium text-stone-700 transition hover:-translate-y-0.5 hover:border-brand-300 hover:text-brand-700">{i.icon} {tr(i.label)}</Link>
+                <Link key={i.slug} href={`/recettes/idees/${i.slug}`} className="inline-flex min-h-11 items-center rounded-full border border-line bg-surface/80 px-4 py-2 text-sm font-medium text-stone-700 transition hover:-translate-y-0.5 hover:border-brand-300 hover:text-brand-700">{i.icon} {tr(i.label)}</Link>
               ))}
             </div>
           </FadeIn>
@@ -225,8 +223,8 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
             </FadeIn>
             <ol className="divide-y divide-line">
               {otherGuides.slice(0, 5).map((g, i) => (
-                <FadeIn key={g.slug} delay={i * 60}>
-                  <li>
+                <li key={g.slug}>
+                  <FadeIn delay={i * 60}>
                     <Link href={`/guides/${g.slug}`} className="group flex items-center gap-4 py-4">
                       <span className="w-8 text-2xl font-bold text-brand-200 transition group-hover:text-brand-500">{String(i + 2).padStart(2, "0")}</span>
                       <span className="flex-1">
@@ -235,8 +233,8 @@ export default function LandingPage({ params }: { params: { lang: string } }) {
                       </span>
                       <span className="text-stone-300 transition group-hover:translate-x-1 group-hover:text-brand-500">→</span>
                     </Link>
+                  </FadeIn>
                   </li>
-                </FadeIn>
               ))}
             </ol>
           </div>

@@ -43,7 +43,7 @@ export default function RecipesPage({ params }: { params: { lang: string } }) {
               <div>
                 <h2 id="idees" className="text-2xl font-bold tracking-tight text-stone-900">{tr("Idées de recettes")}</h2>
               </div>
-              <Link href="/recettes/idees" className="text-sm font-semibold text-brand-700 hover:underline">{tr("Toutes les idées →")}</Link>
+              <Link href="/recettes/idees" className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-700 hover:underline">{tr("Toutes les idées →")}</Link>
             </div>
             <div className="mt-5">
               <IdeasCarousel prev={tr("Précédent")} next={tr("Suivant")} items={IDEAS.map((i) => ({ slug: i.slug, icon: i.icon, label: tr(i.label), count: tr("{n} recettes", { n: ideaRecipes(i).length }) }))} />

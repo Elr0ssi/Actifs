@@ -964,4 +964,13 @@ export const siteEn: Record<string, string> = {
   "Enregistré": "Saved",
   "automatiquement": "automatically",
   "Calculer mon reste à vivre": "Calculate my money left",
+  "Ouvrir le menu": "Open menu",
+  "Fermer le menu": "Close menu",
+  "Menu": "Menu",
+  "Agenda, repas et finances": "Planner, meals and money",
+  "Recettes et guides": "Recipes and guides",
+  "Recettes, idées, guides et outils": "Recipes, ideas, guides and tools",
+  "Accéder à mon espace": "Go to my space",
+  "Idées de recettes": "Recipe ideas",
+  "Guides": "Guides",
 };

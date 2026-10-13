@@ -73,7 +73,7 @@ export function LanguageLinks({ className }: { className?: string }) {
       {LOCALES.map((l) => (
         <li key={l.code}>
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-          <a href={href(l.code)} hrefLang={l.code} lang={l.code} title={l.label} aria-label={l.label} onClick={() => remember(l.code)} className={cx("block rounded-full p-0.5 transition hover:scale-110", l.code === locale ? "ring-2 ring-brand-400" : "opacity-70 hover:opacity-100")}>
+          <a href={href(l.code)} hrefLang={l.code} lang={l.code} title={l.label} aria-label={l.label} onClick={() => remember(l.code)} className={cx("flex h-11 w-11 items-center justify-center rounded-full transition hover:scale-110 lg:h-9 lg:w-9", l.code === locale ? "bg-brand-50 ring-2 ring-brand-400 ring-inset" : "opacity-70 hover:opacity-100")}>
             <Flag code={l.code} className="h-6 w-6" />
           </a>
         </li>

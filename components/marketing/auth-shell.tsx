@@ -19,7 +19,7 @@ export function AuthShell({
   return (
     <div className="relative isolate min-h-screen overflow-hidden bg-stone-50">
       <Aurora />
-      <div className="pointer-events-none absolute inset-0 bg-grid [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_30%,transparent_100%)]" aria-hidden />
+      <div className="pointer-events-none absolute inset-0 hidden bg-grid lg:block [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_30%,transparent_100%)]" aria-hidden />
       <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-6">
         <header className="flex items-center justify-between">
           <Link href="/" aria-label="Flozea"><LogoWordmark className="text-2xl" /></Link>
@@ -38,7 +38,7 @@ export function AuthShell({
           </div>
 
           <div className="mx-auto w-full max-w-sm lg:max-w-none">
-            <div className="rounded-[2rem] border border-white/70 bg-surface/90 p-8 shadow-lift backdrop-blur-xl">
+            <div className="rounded-[2rem] border border-white/70 bg-surface/90 p-8 shadow-lift md:backdrop-blur-xl">
               <h1 className="text-2xl font-bold tracking-tight text-stone-900">{tr(title)}</h1>
               <p className="mt-1 text-sm text-stone-500">{tr(subtitle)}</p>
               <div className="mt-6">{children}</div>

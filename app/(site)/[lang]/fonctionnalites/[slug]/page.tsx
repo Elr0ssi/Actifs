@@ -78,7 +78,7 @@ export default function FeaturePage({ params }: { params: { lang: string; slug: 
           <Ambience tone={t.tone} emojis={t.emojis} />
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 pb-20 pt-14 lg:grid-cols-[1fr_1.05fr]">
           <div>
-            <Link href={cat.href} className="inline-flex items-center gap-1.5 text-sm font-medium text-stone-500 hover:text-stone-900"><span aria-hidden>←</span> {tr(cat.name)}</Link>
+            <div><Link href={cat.href} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-stone-500 hover:text-stone-900"><span aria-hidden>←</span> {tr(cat.name)}</Link></div>
             <span className={cx("mt-6 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold", f.soft)}><span className="text-base">{tr(f.icon)}</span>{tr(f.name)}{f.soon && <span className="rounded-full bg-white px-1.5 py-px text-[9px] font-bold uppercase text-indigo-700">{tr("Bientôt disponible")}</span>}</span>
             <h1 className="mt-4 text-4xl font-bold leading-[1.08] tracking-tight text-stone-900 sm:text-5xl">{tr(f.h1)}</h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-stone-600">{tr(f.intro)}</p>
@@ -102,8 +102,8 @@ export default function FeaturePage({ params }: { params: { lang: string; slug: 
         {/* Points forts : bento immersif */}
         <section className="px-4 py-12 sm:px-6" aria-labelledby="forts">
           <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] bg-stone-950 px-5 py-16 text-white sm:px-10">
-            <div className={cx("fx-drift absolute -left-20 -top-24 h-96 w-96 rounded-full bg-gradient-to-br opacity-50 blur-3xl", f.gradient)} aria-hidden />
-            <div className={cx("fx-drift absolute -bottom-32 -right-16 h-96 w-96 rounded-full bg-gradient-to-br opacity-35 blur-3xl", f.gradient)} style={{ "--d": "-8s" } as React.CSSProperties} aria-hidden />
+            <div className={cx("fx-drift absolute -left-20 -top-24 h-[34rem] w-[34rem] rounded-full glow opacity-50", f.gradient)} aria-hidden />
+            <div className={cx("fx-drift absolute -bottom-32 -right-16 h-[34rem] w-[34rem] rounded-full glow opacity-35", f.gradient)} style={{ "--d": "-8s" } as React.CSSProperties} aria-hidden />
             <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:radial-gradient(rgb(255_255_255/0.12)_1px,transparent_1px)] [background-size:26px_26px]" aria-hidden />
             <div className="relative text-center">
               <span className="rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold text-white/80">{tr(f.icon)} {tr(f.name)}</span>

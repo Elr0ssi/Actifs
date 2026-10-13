@@ -12,7 +12,7 @@ export function CtaBanner({ title, text, primary = { href: "/signup", label: "Cr
       <div className="fx-gradient pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.0),rgba(255,255,255,0.14),rgba(255,255,255,0.0))]" aria-hidden />
       {floaters.map(([e, pos, d, t]) => (
         <Float key={e} delay={d} duration={t} amp={14} rot={6} className={cx("pointer-events-none absolute hidden text-3xl opacity-70 sm:block", pos)}>
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/10 backdrop-blur">{tr(e)}</span>
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/10 md:backdrop-blur">{tr(e)}</span>
         </Float>
       ))}
       <h2 className="relative text-3xl font-bold tracking-tight sm:text-4xl">{tr(title)}</h2>
@@ -91,13 +91,13 @@ export function Ambience({ tone, emojis = [], dots = true }: { tone: AmbienceTon
   const tr = getT();
   const [a, b] = BLOB[tone];
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,#000_14%,#000_78%,transparent)]" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 hidden overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,#000_14%,#000_78%,transparent)] lg:block" aria-hidden>
       {dots && <div className="absolute inset-0 opacity-70 [background-image:radial-gradient(rgb(120_113_108/0.18)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_70%_70%_at_50%_50%,#000_30%,transparent_100%)]" />}
-      <div className={cx("fx-drift absolute -left-24 top-[10%] h-72 w-72 rounded-full blur-3xl", a)} />
-      <div className={cx("fx-drift absolute -right-24 bottom-[5%] h-80 w-80 rounded-full blur-3xl", b)} style={{ "--d": "-6s", "--t": "22s" } as React.CSSProperties} />
+      <div className={cx("fx-drift absolute -left-24 top-[10%] h-[26rem] w-[26rem] rounded-full glow", a)} />
+      <div className={cx("fx-drift absolute -right-24 bottom-[5%] h-[28rem] w-[28rem] rounded-full glow", b)} style={{ "--d": "-6s", "--t": "22s" } as React.CSSProperties} />
       {emojis.map((e, i) => (
         <Float key={e + i} delay={i * 0.9} duration={6 + (i % 3) * 1.5} amp={14} rot={i % 2 ? -8 : 8} className={cx("absolute hidden text-3xl opacity-60 md:block", EMOJI_POS[i % EMOJI_POS.length])}>
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/60 shadow-soft backdrop-blur">{tr(e)}</span>
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/60 shadow-soft md:backdrop-blur">{tr(e)}</span>
         </Float>
       ))}
     </div>

@@ -35,7 +35,7 @@ export default function GuidesPage({ params }: { params: { lang: string } }) {
           <h1 className="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">{tr("Guides pour mieux t'organiser")}</h1>
           <p className="mt-4 text-lg text-stone-600">{tr("Budget, courses, repas, routines, agenda :")} {GUIDES.length} {tr("méthodes simples et concrètes,.")}</p>
           <nav aria-label={tr("Catégories")} className="mt-6 flex flex-wrap justify-center gap-2">
-            {CATEGORIES.map((c) => <a key={c.name} href={`#${c.name.replace(/\W+/g, "-")}`} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${c.chip}`}>{tr(c.emoji)} {tr(c.name)}</a>)}
+            {CATEGORIES.map((c) => <a key={c.name} href={`#${c.name.replace(/\W+/g, "-")}`} className={`inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm font-semibold ${c.chip}`}>{tr(c.emoji)} {tr(c.name)}</a>)}
           </nav>
         </header>
 

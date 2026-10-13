@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useDesktop } from "@/components/marketing/use-desktop";
 import { AnimatedLogo, type LogoSection } from "@/components/animated-logo";
 import { cx } from "@/lib/utils";
 
@@ -24,21 +25,29 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
   const [on, setOn] = useState(false);
   const [cur, setCur] = useState<LogoSection>("planning");
 
-  // La scène se déclenche quand elle entre dans l'écran.
+  const [inView, setInView] = useState(false);
+  const desktop = useDesktop();
+
+  // La scène se déclenche quand elle entre dans l'écran, puis on suit si elle est encore visible (pour mettre l'animation en pause quand on la quitte).
   useEffect(() => {
     const el = panel.current;
     if (!el) return;
-    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setOn(true); io.disconnect(); } }, { threshold: 0.25 });
+    const io = new IntersectionObserver(([e]) => {
+      setInView(e.isIntersecting);
+      if (e.isIntersecting && e.intersectionRatio >= 0.25) setOn(true);
+    }, { threshold: [0, 0.25] });
     io.observe(el);
     return () => io.disconnect();
   }, []);
 
   // Le logo du centre passe d'une section à l'autre ; les pastilles de la section active s'allument.
+  // Rien ne tourne quand la scène est hors de l'écran ou que l'onglet est masqué (avant : minuteur et re-rendus permanents).
   useEffect(() => {
-    if (!on) return;
-    const t = setInterval(() => setCur((c) => ORDER[(ORDER.indexOf(c) + 1) % ORDER.length]), 2800);
+    if (!on || !inView) return;
+    if (!window.matchMedia("(min-width: 1024px)").matches) return; // téléphone : logo fixe (chaque rotation re-rendait toute la scène)
+    const t = setInterval(() => { if (!document.hidden) setCur((c) => ORDER[(ORDER.indexOf(c) + 1) % ORDER.length]); }, 2800);
     return () => clearInterval(t);
-  }, [on]);
+  }, [on, inView]);
 
   const spot = (e: React.MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -51,14 +60,14 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
     <div
       ref={panel}
       onMouseMove={spot}
-      className="relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] bg-[#0a0720] px-6 py-12 text-white shadow-[0_40px_120px_-30px_rgba(76,29,149,0.7)] sm:py-14 lg:px-12 lg:py-14"
+      className="relative mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-[linear-gradient(165deg,#241257_0%,#0a0720_60%)] px-5 py-10 text-white sm:py-12 lg:rounded-[2.5rem] lg:bg-[#0a0720] lg:px-12 lg:py-14 lg:shadow-[0_40px_120px_-30px_rgba(76,29,149,0.7)]"
       style={{ "--mx": "50%", "--my": "40%" } as React.CSSProperties}
     >
-      {/* fond : aurore, grille et halo qui suit le curseur */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-violet-600/40 blur-[110px]" />
-        <div className="absolute -bottom-32 -right-16 h-[26rem] w-[26rem] rounded-full bg-orange-500/25 blur-[120px]" />
-        <div className="absolute left-1/3 top-1/2 h-72 w-72 rounded-full bg-sky-500/20 blur-[110px]" />
+      {/* fond (grand écran seulement) : aurore, grille et halo qui suit le curseur. Sur téléphone : simple dégradé, pas de calques superposés. */}
+      <div className="pointer-events-none absolute inset-0 hidden lg:block" aria-hidden>
+        <div className="absolute -left-24 -top-24 h-[34rem] w-[34rem] rounded-full glow from-violet-600/50 to-transparent" />
+        <div className="absolute -bottom-32 -right-16 h-[36rem] w-[36rem] rounded-full glow from-orange-500/35 to-transparent" />
+        <div className="absolute left-1/3 top-1/2 h-[26rem] w-[26rem] rounded-full glow from-sky-500/30 to-transparent" />
         <div className="absolute inset-0 opacity-[0.18] [background-image:radial-gradient(rgba(255,255,255,.7)_1px,transparent_1px)] [background-size:26px_26px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_55%,#000_20%,transparent_100%)]" />
         <div className="absolute inset-0 [background:radial-gradient(520px_circle_at_var(--mx)_var(--my),rgba(167,139,250,0.22),transparent_60%)]" />
       </div>
@@ -67,6 +76,7 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
 
       {/* Grand écran : la scène */}
       <div className="relative mx-auto mt-8 hidden aspect-[1000/340] w-full max-w-[62rem] lg:block">
+        {desktop && (<>
         <svg viewBox="0 0 1000 340" className="absolute inset-0 h-full w-full" aria-hidden fill="none">
           <defs>
             <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0">
@@ -98,7 +108,7 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
           {[0, 1, 2].map((k) => (
             <span key={k} className="converge-ring absolute left-1/2 top-1/2 h-44 w-44 rounded-full border" style={{ borderColor: `rgba(${rgb},0.55)`, animationDelay: `${k * 1.1}s`, transition: "border-color 600ms" }} aria-hidden />
           ))}
-          <span className="absolute left-1/2 top-1/2 h-52 w-52 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl transition-colors duration-700" style={{ background: `rgba(${rgb},0.35)` }} aria-hidden />
+          <span className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full transition-colors duration-700" style={{ backgroundImage: `radial-gradient(closest-side, rgba(${rgb},0.4), rgba(${rgb},0))` }} aria-hidden />
           <AnimatedLogo section={cur} className="relative h-44 w-44 drop-shadow-[0_10px_40px_rgba(0,0,0,0.45)]" />
         </div>
 
@@ -123,7 +133,7 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
               {on && <span className="converge-land pointer-events-none absolute inset-0 rounded-2xl border" style={{ borderColor: `rgba(${GROUP_COLOR[c.group]},0.9)`, animationDelay: `${i * 110 + 800}ms` }} aria-hidden />}
               <div className="converge-float" style={{ animationDelay: `${i * 0.7}s` }}>
                 <div
-                  className="flex items-center gap-3 rounded-2xl border bg-white/[0.07] px-4 py-3 backdrop-blur-md transition duration-500"
+                  className="flex items-center gap-3 rounded-2xl border bg-white/[0.07] px-4 py-3 lg:backdrop-blur-md transition duration-500"
                   style={{ borderColor: lit ? `rgba(${GROUP_COLOR[c.group]},0.8)` : "rgba(255,255,255,0.14)", boxShadow: lit ? `0 0 0 1px rgba(${GROUP_COLOR[c.group]},0.35), 0 12px 50px -8px rgba(${GROUP_COLOR[c.group]},0.7)` : "0 8px 30px -12px rgba(0,0,0,0.6)", transform: lit ? "scale(1.06)" : "scale(1)" }}
                 >
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-2xl">{c.icon}</span>
@@ -136,17 +146,18 @@ export function ConvergeStage({ chips, children }: { chips: ConvergeChip[]; chil
             </div>
           );
         })}
+      </>)}
       </div>
 
       {/* Petits écrans : le logo puis les pastilles */}
       <div className="relative mt-10 lg:hidden">
-        <div className="relative mx-auto flex h-40 w-40 items-center justify-center">
-          <span className="absolute inset-0 rounded-full blur-3xl transition-colors duration-700" style={{ background: `rgba(${rgb},0.4)` }} aria-hidden />
-          <AnimatedLogo section={cur} className="relative h-36 w-36" />
+        <div className="relative mx-auto flex h-32 w-32 items-center justify-center">
+          <span className="absolute -inset-8 rounded-full transition-colors duration-700" style={{ backgroundImage: `radial-gradient(closest-side, rgba(${rgb},0.45), rgba(${rgb},0))` }} aria-hidden />
+          <AnimatedLogo section={cur} className="relative h-28 w-28" />
         </div>
-        <div className="mt-8 grid grid-cols-2 gap-3">
+        <div className="mt-6 grid grid-cols-2 gap-2.5">
           {chips.map((c, i) => (
-            <div key={c.name} className="rounded-2xl border border-white/15 bg-white/[0.07] p-3.5 backdrop-blur-md transition duration-500" style={{ opacity: on ? 1 : 0, transform: on ? "none" : "translateY(24px) scale(.95)", transition: `opacity 600ms ${i * 90}ms, transform 800ms ${i * 90}ms cubic-bezier(0.34,1.3,0.5,1)`, borderColor: c.group === cur ? `rgba(${GROUP_COLOR[c.group]},0.8)` : undefined }}>
+            <div key={c.name} className="conv-item rounded-2xl border border-white/15 bg-white/[0.07] p-3.5 transition duration-500 lg:backdrop-blur-md" style={{ opacity: on ? 1 : 0, transform: on ? "none" : "translateY(24px) scale(.95)", transition: `opacity 600ms ${i * 90}ms, transform 800ms ${i * 90}ms cubic-bezier(0.34,1.3,0.5,1)`, borderColor: c.group === cur ? `rgba(${GROUP_COLOR[c.group]},0.8)` : undefined }}>
               <span className="text-2xl">{c.icon}</span>
               <span className="mt-2 block text-sm font-bold">{c.name}</span>
               <span className="block text-[11px] leading-snug text-white/55">{c.replaces}</span>
@@ -297,7 +308,7 @@ function NodeDot({ s, on, size = 56 }: { s: TimelineStep; on: boolean; size?: nu
 
 function Card({ s, on, l, i }: { s: TimelineStep; on: boolean; l: TimelineLabels; i: number }) {
   return (
-    <div className={cx("rounded-3xl border bg-surface p-4 shadow-soft transition-all duration-700 will-change-transform", on ? "border-line opacity-100 shadow-lift" : "translate-y-5 scale-95 border-transparent opacity-30 blur-[1.5px]")} style={on ? { boxShadow: `0 24px 60px -24px ${s.glow}` } : undefined}>
+    <div className={cx("rounded-3xl border bg-surface p-4 shadow-soft transition-all duration-700 lg:will-change-transform", on ? "border-line opacity-100 shadow-lift" : "translate-y-5 scale-95 border-transparent opacity-30 blur-[1.5px]")} style={on ? { boxShadow: `0 24px 60px -24px ${s.glow}` } : undefined}>
       <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{s.step} {i + 1}</p>
       <h3 className="mt-0.5 text-[15px] font-bold leading-snug text-stone-900">{s.title}</h3>
       <p className="mt-1 text-[12.5px] leading-relaxed text-stone-500">{s.text}</p>
@@ -313,23 +324,26 @@ export function TimelinePath({ steps, labels }: { steps: TimelineStep[]; labels:
   const comet = useRef<SVGGElement>(null);
   const bar = useRef<HTMLDivElement>(null);
   const [count, setCount] = useState(0);
+  const desktop = useDesktop();
 
   useEffect(() => {
+    const root = wrap.current;
+    if (!root || !desktop) return; // téléphone / tablette : étapes toutes affichées, aucune mesure au défilement
     let raf = 0;
     let cur = 0;
     let target = 0;
+    let visible = false;
+    let len = 0;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const measure = () => {
-      const el = wrap.current;
-      if (!el) return;
-      const r = el.getBoundingClientRect();
+      const r = root.getBoundingClientRect();
       const vh = window.innerHeight;
       target = Math.min(1, Math.max(0, (vh * 0.8 - r.top) / (r.height + vh * 0.1)));
     };
     const apply = () => {
       const p = path.current, g = prog.current, c = comet.current;
       if (p && g && c) {
-        const len = p.getTotalLength();
+        if (!len) len = p.getTotalLength();
         g.style.strokeDashoffset = String(1 - cur);
         const pt = p.getPointAtLength(cur * len);
         c.style.transform = `translate(${pt.x}px, ${pt.y}px)`;
@@ -340,22 +354,36 @@ export function TimelinePath({ steps, labels }: { steps: TimelineStep[]; labels:
       const n = thr.filter((np) => cur >= np - 0.015).length;
       setCount((old) => (old === n ? old : n));
     };
-    const loop = () => {
+    // Une image à la fois, et seulement tant que la frise bouge : à l'arrêt, plus aucun calcul (avant : boucle permanente dès l'ouverture de la page).
+    const step = () => {
+      raf = 0;
       measure();
       cur += (target - cur) * (reduce ? 1 : 0.09);
       if (Math.abs(target - cur) < 0.0004) cur = target;
       apply();
-      raf = requestAnimationFrame(loop);
+      if (cur !== target) raf = requestAnimationFrame(step);
     };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, []);
+    const kick = () => { if (!raf) raf = requestAnimationFrame(step); };
+    const onMove = () => { if (visible) kick(); };
+    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) kick(); }, { rootMargin: "150px 0px" });
+    io.observe(root);
+    window.addEventListener("scroll", onMove, { passive: true });
+    window.addEventListener("resize", onMove);
+    kick();
+    return () => {
+      io.disconnect();
+      window.removeEventListener("scroll", onMove);
+      window.removeEventListener("resize", onMove);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [desktop]);
 
   const posOf = (n: number) => ({ left: `${(W[n][0] / 1200) * 100}%`, top: `${(W[n][1] / 1150) * 100}%` });
   return (
     <div ref={wrap}>
       {/* Grand écran : le chemin sinueux */}
       <div className="relative mx-auto hidden aspect-[1200/1150] w-full max-w-6xl lg:block">
+        {desktop && (<>
         <svg viewBox="0 0 1200 1150" className="absolute inset-0 h-full w-full overflow-visible" aria-hidden fill="none">
           <defs>
             <linearGradient id="trail" x1="0" y1="0" x2="1" y2="1">
@@ -378,17 +406,18 @@ export function TimelinePath({ steps, labels }: { steps: TimelineStep[]; labels:
             <div className="absolute w-[17rem] -translate-x-1/2" style={{ left: posOf(n).left, top: `calc(${posOf(n).top} + 2.6rem)` }}><Card s={steps[i]} on={count > i} l={labels} i={i} /></div>
           </div>
         ))}
+      </>)}
       </div>
 
       {/* Petits écrans : une ligne verticale qui se remplit */}
       <div className="relative mx-auto max-w-md pl-14 lg:hidden">
         <span className="absolute bottom-6 left-[1.65rem] top-6 w-1 rounded-full bg-stone-200" aria-hidden />
-        <div ref={bar} className="absolute bottom-6 left-[1.65rem] top-6 w-1 origin-top rounded-full bg-gradient-to-b from-violet-500 via-amber-400 to-fuchsia-500" style={{ transform: "scaleY(0)" }} aria-hidden />
+        <div ref={bar} className="absolute bottom-6 left-[1.65rem] top-6 w-1 origin-top rounded-full bg-gradient-to-b from-violet-500 via-amber-400 to-fuchsia-500" style={{ transform: "scaleY(1)" }} aria-hidden />
         <ol className="space-y-6">
           {steps.map((s, i) => (
             <li key={s.key} className="relative">
-              <span className="absolute -left-14 top-3"><NodeDot s={s} on={count > i} size={48} /></span>
-              <Card s={s} on={count > i} l={labels} i={i} />
+              <span className="absolute -left-14 top-3"><NodeDot s={s} on={!desktop || count > i} size={48} /></span>
+              <Card s={s} on={!desktop || count > i} l={labels} i={i} />
             </li>
           ))}
         </ol>
