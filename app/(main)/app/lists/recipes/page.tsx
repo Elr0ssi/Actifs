@@ -5,6 +5,7 @@ import { getAppContext } from "@/lib/data/context";
 import type { Recipe, RecipeItem } from "@/lib/types";
 import { RecipesTabs } from "@/components/app/recipes/recipes-tabs";
 import { loadCatalog } from "@/lib/data/ingredients";
+import { loadPeople } from "@/lib/data/people";
 
 export function generateMetadata(): Metadata {
   return { title: getT()("Recettes") };
@@ -17,6 +18,7 @@ export default async function RecipesPage() {
   const { supabase, profile } = ctx;
   const householdId = profile?.household_id ?? "";
 
+  const people = await loadPeople();
   const [{ data: recipes }, { catalog }] = await Promise.all([
     supabase
       .from("recipes")
@@ -37,7 +39,7 @@ export default async function RecipesPage() {
     <div className="space-y-8">
       <p className="text-xs text-stone-500">{tr("Compose tes repas avec tes ingrédients ; ils serviront à remplir tes listes de courses.")}</p>
 
-      <RecipesTabs recipes={typed} householdId={householdId} categories={categories} catalog={catalog} />
+      <RecipesTabs recipes={typed} householdId={householdId} categories={categories} catalog={catalog} meId={people?.meId ?? ctx.user.id} names={people?.names ?? {}} multi={(people?.count ?? 1) > 1} />
     </div>
   );
 }

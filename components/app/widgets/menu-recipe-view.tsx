@@ -8,6 +8,7 @@ import { scaleQuantityLabel, scaleTranslatedIngredient } from "@/lib/ingredient-
 import { RECIPES } from "@/lib/marketing/recipes";
 import { Inline } from "@/components/app/notes/inline";
 import { stepsOf } from "@/components/app/recipes/recipe-card";
+import { SpaceBadge } from "@/components/app/space-badge";
 import type { WidgetData } from "@/lib/data/widgets";
 
 export interface MealRef {
@@ -16,6 +17,9 @@ export interface MealRef {
   icon: string | null;
   servings: number | null;
   slot?: "midi" | "soir" | null;
+  /** À qui est ce repas et s'il est partagé avec le foyer (sinon perso). */
+  owner_id?: string;
+  shared?: boolean;
 }
 
 /** Fiche d'un repas planifié, en consultation : ingrédients et étapes, comme dans « Mes recettes ». */
@@ -43,6 +47,9 @@ export function MenuRecipeView({
   const [sv, setSv] = useState<Record<string, number>>({});
   const [, start] = useTransition();
   if (!meal) return null;
+  // Un repas partagé par quelqu'un d'autre se consulte, mais ne se modifie ni ne se retire.
+  const own = !meal.owner_id || meal.owner_id === data.meId;
+  const ownerName = meal.owner_id ? data.people[meal.owner_id] : undefined;
   const idea = RECIPES.find((r) => r.name.toLowerCase() === meal.name.toLowerCase());
   const mine = data.myRecipes.find((r) => r.name.toLowerCase() === meal.name.toLowerCase());
 
@@ -77,6 +84,7 @@ export function MenuRecipeView({
             <div>
               <p className="text-xs font-semibold capitalize text-brand-700">{dayLabel}</p>
               <h2 className="mt-1 text-2xl font-bold tracking-tight text-stone-900">{meal.icon ?? idea?.icon ?? "🍽️"} {tr(meal.name)}</h2>
+              {data.multi && <div className="mt-1.5"><SpaceBadge shared={!!meal.shared} mine={own} ownerName={ownerName} /></div>}
               {idea?.desc && <p className="mt-1 text-sm text-stone-500">{tr(idea.desc)}</p>}
             </div>
             <button onClick={onClose} className="rounded-lg px-2 py-1 text-stone-400 hover:bg-stone-100" aria-label={tr("Fermer")}>✕</button>
@@ -87,6 +95,7 @@ export function MenuRecipeView({
               {meals.map((m) => (
                 <button key={m.id} onClick={() => onSelect(m.id)} className={m.id === meal.id ? "rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white" : "rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600 hover:bg-stone-200"}>
                   {m.slot === "midi" ? "☀️ " : m.slot === "soir" ? "🌙 " : ""}{m.icon ?? "🍽️"} {tr(m.name)}
+                  {data.multi && m.owner_id && m.owner_id !== data.meId && <span className="ml-1 opacity-70">· 👥 {data.people[m.owner_id] ?? "—"}</span>}
                 </button>
               ))}
             </div>
@@ -109,9 +118,9 @@ export function MenuRecipeView({
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-stone-400">{tr("Ingrédients ({n})", { n: ingredients.length })}</h3>
                 <div className="flex items-center gap-1 text-xs text-stone-500">
                   {tr("Pour")}
-                  <button type="button" onClick={() => changePeople(people - 1)} className="h-6 w-6 rounded-md border border-line text-stone-600" aria-label={tr("Moins de personnes")}>−</button>
+                  {own && <button type="button" onClick={() => changePeople(people - 1)} className="h-6 w-6 rounded-md border border-line text-stone-600" aria-label={tr("Moins de personnes")}>−</button>}
                   <b className="min-w-[1.5rem] text-center text-sm text-stone-900">{people}</b>
-                  <button type="button" onClick={() => changePeople(people + 1)} className="h-6 w-6 rounded-md border border-line text-stone-600" aria-label={tr("Plus de personnes")}>+</button>
+                  {own && <button type="button" onClick={() => changePeople(people + 1)} className="h-6 w-6 rounded-md border border-line text-stone-600" aria-label={tr("Plus de personnes")}>+</button>}
                   {tr("pers.")}
                 </div>
               </div>
@@ -147,7 +156,7 @@ export function MenuRecipeView({
           <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-line pt-4">
             <button onClick={onPlan} className="btn-secondary">{tr("Modifier le menu de ce jour")}</button>
             <button onClick={onClose} className="btn-primary">{tr("Fermer")}</button>
-            <button onClick={() => onRemove(meal.id)} className="ml-auto text-xs text-stone-400 hover:text-rose-600">{tr("Retirer du menu")}</button>
+            {own && <button onClick={() => onRemove(meal.id)} className="ml-auto text-xs text-stone-400 hover:text-rose-600">{tr("Retirer du menu")}</button>}
           </div>
         </div>
       </div>

@@ -9,6 +9,8 @@ import { ListComposer } from "@/components/app/lists/list-composer";
 import { ListRecipes } from "@/components/app/lists/list-recipes";
 import { formatEUR } from "@/lib/utils";
 import { loadCatalog } from "@/lib/data/ingredients";
+import { loadPeople } from "@/lib/data/people";
+import { SpaceBadge, ShareToggle } from "@/components/app/space-badge";
 import { STORES, compareStores, lineCost, priceMap } from "@/lib/shopping";
 import {
   addListItem,
@@ -35,8 +37,11 @@ export default async function ListDetailPage({ params, searchParams }: { params:
   if (!ctx) return null;
   const { supabase } = ctx;
 
-  const { data: list } = await supabase.from("lists").select("*").eq("id", params.id).single<ListRow>();
+  const { data: list } = await supabase.from("lists").select("*").eq("id", params.id).single<ListRow & { owner_id: string; shared: boolean }>();
   if (!list) notFound();
+  const people = await loadPeople();
+  const mine = list.owner_id === (people?.meId ?? ctx.user.id);
+  const ownerName = people?.names[list.owner_id];
   const isShopping = list.type === "shopping";
   const hh = list.household_id;
 
@@ -96,29 +101,43 @@ export default async function ListDetailPage({ params, searchParams }: { params:
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-stone-900">{list.name}</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-stone-900">{list.name}</h1>
+            <SpaceBadge shared={list.shared} mine={mine} ownerName={ownerName} />
+          </div>
           <p className="mt-1 text-sm text-stone-500">
             {[list.category, weekLabel(list.week_start, tr), tr("{a}/{b} cochés", { a: checkedCount, b: all.length })].filter(Boolean).join(" · ")}
             {list.archived && <span className="ml-2 rounded-full bg-stone-100 px-2 py-0.5 text-xs">{tr("Archivée")}</span>}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <form action={clearCheckedItems.bind(null, list.id)}>
             <button className="btn-secondary text-xs">{tr("Nettoyer les cochés")}</button>
           </form>
-          {isShopping && !list.archived && (
+          {mine && (people?.count ?? 1) > 1 && <ShareToggle table="lists" id={list.id} shared={list.shared} />}
+          {mine && isShopping && !list.archived && (
             <form action={finishShopping.bind(null, list.id)}>
               <button className="btn-primary text-xs">{tr("✓ J'ai fini mes courses")}</button>
             </form>
           )}
-          <form action={setListArchived.bind(null, list.id, !list.archived)}>
-            <button className="btn-secondary text-xs">{list.archived ? tr("Désarchiver") : tr("Archiver")}</button>
-          </form>
-          <form action={deleteList.bind(null, list.id)}>
-            <button className="btn-secondary text-xs text-rose-600">{tr("Supprimer")}</button>
-          </form>
+          {mine && (
+            <form action={setListArchived.bind(null, list.id, !list.archived)}>
+              <button className="btn-secondary text-xs">{list.archived ? tr("Désarchiver") : tr("Archiver")}</button>
+            </form>
+          )}
+          {mine && (
+            <form action={deleteList.bind(null, list.id)}>
+              <button className="btn-secondary text-xs text-rose-600">{tr("Supprimer")}</button>
+            </form>
+          )}
         </div>
       </div>
+
+      {!mine && (
+        <p role="status" className="rounded-2xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-[13px] text-violet-900">
+          {tr("Liste partagée par {name}. Tu peux y ajouter et cocher des articles ; seul(e) {name} peut la renommer, l'archiver ou la supprimer.", { name: ownerName ?? "—" })}
+        </p>
+      )}
 
       {isShopping && (list.archived || searchParams.done === "1") && comparable > 0 && (
         <section id="comparatif" className="card p-6">
@@ -171,6 +190,7 @@ export default async function ListDetailPage({ params, searchParams }: { params:
 
       {isShopping && (
         <div className="grid gap-4 sm:grid-cols-2">
+          {mine ? (
           <form action={setListStore.bind(null, list.id)} className="card flex items-end gap-2 p-4">
             <label className="flex-1 text-xs text-stone-500">
               {tr("Enseigne")}
@@ -181,6 +201,12 @@ export default async function ListDetailPage({ params, searchParams }: { params:
             </label>
             <button className="btn-secondary">{tr("Changer")}</button>
           </form>
+          ) : (
+            <div className="card p-4">
+              <p className="text-xs text-stone-500">{tr("Enseigne")}</p>
+              <p className="mt-1 font-semibold text-stone-900">{list.store ?? "—"}</p>
+            </div>
+          )}
           <div className="card flex items-center justify-between p-4">
             <div>
               <p className="text-xs text-stone-500">{list.store ? tr("Total estimé chez {store}", { store: list.store }) : tr("Total estimé")}</p>

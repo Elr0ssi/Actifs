@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { addDays } from "@/lib/finance-engine";
 import { addMenuItems, removeMenuItem, setMenuServings, setMenuSlot } from "@/app/(main)/app/menu-actions";
 import { setDefaultServings } from "@/app/(main)/app/lists/actions";
+import { setItemShared } from "@/app/(main)/app/share-actions";
 import { RECIPES } from "@/lib/marketing/recipes";
 import { cx } from "@/lib/utils";
 import { DOW } from "@/components/app/widgets/helpers";
@@ -43,10 +44,14 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
   const [slotOf, setSlotOf] = useState<Record<string, Slot>>({});
   const [people, setPeople] = useState(data.defaultServings);
   const [sv, setSv] = useState<Record<string, number>>({});
+  // Où j'ajoute : dans mon planning perso, ou dans le planning partagé du foyer (visible par tous, modifiable par moi seul).
+  const [scope, setScope] = useState<"perso" | "partage">("perso");
+  const [sharedOf, setSharedOf] = useState<Record<string, boolean>>({});
   const days = Array.from({ length: 14 }, (_, i) => addDays(weekStart, i));
+  const isMine = (m: { owner_id?: string }) => !m.owner_id || m.owner_id === data.meId;
 
   // Une ligne « en attente » disparaît dès que le serveur a renvoyé le repas (sinon il apparaîtrait en double).
-  const saved = new Set(data.menu.map((m) => `${m.day}|${m.name.toLowerCase()}`));
+  const saved = new Set(data.menu.filter(isMine).map((m) => `${m.day}|${m.name.toLowerCase()}`));
   const pendingNow = optimistic.filter((o) => !saved.has(`${o.day}|${o.name.toLowerCase()}`));
   const items = data.menu.filter((m) => !removed.includes(m.id)).map((m) => ({ ...m, slot: slotOf[m.id] ?? m.slot ?? null }));
   const dayItems = items.filter((m) => m.day === day);
@@ -56,7 +61,7 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
   // Un repas déjà planifié sur ces deux semaines n'est plus proposé (sauf si on le demande).
   const usedNames = useMemo(() => {
     const inWindow = new Set(days);
-    return new Set([...items.filter((m) => inWindow.has(m.day)).map((m) => m.name.toLowerCase()), ...pendingNow.map((o) => o.name.toLowerCase())]);
+    return new Set([...items.filter((m) => inWindow.has(m.day) && isMine(m)).map((m) => m.name.toLowerCase()), ...pendingNow.map((o) => o.name.toLowerCase())]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.menu, removed, optimistic, weekStart]);
 
@@ -69,7 +74,11 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
     setOptimistic((o) => [...o, { name: c.name, icon: c.icon, day, slot }]);
     setFlash(tr("{name} ajouté · {day} {slot}", { name: c.name, day: label(day), slot: slot === "midi" ? tr("midi") : tr("soir") }));
     setTimeout(() => setFlash(null), 2200);
-    start(() => addMenuItems(day, [{ name: c.name, icon: c.icon, servings: people }], slot));
+    start(() => addMenuItems(day, [{ name: c.name, icon: c.icon, servings: people }], slot, data.multi && scope === "partage"));
+  };
+  const toggleShared = (id: string, now: boolean) => {
+    setSharedOf((m) => ({ ...m, [id]: !now }));
+    start(() => setItemShared("menu_items", id, !now));
   };
   const changePeople = (n: number) => {
     const v = Math.min(20, Math.max(1, n));
@@ -87,7 +96,7 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
   };
 
   const query = fold(q.trim());
-  const fromMine = (r: WidgetData["myRecipes"][number]): Card => ({ name: r.name, icon: known(r.name)?.icon ?? null, image: r.image_url, gradient: known(r.name)?.gradient ?? "from-stone-100 to-stone-200", sub: tr("{n} pers.", { n: r.servings }) });
+  const fromMine = (r: WidgetData["myRecipes"][number]): Card => ({ name: r.name, icon: known(r.name)?.icon ?? null, image: r.image_url, gradient: known(r.name)?.gradient ?? "from-stone-100 to-stone-200", sub: tr("{n} pers.", { n: r.servings }) + (r.owner_id && r.owner_id !== data.meId ? ` · 👥 ${data.people[r.owner_id] ?? "—"}` : "") });
   const fromIdea = (r: (typeof RECIPES)[number]): Card => ({ name: r.name, icon: r.icon, image: r.image, gradient: r.gradient, sub: r.time });
   const cards: Card[] = useMemo(() => {
     let list: Card[];
@@ -154,6 +163,19 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
                 <ul className="mt-2 space-y-1.5">
                   {mine.map((m) => {
                     const n = sv[m.id] ?? m.servings ?? data.defaultServings;
+                    const own = isMine(m);
+                    const shared = sharedOf[m.id] ?? !!m.shared;
+                    if (!own) {
+                      // Repas d'une autre personne, partagé avec le foyer : on le voit, on ne le modifie pas.
+                      return (
+                        <li key={m.id} className="flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50/60 px-2 py-1.5 text-[12px]">
+                          <span>{m.icon ?? "🍽️"}</span>
+                          <span className="min-w-0 flex-1 truncate font-medium text-stone-800">{tr(m.name)}</span>
+                          <span className="tabular text-[11px] text-stone-500">{n} {tr("pers.")}</span>
+                          <span title={tr("Partagé par {name} : tu peux le consulter, pas le modifier.", { name: data.people[m.owner_id ?? ""] ?? "—" })} className="shrink-0 rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-semibold text-violet-800">👥 {data.people[m.owner_id ?? ""] ?? "—"}</span>
+                        </li>
+                      );
+                    }
                     return (
                       <li key={m.id} className="flex items-center gap-1.5 rounded-xl bg-surface px-2 py-1.5 text-[12px] shadow-soft">
                         <span>{m.icon ?? "🍽️"}</span>
@@ -163,6 +185,9 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
                           <span className="tabular text-[11px]">{n}</span>
                           <button type="button" aria-label={tr("Plus de personnes")} onClick={(e) => { e.stopPropagation(); changeMeal(m.id, n + 1); }} className="px-1">+</button>
                         </span>
+                        {data.multi && (
+                          <button type="button" title={shared ? tr("Partagé avec le foyer — clique pour le repasser en perso") : tr("Perso — clique pour le partager avec le foyer")} onClick={(e) => { e.stopPropagation(); toggleShared(m.id, shared); }} className={cx("rounded-full px-1.5 py-0.5 text-[10px] font-semibold", shared ? "bg-violet-100 text-violet-800" : "bg-stone-100 text-stone-600")}>{shared ? "👥" : "🔒"}</button>
+                        )}
                         <button type="button" title={s.key === "midi" ? tr("Passer au soir") : tr("Passer au midi")} onClick={(e) => { e.stopPropagation(); moveSlot(m.id, s.key === "midi" ? "soir" : "midi"); }} className="text-[13px] opacity-60 hover:opacity-100">{s.key === "midi" ? "🌙" : "☀️"}</button>
                         <button aria-label={tr("Retirer {name}", { name: m.name })} onClick={(e) => { e.stopPropagation(); setRemoved((r) => [...r, m.id]); start(() => removeMenuItem(m.id)); }} className="text-stone-400 hover:text-rose-600">✕</button>
                       </li>
@@ -177,6 +202,18 @@ export function MenuEditor({ data, weekStart, initialDay, onClose }: { data: Wid
         </div>
         {dayItems.some((m) => !m.slot) && (
           <p className="mt-2 text-[11px] text-stone-400">{tr("Repas sans moment précisé : {names}. Passe-les au midi ou au soir depuis la fiche du jour.", { names: dayItems.filter((m) => !m.slot).map((m) => m.name).join(", ") })}</p>
+        )}
+
+        {/* Où j'ajoute : perso ou partagé */}
+        {data.multi && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-stone-50 px-3.5 py-2">
+            <p className="text-[12px] font-medium text-stone-700">{tr("J'ajoute dans")}</p>
+            <div role="radiogroup" aria-label={tr("Planning")} className="inline-flex rounded-xl bg-stone-100 p-0.5 text-xs font-semibold">
+              <button type="button" role="radio" aria-checked={scope === "perso"} onClick={() => setScope("perso")} className={cx("rounded-[10px] px-3 py-1.5", scope === "perso" ? "bg-surface text-stone-900 shadow-soft" : "text-stone-500")}>🔒 {tr("Mon planning")}</button>
+              <button type="button" role="radio" aria-checked={scope === "partage"} onClick={() => setScope("partage")} className={cx("rounded-[10px] px-3 py-1.5", scope === "partage" ? "bg-violet-600 text-white shadow-soft" : "text-stone-500")}>👥 {tr("Planning partagé")}</button>
+            </div>
+            <p className="w-full text-[11px] text-stone-500">{scope === "partage" ? tr("Le foyer verra ces repas. Toi seul(e) pourras les modifier ; chacun garde aussi ses repas perso.") : tr("Toi seul(e) verras ces repas.")}</p>
+          </div>
         )}
 
         {/* Personnes */}

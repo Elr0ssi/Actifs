@@ -36,7 +36,7 @@ export default async function SettingsPage() {
     supabase.from("user_tokens").select("ical_token").eq("user_id", user.id).maybeSingle(),
     supabase.from("profiles").select("share_defaults").eq("id", user.id).maybeSingle(),
   ]);
-  const emptyLevels = (): Record<ShareSection, ShareLevel> => ({ courses: "none", tasks: "none", finance: "none", notes: "none" });
+  const emptyLevels = (): Record<ShareSection, ShareLevel> => ({ tasks: "none", finance: "none", notes: "none" });
   const sharingMembers: SharingMember[] = (members ?? [])
     .filter((m) => m.id !== user.id)
     .map((m) => {
@@ -130,7 +130,7 @@ export default async function SettingsPage() {
             </form>
           </Section>
 
-          <Section id="partage" icon="target" title={tr("Qui voit quoi")} desc={tr("Par défaut, tes données sont à toi seul(e). Tu choisis, membre par membre, ce que tu partages : les courses, les tâches, la finance (en lecture seule) ou les notes.")}>
+          <Section id="partage" icon="target" title={tr("Qui voit quoi")} desc={tr("Par défaut, tes données sont à toi seul(e). Tu choisis, membre par membre, ce que tu partages : les tâches, la finance (en lecture seule) ou les notes. Les listes de courses, recettes et repas se partagent directement sur chaque élément (Perso / Partagé).")}>
             <SharingPanel members={sharingMembers} defaults={parseShareDefaults(mine?.share_defaults)} />
           </Section>
 

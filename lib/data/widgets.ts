@@ -1,4 +1,5 @@
 import { getAppContext } from "@/lib/data/context";
+import { loadPeople } from "@/lib/data/people";
 import { loadFinanceData, type AccountName } from "@/lib/data/finance";
 import { addDays, type BalanceAnchor, type FinOp } from "@/lib/finance-engine";
 import { todayISO } from "@/lib/utils";
@@ -14,6 +15,9 @@ export interface WidgetList {
   /** Début de semaine de la liste si renseigné, sinon date de création : sert à la ranger dans un mois. */
   date: string;
   weekStart: string | null;
+  /** À qui est la liste, et si elle est partagée avec tout le foyer. */
+  owner_id?: string;
+  shared?: boolean;
   /** Total estimé des articles chiffrés (prix × quantité). */
   amount: number;
   items: { id: string; label: string; quantity: string | null; checked: boolean }[];
@@ -35,10 +39,14 @@ export interface WidgetData {
   logs: RoutineLog[];
   lists: WidgetList[];
   /** Menu de la semaine saisi à la main (en plus des recettes des listes de courses de la semaine). */
-  menu: { id: string; name: string; icon: string | null; day: string; servings: number | null; slot?: "midi" | "soir" | null }[];
+  menu: { id: string; name: string; icon: string | null; day: string; servings: number | null; slot?: "midi" | "soir" | null; owner_id?: string; shared?: boolean }[];
   /** Nombre de personnes proposé par défaut (réglé pour le foyer). */
   defaultServings: number;
-  myRecipes: { name: string; category: string | null; image_url: string | null; servings: number; notes: string | null; items: { label: string; quantity: string | null; qty: number | null; unit: string | null }[] }[];
+  /** Moi, les prénoms des membres du foyer, et s'il y en a plusieurs : sert aux pastilles Perso / Partagé / « par Raph ». */
+  meId: string;
+  people: Record<string, string>;
+  multi: boolean;
+  myRecipes: { owner_id?: string; shared?: boolean; name: string; category: string | null; image_url: string | null; servings: number; notes: string | null; items: { label: string; quantity: string | null; qty: number | null; unit: string | null }[] }[];
   notes: { id: string; title: string; icon: string | null; search: string; updated_at: string }[];
   words: { id: string; french: string; english: string; created_at: string }[];
   wordsTotal: number;
@@ -74,6 +82,7 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
   const to = addDays(today, 124);
   const weekStart = addDays(today, -((new Date(`${today}T00:00:00Z`).getUTCDay() + 6) % 7));
 
+  const people = await loadPeople();
   const [finance, { data: tasks }, { data: routines }, logs, { data: lists }, { data: words, count: wordsTotal }, { data: projects }, { data: projectTasks }, { data: notes }, { data: menu }, { data: myRecipes }] = await Promise.all([
     loadFinanceData(true), // le tableau de bord reste le tien, même si tu consultes la finance d'un proche ailleurs
     supabase
@@ -88,7 +97,7 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
     loadLogs(supabase, addDays(today, -800), today),
     supabase
       .from("lists")
-      .select("id, name, type, store, week_start, archived, created_at, list_items(id, label, quantity, checked, price, count, position), list_recipes(name, icon, count)")
+      .select("id, name, type, store, week_start, archived, created_at, owner_id, shared, list_items(id, label, quantity, checked, price, count, position), list_recipes(name, icon, count)")
       .eq("household_id", householdId)
       .neq("type", "recipe")
       .or(`archived.eq.false,created_at.gte.${addDays(today, -120)}T00:00:00Z`)
@@ -98,8 +107,8 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
     supabase.from("projects").select("id, name, color").eq("household_id", householdId).eq("archived", false).order("created_at"),
     supabase.from("tasks").select("project_id, status").eq("household_id", householdId).not("project_id", "is", null),
     supabase.from("notes").select("id, title, icon, search, updated_at").eq("household_id", householdId).order("updated_at", { ascending: false }).limit(8),
-    supabase.from("menu_items").select("id, name, icon, day, servings, slot").eq("household_id", householdId).gte("day", addDays(weekStart, -14)).lte("day", addDays(weekStart, 42)).order("created_at"),
-    supabase.from("recipes").select("name, category, image_url, servings, notes, recipe_items(label, quantity, qty, qty_unit, position)").eq("household_id", householdId).order("name").limit(300),
+    supabase.from("menu_items").select("id, name, icon, day, servings, slot, owner_id, shared").eq("household_id", householdId).gte("day", addDays(weekStart, -14)).lte("day", addDays(weekStart, 42)).order("created_at"),
+    supabase.from("recipes").select("owner_id, shared, name, category, image_url, servings, notes, recipe_items(label, quantity, qty, qty_unit, position)").eq("household_id", householdId).order("name").limit(300),
   ]);
 
   type ListRow = {
@@ -110,6 +119,8 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
     week_start: string | null;
     archived: boolean;
     created_at: string;
+    owner_id: string;
+    shared: boolean;
     list_items: { id: string; label: string; quantity: string | null; checked: boolean; price: number | null; count: number | null; position: number }[];
     list_recipes: { name: string; icon: string | null; count: number }[];
   };
@@ -137,14 +148,21 @@ export async function loadWidgetData(): Promise<WidgetData | null> {
       store: l.store,
       archived: l.archived,
       weekStart: l.week_start,
+      owner_id: l.owner_id,
+      shared: l.shared,
       date: l.week_start ?? l.created_at.slice(0, 10),
       amount: l.list_items.reduce((s, i) => s + (i.price !== null ? Number(i.price) * (i.count || 1) : 0), 0),
       items: [...l.list_items].sort((a, b) => a.position - b.position).map(({ id, label, quantity, checked }) => ({ id, label, quantity, checked })),
       recipes: l.list_recipes ?? [],
     })),
-    menu: (menu ?? []).filter((m) => m.day).map((m) => ({ id: m.id, name: m.name, icon: m.icon, day: m.day as string, servings: m.servings ?? null, slot: (m.slot as "midi" | "soir" | null) ?? null })),
+    menu: (menu ?? []).filter((m) => m.day).map((m) => ({ id: m.id, name: m.name, icon: m.icon, day: m.day as string, servings: m.servings ?? null, slot: (m.slot as "midi" | "soir" | null) ?? null, owner_id: m.owner_id as string, shared: !!m.shared })),
     defaultServings: (ctx.household as { default_servings?: number } | null)?.default_servings ?? 2,
+    meId: people?.meId ?? ctx.user.id,
+    people: people?.names ?? {},
+    multi: (people?.count ?? 1) > 1,
     myRecipes: (myRecipes ?? []).map((r) => ({
+      owner_id: r.owner_id as string,
+      shared: !!r.shared,
       name: r.name,
       category: r.category,
       image_url: r.image_url,

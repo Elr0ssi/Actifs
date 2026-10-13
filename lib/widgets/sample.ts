@@ -59,6 +59,9 @@ export function sampleWidgetData(today: string): WidgetData {
       { id: "m3", name: "Chili sin carne", icon: "🌶️", day: addDays(monday, 3), servings: 2 },
     ],
     defaultServings: 2,
+    meId: "me",
+    people: {},
+    multi: false,
     myRecipes: [],
     notes: [
       { id: "n1", title: "Idées de voyage", icon: "✈️", search: "Lisbonne, Porto, road trip en Algarve au printemps…", updated_at: stamp },

@@ -14,6 +14,7 @@ import type { WidgetProps } from "@/components/app/widgets/types";
 import { MenuEditor } from "@/components/app/widgets/menu-editor";
 import { MenuRecipeView } from "@/components/app/widgets/menu-recipe-view";
 import { removeMenuItem } from "@/app/(main)/app/menu-actions";
+import { SpaceBadge } from "@/components/app/space-badge";
 import type { WidgetList } from "@/lib/data/widgets";
 
 const BUDGET_CATEGORY = "Alimentation / Courses";
@@ -94,7 +95,7 @@ export function MenuWeek({ data }: WidgetProps) {
                 type="button"
                 onClick={() => { if (drag.current.moved) { drag.current.moved = false; return; } if (first) setViewDay({ day: d, id: first.id }); else setEditDay(d); }}
                 draggable={false}
-                className={cx("group w-[150px] shrink-0 rounded-2xl border p-2.5 text-left transition hover:shadow-soft", isToday ? "border-brand-300 bg-brand-50/40" : "border-line bg-surface")}
+                className={cx("group w-[150px] shrink-0 rounded-2xl border p-2.5 text-left transition hover:shadow-soft", isToday ? "border-brand-300 bg-brand-50/40" : first && first.owner_id && first.owner_id !== data.meId ? "border-violet-200 bg-violet-50/30" : "border-line bg-surface")}
               >
                 <p className={cx("text-[13px] font-bold", isToday ? "text-brand-700" : "text-stone-900")}>{DOW[i % 7]} {Number(d.slice(8))}</p>
                 {first ? (
@@ -114,12 +115,18 @@ export function MenuWeek({ data }: WidgetProps) {
                       <span className="ml-1 text-stone-400">· {tr("{n} pers.", { n: first.servings ?? data.defaultServings })}</span>
                       {meals.length > 1 && <span className="ml-auto rounded-full bg-stone-100 px-1.5 text-[10px] font-semibold text-stone-500" title={meals.slice(1).map((m) => m.name).join(", ")}>+{meals.length - 1}</span>}
                     </p>
+                    {data.multi && (
+                      <div className="mt-1.5 h-5">
+                        <SpaceBadge shared={!!first.shared} mine={!first.owner_id || first.owner_id === data.meId} ownerName={first.owner_id ? data.people[first.owner_id] : undefined} />
+                      </div>
+                    )}
                   </>
                 ) : (
                   <>
                     <div className="mt-2 flex aspect-[4/3] items-center justify-center rounded-xl border border-dashed border-line text-2xl text-stone-300 transition group-hover:border-brand-300 group-hover:text-brand-500">+</div>
                     <p className="mt-2 min-h-[2.5rem] text-[12px] text-stone-400">{tr("Rien de prévu")}</p>
                     <p className="mt-1 text-[11px] text-transparent">.</p>
+                    {data.multi && <div className="mt-1.5 h-5" />}
                   </>
                 )}
               </button>
@@ -181,7 +188,7 @@ export function ListsOverview({ data, size }: WidgetProps) {
               <li key={l.id}>
                 <Link href={`/app/lists/${l.id}`} className="block rounded-lg px-1 py-0.5 hover:bg-stone-50">
                   <div className="flex items-baseline justify-between gap-2 text-[12px]">
-                    <span className="truncate font-medium text-stone-800">{tr(l.name)}{l.store && <span className="ml-1.5 text-[10px] font-normal text-stone-400">{l.store}</span>}</span>
+                    <span className="truncate font-medium text-stone-800">{tr(l.name)}{l.store && <span className="ml-1.5 text-[10px] font-normal text-stone-400">{l.store}</span>}{data.multi && l.owner_id && <SpaceBadge className="ml-1.5 align-middle" shared={!!l.shared} mine={l.owner_id === data.meId} ownerName={data.people[l.owner_id]} />}</span>
                     <span className="tabular shrink-0 text-[11px] text-stone-500">
                       {done}/{l.items.length}
                       {l.amount > 0 && <b className="ml-2 text-stone-800">{eur0(l.amount)}</b>}
